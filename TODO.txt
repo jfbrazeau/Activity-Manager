@@ -1,0 +1,56 @@
+- Implémenter le remove de contribution
+
+[20051015]
+- Finaliser la procédure d'installation avec
+  -Djava.library.path=C:\opt\eclipse3.0\plugins\org.eclipse.swt.win32_3.0.0\os\win32\x86
+- Créer une fenêtre permettant d'accéder aux différentes
+  fonctionnalités (onglets?) afin de permettre de mettre
+  une main-class dans le jar
+- Retourner les objets modifiés dans toutes les méthodes qui
+  mettent à jour les objets (moveTask, etc.).
+- Ajouter contrainte d'unicité sur le login d'un user
+- Implémenter les tests pour les contributions
+
+[20050807]
+- Dans l'IHM contributions, les taches sont classées dans un ordre
+  en conformité avec l'arborescence des taches (tri par chemin)
+- Fusion des 3 IHM en une IHM contenant 4 onglets.
+- Déplacement paramétrage de la connexion SQL dans la couche de 
+  présentation
+- Mise en place d'un pool de connexion (avec commons-dbcp) améliorant
+  les performances de requettage
+
+[20050714]
+- Ajout variables dans les paramètres pour le rpeorting ${...}
+
+[20050708]
+- Suppression possibilité de déplacer une tache vers elle-même ou une de ses
+  sous-taches
+- Implémentation des tests pour les durées et les collaborateurs
+- Ajout de batchs permettant de lancer les outils en ligne de commande.
+- Modification de la procédure de backup pour sauvegarder les tables dans
+  le bon ordre.
+- Ajout génération automatique de code unique à la création d'une nouvelle
+  tache (dans une méthode newTask())
+- Ajout possibilité de rafraichissement des taches (dans menu contextuel)
+
+[20050705]
+- Suppression possibilité de déplacer une tache vers elle-même ou une de ses
+  sous-taches
+
+[20050703]
+- Déplacement de la gestion de la transaction dans ModelMgr
+- Ajout d'une contrainte d'unicité sur le couple (chemin,code) + index associé
+- Ajout des controles concernant la possibilité d'ajouter une sous tache à une autre
+  tache (consommé=consommé initial=budget=reste à faire=0)
+- Implémentation suppression récursive des taches
+
+[20050626]
+- Changer gestionnaire de logs => mettre log4j
+- Remplacer Castor par du SQL
+- Changer les "throw new Error" en throw "throw new UITechException"
+  dans l'IHM
+- Implémentation déplacement d'une tache
+
+[20050610]
+- Convertir les valeurs en centièmes dans les IHM

@@ -1,0 +1,10 @@
+jfb.tools.activitymgr.core.ModelMgr.initDatabaseAccess(
+		"com.mysql.jdbc.Driver",
+		"jdbc:mysql://localhost/taskmgrdb",
+		"taskmgr",
+		"secret"
+		);
+
+
+String path = "CEFI/AB'/IQR1/DEV/AGENT";
+System.out.println(jfb.tools.activitymgr.core.ModelMgr.getTaskByCodePath(path));

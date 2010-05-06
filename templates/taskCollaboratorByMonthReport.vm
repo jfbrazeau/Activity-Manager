@@ -1,0 +1,59 @@
+<html>
+	<head>
+		<title>$props.title.get()</title>
+	</head>
+	<body>
+		## Récupération de la tache racine
+		#set($rootTask=$model.getTaskByCodePath($props.taskPath.get()))
+		
+		## Préparation de l'interval de dates
+		#set($fromDate=$dates.toDate('yyyyMM', $props.startMonth.get()))
+		#set($toDate=$dates.toDate('yyyyMM', $props.endMonth.get()))
+		#set($dateList=$dates.buildMonthInterval($fromDate, $toDate))
+		
+		## Récupération des collaborateurs
+		#set($cols=$model.collaborators)
+		<h3>Root task : $rootTask.name</h3>
+		<table border="1" cellspacing="0">
+			<tr>
+				<td><b>Collaborator</b></td>
+				#foreach ($date in $dateList)
+					#set($month = $dates.toString('MM/yyyy', ${date}))
+					$sums.set($month, 0) 
+					<td><b>$month</b></td>
+				#end
+				<td><b>Total</b></td>
+			</tr>
+			#foreach ($col in $cols)
+				$sums.set($col.login, 0) 
+				<tr>
+					<td><b>$col.firstName $col.lastName</b></td>
+					#foreach ($date in $dateList)
+						#set($month = $dates.toString('MM/yyyy', ${date}))
+						#set($consumed = $model.getContributionsSum($rootTask, $col, $dates.getYear($date), $dates.getMonth($date), null))
+						$sums.add($col.login, $consumed)
+						$sums.add($month, $consumed)
+						<td align="right">
+							#if(! $test.eq($consumed, 0))
+								$fmt.formatDuration(${consumed})
+							#else
+								&nbsp;
+							#end
+						</td>
+					#end
+					#set($colTotal=$sums.get($col.login))
+					$sums.add('total', $colTotal)
+					<td align="right">$fmt.formatDuration($colTotal)</td>
+				</tr>
+			#end
+			<tr>
+				<td>&nbsp;</td>
+					#foreach ($date in $dateList)
+					#set($month = $dates.toString('MM/yyyy', ${date}))
+					<td align="right">$fmt.formatDuration($sums.get($month))</td>
+				#end
+				<td align="right">$fmt.formatDuration($sums.get('total'))</td>
+			</tr>
+		</table>
+	</body>
+</html>
