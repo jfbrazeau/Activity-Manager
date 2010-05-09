@@ -24,7 +24,7 @@ create table TASK (
 	TSK_NUMBER       integer(  3) not null,
 	TSK_CODE         varchar(  5) not null,
 	TSK_NAME         varchar( 50) not null,
-	TSK_INITIAL_FUND integer(  8) not null,
+	TSK_BUDGET       integer(  8) not null,
 	TSK_INITIAL_CONS integer(  8) not null,
 	TSK_TODO         integer(  8) not null,
     index TSK_PATH_IDX (TSK_PATH),
