@@ -4,8 +4,7 @@ LICENSE.txt for details.
 This product includes software developed by
 The Apache Software Foundation (http://www.apache.org/).
 
-This product includes software developped by 
-The Eclipse foundation (http://www.eclipse.org).
-
-This product includes software developped by 
-MySQL organization (http://www.mysql.com).
+This product also includes software developped by 
+ - The Eclipse foundation (http://www.eclipse.org).
+ - MySQL organization (http://www.mysql.com).
+ - The HSQLDB Development Group (http://www.hsqldb.org)

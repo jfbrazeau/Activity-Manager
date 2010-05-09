@@ -71,7 +71,7 @@ public class CollaboratorsUITest {
 			CollaboratorsUI ui = new CollaboratorsUI(shell);
 			shell.open();
 
-			ui.initUI();
+			ui.databaseOpened();
 			log.debug("UI initialized");
 
 			while (!shell.isDisposed()) {

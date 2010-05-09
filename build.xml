@@ -15,7 +15,7 @@
 	<fileset id="binDistFileSet" dir="">
 		<include name="bin/*"/>
 		<include name="cfg/*"/>
-		<include name="lib/*"/>
+		<include name="lib/**"/>
 		<include name="logs"/>
 		<include name="report"/>
 		<include name="sql/*.sql"/>
@@ -45,7 +45,7 @@
 		<mkdir dir="${javadoc.dest.dir}"/>
 		<javadoc 
         	destdir="${javadoc.dest.dir}"
-			access="public"
+			access="protected"
 			source="1.3" 
         	use="true" 
         	notree="false" 
@@ -106,7 +106,7 @@
 	<!--
 		Cible de construction de la distribution binaire.
 	  -->
-	<target name="buildBinDist" depends="buildJavadoc">
+	<target name="buildBinDist">
 		<!-- Répertoire accueillant la préparation de la distribution binaire -->
 		<property name="dist.bin.dir" 
 			value="${build.dir}/${ant.project.name}" />
@@ -117,12 +117,6 @@
 		<copy todir="${dist.bin.dir}">
 			<fileset refid="binDistFileSet"/>
 		</copy>
-		<!-- Ajout de la javadoc -->
-		<copy todir="${dist.bin.dir}/javadoc">
-			<fileset dir="${build.dir}/javadoc">
-				<include name="**"/>
-			</fileset>
-		</copy>
 		<!-- Compilation des classes et construction du jar -->
 		<antcall target="srcToJar">
 			<param name="javac.src.dir" value="src"/>
@@ -131,7 +125,28 @@
 		</antcall>
 		<!-- Création du zip -->
 		<zip basedir="${dist.bin.dir}"
-			destfile="${ant.project.name}_${TODAY}.zip"/>
+			destfile="${ant.project.name}_win32_${TODAY}.zip"
+			compress="true" excludes="bin/*.sh,lib/gtk-linux/*,lib/gtk-linux/**"/>
+		<tar
+			destfile="${ant.project.name}_gtk-linux_${TODAY}.tar.gz"
+			compression="gzip">
+			<!-- Fichiers exécutables -->
+			<tarfileset 
+				dir="${dist.bin.dir}" 
+				mode="555">
+				<include name="bin/*.sh"/>
+				<include name="lib/gtk-linux/*.so*"/>
+			</tarfileset>
+			<!-- Autres fichiers -->
+			<tarfileset 
+				dir="${dist.bin.dir}" 
+				mode="644"
+				excludes="bin/*.bat,lib/win32/*,lib/win32/**">
+				<include name="**"/>
+				<exclude name="bin/*.sh"/>
+				<exclude name="lib/gtk-linux/*.so*"/>
+			</tarfileset>
+		</tar>
 	</target>
 	
 	<!--

@@ -41,11 +41,14 @@ import jfb.tools.activitymgr.core.beans.Contribution;
 import jfb.tools.activitymgr.core.beans.Task;
 import jfb.tools.activitymgr.core.util.StringHelper;
 import jfb.tools.activitymgr.ui.CollaboratorsUI.CollaboratorListener;
+import jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener;
+import jfb.tools.activitymgr.ui.DurationsUI.DurationListener;
 import jfb.tools.activitymgr.ui.dialogs.DialogException;
 import jfb.tools.activitymgr.ui.dialogs.ITaskChooserValidator;
 import jfb.tools.activitymgr.ui.dialogs.TasksChooserDialog;
+import jfb.tools.activitymgr.ui.util.AbstractTableMgr;
+import jfb.tools.activitymgr.ui.util.SWTHelper;
 import jfb.tools.activitymgr.ui.util.SafeRunner;
-import jfb.tools.activitymgr.ui.util.TableMgrBase;
 import jfb.tools.activitymgr.ui.util.TableOrTreeColumnsMgr;
 import jfb.tools.activitymgr.ui.util.WeekContributions;
 
@@ -61,10 +64,12 @@ import org.eclipse.jface.viewers.LabelProviderChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -83,8 +88,8 @@ import org.eclipse.swt.widgets.TableItem;
  * IHM de gestion des contributions.
  */
 public class ContributionsUI 
-	extends TableMgrBase 
-	implements ICellModifier, SelectionListener, MenuListener, CollaboratorListener {
+	extends AbstractTableMgr 
+	implements DbStatusListener, ICellModifier, SelectionListener, MenuListener, CollaboratorListener, DurationListener {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(ContributionsUI.class);
@@ -112,10 +117,15 @@ public class ContributionsUI
 	/** Items de menu */
 	private MenuItem newItem;
 	//private MenuItem removeItem; // A implémenter...
+	private MenuItem exportItem;
 	
 	/** Boutons d'action */
+	private Button previousYearButton;
+	private Button previousMonthButton;
 	private Button previousWeekButton;
 	private Button nextWeekButton;
+	private Button nextMonthButton;
+	private Button nextYearButton;
 
 	/** Composant parent */
 	private Composite parent;
@@ -208,7 +218,14 @@ public class ContributionsUI
 
 		// Configuration des éditeurs de cellules
 		CellEditor[] editors = new CellEditor[9];
-		durationCellEditor = new ComboBoxCellEditor(table, new String[] {}, SWT.READ_ONLY);
+		durationCellEditor = new ComboBoxCellEditor(table, new String[] {}, SWT.READ_ONLY) {
+			protected Control createControl(Composite parent) {
+				CCombo ccombo = (CCombo) super.createControl(parent);
+				ccombo.setVisibleItemCount(10);
+				return ccombo;
+			}
+		};
+		
 		editors[TASK_PATH_COLUMN_IDX] = null; // Read-only column
 		editors[TASK_COLUMN_IDX] = new DialogCellEditor(table) {
 			protected Object openDialogBox(Control cellEditorWindow) {
@@ -260,72 +277,77 @@ public class ContributionsUI
 		//removeItem = new MenuItem(menu, SWT.CASCADE);
 		//removeItem.setText("Remove");
 		//removeItem.addSelectionListener(this);
+		exportItem = new MenuItem(menu, SWT.CASCADE);
+		exportItem.setText("Export");
+		exportItem.addSelectionListener(this);
 		table.setMenu(menu);
 		
-		// Boutons "Précédent/suivant"
-		previousWeekButton = new Button(parent, SWT.NONE);
-		previousWeekButton.setText("Previous week");
-		gridData = new GridData(SWT.FILL, SWT.FILL, false, false);
+		// Panneau contenant les boutons de navigation
+		Composite navigationButtonsPanel = new Composite(parent, SWT.NONE);
+		GridLayout layout = new GridLayout(2, true);
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
+		navigationButtonsPanel.setLayout(layout);
+		gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+		gridData.horizontalSpan = 3;
+		navigationButtonsPanel.setLayoutData(gridData);
+		
+		// Panneau contenant les boutons 'Précédent'
+		Composite previousButtonsPanel = new Composite(navigationButtonsPanel, SWT.NONE);
+		previousButtonsPanel.setLayout(new FillLayout());
+		gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
 		gridData.horizontalAlignment = SWT.LEFT;
-		previousWeekButton.setLayoutData(gridData);
+		previousButtonsPanel.setLayoutData(gridData);
+		previousYearButton = new Button(previousButtonsPanel, SWT.NONE);
+		previousYearButton.setText("<< year");
+		previousYearButton.setToolTipText("Previous year");
+		previousYearButton.addSelectionListener(this);
+		previousMonthButton = new Button(previousButtonsPanel, SWT.NONE);
+		previousMonthButton.setText("<< month");
+		previousMonthButton.setToolTipText("Previous month");
+		previousMonthButton.addSelectionListener(this);
+		previousWeekButton = new Button(previousButtonsPanel, SWT.NONE);
+		previousWeekButton.setText("<< week");
+		previousWeekButton.setToolTipText("Previous week");
 		previousWeekButton.addSelectionListener(this);
-		nextWeekButton = new Button(parent, SWT.NONE);
-		nextWeekButton.setText("Next week");
-		gridData = new GridData(SWT.FILL, SWT.FILL, false, false);
+		
+		// Panneau contenant les boutons 'Prochains'
+		Composite nextButtonsPanel = new Composite(navigationButtonsPanel, SWT.NONE);
+		nextButtonsPanel.setLayout(new FillLayout());
+		gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
 		gridData.horizontalAlignment = SWT.RIGHT;
-		gridData.horizontalSpan = 2;
-		nextWeekButton.setLayoutData(gridData);
+		nextButtonsPanel.setLayoutData(gridData);
+		nextWeekButton = new Button(nextButtonsPanel, SWT.NONE);
+		nextWeekButton.setText("week >>");
+		nextWeekButton.setToolTipText("Next week");
 		nextWeekButton.addSelectionListener(this);
+		nextMonthButton = new Button(nextButtonsPanel, SWT.NONE);
+		nextMonthButton.setText("month >>");
+		nextMonthButton.setToolTipText("Next month");
+		nextMonthButton.addSelectionListener(this);
+		nextYearButton = new Button(nextButtonsPanel, SWT.NONE);
+		nextYearButton.setText("year >>");
+		nextYearButton.setToolTipText("Next year");
+		nextYearButton.addSelectionListener(this);
 		
 		// Initialisation du popup de choix des taches
 		taskChooserDialog = new TasksChooserDialog(parent.getShell());
 		
 		// Recherche du 1° Lundi précédent la date courante
-		Calendar date = new GregorianCalendar();
-		while (date.get(Calendar.DAY_OF_WEEK)!=Calendar.MONDAY) 
-			date.add(Calendar.DATE, -1);
-		currentMonday = (Calendar) date.clone();
+		currentMonday = getMondayBefore(new GregorianCalendar());
 		log.debug("Date courante : " + currentMonday);
-
 	}
 
 	/**
-	 * Initialise l'IHM avec les données en base.
+	 * Retourne le premier lundi précédent la date spécifiée.
+	 * @param date la date.
+	 * @return le premier lundi précédent la date spécifiée.
 	 */
-	public void initUI() {
-		// Chargement de la liste des durées et des utilisateurs
-		SafeRunner safeRunner = new SafeRunner() {
-			public Object runUnsafe() throws Exception {
-				// Chargement du référentiel de durées
-				durations = ModelMgr.getDurations();
-				String[] durationsStr = new String[durations.length + 1];
-				durationsStr[0] = "";
-				for (int i=0; i<durations.length; i++)
-					durationsStr[i+1] = StringHelper.hundredthToEntry(durations[i]);
-				durationCellEditor.setItems(durationsStr);
-				
-				// Chargement des collaborateurs
-				collaborators = ModelMgr.getCollaborators();
-				int nbClbs = collaborators.length;
-				String[] names = new String[nbClbs];
-				for (int i=0; i<nbClbs; i++) {
-					Collaborator c = collaborators[i];
-					names[i] = c.getFirstName() + " " + c.getLastName();
-				}
-				collaboratorsCombo.setItems(names);
-				return null;
-			}
-		};
-		// Exécution
-		safeRunner.run(parent.getShell());
-
-		// Choix du collaborateur
-		if (collaborators!=null && collaborators.length>0) {
-			collaboratorsCombo.select(0);
-		}
-
-		// Initialisation de la table
-		tableViewer.setInput(ROOT_NODE);
+	private static Calendar getMondayBefore(Calendar date) {
+		Calendar dateCursor = (Calendar) date.clone();
+		while (dateCursor.get(Calendar.DAY_OF_WEEK)!=Calendar.MONDAY) 
+			dateCursor.add(Calendar.DATE, -1);
+		return dateCursor;
 	}
 	
 	/* (non-Javadoc)
@@ -594,6 +616,21 @@ public class ContributionsUI
 				// TODO implémenter
 				//else if (removeItem.equals(source)) {
 				//}
+				else if (exportItem.equals(source)) {
+					SWTHelper.exportToWorkBook(tableViewer.getTable());
+				}
+				// Cas d'un changement d'une année en arrière
+				else if (previousYearButton.equals(source)) {
+					currentMonday.add(Calendar.YEAR, -1);
+					currentMonday = getMondayBefore(currentMonday);
+					tableViewer.refresh();
+				}
+				// Cas d'un changement d'un mois en arrière
+				else if (previousMonthButton.equals(source)) {
+					currentMonday.add(Calendar.MONTH, -1);
+					currentMonday = getMondayBefore(currentMonday);
+					tableViewer.refresh();
+				}
 				// Cas d'un changement de semaine en arrière
 				else if (previousWeekButton.equals(source)) {
 					currentMonday.add(Calendar.DATE, -7);
@@ -602,6 +639,18 @@ public class ContributionsUI
 				// Cas d'un changement de semaine en avant
 				else if (nextWeekButton.equals(source)) {
 					currentMonday.add(Calendar.DATE, 7);
+					tableViewer.refresh();
+				}
+				// Cas d'un changement d'un mois en avant
+				else if (nextMonthButton.equals(source)) {
+					currentMonday.add(Calendar.MONTH, 1);
+					currentMonday = getMondayBefore(currentMonday);
+					tableViewer.refresh();
+				}
+				// Cas d'un changement d'une année en avant
+				else if (nextYearButton.equals(source)) {
+					currentMonday.add(Calendar.YEAR, 1);
+					currentMonday = getMondayBefore(currentMonday);
 					tableViewer.refresh();
 				}
 				// Cas d'un changement de collaborateur
@@ -688,6 +737,7 @@ public class ContributionsUI
 		newItem.setEnabled(emptySelection || singleSelection);
 		// La suppression n'est pas implémentée
 		//removeItem.setEnabled(!emptySelection);
+		exportItem.setEnabled(true);
 	}
 
 	/* (non-Javadoc)
@@ -695,6 +745,57 @@ public class ContributionsUI
 	 */
 	public void menuHidden(MenuEvent e) {
 		// Do nothing...
+	}
+
+	/* (non-Javadoc)
+	 * @see jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseClosed()
+	 */
+	public void databaseClosed() {
+		collaboratorsCombo.setItems(new String[] {});
+		Table table = tableViewer.getTable();
+		TableItem[] items = table.getItems();
+		for (int i=0; i<items.length; i++) {
+			items[i].dispose();
+		}
+	}
+	
+	/**
+	 * Initialise l'IHM avec les données en base.
+	 */
+	private void initUI() {
+		// Chargement de la liste des durées et des utilisateurs
+		SafeRunner safeRunner = new SafeRunner() {
+			public Object runUnsafe() throws Exception {
+				// Chargement du référentiel de durées
+				durations = ModelMgr.getDurations();
+				String[] durationsStr = new String[durations.length + 1];
+				durationsStr[0] = "";
+				for (int i=0; i<durations.length; i++)
+					durationsStr[i+1] = StringHelper.hundredthToEntry(durations[i]);
+				durationCellEditor.setItems(durationsStr);
+				
+				// Chargement des collaborateurs
+				collaborators = ModelMgr.getCollaborators();
+				int nbClbs = collaborators.length;
+				String[] names = new String[nbClbs];
+				for (int i=0; i<nbClbs; i++) {
+					Collaborator c = collaborators[i];
+					names[i] = c.getFirstName() + " " + c.getLastName();
+				}
+				collaboratorsCombo.setItems(names);
+				return null;
+			}
+		};
+		// Exécution
+		safeRunner.run(parent.getShell());
+
+		// Choix du collaborateur
+		if (collaborators!=null && collaborators.length>0) {
+			collaboratorsCombo.select(0);
+		}
+
+		// Initialisation de la table
+		tableViewer.setInput(ROOT_NODE);
 	}
 
 	/* (non-Javadoc)
@@ -721,4 +822,32 @@ public class ContributionsUI
 		initUI();
 	}
 
+	/* (non-Javadoc)
+	 * @see jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseOpened()
+	 */
+	public void databaseOpened() {
+		initUI();
+	}
+
+	/* (non-Javadoc)
+	 * @see jfb.tools.activitymgr.ui.DurationsUI.DurationListener#durationAdded(long)
+	 */
+	public void durationAdded(long duration) {
+		initUI();
+	}
+
+	/* (non-Javadoc)
+	 * @see jfb.tools.activitymgr.ui.DurationsUI.DurationListener#durationRemoved(long)
+	 */
+	public void durationRemoved(long duration) {
+		initUI();
+	}
+
+	/* (non-Javadoc)
+	 * @see jfb.tools.activitymgr.ui.DurationsUI.DurationListener#durationUpdated(long, long)
+	 */
+	public void durationUpdated(long oldDuration, long newDuration) {
+		initUI();
+	}
+	
 }

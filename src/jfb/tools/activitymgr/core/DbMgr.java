@@ -27,10 +27,15 @@
  */
 package jfb.tools.activitymgr.core;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.LineNumberReader;
+import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -57,8 +62,11 @@ public class DbMgr {
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
 
 	/** Datasource */
-	private static BasicDataSource ds = new BasicDataSource();
+	private static BasicDataSource ds = null;
 	
+	/** Contexte de thread utilisé pour détecter les anomalies associées à la gestion de transaction */
+	private static ThreadLocal threadLocal = new ThreadLocal();
+
 	/**
 	 * Initialise la connexion à la base de données.
 	 * @param driverName le nom du driver JDBC.
@@ -69,24 +77,60 @@ public class DbMgr {
 	 */
 	protected static void initDatabaseAccess(String driverName, String url, String user, String password) throws DbException {
 		try {
+			// Si la datasource existe on la ferme
+			if (ds!=null) {
+				closeDatabaseAccess();
+			}
 			// Fermeture de la datasource
-			ds.close();
+			BasicDataSource newDs = new BasicDataSource();
 			
 			// Initialisation de la Datasource
-			ds = new BasicDataSource();
+			newDs = new BasicDataSource();
 			log.info("Connecting to '" + url + "'");
-			ds.setDriverClassName(driverName);
-			ds.setUrl(url);
-			ds.setUsername(user);
-			ds.setPassword(password);
-			ds.setDefaultAutoCommit(false);
+			newDs.setDriverClassName(driverName);
+			newDs.setUrl(url);
+			newDs.setUsername(user);
+			newDs.setPassword(password);
+			newDs.setDefaultAutoCommit(false);
+
 			// Tentative de récupération d'une connexion
 			// pour détecter les problèmes de connexion
-			ds.getConnection();
+			Connection con = newDs.getConnection();
+			con.close();
+			
+			// Sauvegarde de la référence
+			ds = newDs;
 		}
 		catch (SQLException e) {
-			log.error("SQL Exception", e);
+			log.info("SQL Exception", e);
 			throw new DbException("Couldn't get a SQL Connection", e);
+		}
+	}
+	
+	/**
+	 * Ferme la base de données.
+	 * @throws DbException levé en cas d'incident technique d'accès à la BDD.
+	 */
+	protected static void closeDatabaseAccess() throws DbException {
+		try {
+			if (ds!=null){
+				// Récupération de la connexion
+				Connection con = ds.getConnection();
+				
+				// Cas d'une base HSQLDB embarquée
+				if (isEmbeddedHSQLDB(con)) {
+					// Extinction de la base de données
+					con.createStatement().execute("shutdown");
+				}
+
+				// Fermeture de la datasource
+				ds.close();
+				ds = null;
+			}
+		}
+		catch (SQLException e) {
+			log.info("Incident SQL", e);
+			throw new DbException("Echec lors de la fermeture de la base de données", e);
 		}
 	}
 	
@@ -102,13 +146,19 @@ public class DbMgr {
 	 */
 	protected static DbTransaction beginTransaction() throws DbException {
 		try {
+			// Est-on connecté à la BDD ?
+			if (ds==null)
+				throw new DbException("Database connection not established", null);
 			// Obtention d'une connexion
 			Connection con = ds.getConnection();
+			if (threadLocal.get()!=null)
+				throw new Error("Conflicting transaction");
+			threadLocal.set(con);
 			//log.debug("Active : " + ds.getNumActive() + ", Idle : " + ds.getNumIdle() + ", Connexion : " + con);
 			return new DbTransaction(con);
 		}
 		catch (SQLException e) {
-			log.error("SQL Exception", e);
+			log.info("SQL Exception", e);
 			throw new DbException("Couldn't get a SQL Connection", e);
 		}
 	}
@@ -127,6 +177,145 @@ public class DbMgr {
 	}
 	
 	/**
+	 * Vérifie si les tables existent dans le modèle.
+	 * @param tx le contexte de transaction.
+	 * @return un booléen indiquant si la table spécifiée existe dans le modèle.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	protected static boolean tablesExist(DbTransaction tx) throws DbException {
+		boolean tablesExist = true;
+		tablesExist &= tableExists(tx, "COLLABORATOR");
+		tablesExist &= tableExists(tx, "CONTRIBUTION");
+		tablesExist &= tableExists(tx, "DURATION");
+		tablesExist &= tableExists(tx, "TASK");
+		return tablesExist;
+	}
+	
+	/**
+	 * Vérifie si une table existe dans le modèle.
+	 * @param tx le contexte de transaction.
+	 * @param tableName le nom de la table.
+	 * @return un booléen indiquant si la table spécifiée existe dans le modèle.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	private static boolean tableExists(DbTransaction tx, String tableName) throws DbException {
+		PreparedStatement pStmt = null;
+		try {
+			// Récupération de la connexion
+			Connection con = tx.getConnection();
+
+			// Recherche de la table
+			ResultSet rs = con.getMetaData().getTables(null, null, tableName, new String[] { "TABLE" } );
+
+			// Récupération du résultat
+			boolean exists = rs.next();
+
+			// Retour du résultat
+			return exists;
+		}
+		catch (SQLException e) {
+			log.info("Incident SQL", e);
+			throw new DbException("Echec lors du test d'existance de la table '" + tableName + "'", e);
+		}
+		finally {
+			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
+		}
+	}
+	
+	/**
+	 * Crée les tables du modèle de données.
+	 * @param tx contexte de transaction.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	protected static void createTables(DbTransaction tx) throws DbException {
+		Statement stmt = null;
+		try {
+			// Récupération de la connexion
+			Connection con = tx.getConnection();
+			
+			// Lecture du fichier SQL de création de la BDD
+			String batchName = "sql/" + (isHSQLDB(con) ? "hsqldb.sql" : "mysqldb.sql");
+			InputStream in = DbMgr.class.getResourceAsStream(batchName);
+			String batchContent = null;
+			try { batchContent = StringHelper.fromInputStream(in); }
+			catch (IOException e) {
+				log.info("I/O error while loading table creation SQL script.", e);
+				throw new DbException("I/O error while loading table creation SQL script.", null);
+			}
+
+			// Découpage et exécution du batch
+			stmt = con.createStatement();
+			LineNumberReader lnr = new LineNumberReader(new StringReader(batchContent));
+			// TODO Externaliser le découpage du script SQL
+			StringBuffer buf = new StringBuffer();
+			boolean proceed = true;
+			do {
+				String line = null;
+				// On ne lit dans le flux que si la ligne courante n'est pas
+				// encore totalement traitée
+				if (line==null) {
+					try { line = lnr.readLine(); }
+					catch (IOException e) {
+						log.info("Unexpected I/O error while reading memory stream!", e);
+						throw new DbException("Unexpected I/O error while reading memory stream!", null);
+					}
+					log.debug("Line read : '" + line + "'");
+				}
+				// Si le flux est vide, on sort de la boucle
+				if (line==null) {
+					proceed = false;
+				}
+				// Sinon on traite la ligne
+				else {
+					line = line.trim();
+					// Si la ligne est un commentaire on l'ignore
+					if (line.startsWith("--")) {
+						line = null;
+					}
+					else {
+						// Sinon on regarde si la ligne possède
+						// un point virgule
+						int idx = line.indexOf(';');
+						// Si c'est le cas, on découpe la chaîne et on 
+						// exécute la requête
+						if (idx>=0) {
+							buf.append(line.subSequence(0, idx));
+							line = line.substring(idx);
+							String sql = buf.toString();
+							buf.setLength(0);
+							log.debug(" - sql='" + sql + "'"); 
+							if (!"".equals(sql)) 
+								stmt.executeUpdate(sql);
+						}
+						// sinon on ajoute la ligne au buffer de requeête
+						else {
+							buf.append(line);
+							buf.append('\n');
+						}
+					}
+				}
+				
+			}
+			while (proceed);
+			
+			// Test de l'existence des tables
+			if (!tablesExist(tx))
+				throw new DbException("Database table creation failure", null);
+
+			// Fermeture du statement
+			stmt.close();
+			stmt = null;
+		}
+		catch (SQLException e) {
+			log.info("Incident SQL", e);
+			throw new DbException("Database table creation failure", e);
+		}
+		finally {
+			if (stmt!=null) try { stmt.close(); } catch (Throwable ignored) { }
+		}
+	}
+
+	/**
 	 * Crée un collaborateur.
 	 * 
 	 * @param tx contexte de transaction.
@@ -136,7 +325,6 @@ public class DbMgr {
 	 */
 	protected static Collaborator createCollaborator(DbTransaction tx, Collaborator newCollaborator) throws DbException {
 		PreparedStatement pStmt = null;
-		ResultSet rs = null;
 		try {
 			// Récupération de la connexion
 			Connection con = tx.getConnection();
@@ -149,12 +337,9 @@ public class DbMgr {
 			pStmt.executeUpdate();
 
 			// Récupération de l'identifiant généré
-			rs = pStmt.getGeneratedKeys();
-			if (!rs.next())
-				throw new DbException("Nothing returned from this query", null);
-			long generatedId = rs.getLong(1);
+			long generatedId = getGeneratedId(pStmt);
 			log.debug("Generated id=" + generatedId);
-			newCollaborator.setId(rs.getLong(1));
+			newCollaborator.setId(generatedId);
 
 			// Fermeture du statement
 			pStmt.close();
@@ -261,7 +446,6 @@ public class DbMgr {
 	 */
 	protected static Task createTask(DbTransaction tx, Task parentTask, Task newTask) throws DbException {
 		PreparedStatement pStmt = null;
-		ResultSet rs = null;
 		try {
 			// Récupération de la connexion
 			Connection con = tx.getConnection();
@@ -286,12 +470,9 @@ public class DbMgr {
 			pStmt.executeUpdate();
 
 			// Récupération de l'identifiant généré
-			rs = pStmt.getGeneratedKeys();
-			if (!rs.next())
-				throw new DbException("Nothing returned from this query", null);
-			long generatedId = rs.getLong(1);
+			long generatedId = getGeneratedId(pStmt);
 			log.debug("Generated id=" + generatedId);
-			newTask.setId(rs.getLong(1));
+			newTask.setId(generatedId);
 
 			// Fermeture du ResultSet
 			pStmt.close();
@@ -310,6 +491,48 @@ public class DbMgr {
 	}
 	
 	/**
+	 * Vérifie si la durée est utilisée en base.
+	 * @param tx le contexte de transaction.
+	 * @param duration la durée à vérifier.
+	 * @return un booléen indiquant si la durée est utilisée.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	protected static boolean durationIsUsed(DbTransaction tx, long duration) throws DbException {
+		PreparedStatement pStmt = null;
+		ResultSet rs = null;
+		try {
+			// Récupération de la connexion
+			Connection con = tx.getConnection();
+			
+			// Préparation de la requête
+			pStmt = con.prepareStatement("select count(*) from contribution where ctb_duration=?");
+			pStmt.setLong  (1, duration);
+	
+			// Exécution de la requête
+			rs = pStmt.executeQuery();
+			
+			// Préparation du résultat
+			if (!rs.next())
+				throw new DbException("Nothing returned by the query", null);
+			boolean durationIsUsed = rs.getInt(1)>0;
+
+			// Fermeture du statement
+			pStmt.close();
+			pStmt = null;
+			
+			// Retour du résultat
+			return durationIsUsed;
+		}
+		catch (SQLException e) {
+			log.info("Incident SQL", e);
+			throw new DbException("Echec lors de la vérification de l'utilisation de la durée '" + duration + "'", e);
+		}
+		finally {
+			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
+		}
+	}
+
+	/**
 	 * Ferme une transactrion.
 	 * @param tx le contexte de transaction.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
@@ -320,6 +543,7 @@ public class DbMgr {
 			log.info("Incident SQL", e);
 			throw new DbException("Echec lors de la cloture de la connexion", e);
 		}
+		threadLocal.set(null);
 	}
 	
 	/**
@@ -555,7 +779,7 @@ public class DbMgr {
 			Connection con = tx.getConnection();
 			
 			StringBuffer baseRequest = new StringBuffer("select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from contribution, task where ctb_task=tsk_id");
-			String orderByClause = " order by ctb_year, ctb_month, ctb_day";
+			String orderByClause = " order by ctb_year, ctb_month, ctb_day, tsk_path, tsk_number, ctb_contributor, ctb_duration";
 			// Cas ou la tache n'est pas spécifiée
 			if (task==null) {
 				// Préparation de la requête
@@ -637,7 +861,34 @@ public class DbMgr {
 
 
 	/**
-	 * Calcule la somme des contributions associée aux paramètres spécifiés.
+	 * Calcule le nombre des contributions associée aux paramètres spécifiés.
+	 * 
+	 * <p>Tous les paramètres sont facultatifs. Chaque paramètre spécifié agît
+	 * comme un filtre sur le résultat. A l'inverse, l'omission d'un paramètre
+	 * provoque l'inclusion de toutes les contributions, quelque soit leurs
+	 * valeurs pour l'attribut considéré.</p>
+	 * 
+	 * <p>En spécifiant la tache X, on connaîtra la somme des contribution pour
+	 * la taches X. En ne spécifiant pas de tache, la somme sera effectuée quelque
+	 * soit les tâches.</p>
+	 * 
+	 * @param tx le contexte de transaction.
+	 * @param task la tâche associée aux contributions (facultative).
+	 * @param contributor le collaborateur associé aux contributions (facultatif).
+	 * @param year l'année (facultative).
+	 * @param month le mois (facultatif).
+	 * @param day le jour (facultatif).
+	 * @return la seomme des contributions.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	protected static long getContributionsNb(DbTransaction tx, Task task, Collaborator contributor, Integer year, Integer month, Integer day) throws DbException {
+		log.debug("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")");
+		return getContributionsAggregation(tx, "count(ctb_duration)", task, contributor, year, month, day);
+	}
+
+	/**
+	 * Calcule le cumuls des consommations associees aux contributions pour
+	 * les paramètres spécifiés.
 	 * 
 	 * <p>Tous les paramètres sont facultatifs. Chaque paramètre spécifié agît
 	 * comme un filtre sur le résultat. A l'inverse, l'omission d'un paramètre
@@ -659,13 +910,43 @@ public class DbMgr {
 	 */
 	protected static long getContributionsSum(DbTransaction tx, Task task, Collaborator contributor, Integer year, Integer month, Integer day) throws DbException {
 		log.debug("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")");
+		return getContributionsAggregation(tx, "sum(ctb_duration)", task, contributor, year, month, day);
+	}
+
+	/**
+	 * Calcule une aggregation associee aux contributions pour les paramètres
+	 * spécifiés.
+	 * 
+	 * <p>Tous les paramètres sont facultatifs. Chaque paramètre spécifié agît
+	 * comme un filtre sur le résultat. A l'inverse, l'omission d'un paramètre
+	 * provoque l'inclusion de toutes les contributions, quelque soit leurs
+	 * valeurs pour l'attribut considéré.</p>
+	 * 
+	 * <p>En spécifiant la tache X, on connaîtra la somme des contribution pour
+	 * la taches X. En ne spécifiant pas de tache, la somme sera effectuée quelque
+	 * soit les tâches.</p>
+	 * 
+	 * @param tx le contexte de transaction.
+	 * @param aggregation la chaîne représentant l'aggrégation (ex: <code>sum(ctb_contribution)</code>).
+	 * @param task la tâche associée aux contributions (facultative).
+	 * @param contributor le collaborateur associé aux contributions (facultatif).
+	 * @param year l'année (facultative).
+	 * @param month le mois (facultatif).
+	 * @param day le jour (facultatif).
+	 * @return la seomme des contributions.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	private static long getContributionsAggregation(DbTransaction tx, String aggregation, Task task, Collaborator contributor, Integer year, Integer month, Integer day) throws DbException {
+		log.debug("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")");
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
 			// Récupération de la connexion
 			Connection con = tx.getConnection();
 			
-			StringBuffer baseRequest = new StringBuffer("select sum(ctb_duration) from contribution, task where ctb_task=tsk_id");
+			StringBuffer baseRequest = new StringBuffer("select ")
+				.append(aggregation)
+				.append(" from contribution, task where ctb_task=tsk_id");
 			// Cas ou la tache n'est pas spécifiée
 			if (task==null) {
 				// Préparation de la requête
@@ -724,15 +1005,15 @@ public class DbMgr {
 			rs = pStmt.executeQuery();
 			if (!rs.next())
 				throw new DbException("Nothing returned from this query", null);
-			long consummed = rs.getLong(1);
+			long agregation = rs.getLong(1);
 			
 			// Fermeture du statement
 			pStmt.close();
 			pStmt = null;
 			
 			// Retour du résultat
-			log.info("consummed=" + consummed);
-			return consummed;
+			log.info("agregation=" + agregation);
+			return agregation;
 		}
 		catch (SQLException e) {
 			log.info("Incident SQL", e);
@@ -1046,7 +1327,7 @@ log.debug(parentTaskFullPath);
 			Connection con = tx.getConnection();
 
 			// Préparation de la requête
-			pStmt = con.prepareStatement("select distinct ctb_task from contribution, task where ctb_task=tsk_id and ctb_contributor=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) between ? and ? order by tsk_path");
+			pStmt = con.prepareStatement("select distinct ctb_task, tsk_path from contribution, task where ctb_task=tsk_id and ctb_contributor=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) between ? and ? order by tsk_path");
 			pStmt.setLong  (1, collaborator.getId());
 			pStmt.setString(2, sdf.format(fromDate.getTime()));
 			pStmt.setString(3, sdf.format(toDate.getTime()));
@@ -1099,25 +1380,26 @@ log.debug(parentTaskFullPath);
 			// Si la tache n'admet pas de sous-taches, le cumul de 
 			// budget, de consommé initial, de reste à faire sont
 			// égaux à ceux de la tache
-			if (task.getSubTasksCount()==0) {
+			if (task!=null && task.getSubTasksCount()==0) {
 				taskSums.setBudgetSum(task.getBudget());
 				taskSums.setInitiallyConsumedSum(task.getInitiallyConsumed());
 				taskSums.setTodoSum(task.getTodo());
 	
 				// Calcul du consommé
-				pStmt = con.prepareStatement("select sum(ctb_duration) from contribution, task where ctb_task=tsk_id and tsk_id=?");
+				pStmt = con.prepareStatement("select sum(ctb_duration), count(ctb_duration) from contribution, task where ctb_task=tsk_id and tsk_id=?");
 				pStmt.setLong(1, task.getId());
 				rs = pStmt.executeQuery();
 				if (!rs.next())
 					throw new DbException("Nothing returned from this query", null);
 				taskSums.setConsumedSum(rs.getLong(1));
+				taskSums.setContributionsNb(rs.getLong(2));
 				pStmt.close();
 				pStmt = null;
 			}
 			// Sinon, il faut calculer
 			else {
 				// Paramètre pour la clause 'LIKE'
-				String pathLike = task.getFullPath() + "%";
+				String pathLike = (task==null ? "" : task.getFullPath()) + "%";
 	
 				// Calcul des cumuls
 				pStmt = con.prepareStatement("select sum(tsk_budget), sum(tsk_initial_cons), sum(tsk_todo) from task where tsk_path like ?");
@@ -1132,12 +1414,13 @@ log.debug(parentTaskFullPath);
 				pStmt = null;
 				
 				// Calcul du consommé
-				pStmt = con.prepareStatement("select sum(ctb_duration) from contribution, task where ctb_task=tsk_id and tsk_path like ?");
+				pStmt = con.prepareStatement("select sum(ctb_duration), count(ctb_duration) from contribution, task where ctb_task=tsk_id and tsk_path like ?");
 				pStmt.setString(1, pathLike);
 				rs = pStmt.executeQuery();
 				if (!rs.next())
 					throw new DbException("Nothing returned from this query", null);
 				taskSums.setConsumedSum(rs.getLong(1));
+				taskSums.setContributionsNb(rs.getLong(2));
 				pStmt.close();
 				pStmt = null;
 				
@@ -1566,6 +1849,90 @@ log.debug(parentTaskFullPath);
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
+		}
+	}
+
+	/**
+	 * Retourne l'identifiant généré automatiquement par la base de données.
+	 * @param pStmt le statement SQL.
+	 * @return l'identifiant généré.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	private static long getGeneratedId(PreparedStatement pStmt) throws DbException {
+		long generatedId = -1;
+		PreparedStatement pStmt1 = null;
+		try {
+			// Récupération de la connexion
+			Connection con = pStmt.getConnection();
+			// Cas de HSQLDB
+			if (isHSQLDB(con)) {
+				log.debug("HSQL Database detected");
+				pStmt1 = con.prepareStatement("call identity()");
+				ResultSet rs = pStmt1.executeQuery();
+				if (!rs.next())
+					throw new DbException("Nothing returned from this query", null);
+				generatedId = rs.getLong(1);
+				
+				// Fermeture du statement
+				pStmt1.close();
+				pStmt1 = null;
+			}
+			else {
+				log.debug("Generic Database detected");
+				// Récupération de l'identifiant généré
+				ResultSet rs = pStmt.getGeneratedKeys();
+				if (!rs.next())
+					throw new DbException("Nothing returned from this query", null);
+				generatedId = rs.getLong(1);
+			}
+			// Retour du résultat
+			log.debug("Generated id=" + generatedId);
+			return generatedId;
+		}
+		catch (SQLException e) {
+			log.info("Incident SQL", e);
+			throw new DbException("Echec lors de la récupération de l'identifiant du nouvel objet", e);
+		}
+		finally {
+			if (pStmt1!=null) try { pStmt1.close(); } catch (Throwable ignored) { }
+		}
+	}
+
+	/**
+	 * Indique si la BDD de données est une base HSQLDB.
+	 * @param con la connexion SQL.
+	 * @return un booléen indiquant si la BDD est de type HSQLDB.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	private static boolean isHSQLDB(Connection con) throws DbException {
+		try {
+			// Récupération du nom de la base de données
+			String dbName = con.getMetaData().getDatabaseProductName();
+			log.debug("DbName=" + dbName);
+			return "HSQL Database Engine".equals(dbName);
+		}
+		catch (SQLException e) {
+			log.info("Incident SQL", e);
+			throw new DbException("Echec lors de la récupération du nom de la BDD", e);
+		}
+	}
+
+	/**
+	 * Indique si la BDD de données est une base HSQLDB embarquée.
+	 * @param con la connexion SQL.
+	 * @return un booléen indiquant si la BDD est de type HSQLDB embarquée.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	private static boolean isEmbeddedHSQLDB(Connection con) throws DbException {
+		try {
+			// Récupération du nom de la base de données
+			String dbName = con.getMetaData().getDatabaseProductName();
+			log.debug("DbName=" + dbName);
+			return isHSQLDB(con) && ds.getUrl().startsWith("jdbc:hsqldb:file");
+		}
+		catch (SQLException e) {
+			log.info("Incident SQL", e);
+			throw new DbException("Echec lors de la récupération du nom de la BDD", e);
 		}
 	}
 

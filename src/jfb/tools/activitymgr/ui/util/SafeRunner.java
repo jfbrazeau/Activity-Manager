@@ -27,10 +27,10 @@
  */
 package jfb.tools.activitymgr.ui.util;
 
-import jfb.tools.activitymgr.AbstractApplicationException;
+import jfb.tools.activitymgr.AbstractException;
+import jfb.tools.activitymgr.ui.dialogs.ErrorDialog;
 
 import org.apache.log4j.Logger;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.widgets.Display;
@@ -83,15 +83,15 @@ public abstract class SafeRunner {
 		parentShell.setCursor(waitCursor);
 		// Exécution du traitement
 		try { result = runUnsafe();	}
-		catch (AbstractApplicationException e) {
+		catch (AbstractException e) {
 			log.info("UI Exception", e);
 			Shell parent = Display.getCurrent().getActiveShell();
-			MessageDialog.openError(parent, "Error", "Unable to complete operation : '" + e.getMessage() + "'");
+			new ErrorDialog(parent, "Unable to complete operation : '" + e.getMessage() + "'", e).open();
 		}
 		catch (Throwable t) {
 			log.error("Unexpected error", t);
 			Shell parent = Display.getCurrent().getActiveShell();
-			MessageDialog.openError(parent, "Error", "An error occured. See logs for more details.");
+			new ErrorDialog(parent, "Unexpected error", t).open();
 		}
 		finally {
 			// Retour du curseur normal

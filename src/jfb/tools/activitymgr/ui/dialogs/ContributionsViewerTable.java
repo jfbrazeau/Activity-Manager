@@ -34,19 +34,27 @@ import jfb.tools.activitymgr.core.beans.Collaborator;
 import jfb.tools.activitymgr.core.beans.Contribution;
 import jfb.tools.activitymgr.core.beans.Task;
 import jfb.tools.activitymgr.core.util.StringHelper;
+import jfb.tools.activitymgr.ui.util.AbstractTableMgr;
+import jfb.tools.activitymgr.ui.util.SWTHelper;
 import jfb.tools.activitymgr.ui.util.SafeRunner;
-import jfb.tools.activitymgr.ui.util.TableMgrBase;
 import jfb.tools.activitymgr.ui.util.TableOrTreeColumnsMgr;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MenuEvent;
+import org.eclipse.swt.events.MenuListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Table;
 
-public class ContributionsViewerTable extends TableMgrBase {
+public class ContributionsViewerTable extends AbstractTableMgr 
+	implements SelectionListener, MenuListener {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(ContributionsViewerTable.class);
@@ -74,6 +82,9 @@ public class ContributionsViewerTable extends TableMgrBase {
 	/** Composant parent */
 	private Composite parent;
 	
+	/** Items de menu */
+	private MenuItem exportItem;
+
 	/**
 	 * Constructeur par défaut.
 	 * @param parentComposite composant parent.
@@ -106,6 +117,13 @@ public class ContributionsViewerTable extends TableMgrBase {
 		tableColsMgr.addColumn("DURATION", "Duration", 50, SWT.LEFT);
 		tableColsMgr.configureTable(tableViewer);
 
+		// Configuration du menu popup
+		final Menu menu = new Menu(table);
+		menu.addMenuListener(this);
+		exportItem = new MenuItem(menu, SWT.CASCADE);
+		exportItem.setText("Export");
+		exportItem.addSelectionListener(this);
+		table.setMenu(menu);
 	}
 
 	/**
@@ -173,6 +191,52 @@ public class ContributionsViewerTable extends TableMgrBase {
 		};
 		// Exécution
 		return (String) safeRunner.run(parent.getShell(), "");
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.MenuListener#menuShown(org.eclipse.swt.events.MenuEvent)
+	 */
+	public void menuShown(MenuEvent e) {
+		log.debug("menuShown(" + e + ")");
+//		TableItem[] selection = tableViewer.getTable().getSelection();
+//		boolean emptySelection = selection.length==0;
+//		boolean singleSelection = selection.length==1;
+		exportItem.setEnabled(true);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.MenuListener#menuHidden(org.eclipse.swt.events.MenuEvent)
+	 */
+	public void menuHidden(MenuEvent e) {
+		// Do nothing...
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+	 */
+	public void widgetSelected(final SelectionEvent e) {
+		log.debug("SelectionListener.widgetSelected(" + e + ")");
+		final Object source = e.getSource();
+		SafeRunner safeRunner = new SafeRunner() {
+			public Object runUnsafe() throws Exception {
+				//TableItem[] selection = tableViewer.getTable().getSelection();
+				// Cas d'une demande d'export du tableau
+				if (exportItem.equals(source)) {
+					// Export du tableau
+					SWTHelper.exportToWorkBook(tableViewer.getTable());
+				}
+				return null;
+			}
+		};
+		// Exécution
+		safeRunner.run(parent.getShell());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+	 */
+	public void widgetDefaultSelected(SelectionEvent e) {
+		widgetSelected(e);
 	}
 
 }

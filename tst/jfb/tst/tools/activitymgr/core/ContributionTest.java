@@ -24,7 +24,7 @@ public class ContributionTest extends AbstractModelTestCase {
 	/** Collaborateurs de test */
 	private Collaborator col1;
 	private Collaborator col2;
-	private long[] durations;
+	private long duration;
 	
 	/** Contributions */
 	private Contribution c1;
@@ -92,8 +92,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		col2 = ModelMgr.updateCollaborator(col2);
 		
 		// Récupération des durées
-		durations = ModelMgr.getDurations();
-		long duration = durations[0];
+		duration = ModelMgr.createDuration(100);
 		
 		// Création de contributions
 		if (createContributions) {
@@ -135,6 +134,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		removeRecursively(rootTask);
 		ModelMgr.removeCollaborator(col1);
 		ModelMgr.removeCollaborator(col2);
+		ModelMgr.removeDuration(duration);
 	}
 	
 	private static void removeRecursively(Task task) throws DbException, ModelException {
@@ -161,7 +161,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		// Test...
 		Contribution c = new Contribution();
 		c.setContributorId(col1.getId());
-		c.setDuration(durations[0]);
+		c.setDuration(duration);
 		c.setDate(cal);
 
 		// Vérification du calendrier

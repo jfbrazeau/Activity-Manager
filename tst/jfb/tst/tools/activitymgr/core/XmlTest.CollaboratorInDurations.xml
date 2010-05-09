@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE model SYSTEM "activitymgr.dtd">
+<model>
+	<durations>
+		<duration>400</duration>
+		<collaborator id="12">
+			<login>login</login>
+			<first-name>toto</first-name>
+			<last-name>toto</last-name>
+		</collaborator>
+	</durations>
+</model>

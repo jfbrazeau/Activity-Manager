@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE node SYSTEM "activitymgr.dtd">
+<model>
+  <durations>
+    <duration>25</duration>
+    <duration>50</duration>
+    <duration>75</duration>
+    <duration>100</duration>
+  </durations>
+  <collaborators>
+    <collaborator>
+      <login>login</login>
+      <first-name>FirstName</first-name>
+      <last-name>LastName</last-name>
+    </collaborator>
+  </collaborators>
+  <tasks>
+    <task>
+      <path>/Par</path>
+      <name>Parent name</name>
+      <budget>0</budget>
+      <initially-consumed>0</initially-consumed>
+      <todo>0</todo>
+    </task>
+    <task>
+      <path>/Par/Code</path>
+      <name>Name</name>
+      <budget>1</budget>
+      <initially-consumed>2</initially-consumed>
+      <todo>3</todo>
+    </task>
+  </tasks>
+  <contributions>
+    <contribution year="2006" month="1" day="1" duration="50">
+      <contributor-ref>login</contributor-ref>
+      <task-ref>/Par/Code</task-ref>
+    </contribution>
+  </contributions>
+</model>

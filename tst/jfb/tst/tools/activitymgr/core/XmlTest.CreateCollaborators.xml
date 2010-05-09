@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE model SYSTEM "activitymgr.dtd">
+<model>
+	<collaborators>
+		<collaborator>
+			<login>login1</login>
+			<first-name>First Name 1</first-name>
+			<last-name>Last Name 1</last-name>
+		</collaborator>
+		<collaborator>
+			<login>login2</login>
+			<first-name>First Name 2</first-name>
+			<last-name>Last Name 2</last-name>
+		</collaborator>
+	</collaborators>
+</model>

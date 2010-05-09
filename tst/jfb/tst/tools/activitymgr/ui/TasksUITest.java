@@ -72,7 +72,7 @@ public class TasksUITest {
 	
 			shell.open();
 	
-			ui.initUI();
+			ui.databaseOpened();
 			log.debug("UI initialized");
 			log.debug("Length : " + shell.getShells().length);
 			

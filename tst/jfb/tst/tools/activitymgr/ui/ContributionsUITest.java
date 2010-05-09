@@ -71,7 +71,7 @@ public class ContributionsUITest {
 			ContributionsUI ui = new ContributionsUI(shell);
 			shell.open();
 	
-			ui.initUI();
+			ui.databaseOpened();
 			log.debug("UI initialized");
 
 			while (!shell.isDisposed()) {

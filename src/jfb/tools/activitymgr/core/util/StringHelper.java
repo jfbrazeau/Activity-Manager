@@ -27,10 +27,12 @@
  */
 package jfb.tools.activitymgr.core.util;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-
 
 import org.apache.log4j.Logger;
 
@@ -120,6 +122,24 @@ public class StringHelper {
 		if (decimal.scale()>0)
 			throw new StringFormatException("Too many digits");
 		return decimal.longValue();
+	}
+
+	/**
+	 * Retourne le contenu d'un flux sous forme d'une chaîne de
+	 * caractères.
+	 * @param in le flux de lecture.
+	 * @return la chaîne de caractère.
+	 * @throws IOException levé en cas d'incident I/O.
+	 */
+	public static String fromInputStream(InputStream in) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		int n = -1;
+		byte[] buf = new byte[1024];
+		while ((n = in.read(buf)) > 0) {
+			out.write(buf, 0, n);
+		}
+		in.close();
+		return new String(out.toByteArray());
 	}
 
 }

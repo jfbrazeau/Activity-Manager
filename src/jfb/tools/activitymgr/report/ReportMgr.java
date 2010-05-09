@@ -47,7 +47,8 @@ import org.apache.velocity.runtime.log.SimpleLog4JLogSystem;
 /**
  * Générateur de rapports.
  * 
- * <p>TODO Expliquer le fonctionnement du fichier de config</p>
+ * <p>Consulter le fichier de configuration <code>reports.properties</code>
+ * pour plus de détails sur la configuration des rapports.</p>
  */
 public class ReportMgr {
 

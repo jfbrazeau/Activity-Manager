@@ -36,13 +36,14 @@ import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Task;
 import jfb.tools.activitymgr.core.beans.TaskSums;
 import jfb.tools.activitymgr.core.util.StringHelper;
+import jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener;
 import jfb.tools.activitymgr.ui.dialogs.ContributionsViewerDialog;
 import jfb.tools.activitymgr.ui.dialogs.DialogException;
 import jfb.tools.activitymgr.ui.dialogs.ITaskChooserValidator;
 import jfb.tools.activitymgr.ui.dialogs.TasksChooserDialog;
+import jfb.tools.activitymgr.ui.util.AbstractTableMgr;
 import jfb.tools.activitymgr.ui.util.SWTHelper;
 import jfb.tools.activitymgr.ui.util.SafeRunner;
-import jfb.tools.activitymgr.ui.util.TableMgrBase;
 import jfb.tools.activitymgr.ui.util.TableOrTreeColumnsMgr;
 import jfb.tools.activitymgr.ui.util.UITechException;
 
@@ -58,6 +59,8 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -65,6 +68,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.TabItem;
@@ -74,7 +78,7 @@ import org.eclipse.swt.widgets.TreeItem;
 /**
  * IHM de gestion des tâches.
  */
-public class TasksUI extends TableMgrBase implements ICellModifier, SelectionListener, MenuListener, ITreeContentProvider {
+public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICellModifier, SelectionListener, MenuListener, ITreeContentProvider {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(TasksUI.class);
@@ -84,8 +88,8 @@ public class TasksUI extends TableMgrBase implements ICellModifier, SelectionLis
 	public static final int CODE_COLUMN_IDX = 1;
 	public static final int INITIAL_FUND_COLUMN_IDX = 2;
 	public static final int INITIALLY_CONSUMED_COLUMN_IDX = 3;
-	public static final int TODO_COLUMN_IDX = 4;
-	public static final int CONSUMED_COLUMN_IDX = 5;
+	public static final int CONSUMED_COLUMN_IDX = 4;
+	public static final int TODO_COLUMN_IDX = 5;
 	public static final int DELTA_COLUMN_IDX = 6;
 	private static TableOrTreeColumnsMgr treeColsMgr;
 	
@@ -157,8 +161,8 @@ public class TasksUI extends TableMgrBase implements ICellModifier, SelectionLis
 		treeColsMgr.addColumn("CODE", "Task code", 70, SWT.LEFT);
 		treeColsMgr.addColumn("BUDGET", "Budget", 70, SWT.RIGHT);
 		treeColsMgr.addColumn("INI_CONS", "Initially consumed", 70, SWT.RIGHT);
-		treeColsMgr.addColumn("TODO", "Todo", 70, SWT.RIGHT);
 		treeColsMgr.addColumn("CONSUMED", "Consumed", 70, SWT.RIGHT);
+		treeColsMgr.addColumn("TODO", "Todo", 70, SWT.RIGHT);
 		treeColsMgr.addColumn("DELTA", "Delta", 70, SWT.RIGHT);
 		treeColsMgr.configureTree(treeViewer);
 
@@ -168,8 +172,8 @@ public class TasksUI extends TableMgrBase implements ICellModifier, SelectionLis
 		editors[CODE_COLUMN_IDX] = new TextCellEditor(tree);
 		editors[INITIAL_FUND_COLUMN_IDX] = new TextCellEditor(tree);
 		editors[INITIALLY_CONSUMED_COLUMN_IDX] = new TextCellEditor(tree);
-		editors[TODO_COLUMN_IDX] = new TextCellEditor(tree);
 		editors[CONSUMED_COLUMN_IDX] = null;
+		editors[TODO_COLUMN_IDX] = new TextCellEditor(tree);
 		editors[DELTA_COLUMN_IDX] = null;
 		treeViewer.setCellEditors(editors);
 		
@@ -197,10 +201,10 @@ public class TasksUI extends TableMgrBase implements ICellModifier, SelectionLis
 		Menu moveToMenu = new Menu(moveToItem);
 		moveToItem.setMenu(moveToMenu);
 		moveUpItem = new MenuItem(moveToMenu, SWT.CASCADE);
-		moveUpItem.setText("up");
+		moveUpItem.setText("up (Ctrl + up arrow)");
 		moveUpItem.addSelectionListener(this);
 		moveDownItem = new MenuItem(moveToMenu, SWT.CASCADE);
-		moveDownItem.setText("down");
+		moveDownItem.setText("down (Ctrl + down arrow)");
 		moveDownItem.addSelectionListener(this);
 		moveToAnotherTaskItem = new MenuItem(moveToMenu, SWT.CASCADE);
 		moveToAnotherTaskItem.setText("under another task");
@@ -229,26 +233,29 @@ public class TasksUI extends TableMgrBase implements ICellModifier, SelectionLis
 		tree.setMenu(menu);
 
 		log.debug("UI initialization done");
-		// TODO Implémenter le KeyLitener
-//		tree.addKeyListener(new KeyListener() {
-//			public void keyPressed(KeyEvent e) {
-//			}
-//			public void keyReleased(KeyEvent e) {
-//				if ((e.keyCode==SWT.ARROW_DOWN) && (e.stateMask==SWT.CTRL))
-//					JOptionPane.showMessageDialog(null, "Down!");
-//			}
-//		});
+		// Ajout de KeyListeners pour faciliter le déplacement vers le bas et
+		// vers le haut des taches
+		// (Rq: les accélérateurs sont ignorés dans les menus contextuels)
+		tree.addKeyListener(new KeyListener() {
+			public void keyPressed(KeyEvent e) {
+			}
+			public void keyReleased(KeyEvent e) {
+				if ((e.keyCode==SWT.ARROW_UP) && (e.stateMask==SWT.CTRL)) {
+					Event event = new Event();
+					event.widget = moveUpItem;
+					SelectionEvent se = new SelectionEvent(event);
+					widgetSelected(se);
+				}
+				else if ((e.keyCode==SWT.ARROW_DOWN) && (e.stateMask==SWT.CTRL)) {
+					Event event = new Event();
+					event.widget = moveDownItem;
+					SelectionEvent se = new SelectionEvent(event);
+					widgetSelected(se);
+				}
+			}
+		});
 	}
 
-	/**
-	 * Initialise l'IHM avec les données en base.
-	 */
-	public void initUI() {
-		// Création d'une racine fictive
-		treeViewer.setInput(ROOT_NODE);
-	}
-
-	
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java.lang.Object)
 	 */
@@ -342,11 +349,11 @@ public class TasksUI extends TableMgrBase implements ICellModifier, SelectionLis
 					case (INITIALLY_CONSUMED_COLUMN_IDX) :
 						value = StringHelper.hundredthToEntry(!hasChilds ? task.getInitiallyConsumed() : taskSums.getInitiallyConsumedSum());
 						break;
-					case (TODO_COLUMN_IDX) :
-						value = StringHelper.hundredthToEntry(!hasChilds ? task.getTodo() : taskSums.getTodoSum());
-						break;
 					case (CONSUMED_COLUMN_IDX) :
 						value = StringHelper.hundredthToEntry(taskSums.getConsumedSum()+taskSums.getInitiallyConsumedSum());
+						break;
+					case (TODO_COLUMN_IDX) :
+						value = StringHelper.hundredthToEntry(!hasChilds ? task.getTodo() : taskSums.getTodoSum());
 						break;
 					case (DELTA_COLUMN_IDX) :
 						long delta = taskSums.getBudgetSum()
@@ -650,8 +657,6 @@ public class TasksUI extends TableMgrBase implements ICellModifier, SelectionLis
 	/**
 	 * Ajoute une tache.
 	 * @param parentTask la tache parent ou null pour une tache racine.
-	 * @param code le code de tache.
-	 * @param name le nom de la tache.
 	 * @throws DbException levé en cas d'incident associé à la persistence.
 	 * @throws ModelException levé en cas de violation du modèle de données.
 	 */
@@ -692,6 +697,25 @@ public class TasksUI extends TableMgrBase implements ICellModifier, SelectionLis
 	 */
 	public void menuHidden(MenuEvent e) {
 		// Do nothing...
+	}
+
+	/* (non-Javadoc)
+	 * @see jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseOpened()
+	 */
+	public void databaseOpened() {
+		// Création d'une racine fictive
+		treeViewer.setInput(ROOT_NODE);
+	}
+
+	/* (non-Javadoc)
+	 * @see jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseClosed()
+	 */
+	public void databaseClosed() {
+		Tree tree = treeViewer.getTree();
+		TreeItem[] items = tree.getItems();
+		for (int i=0; i<items.length; i++) {
+			items[i].dispose();
+		}
 	}
 
 }

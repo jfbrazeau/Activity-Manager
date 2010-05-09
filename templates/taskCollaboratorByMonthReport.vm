@@ -16,7 +16,8 @@
 		<h3>Root task : $rootTask.name</h3>
 		<table border="1" cellspacing="0">
 			<tr>
-				<td><b>Collaborator</b></td>
+				<td><b>Last name</b></td>
+				<td><b>First name</b></td>
 				#foreach ($date in $dateList)
 					#set($month = $dates.toString('MM/yyyy', ${date}))
 					$sums.set($month, 0) 
@@ -27,7 +28,8 @@
 			#foreach ($col in $cols)
 				$sums.set($col.login, 0) 
 				<tr>
-					<td><b>$col.firstName $col.lastName</b></td>
+					<td><b>$col.lastName</b></td>
+					<td><b>$col.firstName</b></td>
 					#foreach ($date in $dateList)
 						#set($month = $dates.toString('MM/yyyy', ${date}))
 						#set($consumed = $model.getContributionsSum($rootTask, $col, $dates.getYear($date), $dates.getMonth($date), null))
@@ -47,7 +49,7 @@
 				</tr>
 			#end
 			<tr>
-				<td>&nbsp;</td>
+				<td colspan="2">&nbsp;</td>
 					#foreach ($date in $dateList)
 					#set($month = $dates.toString('MM/yyyy', ${date}))
 					<td align="right">$fmt.formatDuration($sums.get($month))</td>

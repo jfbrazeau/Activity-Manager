@@ -30,7 +30,7 @@ package jfb.tools.activitymgr.ui.dialogs;
 import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Task;
 import jfb.tools.activitymgr.ui.util.SafeRunner;
-import jfb.tools.activitymgr.ui.util.TableMgrBase;
+import jfb.tools.activitymgr.ui.util.AbstractTableMgr;
 import jfb.tools.activitymgr.ui.util.TableOrTreeColumnsMgr;
 
 import org.apache.log4j.Logger;
@@ -42,7 +42,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 
-public class TasksChooserTree extends TableMgrBase implements ITreeContentProvider {
+public class TasksChooserTree extends AbstractTableMgr implements ITreeContentProvider {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(TasksChooserTree.class);

@@ -39,7 +39,12 @@ import java.util.Properties;
 public class CfgMgr {
 
 	/** Constantes associées au paramétrage */
+	public static final String DATABASE_TYPE = "database.type";
 	public static final String JDBC_DRIVER = "jdbc.driver";
+	public static final String DATABASE_HOST = "database.host";
+	public static final String DATABASE_PORT = "database.port";
+	public static final String DATABASE_DATA_FILE = "datafile.name";
+	public static final String DATABASE_NAME = "database.name";
 	public static final String JDBC_URL = "jdbc.url";
 	public static final String JDBC_USER = "jdbc.user";
 	public static final String JDBC_PASSWORD = "jdbc.password";

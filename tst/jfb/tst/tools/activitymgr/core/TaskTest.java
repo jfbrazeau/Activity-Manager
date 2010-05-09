@@ -301,6 +301,9 @@ public class TaskTest extends AbstractModelTestCase {
 					+ task2.getTodo(),
 				taskSums.getTodoSum());
 		
+		assertEquals(
+				0,
+				taskSums.getContributionsNb());
 		// Suppression des taches de test
 		removeSampleTasks();
 	}

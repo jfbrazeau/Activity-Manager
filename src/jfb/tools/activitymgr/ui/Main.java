@@ -30,14 +30,23 @@ package jfb.tools.activitymgr.ui;
 
 import java.net.URL;
 
+import jfb.tools.activitymgr.core.ModelMgr;
+import jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener;
 import jfb.tools.activitymgr.ui.util.CfgMgr;
+import jfb.tools.activitymgr.ui.util.SafeRunner;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ShellAdapter;
+import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
@@ -49,87 +58,133 @@ public class Main {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(Main.class);
+	
+	/** Onglets */
+	private static TabItem databaseTab;
+	private static TabItem durationsTab;
+	private static TabItem collaboratorsTab;
+	private static TabItem tasksTab;
+	private static TabItem contributionsTab;
+	private static TabItem aboutTab;
+
+	/** Contenu des onglets */
+	private static DatabaseUI databaseUI;
+	private static DurationsUI durationsUI;
+	private static CollaboratorsUI collaboratorsUI;
+	private static TasksUI tasksUI;
+	private static ContributionsUI contributionsUI;
 
 	public static void main(String[] args) {
 		try {
 			// Initialisation des logs et chargement de la config
 			PropertyConfigurator.configure("cfg/log4j.properties");
 			CfgMgr.load();
+			Display display = new Display();
+
+			// Splash screen
+			Shell splash = new Shell(display, SWT.ON_TOP);
+			splash.setLayout(new FillLayout());
+			Label splashLabel = new Label(splash, SWT.NONE);
+			URL splashImageUrl = AboutUI.class.getResource("logo-385x100.png");
+			Image splashImage = new Image(splash.getDisplay(), splashImageUrl.openStream());
+			splashLabel.setImage(splashImage);
+			splash.pack();
+			Rectangle splashRect = splash.getBounds();
+			Rectangle displayRect = display.getBounds();
+			int x = (displayRect.width - splashRect.width) / 2;
+			int y = (displayRect.height - splashRect.height) / 2;
+			splash.setLocation(x, y);
+			splash.open();
 			
 			// Ouverture de la fenêtre
-			Display display = new Display();
-			Shell shell = new Shell(display);
+			final Shell shell = new Shell(display);
 			shell.setSize(700, 500);
 			shell.setText("ActivityManager");
-			shell.setLayout(new FillLayout(SWT.VERTICAL));
+			shell.setLayout(new GridLayout(1, false));
 			URL iconUrl = Main.class.getResource("logo-16.ico");
-			shell.setImage(new Image(display, iconUrl.openStream()));
-
+			Image icon = new Image(display, iconUrl.openStream());
+			shell.setImage(icon);
+			shell.addShellListener(new ShellAdapter() {
+				public void shellClosed(ShellEvent e) {
+					new SafeRunner() {
+						protected Object runUnsafe() throws Exception {
+							ModelMgr.closeDatabaseAccess();
+							return null;
+						}
+					}.run(shell);
+				}
+			});
+			
 			// Création du groupe d'onglets
 			final TabFolder tabFolder = new TabFolder(shell, SWT.TOP);
 			tabFolder.setLayout(new FillLayout(SWT.VERTICAL));
+			tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
 			// Création de l'onglet de paramétrage de l'accès à la base de données
-			TabItem databaseTab = new TabItem(tabFolder, SWT.NONE);
+			databaseTab = new TabItem(tabFolder, SWT.NONE);
 			databaseTab.setText("Database");
-			final DatabaseUI databaseUI = new DatabaseUI(databaseTab);
+			databaseUI = new DatabaseUI(databaseTab);
 			
+			// Création de l'onglet de gestion des durées
+			durationsTab = new TabItem(tabFolder, SWT.NONE);
+			durationsTab.setText("Durations");
+			durationsUI = new DurationsUI(durationsTab);
+
 			// Création de l'onglet de gestion des collaborateurs
-			TabItem collaboratorsTab = new TabItem(tabFolder, SWT.NONE);
+			collaboratorsTab = new TabItem(tabFolder, SWT.NONE);
 			collaboratorsTab.setText("Collaborators");
-			final CollaboratorsUI collaboratorsUI = new CollaboratorsUI(collaboratorsTab);
+			collaboratorsUI = new CollaboratorsUI(collaboratorsTab);
 
 			// Création de l'onglet de gestion des taches
-			TabItem tasksTab = new TabItem(tabFolder, SWT.NONE);
+			tasksTab = new TabItem(tabFolder, SWT.NONE);
 			tasksTab.setText("Tasks");
-			final TasksUI tasksUI = new TasksUI(tasksTab);
+			tasksUI = new TasksUI(tasksTab);
 
 			// Création de l'onglet de gestion des contributions
-			TabItem contributionsTab = new TabItem(tabFolder, SWT.NONE);
+			contributionsTab = new TabItem(tabFolder, SWT.NONE);
 			contributionsTab.setText("Contributions");
-			final ContributionsUI contributionsUI = new ContributionsUI(contributionsTab);
+			contributionsUI = new ContributionsUI(contributionsTab);
 
-			// Enregistrement du listener
+			// Création de l'onglet contenant les informations générales
+			aboutTab = new TabItem(tabFolder, SWT.NONE);
+			aboutTab.setText("About");
+			new AboutUI(aboutTab);
+
+			// Enregistrement des listeners
+			durationsUI.addDurationListener(contributionsUI);
 			collaboratorsUI.addCollaboratorListener(contributionsUI);
+			databaseUI.addDbStatusListener(durationsUI);
+			databaseUI.addDbStatusListener(collaboratorsUI);
+			databaseUI.addDbStatusListener(tasksUI);
+			databaseUI.addDbStatusListener(contributionsUI);
 			
-			// Création du listener provoquant les rafraichissement lors d'un 
-			// changement d'onglet
-//			tabFolder.addSelectionListener(new SelectionListener() {
-//				public void widgetSelected(SelectionEvent e) {
-//					log.debug("widgetSelected(" + e + ")");
-//					log.debug("SelectionIndex=" + tabFolder.getSelectionIndex());
-//					switch (tabFolder.getSelectionIndex()) {
-//					// Onglet Collaborateurs
-//					case 1:
-//						collaboratorsUI.refreshUI();
-//						break;
-//					// Onglet Taches
-//					case 2:
-//						tasksUI.refreshUI();
-//						break;
-//					// Onglet contributions
-//					case 3:
-//						contributionsUI.refreshUI();
-//						break;
-//					}
-//					log.debug("source=" + e.getSource());
-//				}
-//				public void widgetDefaultSelected(SelectionEvent e) {
-//					widgetSelected(e);
-//				}
-//			});
-			
-			// Enregistrement des IHM dans l'onglet de paramétrage de la connexion
-			// à la base
-			databaseUI.setCollaboratorsUI(collaboratorsUI);
-			databaseUI.setTasksUI(tasksUI);
-			databaseUI.setContributionsUI(contributionsUI);
-			
+			// Barre de statut
+			final Label statusBar = new Label(shell, SWT.NONE);
+			statusBar.setLayoutData(new GridData(SWT.RIGHT, SWT.NONE, false, false));
+			statusBar.setAlignment(SWT.RIGHT);
+			statusBar.setText("Not connected");
+			databaseUI.addDbStatusListener(new DbStatusListener() {
+				public void databaseOpened() {
+					statusBar.setText("Connected");
+				}
+				public void databaseClosed() {
+					statusBar.setText("Not connected");
+				}
+			});
+
 			// Ouverture de la fenêtre
 			shell.open();
-			log.info("Application started");
+			shell.setEnabled(false);
 
 			// Initialisation des attributs de connexion par défaut
 			databaseUI.initUI();
+
+			// Fermeture du splash
+			splash.dispose();
+			splashLabel.dispose();
+			splashImage.dispose();
+			shell.setEnabled(true);
+			log.info("Application started");
 
 			// Exécution jusqu'à l'arrêt
 			while (!shell.isDisposed()) {

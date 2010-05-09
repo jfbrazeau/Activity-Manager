@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT model (durations?, collaborators?, tasks?, contributions?)>
+
+<!ELEMENT durations (duration*)>
+<!ELEMENT duration (#PCDATA)>
+
+<!ELEMENT collaborators (collaborator*)>
+<!ELEMENT collaborator (login, first-name, last-name)>
+<!ELEMENT login (#PCDATA)>
+<!ELEMENT first-name (#PCDATA)>
+<!ELEMENT last-name (#PCDATA)>
+
+<!ELEMENT tasks (task*)>
+<!ELEMENT task (path, name, budget?, initially-consumed?, todo?)>
+<!ELEMENT path (#PCDATA)>
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT budget (#PCDATA)>
+<!ELEMENT initially-consumed (#PCDATA)>
+<!ELEMENT todo (#PCDATA)>
+
+<!ELEMENT contributions (contribution*)>
+<!ELEMENT contribution (contributor-ref, task-ref)>
+<!ATTLIST contribution
+	year CDATA #REQUIRED
+	month CDATA #REQUIRED
+	day CDATA #REQUIRED
+	duration CDATA #REQUIRED
+>
+<!ELEMENT contributor-ref (#PCDATA)>
+<!ELEMENT task-ref (#PCDATA)>
+

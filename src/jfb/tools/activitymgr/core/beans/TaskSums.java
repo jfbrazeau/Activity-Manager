@@ -44,6 +44,9 @@ public class TaskSums {
 	/** Somme des consommés */
 	private long consumedSum;
 
+	/** Nombre de contributions */
+	private long contributionsNb;
+	
 	/**
 	 * @return la somme des bugets.
 	 */
@@ -102,6 +105,22 @@ public class TaskSums {
 	 */
 	public void setConsumedSum(long consumed) {
 		this.consumedSum = consumed;
+	}
+
+	/**
+	 * Retourne le nombre de contributions.
+	 * @return le nombre de contributions.
+	 */
+	public long getContributionsNb() {
+		return contributionsNb;
+	}
+
+	/**
+	 * Définit le nombre de contributions.
+	 * @param contributionsNb le nombre de contributions.
+	 */
+	public void setContributionsNb(long contributionsNb) {
+		this.contributionsNb = contributionsNb;
 	}
 
 }

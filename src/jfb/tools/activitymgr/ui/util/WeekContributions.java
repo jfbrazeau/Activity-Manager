@@ -42,7 +42,9 @@ public class WeekContributions {
 	private Contribution[] contributions = new Contribution[7];
 	
 	/**
-	 * @return les contributions de la semaine.
+	 * Retourne la contribution du jour de la semaine spécifié.
+	 * @param day le jour de la semaine.
+	 * @return la contribution du jour de la semaine spécifié.
 	 */
 	public Contribution getContribution(int day) {
 		return contributions[day];

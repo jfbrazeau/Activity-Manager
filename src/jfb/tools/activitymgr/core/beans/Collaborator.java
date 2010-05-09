@@ -50,7 +50,7 @@ public class Collaborator extends SimpleIdentityBean {
 
 	/**
 	 * Définit le prénom du collaborateur.
-	 * @return le nouveau prénom.
+	 * @param firstName le nouveau prénom.
 	 */
 	public void setFirstName(String firstName) {
 		this.firstName = firstName;
@@ -65,10 +65,10 @@ public class Collaborator extends SimpleIdentityBean {
 
 	/**
 	 * Définit le nom du collaborateur.
-	 * @return le nouveau nom.
+	 * @param lastName le nouveau nom.
 	 */
-	public void setLastName(String lasstName) {
-		this.lastName = lasstName;
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class Collaborator extends SimpleIdentityBean {
 
 	/**
 	 * Définit l'identifiant du collaborateur.
-	 * @return le nouvel identifiant.
+	 * @param login le nouvel identifiant.
 	 */
 	public void setLogin(String login) {
 		this.login = login;

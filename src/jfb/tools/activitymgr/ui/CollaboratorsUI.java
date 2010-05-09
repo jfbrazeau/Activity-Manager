@@ -32,9 +32,11 @@ import java.util.Iterator;
 
 import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Collaborator;
+import jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener;
 import jfb.tools.activitymgr.ui.dialogs.ContributionsViewerDialog;
+import jfb.tools.activitymgr.ui.util.SWTHelper;
 import jfb.tools.activitymgr.ui.util.SafeRunner;
-import jfb.tools.activitymgr.ui.util.TableMgrBase;
+import jfb.tools.activitymgr.ui.util.AbstractTableMgr;
 import jfb.tools.activitymgr.ui.util.TableOrTreeColumnsMgr;
 import jfb.tools.activitymgr.ui.util.UITechException;
 
@@ -63,7 +65,7 @@ import org.eclipse.swt.widgets.TableItem;
 /**
  * IHM de gestion des collaborateurs.
  */
-public class CollaboratorsUI extends TableMgrBase implements ICellModifier, SelectionListener, MenuListener {
+public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListener, ICellModifier, SelectionListener, MenuListener {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(CollaboratorsUI.class);
@@ -106,6 +108,7 @@ public class CollaboratorsUI extends TableMgrBase implements ICellModifier, Sele
 	private MenuItem newItem;
 	private MenuItem removeItem;
 	private MenuItem listTaskContributionsItem;
+	private MenuItem exportItem;
 	
 	/** Composant parent */
 	private Composite parent;
@@ -151,7 +154,7 @@ public class CollaboratorsUI extends TableMgrBase implements ICellModifier, Sele
 
 		// Configuration des colonnes
 		tableColsMgr = new TableOrTreeColumnsMgr();
-		tableColsMgr.addColumn("IDENTIFIER", "Identifier", 200, SWT.LEFT);
+		tableColsMgr.addColumn("IDENTIFIER", "Identifier", 100, SWT.LEFT);
 		tableColsMgr.addColumn("FIRST_NAME", "First name", 100, SWT.LEFT);
 		tableColsMgr.addColumn("LAST_NAME", "Last name", 100, SWT.LEFT);
 		tableColsMgr.configureTable(tableViewer);
@@ -178,18 +181,13 @@ public class CollaboratorsUI extends TableMgrBase implements ICellModifier, Sele
 		listTaskContributionsItem = new MenuItem(menu, SWT.CASCADE);
 		listTaskContributionsItem.setText("List contrib.");
 		listTaskContributionsItem.addSelectionListener(this);
+		exportItem = new MenuItem(menu, SWT.CASCADE);
+		exportItem.setText("Export");
+		exportItem.addSelectionListener(this);
 		table.setMenu(menu);
 		
 	}
 
-	/**
-	 * Initialise l'IHM avec les données en base.
-	 */
-	public void initUI() {
-		// Création d'une racine fictive
-		tableViewer.setInput(ROOT_NODE);
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java.lang.Object)
 	 */
@@ -344,6 +342,10 @@ public class CollaboratorsUI extends TableMgrBase implements ICellModifier, Sele
 					// Ouverture du dialogue
 					contribsViewerDialog.open();
 				}
+				// Cas d'une demande d'export
+				else if (exportItem.equals(source)) {
+					SWTHelper.exportToWorkBook(tableViewer.getTable());
+				}
 				return null;
 			}
 		};
@@ -379,6 +381,7 @@ public class CollaboratorsUI extends TableMgrBase implements ICellModifier, Sele
 		newItem.setEnabled(emptySelection || singleSelection);
 		removeItem.setEnabled(!emptySelection);
 		listTaskContributionsItem.setEnabled(singleSelection);
+		exportItem.setEnabled(true);
 	}
 
 	/* (non-Javadoc)
@@ -418,7 +421,7 @@ public class CollaboratorsUI extends TableMgrBase implements ICellModifier, Sele
 
 	/**
 	 * Notifie les listeners qu'un collaborateur a été supprimé.
-	 * @param newCollaborator le collaborateur supprimé.
+	 * @param collaborator le collaborateur supprimé.
 	 */
 	private void notifyCollaboratorRemoved(Collaborator collaborator) {
 		Iterator it = listeners.iterator();
@@ -430,13 +433,32 @@ public class CollaboratorsUI extends TableMgrBase implements ICellModifier, Sele
 
 	/**
 	 * Notifie les listeners qu'un collaborateur a été modifié.
-	 * @param newCollaborator le collaborateur modifié.
+	 * @param collaborator le collaborateur modifié.
 	 */
 	private void notifyCollaboratorUpdated(Collaborator collaborator) {
 		Iterator it = listeners.iterator();
 		while (it.hasNext()) {
 			CollaboratorListener listener = (CollaboratorListener) it.next();
 			listener.collaboratorUpdated(collaborator);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseOpened()
+	 */
+	public void databaseOpened() {
+		// Création d'une racine fictive
+		tableViewer.setInput(ROOT_NODE);
+	}
+
+	/* (non-Javadoc)
+	 * @see jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseClosed()
+	 */
+	public void databaseClosed() {
+		Table table = tableViewer.getTable();
+		TableItem[] items = table.getItems();
+		for (int i=0; i<items.length; i++) {
+			items[i].dispose();
 		}
 	}
 
