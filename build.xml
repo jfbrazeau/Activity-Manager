@@ -33,41 +33,6 @@
 		<include name="build.xml"/>
 	</fileset>
 	
-    <!--
-    	Cible de création de la Javadoc.
-      -->
-	<target name="buildJavadoc">
-		<!-- Répertoire accueillant la javadoc -->
-		<property name="javadoc.dest.dir" 
-			value="${build.dir}/javadoc" />
-		<!-- Préparation du répertoire de construction -->
-		<delete dir="${javadoc.dest.dir}"/>
-		<mkdir dir="${javadoc.dest.dir}"/>
-		<javadoc 
-        	destdir="${javadoc.dest.dir}"
-			access="protected"
-			source="1.3" 
-        	use="true" 
-        	notree="false" 
-        	nonavbar="false" 
-        	noindex="false" 
-        	splitindex="true" 
-        	author="false" 
-        	version="false" 
-        	nodeprecatedlist="true" 
-        	nodeprecated="true" 
-        	sourcepath="src">
-        	<classpath>
-				<fileset dir="lib">
-				    <include name="**/*.jar"/>
-				</fileset>
-			</classpath>
-			<packageset dir="src">
-				<include name="jfb/**"/>
-			</packageset>
-		</javadoc>
-    </target>
-
 	<!--
 		Cible de construction d'un jar à partir d'un répertoire source.
 		@param javac.src.dir le répertoire de source
@@ -152,7 +117,7 @@
 	<!--
 		Cible de construction de la distribution avec les source.
 	  -->
-	<target name="buildSourceDist" depends="buildJavadoc">
+	<target name="buildSourceDist">
 		<!-- Répertoire accueillant la préparation de la distribution binaire -->
 		<property name="dist.src.dir" 
 			value="${build.dir}/${ant.project.name}_src" />
@@ -164,21 +129,31 @@
 			<fileset refid="binDistFileSet"/>
 			<fileset refid="srcDistFileSetComplement"/>
 		</copy>
-		<!-- Ajout de la javadoc -->
-		<copy todir="${dist.src.dir}/javadoc">
-			<fileset dir="${build.dir}/javadoc">
-				<include name="**"/>
-			</fileset>
-		</copy>
 		<!-- Création du zip -->
 		<zip basedir="${dist.src.dir}"
 			destfile="${ant.project.name}_src_${TODAY}.zip"/>
 	</target>
 	
 	<!--
+		Cible de construction de la distribution binaire.
+	  -->
+	<target name="buildDocDist">
+		<!-- Génération de la doc -->
+		<ant antfile="misc/doc/build.xml" target="buildHtml">
+			<property name="java.src.dir" value="${basedir}/src"/>
+			<property name="java.lib.dir" value="${basedir}/lib"/>
+			<property name="basedir" value="${basedir}/misc/doc"/>
+			<property name="build.dir" value="${basedir}/.dist"/>
+		</ant>
+		<!-- Création du zip -->
+		<zip basedir=".dist/doc/html"
+			destfile="${ant.project.name}_doc_${TODAY}.zip"/>
+	</target>
+	
+	<!--
 		Cible de préparation des distribution binaires et source.
 	  -->
-	<target name="buildDistribution" depends="buildBinDist, buildSourceDist"/>
+	<target name="buildDistribution" depends="buildBinDist, buildSourceDist, buildDocDist"/>
 
 	<!--
 		Cible de nettoyage.
