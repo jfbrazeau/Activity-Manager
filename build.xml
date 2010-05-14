@@ -15,6 +15,7 @@
 	<fileset id="binDistFileSet" dir="">
 		<include name="bin/*"/>
 		<include name="cfg/*"/>
+		<include name="data/sample.xml"/>
 		<include name="lib/**"/>
 		<include name="logs"/>
 		<include name="report"/>
@@ -33,7 +34,7 @@
 		<include name="build.xml"/>
 	</fileset>
 	
-	<!--
+    <!--
 		Cible de construction d'un jar à partir d'un répertoire source.
 		@param javac.src.dir le répertoire de source
 		@param jar.filename le nom du jar à générer
@@ -135,7 +136,7 @@
 	</target>
 	
 	<!--
-		Cible de construction de la distribution binaire.
+		Cible de construction de la distribution documentaire.
 	  -->
 	<target name="buildDocDist">
 		<!-- Génération de la doc -->
@@ -163,7 +164,7 @@
 	</target>
 	
 	<!-- Cible de préparation des tests de couverture du code -->
-	<taskdef
+	<!-- taskdef
 		resource="tasks.properties">
 		<classpath>
 			<fileset dir="${cobertura.home}">
@@ -186,6 +187,6 @@
 		<echo message="${cobertura.home}/cobertura.jar"></echo>
 		<mkdir dir="coberturaReport"/>
 		<cobertura-report format="html" srcdir="src" destdir="coberturaReport"/>
-	</target>
+	</target -->
 
 </project>

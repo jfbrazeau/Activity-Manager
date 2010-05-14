@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2006, Jean-François Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -44,7 +44,9 @@ import javax.xml.parsers.SAXParserFactory;
 
 import jfb.tools.activitymgr.core.beans.Collaborator;
 import jfb.tools.activitymgr.core.beans.Contribution;
+import jfb.tools.activitymgr.core.beans.Duration;
 import jfb.tools.activitymgr.core.beans.Task;
+import jfb.tools.activitymgr.core.beans.TaskSearchFilter;
 import jfb.tools.activitymgr.core.beans.TaskSums;
 import jfb.tools.activitymgr.core.util.StringHelper;
 import jfb.tools.activitymgr.core.util.XmlHelper;
@@ -385,7 +387,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException levé dans la cas ou la durée existe déjà.
 	 */
-	public static long createDuration(long duration) throws DbException, ModelException {
+	public static Duration createDuration(Duration duration) throws DbException, ModelException {
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -416,19 +418,15 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException levé dans la cas ou la durée existe déjà.
 	 */
-	private static long createDuration(DbTransaction tx, long duration) throws DbException, ModelException {
+	private static Duration createDuration(DbTransaction tx, Duration duration) throws DbException, ModelException {
 		log.info("createDuration(" + duration + ")");
 		// Vérification de l'unicité
 		if (durationExists(tx, duration))
 			throw new ModelException("This duration already exists");
 
 		// Vérification de la non nullité
-		if (duration==0)
+		if (duration.getId()==0)
 			throw new ModelException("A duration cannot be null");
-
-		// Vérification signe
-		//if (duration<=0)
-		//	throw new ModelException("A duration cannot be negative");
 
 		// Création
 		duration = DbMgr.createDuration(tx, duration);
@@ -616,11 +614,8 @@ public class ModelMgr {
 	 * @return un booléen indiquant si la durée existe.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
-	private static boolean durationExists(DbTransaction tx, long duration) throws DbException {
-		long[] durations = DbMgr.getDurations(tx);
-		boolean exists = false;
-		for (int i=0; i<durations.length && !exists; i++)
-			exists = (durations[i]==duration);
+	private static boolean durationExists(DbTransaction tx, Duration duration) throws DbException {
+		boolean exists = (DbMgr.getDuration(tx, duration.getId())!=null);
 		return exists;
 	}
 
@@ -630,7 +625,7 @@ public class ModelMgr {
 	 * @return un booléen indiquant si la durée existe.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
-	public static boolean durationExists(long duration) throws DbException {
+	public static boolean durationExists(Duration duration) throws DbException {
 		log.info("durationExists(" + duration + ")");
 		DbTransaction tx = null;
 		try {
@@ -672,7 +667,7 @@ public class ModelMgr {
 			ModelMgrDelegate modelMgrDelegate = new ModelMgrDelegate() {
 				HashMap taskCache = new HashMap();
 				HashMap collaboratorsCache = new HashMap();
-				public long createDuration(DbTransaction tx, long duration) throws ModelException, DbException {
+				public Duration createDuration(DbTransaction tx, Duration duration) throws ModelException, DbException {
 					return ModelMgr.createDuration(tx, duration);
 				}
 				public Collaborator createCollaborator(DbTransaction tx, Collaborator collaborator) throws DbException, ModelException {
@@ -788,17 +783,20 @@ public class ModelMgr {
 			final String INDENT = "      ";
 
 			// Exportation des durées
-			long[] durations = DbMgr.getDurations(tx);
+			Duration[] durations = DbMgr.getDurations(tx, false);
 			if (durations.length>0) {
 				XmlHelper.startXmlNode(out, "  ", XmlHelper.DURATIONS_NODE);
 				for (int i=0; i<durations.length; i++) {
-					long duration = durations[i];
-					XmlHelper.printTextNode(out, "    ", XmlHelper.DURATION_NODE, String.valueOf(duration));
+					Duration duration = durations[i];
+					XmlHelper.startXmlNode(out, "    ", XmlHelper.DURATION_NODE);
+					XmlHelper.printTextNode(out, INDENT, XmlHelper.VALUE_NODE, String.valueOf(duration.getId()));
+					XmlHelper.printTextNode(out, INDENT, XmlHelper.IS_ACTIVE_NODE, String.valueOf(duration.getIsActive()));
+					XmlHelper.endXmlNode(out, "    ", XmlHelper.DURATION_NODE);
 				}
 				XmlHelper.endXmlNode(out, "  ", XmlHelper.DURATIONS_NODE);
 			}
 			// Exportation des collaborateurs
-			Collaborator[] collaborators = DbMgr.getCollaborators(tx);
+			Collaborator[] collaborators = DbMgr.getCollaborators(tx, Collaborator.LOGIN_FIELD_IDX, true, false);
 			HashMap collaboratorsLoginsMap = new HashMap();
 			if (collaborators.length>0) {
 				XmlHelper.startXmlNode(out, "  ", XmlHelper.COLLABORATORS_NODE);
@@ -810,6 +808,7 @@ public class ModelMgr {
 					XmlHelper.printTextNode(out, INDENT, XmlHelper.LOGIN_NODE, collaborator.getLogin());
 					XmlHelper.printTextNode(out, INDENT, XmlHelper.FIRST_NAME_NODE, collaborator.getFirstName());
 					XmlHelper.printTextNode(out, INDENT, XmlHelper.LAST_NAME_NODE, collaborator.getLastName());
+					XmlHelper.printTextNode(out, INDENT, XmlHelper.IS_ACTIVE_NODE, String.valueOf(collaborator.getIsActive()));
 					XmlHelper.endXmlNode(out, "    ", XmlHelper.COLLABORATOR_NODE);
 				}
 				XmlHelper.endXmlNode(out, "  ", XmlHelper.COLLABORATORS_NODE);
@@ -828,7 +827,7 @@ public class ModelMgr {
 					XmlHelper.printTextAttribute(out, XmlHelper.YEAR_ATTRIBUTE, String.valueOf(contribution.getYear()));
 					XmlHelper.printTextAttribute(out, XmlHelper.MONTH_ATTRIBUTE, String.valueOf(contribution.getMonth()));
 					XmlHelper.printTextAttribute(out, XmlHelper.DAY_ATTRIBUTE, String.valueOf(contribution.getDay()));
-					XmlHelper.printTextAttribute(out, XmlHelper.DURATION_ATTRIBUTE, String.valueOf(contribution.getDuration()));
+					XmlHelper.printTextAttribute(out, XmlHelper.DURATION_ATTRIBUTE, String.valueOf(contribution.getDurationId()));
 					XmlHelper.println(out, ">");
 					XmlHelper.printTextNode(out, INDENT, XmlHelper.CONTRIBUTOR_REF_NODE, (String) collaboratorsLoginsMap.get(new Long(contribution.getContributorId())));
 					XmlHelper.printTextNode(out, INDENT, XmlHelper.TASK_REF_NODE, (String) tasksCodePathMap.get(new Long(contribution.getTaskId())));
@@ -882,6 +881,8 @@ public class ModelMgr {
 				XmlHelper.printTextNode(out, indent, XmlHelper.BUDGET_NODE, String.valueOf(task.getBudget()));
 				XmlHelper.printTextNode(out, indent, XmlHelper.INITIALLY_CONSUMED_NODE, String.valueOf(task.getInitiallyConsumed()));
 				XmlHelper.printTextNode(out, indent, XmlHelper.TODO_NODE, String.valueOf(task.getTodo()));
+				if (task.getComment()!=null)
+					XmlHelper.printTextNode(out, indent, XmlHelper.COMMENT_NODE, task.getComment());
 				XmlHelper.endXmlNode(out, "    ", XmlHelper.TASK_NODE);
 				if (task.getSubTasksCount()>0) {
 					exportSubTasksToXML(tx, out, indent, task, taskCodePath, taskCodesPathMap);
@@ -925,6 +926,38 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Collaborator[] getCollaborators() throws DbException {
+		return getCollaborators(Collaborator.LOGIN_FIELD_IDX, true, false);
+	}
+
+	/**
+	 * @param orderByClauseFieldIndex index de l'attribut utilisé pour le tri.
+	 * @param ascendantSort booléen indiquant si le tri doit être ascendant.
+	 * @return la liste des collaborateurs actifs.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	public static Collaborator[] getActiveCollaborators(int orderByClauseFieldIndex, boolean ascendantSort) throws DbException {
+		return getCollaborators(orderByClauseFieldIndex, ascendantSort, true);
+	}
+
+	/**
+	 * @param orderByClauseFieldIndex index de l'attribut utilisé pour le tri.
+	 * @param ascendantSort booléen indiquant si le tri doit être ascendant.
+	 * @return la liste des collaborateurs.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	public static Collaborator[] getCollaborators(int orderByClauseFieldIndex, boolean ascendantSort) throws DbException {
+		return getCollaborators(orderByClauseFieldIndex, ascendantSort, false);
+	}
+
+	/**
+	 * @param orderByClauseFieldIndex index de l'attribut utilisé pour le tri.
+	 * @param ascendantSort booléen indiquant si le tri doit être ascendant.
+	 * @param onlyActiveCollaborators booléen indiquant si l'on ne doit retourner que
+	 * 		les collaborateurs actifs.
+	 * @return la liste des collaborateurs.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	private static Collaborator[] getCollaborators(int orderByClauseFieldIndex, boolean ascendantSort, boolean onlyActiveCollaborators) throws DbException {
 		log.info("getCollaborators()");
 		DbTransaction tx = null;
 		try {
@@ -932,7 +965,7 @@ public class ModelMgr {
 			tx = DbMgr.beginTransaction();
 
 			// Récupération des collaborateurs
-			Collaborator[] collaborators = DbMgr.getCollaborators(tx);
+			Collaborator[] collaborators = DbMgr.getCollaborators(tx, orderByClauseFieldIndex, ascendantSort, onlyActiveCollaborators);
 
 			// Fin de la transaction
 			DbMgr.endTransaction(tx);
@@ -1157,10 +1190,28 @@ public class ModelMgr {
 	}
 
 	/**
+	 * @return la liste des durées actives.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	public static Duration[] getDurations() throws DbException {
+		return getDurations(false);
+	}
+
+	/**
+	 * @return la liste des durées actives.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	public static Duration[] getActiveDurations() throws DbException {
+		return getDurations(true);
+	}
+
+	/**
+	 * @param onlyActiveCollaborators booléen indiquant si l'on ne doit retourner que
+	 * 		les collaborateurs actifs.
 	 * @return la liste des durées.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
-	public static long[] getDurations() throws DbException {
+	private static Duration[] getDurations(boolean onlyActiveCollaborators) throws DbException {
 		log.info("getDurations()");
 		DbTransaction tx = null;
 		try {
@@ -1168,7 +1219,7 @@ public class ModelMgr {
 			tx = DbMgr.beginTransaction();
 
 			// Récupération des durées
-			long[] durations = DbMgr.getDurations(tx);
+			Duration[] durations = DbMgr.getDurations(tx, onlyActiveCollaborators);
 
 			// Fin de la transaction
 			DbMgr.endTransaction(tx);
@@ -1176,6 +1227,33 @@ public class ModelMgr {
 			
 			// Retour du résultat
 			return durations;
+		}
+		finally {
+			if (tx!=null) try { DbMgr.endTransaction(tx); } catch (DbException ignored) {}
+		}
+	}
+
+	/**
+	 * @param durationId identifiant de la durée.
+	 * @return la durée dont l'identifiant est spécifiée.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	public static Duration getDuration(long durationId) throws DbException {
+		log.info("getDurations()");
+		DbTransaction tx = null;
+		try {
+			// Ouverture de la transaction
+			tx = DbMgr.beginTransaction();
+
+			// Récupération des durées
+			Duration duration = DbMgr.getDuration(tx, durationId);
+
+			// Fin de la transaction
+			DbMgr.endTransaction(tx);
+			tx = null;
+			
+			// Retour du résultat
+			return duration;
 		}
 		finally {
 			if (tx!=null) try { DbMgr.endTransaction(tx); } catch (DbException ignored) {}
@@ -1257,6 +1335,34 @@ public class ModelMgr {
 			
 			// Retour du résultat
 			return task;
+		}
+		finally {
+			if (tx!=null) try { DbMgr.endTransaction(tx); } catch (DbException ignored) {}
+		}
+	}
+
+	/**
+	 * Retourn la liste des taches correspondant au filtre de recherche spécifié.
+	 * @param filter le filtre de recherche.
+	 * @return la liste des taches correspondant au filtre de recherche spécifié.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	public static Task[] getTasks(TaskSearchFilter filter) throws DbException {
+		log.info("getTasks(" + filter + ")");
+		DbTransaction tx = null;
+		try {
+			// Ouverture de la transaction
+			tx = DbMgr.beginTransaction();
+
+			// Récupération de la tâche
+			Task[] tasks = DbMgr.getTasks(tx, filter);
+
+			// Fin de la transaction
+			DbMgr.endTransaction(tx);
+			tx = null;
+			
+			// Retour du résultat
+			return tasks;
 		}
 		finally {
 			if (tx!=null) try { DbMgr.endTransaction(tx); } catch (DbException ignored) {}
@@ -1490,7 +1596,7 @@ public class ModelMgr {
 	 */
 	private static String getTaskCodePath(DbTransaction tx, Task task) throws DbException {
 		// Construction
-		StringBuffer taskPath = new StringBuffer("/");
+		StringBuffer taskPath = new StringBuffer("");
 		Task cursor = task;
 		while (cursor != null) {
 			taskPath.insert(0, cursor.getCode());
@@ -1767,12 +1873,39 @@ public class ModelMgr {
 	}
 
 	/**
+	 * Supprime des contributions.
+	 * @param contributions les contributions à supprimer.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	public static void removeContributions(Contribution[] contributions) throws DbException {
+		log.info("removeContributions(" + contributions + ")");
+		DbTransaction tx = null;
+		try {
+			// Ouverture de la transaction
+			tx = DbMgr.beginTransaction();
+
+			// Suppression de la contribution
+			for (int i=0; i<contributions.length; i++)
+				DbMgr.removeContribution(tx, contributions[i]);
+
+			// Commit et fin de la transaction
+			DbMgr.commitTransaction(tx);
+			DbMgr.endTransaction(tx);
+			tx = null;
+		}
+		finally {
+			if (tx!=null) try { DbMgr.rollbackTransaction(tx); } catch (DbException ignored) {}
+			if (tx!=null) try { DbMgr.endTransaction(tx); } catch (DbException ignored) {}
+		}
+	}
+
+	/**
 	 * Supprime une durée du référentiel de durées.
 	 * @param duration la durée à supprimer.
 	 * @throws ModelException levé dans le cas ou la durée n'existe pas en base.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
-	public static void removeDuration(long duration) throws ModelException, DbException {
+	public static void removeDuration(Duration duration) throws ModelException, DbException {
 		log.info("removeDuration(" + duration + ")");
 		DbTransaction tx = null;
 		try {
@@ -1800,7 +1933,7 @@ public class ModelMgr {
 	 * @throws ModelException levé dans le cas ou la durée n'existe pas en base.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
-	private static void removeDuration(DbTransaction tx, long duration) throws ModelException, DbException {
+	private static void removeDuration(DbTransaction tx, Duration duration) throws ModelException, DbException {
 		// Vérification de l'existance
 		if (!durationExists(tx, duration))
 			throw new ModelException("This duration does not exist");
@@ -1927,6 +2060,36 @@ public class ModelMgr {
 	}
 	
 	/**
+	 * Met à jour une durée.
+	 * @param duration la durée à mettre à jour.
+	 * @return la durée mise à jour.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	public static Duration updateDuration(Duration duration) throws DbException {
+		log.info("updateDuration(" + duration + ")");
+		DbTransaction tx = null;
+		try {
+			// Ouverture de la transaction
+			tx = DbMgr.beginTransaction();
+
+			// Mise à jour des données
+			duration = DbMgr.updateDuration(tx, duration);
+
+			// Commit et fin de la transaction
+			DbMgr.commitTransaction(tx);
+			DbMgr.endTransaction(tx);
+			tx = null;
+			
+			// Retour du résultat
+			return duration;
+		}
+		finally {
+			if (tx!=null) try { DbMgr.rollbackTransaction(tx); } catch (DbException ignored) {}
+			if (tx!=null) try { DbMgr.endTransaction(tx); } catch (DbException ignored) {}
+		}
+	}
+
+	/**
 	 * Modifie les attributs d'une contribution.
 	 * @param contribution la contribution à modifier.
 	 * @return la contribution modifiée.
@@ -2012,13 +2175,13 @@ public class ModelMgr {
 	 * 		dans le cas ou la nouvelle valeur pour la durée existe déjà dans le référentiel.
 	 * @throws DbException levé en cas d'incident technique avec la base de données.
 	 */
-	public static long updateDuration(long duration, long newDuration) throws ModelException, DbException {
+	public static Duration updateDuration(Duration duration, Duration newDuration) throws ModelException, DbException {
 		log.info("updateDuration(" + duration + ", " + newDuration + ")");
 		DbTransaction tx = null;
 		try {
 			// Si la nouvelle durée est égale à l'ancienne, il n'y a rien 
 			// à faire de plus!...
-			if (newDuration!=duration) {
+			if (!newDuration.equals(duration)) {
 
 				// Ouverture de la transaction
 				tx = DbMgr.beginTransaction();

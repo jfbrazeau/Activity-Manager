@@ -4,6 +4,7 @@ import jfb.tools.activitymgr.core.DbException;
 import jfb.tools.activitymgr.core.ModelException;
 import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Task;
+import jfb.tools.activitymgr.core.beans.TaskSearchFilter;
 import jfb.tools.activitymgr.core.beans.TaskSums;
 import jfb.tools.activitymgr.core.util.StringHelper;
 import jfb.tst.tools.activitymgr.AbstractModelTestCase;
@@ -47,6 +48,7 @@ public class TaskTest extends AbstractModelTestCase {
 	private void createSampleTasks() throws DbException, ModelException {
 		// Création des tâches de test
 		rootTask = ModelMgr.createNewTask(null);
+		rootTask.setCode("RT");
 		rootTask.setName("Root task");
 		rootTask = ModelMgr.updateTask(rootTask);
 		
@@ -113,199 +115,324 @@ public class TaskTest extends AbstractModelTestCase {
 	public void testTaskPath() throws DbException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
-		
-		// Vérification des chemins
-		String expectedPath = StringHelper.toHex(rootTask.getNumber()); 
-		assertEquals(expectedPath, task1.getPath());
-		assertEquals(expectedPath, task1.getPath());
-		assertEquals(expectedPath + "01", task11.getPath());
-		assertEquals(expectedPath, task2.getPath());
-
-		// Vérification des numéros
-		assertEquals(1, task1.getNumber());
-		assertEquals(2, task2.getNumber());
-		
-		// Suppression des taches de test
-		removeSampleTasks();
+		try {
+			// Vérification des chemins
+			String expectedPath = StringHelper.toHex(rootTask.getNumber()); 
+			assertEquals(expectedPath, task1.getPath());
+			assertEquals(expectedPath, task1.getPath());
+			assertEquals(expectedPath + "01", task11.getPath());
+			assertEquals(expectedPath, task2.getPath());
+	
+			// Vérification des numéros
+			assertEquals(1, task1.getNumber());
+			assertEquals(2, task2.getNumber());
+		}
+		finally {
+			// Suppression des taches de test
+			removeSampleTasks();
+		}
 	}
 	
 	public void testGetParent() throws DbException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
-
-		// La tache mère de 11 est 1 ?
-		Task task11Parent = ModelMgr.getParentTask(task11);
-		assertEquals(task1, task11Parent);
-		
-		// La tache mère de 1 est root ?
-		Task task1Parent = ModelMgr.getParentTask(task1);
-		assertEquals(rootTask, task1Parent);
-
-		// La tache mère de root1 est null ?
-		Task rootTaskParent = ModelMgr.getParentTask(rootTask);
-		assertEquals(null, rootTaskParent);
-
-		// Suppression des taches de test
-		removeSampleTasks();
+		try {
+			// La tache mère de 11 est 1 ?
+			Task task11Parent = ModelMgr.getParentTask(task11);
+			assertEquals(task1, task11Parent);
+			
+			// La tache mère de 1 est root ?
+			Task task1Parent = ModelMgr.getParentTask(task1);
+			assertEquals(rootTask, task1Parent);
+	
+			// La tache mère de root1 est null ?
+			Task rootTaskParent = ModelMgr.getParentTask(rootTask);
+			assertEquals(null, rootTaskParent);
+		}
+		finally {
+			// Suppression des taches de test
+			removeSampleTasks();
+		}
 	}
 
 	public void testGetSubtasks() throws DbException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
-		
-		// La tache root a-t-elle 2 filles ?
-		Task[] rootTaskSubTasks = ModelMgr.getSubtasks(rootTask);
-		assertEquals(2, rootTaskSubTasks.length);
-		
-		// La tache1 a-t-elle 1 fille ?
-		Task[] task1SubTasks = ModelMgr.getSubtasks(task1);
-		assertEquals(1, task1SubTasks.length);
-		
-		// La tache11 a-t-elle 2 fille ?
-		Task[] task11SubTasks = ModelMgr.getSubtasks(task11);
-		assertEquals(2, task11SubTasks.length);
-
-		// La tache111 a-t-elle 0 filles ?
-		Task[] task111SubTasks = ModelMgr.getSubtasks(task111);
-		assertEquals(0, task111SubTasks.length);
-
-		// La tache112 a-t-elle 0 filles ?
-		Task[] task112SubTasks = ModelMgr.getSubtasks(task112);
-		assertEquals(0, task112SubTasks.length);
-
-		// La tache2 a-t-elle 0 filles ?
-		Task[] task2SubTasks = ModelMgr.getSubtasks(task2);
-		assertEquals(0, task2SubTasks.length);
-
-		// Suppression des taches de test
-		removeSampleTasks();
+		try {
+			// La tache root a-t-elle 2 filles ?
+			Task[] rootTaskSubTasks = ModelMgr.getSubtasks(rootTask);
+			assertEquals(2, rootTaskSubTasks.length);
+			
+			// La tache1 a-t-elle 1 fille ?
+			Task[] task1SubTasks = ModelMgr.getSubtasks(task1);
+			assertEquals(1, task1SubTasks.length);
+			
+			// La tache11 a-t-elle 2 fille ?
+			Task[] task11SubTasks = ModelMgr.getSubtasks(task11);
+			assertEquals(2, task11SubTasks.length);
+	
+			// La tache111 a-t-elle 0 filles ?
+			Task[] task111SubTasks = ModelMgr.getSubtasks(task111);
+			assertEquals(0, task111SubTasks.length);
+	
+			// La tache112 a-t-elle 0 filles ?
+			Task[] task112SubTasks = ModelMgr.getSubtasks(task112);
+			assertEquals(0, task112SubTasks.length);
+	
+			// La tache2 a-t-elle 0 filles ?
+			Task[] task2SubTasks = ModelMgr.getSubtasks(task2);
+			assertEquals(0, task2SubTasks.length);
+		}
+		finally {
+			// Suppression des taches de test
+			removeSampleTasks();
+		}
 	}
 
 	public void testUpdate() throws DbException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
-
-		// Changement du nom de la tache
-		rootTask.setName("New name");
-		ModelMgr.updateTask(rootTask);
-		
-		// Chargement de la tache et control
-		Task _rootTask = ModelMgr.getTask(rootTask.getId());
-		assertEquals(rootTask.getName(), _rootTask.getName());
-		
-		// Suppression des taches de test
-		removeSampleTasks();
+		try {
+			// Changement du nom de la tache
+			rootTask.setName("New name");
+			ModelMgr.updateTask(rootTask);
+			
+			// Chargement de la tache et control
+			Task _rootTask = ModelMgr.getTask(rootTask.getId());
+			assertEquals(rootTask.getName(), _rootTask.getName());
+		}
+		finally {
+			// Suppression des taches de test
+			removeSampleTasks();
+		}
 	}
 	
 	public void testMoveDown() throws DbException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
-
-		// Vérification des numéros des taches
-		assertEquals((byte) 1, task1.getNumber());
-		assertEquals((byte) 2, task2.getNumber());
-
-		// Déplacement + vérification des nouveaux numéros
-		ModelMgr.moveDownTask(task1);
-		
-		// Rechargement des taches
-		task1 = ModelMgr.getTask(task1.getId());
-		task2 = ModelMgr.getTask(task2.getId());
+		try {
+			// Vérification des numéros des taches
+			assertEquals((byte) 1, task1.getNumber());
+			assertEquals((byte) 2, task2.getNumber());
 	
-		// Controls
-		assertEquals((byte) 2, task1.getNumber());
-		assertEquals((byte) 1, task2.getNumber());
-		assertEquals(1, task1.getSubTasksCount());
-		assertEquals(0, task2.getSubTasksCount());
+			// Déplacement + vérification des nouveaux numéros
+			ModelMgr.moveDownTask(task1);
+			
+			// Rechargement des taches
+			task1 = ModelMgr.getTask(task1.getId());
+			task2 = ModelMgr.getTask(task2.getId());
 		
-		// Suppression des taches de test
-		removeSampleTasks();
+			// Controls
+			assertEquals((byte) 2, task1.getNumber());
+			assertEquals((byte) 1, task2.getNumber());
+			assertEquals(1, task1.getSubTasksCount());
+			assertEquals(0, task2.getSubTasksCount());
+		}
+		finally {
+			// Suppression des taches de test
+			removeSampleTasks();
+		}
 	}
 	
 	public void testMoveUp() throws DbException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
-
-		// Vérification des numéros des taches
-		assertEquals((byte) 1, task1.getNumber());
-		assertEquals((byte) 2, task2.getNumber());
-
-		// Déplacement + vérification des nouveaux numéros
-		ModelMgr.moveUpTask(task2);
-		
-		// Rechargement des taches
-		task1 = ModelMgr.getTask(task1.getId());
-		task2 = ModelMgr.getTask(task2.getId());
+		try {
+			// Vérification des numéros des taches
+			assertEquals((byte) 1, task1.getNumber());
+			assertEquals((byte) 2, task2.getNumber());
 	
-		// Controls
-		assertEquals((byte) 2, task1.getNumber());
-		assertEquals((byte) 1, task2.getNumber());
-		assertEquals(1, task1.getSubTasksCount());
-		assertEquals(0, task2.getSubTasksCount());
+			// Déplacement + vérification des nouveaux numéros
+			ModelMgr.moveUpTask(task2);
+			
+			// Rechargement des taches
+			task1 = ModelMgr.getTask(task1.getId());
+			task2 = ModelMgr.getTask(task2.getId());
 		
-		// Suppression des taches de test
-		removeSampleTasks();
+			// Controls
+			assertEquals((byte) 2, task1.getNumber());
+			assertEquals((byte) 1, task2.getNumber());
+			assertEquals(1, task1.getSubTasksCount());
+			assertEquals(0, task2.getSubTasksCount());
+		}
+		finally {
+			// Suppression des taches de test
+			removeSampleTasks();
+		}
 	}
 	
 	public void testMove() throws DbException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
-
-		// Vérification des numéros des taches
-		assertEquals(1, task1.getSubTasksCount());
-		assertEquals(task1.getPath() + "01", task11.getPath());
-		assertEquals(task11.getPath() + "01", task111.getPath());
-		assertEquals(task11.getPath() + "01", task112.getPath());
-		assertEquals((byte) 2, task112.getNumber());
-
-		// Déplacement
-		ModelMgr.moveTask(task111, task1);
-		
-		// Rechargement des taches qui ont été mises à jour
-		task1 = ModelMgr.getTask(task1.getId());
-		task2 = ModelMgr.getTask(task2.getId());
-		task11 = ModelMgr.getTask(task11.getId());
-		task111 = ModelMgr.getTask(task111.getId());
-		task112 = ModelMgr.getTask(task112.getId());
+		try {
+			// Vérification des numéros des taches
+			assertEquals(1, task1.getSubTasksCount());
+			assertEquals(task1.getPath() + "01", task11.getPath());
+			assertEquals(task11.getPath() + "01", task111.getPath());
+			assertEquals(task11.getPath() + "01", task112.getPath());
+			assertEquals((byte) 2, task112.getNumber());
 	
-		// Controls
-		assertEquals(2, task1.getSubTasksCount());
-		assertEquals(task1.getPath() + "01", task11.getPath());
-		assertEquals(task1.getPath() + "01", task111.getPath());
-		assertEquals(task11.getPath() + "01", task112.getPath());
-		assertEquals((byte) 1, task112.getNumber());
+			// Déplacement
+			ModelMgr.moveTask(task111, task1);
+			
+			// Rechargement des taches qui ont été mises à jour
+			task1 = ModelMgr.getTask(task1.getId());
+			task2 = ModelMgr.getTask(task2.getId());
+			task11 = ModelMgr.getTask(task11.getId());
+			task111 = ModelMgr.getTask(task111.getId());
+			task112 = ModelMgr.getTask(task112.getId());
 		
-		// Suppression des taches de test
-		removeSampleTasks();
+			// Controls
+			assertEquals(2, task1.getSubTasksCount());
+			assertEquals(task1.getPath() + "01", task11.getPath());
+			assertEquals(task1.getPath() + "01", task111.getPath());
+			assertEquals(task11.getPath() + "01", task112.getPath());
+			assertEquals((byte) 1, task112.getNumber());
+		}
+		finally {
+			// Suppression des taches de test
+			removeSampleTasks();
+		}
 	}
 	
 	public void testTasksSum() throws DbException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
-		
-		// Récupération des sommes
-		TaskSums taskSums = ModelMgr.getTaskSums(rootTask);
-		assertEquals(
-				task111.getBudget()
-					+ task112.getBudget()
-					+ task2.getBudget(),
-				taskSums.getBudgetSum());
-		assertEquals(
-				task111.getInitiallyConsumed()
-					+ task112.getInitiallyConsumed()
-					+ task2.getInitiallyConsumed(),
-				taskSums.getInitiallyConsumedSum());
-		assertEquals(
-				task111.getTodo()
-					+ task112.getTodo()
-					+ task2.getTodo(),
-				taskSums.getTodoSum());
-		
-		assertEquals(
-				0,
-				taskSums.getContributionsNb());
-		// Suppression des taches de test
-		removeSampleTasks();
+		try {
+			// Récupération des sommes
+			TaskSums taskSums = ModelMgr.getTaskSums(rootTask);
+			assertEquals(
+					task111.getBudget()
+						+ task112.getBudget()
+						+ task2.getBudget(),
+					taskSums.getBudgetSum());
+			assertEquals(
+					task111.getInitiallyConsumed()
+						+ task112.getInitiallyConsumed()
+						+ task2.getInitiallyConsumed(),
+					taskSums.getInitiallyConsumedSum());
+			assertEquals(
+					task111.getTodo()
+						+ task112.getTodo()
+						+ task2.getTodo(),
+					taskSums.getTodoSum());
+			
+			assertEquals(
+					0,
+					taskSums.getContributionsNb());
+		}
+		finally {
+			// Suppression des taches de test
+			removeSampleTasks();
+		}
 	}
+
+	public void testSearchTasks() throws DbException, ModelException {
+		// Création des taches de test
+		createSampleTasks();
+		try {
+			// Recherche d'une tache avec le critère "dont le code est égal à..."
+			TaskSearchFilter filter = new TaskSearchFilter();
+			filter.setFieldIndex(TaskSearchFilter.TASK_CODE_FIELD_IDX);
+			filter.setCriteriaIndex(TaskSearchFilter.IS_EQUAL_TO_CRITERIA_IDX);
+			filter.setFieldValue("T1");
+			Task[] tasks = ModelMgr.getTasks(filter);
+			assertNotNull(tasks);
+			assertEquals(1, tasks.length);
+			assertEquals("T1", tasks[0].getCode());
+			
+			// Recherche d'une tache avec le critère "dont le code commence par..."
+			filter = new TaskSearchFilter();
+			filter.setFieldIndex(TaskSearchFilter.TASK_CODE_FIELD_IDX);
+			filter.setCriteriaIndex(TaskSearchFilter.STARTS_WITH_CRITERIA_IDX);
+			filter.setFieldValue("T1");
+			tasks = ModelMgr.getTasks(filter);
+			assertNotNull(tasks);
+			assertEquals(4, tasks.length);
+			assertEquals("T1", tasks[0].getCode());
+			assertEquals("T11", tasks[1].getCode());
+			assertEquals("T111", tasks[2].getCode());
+			assertEquals("T112", tasks[3].getCode());
+
+			// Recherche d'une tache avec le critère "dont le code finit par..."
+			filter = new TaskSearchFilter();
+			filter.setFieldIndex(TaskSearchFilter.TASK_CODE_FIELD_IDX);
+			filter.setCriteriaIndex(TaskSearchFilter.ENDS_WITH_CRITERIA_IDX);
+			filter.setFieldValue("11");
+			tasks = ModelMgr.getTasks(filter);
+			assertNotNull(tasks);
+			assertEquals(2, tasks.length);
+			assertEquals("T11", tasks[0].getCode());
+			assertEquals("T111", tasks[1].getCode());
+		
+			// Recherche d'une tache avec le critère "dont le code contient..."
+			filter = new TaskSearchFilter();
+			filter.setFieldIndex(TaskSearchFilter.TASK_CODE_FIELD_IDX);
+			filter.setCriteriaIndex(TaskSearchFilter.CONTAINS_WITH_CRITERIA_IDX);
+			filter.setFieldValue("T");
+			tasks = ModelMgr.getTasks(filter);
+			assertNotNull(tasks);
+			assertEquals(6, tasks.length);
+			assertEquals("RT", tasks[0].getCode());
+			assertEquals("T1", tasks[1].getCode());
+			assertEquals("T11", tasks[2].getCode());
+			assertEquals("T111", tasks[3].getCode());
+			assertEquals("T112", tasks[4].getCode());
+			assertEquals("T2", tasks[5].getCode());
+
+			// Recherche d'une tache avec le critère "dont le code est égal à..."
+			filter = new TaskSearchFilter();
+			filter.setFieldIndex(TaskSearchFilter.TASK_NAME_FIELD_IDX);
+			filter.setCriteriaIndex(TaskSearchFilter.IS_EQUAL_TO_CRITERIA_IDX);
+			filter.setFieldValue("Task 1");
+			tasks = ModelMgr.getTasks(filter);
+			assertNotNull(tasks);
+			assertEquals(1, tasks.length);
+			assertEquals("Task 1", tasks[0].getName());
+
+			// Recherche d'une tache avec le critère "dont le code commence par..."
+			filter = new TaskSearchFilter();
+			filter.setFieldIndex(TaskSearchFilter.TASK_NAME_FIELD_IDX);
+			filter.setCriteriaIndex(TaskSearchFilter.STARTS_WITH_CRITERIA_IDX);
+			filter.setFieldValue("Task 1");
+			tasks = ModelMgr.getTasks(filter);
+			assertNotNull(tasks);
+			assertEquals(4, tasks.length);
+			assertEquals("Task 1", tasks[0].getName());
+			assertEquals("Task 11", tasks[1].getName());
+			assertEquals("Task 111", tasks[2].getName());
+			assertEquals("Task 112", tasks[3].getName());
+
+			// Recherche d'une tache avec le critère "dont le code finit par..."
+			filter = new TaskSearchFilter();
+			filter.setFieldIndex(TaskSearchFilter.TASK_NAME_FIELD_IDX);
+			filter.setCriteriaIndex(TaskSearchFilter.ENDS_WITH_CRITERIA_IDX);
+			filter.setFieldValue("11");
+			tasks = ModelMgr.getTasks(filter);
+			assertNotNull(tasks);
+			assertEquals(2, tasks.length);
+			assertEquals("Task 11", tasks[0].getName());
+			assertEquals("Task 111", tasks[1].getName());
+			
+			// Recherche d'une tache avec le critère "dont le code contient..."
+			filter = new TaskSearchFilter();
+			filter.setFieldIndex(TaskSearchFilter.TASK_NAME_FIELD_IDX);
+			filter.setCriteriaIndex(TaskSearchFilter.CONTAINS_WITH_CRITERIA_IDX);
+			filter.setFieldValue("T");
+			tasks = ModelMgr.getTasks(filter);
+			assertNotNull(tasks);
+			assertEquals(5, tasks.length);
+			assertEquals("Task 1", tasks[0].getName());
+			assertEquals("Task 11", tasks[1].getName());
+			assertEquals("Task 111", tasks[2].getName());
+			assertEquals("Task 112", tasks[3].getName());
+			assertEquals("Task 2", tasks[4].getName());
+		}
+		finally {
+			// Suppression des taches de test
+			removeSampleTasks();
+		}
+	}
+
 
 }

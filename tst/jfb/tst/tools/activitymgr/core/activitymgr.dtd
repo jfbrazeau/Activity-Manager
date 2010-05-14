@@ -2,21 +2,25 @@
 <!ELEMENT model (durations?, collaborators?, tasks?, contributions?)>
 
 <!ELEMENT durations (duration*)>
-<!ELEMENT duration (#PCDATA)>
+<!ELEMENT duration (value, is-active?)>
+<!ELEMENT value (#PCDATA)>
+<!ELEMENT is-active (#PCDATA)>
 
 <!ELEMENT collaborators (collaborator*)>
-<!ELEMENT collaborator (login, first-name, last-name)>
+<!ELEMENT collaborator (login, first-name, last-name, is-active?)>
 <!ELEMENT login (#PCDATA)>
 <!ELEMENT first-name (#PCDATA)>
 <!ELEMENT last-name (#PCDATA)>
+<!-- ELEMENT is-active (#PCDATA) --><!-- élément déjà déclaré pour les durées -->
 
 <!ELEMENT tasks (task*)>
-<!ELEMENT task (path, name, budget?, initially-consumed?, todo?)>
+<!ELEMENT task (path, name, budget?, initially-consumed?, todo?, comment?)>
 <!ELEMENT path (#PCDATA)>
 <!ELEMENT name (#PCDATA)>
 <!ELEMENT budget (#PCDATA)>
 <!ELEMENT initially-consumed (#PCDATA)>
 <!ELEMENT todo (#PCDATA)>
+<!ELEMENT comment (#PCDATA)>
 
 <!ELEMENT contributions (contribution*)>
 <!ELEMENT contribution (contributor-ref, task-ref)>

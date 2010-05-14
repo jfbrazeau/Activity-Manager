@@ -46,7 +46,7 @@ select t1.tsk_name, sum(ctb_duration)/100
 from contribution, task as t1, task as t2
 where
   ctb_task=t2.tsk_id
-  and t2.tsk_path=concat(t1.tsk_path, right(concat('0', hex(t1.tsk_number)), 2))
+  and t2.tsk_path=concat(cast(t1.tsk_path as char), right(concat('0', hex(t1.tsk_number)), 2))
   and left(t2.tsk_path, 2)='01'
   and ctb_year*10000+(ctb_month*100+ctb_day) between 20050501 and 20050617
 group by t1.tsk_id

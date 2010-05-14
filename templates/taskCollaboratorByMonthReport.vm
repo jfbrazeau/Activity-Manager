@@ -12,7 +12,11 @@
 		#set($dateList=$dates.buildMonthInterval($fromDate, $toDate))
 		
 		## Récupération des collaborateurs
-		#set($cols=$model.collaborators)
+		#if($props.ignoreUnactiveCollaborators.get()=='true')
+			#set($cols=$model.getActiveCollaborators(3, true))
+		#else
+			#set($cols=$model.getCollaborators(3, true))
+		#end
 		<h3>Root task : $rootTask.name</h3>
 		<table border="1" cellspacing="0">
 			<tr>

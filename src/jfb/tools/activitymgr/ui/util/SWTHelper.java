@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2006, Jean-François Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -93,6 +93,10 @@ public class SWTHelper {
 		// Si le nom est spécifié
 		if (fileName != null) {
 			try {
+				// Correction du nom du fichier si besoin
+				if (!fileName.endsWith(".xls"))
+					fileName += ".xls";
+				// Sauvegarde du document
 				HSSFWorkbook wb = toWorkBook(tree);
 				FileOutputStream out = new FileOutputStream(fileName);
 				wb.write(out);
@@ -209,6 +213,10 @@ public class SWTHelper {
 		// Si le nom est spécifié
 		if (fileName != null) {
 			try {
+				// Correction du nom du fichier si besoin
+				if (!fileName.endsWith(".xls"))
+					fileName += ".xls";
+				// Sauvegarde du document
 				HSSFWorkbook wb = toWorkBook(table);
 				FileOutputStream out = new FileOutputStream(fileName);
 				wb.write(out);

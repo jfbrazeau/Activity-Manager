@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2006, Jean-François Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,9 @@ package jfb.tools.activitymgr.core.beans;
  * de type long.
  */
 public abstract class SimpleIdentityBean {
+
+	/** Index de l'attribut 'id' */
+	public static final int ID_FIELD_IDX = 0;
 
 	/** Identifiant */
 	private long id;

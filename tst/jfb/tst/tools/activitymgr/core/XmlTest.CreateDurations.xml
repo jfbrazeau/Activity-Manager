@@ -2,8 +2,14 @@
 <!DOCTYPE model SYSTEM "activitymgr.dtd">
 <model>
 	<durations>
-		<duration>200</duration>
-		<duration>300</duration>
-		<duration>400</duration>
+		<duration>
+			<value>200</value>
+		</duration>
+		<duration>
+			<value>300</value>
+		</duration>
+		<duration>
+			<value>400</value>
+		</duration>
 	</durations>
 </model>

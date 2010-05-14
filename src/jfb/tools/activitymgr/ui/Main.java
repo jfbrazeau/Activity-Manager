@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2006, Jean-François Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -27,11 +27,9 @@
  */
 package jfb.tools.activitymgr.ui;
 
-
-import java.net.URL;
-
 import jfb.tools.activitymgr.core.ModelMgr;
-import jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener;
+import jfb.tools.activitymgr.ui.DatabaseUI.IDbStatusListener;
+import jfb.tools.activitymgr.ui.images.ImagesDatas;
 import jfb.tools.activitymgr.ui.util.CfgMgr;
 import jfb.tools.activitymgr.ui.util.SafeRunner;
 
@@ -85,8 +83,7 @@ public class Main {
 			Shell splash = new Shell(display, SWT.ON_TOP);
 			splash.setLayout(new FillLayout());
 			Label splashLabel = new Label(splash, SWT.NONE);
-			URL splashImageUrl = AboutUI.class.getResource("logo-385x100.png");
-			Image splashImage = new Image(splash.getDisplay(), splashImageUrl.openStream());
+			Image splashImage = new Image(splash.getDisplay(), ImagesDatas.APPLICATION_LOGO);
 			splashLabel.setImage(splashImage);
 			splash.pack();
 			Rectangle splashRect = splash.getBounds();
@@ -98,12 +95,10 @@ public class Main {
 			
 			// Ouverture de la fenêtre
 			final Shell shell = new Shell(display);
-			shell.setSize(700, 500);
-			shell.setText("ActivityManager");
+			shell.setSize(910, 550);
+			shell.setText("ActivityManager V0.3");
 			shell.setLayout(new GridLayout(1, false));
-			URL iconUrl = Main.class.getResource("logo-16.ico");
-			Image icon = new Image(display, iconUrl.openStream());
-			shell.setImage(icon);
+			shell.setImage(new Image(display, ImagesDatas.APPLICATION_ICON));
 			shell.addShellListener(new ShellAdapter() {
 				public void shellClosed(ShellEvent e) {
 					new SafeRunner() {
@@ -151,19 +146,20 @@ public class Main {
 			new AboutUI(aboutTab);
 
 			// Enregistrement des listeners
-			durationsUI.addDurationListener(contributionsUI);
-			collaboratorsUI.addCollaboratorListener(contributionsUI);
 			databaseUI.addDbStatusListener(durationsUI);
 			databaseUI.addDbStatusListener(collaboratorsUI);
 			databaseUI.addDbStatusListener(tasksUI);
 			databaseUI.addDbStatusListener(contributionsUI);
+			durationsUI.addDurationListener(contributionsUI);
+			collaboratorsUI.addCollaboratorListener(contributionsUI);
+			tasksUI.addTaskListener(contributionsUI);
 			
 			// Barre de statut
 			final Label statusBar = new Label(shell, SWT.NONE);
 			statusBar.setLayoutData(new GridData(SWT.RIGHT, SWT.NONE, false, false));
 			statusBar.setAlignment(SWT.RIGHT);
 			statusBar.setText("Not connected");
-			databaseUI.addDbStatusListener(new DbStatusListener() {
+			databaseUI.addDbStatusListener(new IDbStatusListener() {
 				public void databaseOpened() {
 					statusBar.setText("Connected");
 				}

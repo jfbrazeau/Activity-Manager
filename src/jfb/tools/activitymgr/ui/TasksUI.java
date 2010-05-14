@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2006, Jean-François Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -29,6 +29,7 @@ package jfb.tools.activitymgr.ui;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import jfb.tools.activitymgr.core.DbException;
 import jfb.tools.activitymgr.core.ModelException;
@@ -36,35 +37,47 @@ import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Task;
 import jfb.tools.activitymgr.core.beans.TaskSums;
 import jfb.tools.activitymgr.core.util.StringHelper;
-import jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener;
+import jfb.tools.activitymgr.ui.DatabaseUI.IDbStatusListener;
 import jfb.tools.activitymgr.ui.dialogs.ContributionsViewerDialog;
 import jfb.tools.activitymgr.ui.dialogs.DialogException;
 import jfb.tools.activitymgr.ui.dialogs.ITaskChooserValidator;
-import jfb.tools.activitymgr.ui.dialogs.TasksChooserDialog;
+import jfb.tools.activitymgr.ui.dialogs.TaskChooserTreeWithHistoryDialog;
 import jfb.tools.activitymgr.ui.util.AbstractTableMgr;
+import jfb.tools.activitymgr.ui.util.ITaskSelectionListener;
 import jfb.tools.activitymgr.ui.util.SWTHelper;
 import jfb.tools.activitymgr.ui.util.SafeRunner;
 import jfb.tools.activitymgr.ui.util.TableOrTreeColumnsMgr;
+import jfb.tools.activitymgr.ui.util.TaskFinderPanel;
 import jfb.tools.activitymgr.ui.util.UITechException;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ICellModifier;
+import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProviderChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -74,11 +87,13 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.Widget;
 
 /**
  * IHM de gestion des tâches.
  */
-public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICellModifier, SelectionListener, MenuListener, ITreeContentProvider {
+public class TasksUI extends AbstractTableMgr 
+	implements IDbStatusListener, ICellModifier, SelectionListener, MenuListener, ITreeContentProvider, ITableColorProvider {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(TasksUI.class);
@@ -91,8 +106,44 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 	public static final int CONSUMED_COLUMN_IDX = 4;
 	public static final int TODO_COLUMN_IDX = 5;
 	public static final int DELTA_COLUMN_IDX = 6;
+	public static final int COMMENT_COLUMN_IDX = 7;
 	private static TableOrTreeColumnsMgr treeColsMgr;
 	
+	/**
+	 * Interface utilisée pour permettre l'écoute de la suppression ou de
+	 * l'ajout de taches.
+	 */
+	public static interface ITaskListener {
+		
+		/**
+		 * Indique qu'une tache a été ajoutée au référentiel.
+		 * @param task la tache ajoutée.
+		 */
+		public void taskAdded(Task task);
+		
+		/**
+		 * Indique qu'une tache a été supprimée du référentiel.
+		 * @param task la tache supprimée.
+		 */
+		public void taskRemoved(Task task);
+
+		/**
+		 * Indique qu'une tache a été modifiée duans le référentiel.
+		 * @param task la tache modifiée.
+		 */
+		public void taskUpdated(Task task);
+
+		/**
+		 * Indique qu'une tache a été déplacée duans le référentiel.
+		 * @param oldTaskFullpath ancien chemin de la tache.
+		 * @param task la tache déplacée.
+		 */
+		public void taskMoved(String oldTaskFullpath, Task task);
+	}
+	
+	/** Listeners */
+	private ArrayList listeners = new ArrayList();
+
 	/** Viewer */
 	private TreeViewer treeViewer;
 
@@ -103,11 +154,12 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 	private MenuItem moveDownItem;
 	private MenuItem moveToAnotherTaskItem;
 	private MenuItem moveToRootItem;
-	private MenuItem listTaskContributionsItem;
+	private MenuItem copyItem;
 	private MenuItem removeItem;
-	private MenuItem refreshItem;
 	private MenuItem expandItem;
 	private MenuItem collapseItem;
+	private MenuItem listTaskContributionsItem;
+	private MenuItem refreshItem;
 	private MenuItem exportItem;
 	
 	/** Composant parent */
@@ -117,10 +169,19 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 	private HashMap tasksSums = new HashMap();
 	
 	/** Popup permettant de choisir une tache */
-	private TasksChooserDialog taskChooserDialog;
+	private TaskChooserTreeWithHistoryDialog taskChooserDialog;
 
 	/** Popup permettant de lister les contributions d'une tache */
 	private ContributionsViewerDialog contribsViewerDialog;
+
+	/** Panneau de recherche de tache */
+	private TaskFinderPanel taskFinderPanel;
+	
+	/** Couleur de fond utilisée pour les zones non modifiables */
+	private Color disabledBGColor;
+	
+	/** Couleur de police de caractère utilisée pour les zones non modifiables */
+	private Color disabledFGColor;
 	
 	/**
 	 * Constructeur permettant de placer l'IHM dans un onglet.
@@ -140,20 +201,41 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayout(new GridLayout(1, false));
 
+		// Panneau permettant de recherche une tache
+		taskFinderPanel = new TaskFinderPanel(parent);
+		GridData gridData = new GridData(SWT.FILL, SWT.NONE, true, false);
+		taskFinderPanel.setLayoutData(gridData);
+		taskFinderPanel.addTaskListener(new ITaskSelectionListener() {
+			public void taskSelected(Task selectedTask) {
+				treeViewer.setSelection(new StructuredSelection(selectedTask));
+				treeViewer.getTree().setFocus();
+			}
+		});
+		
 		// Arbre tableau
 		final Tree tree = new Tree(parent, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER | SWT.HIDE_SELECTION);
-		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData.heightHint = 75;
 		tree.setLayoutData(gridData);
 		tree.setLinesVisible(true);
 		tree.setHeaderVisible(true);
 		tree.setEnabled(true);
+		tree.addMouseListener(new MouseAdapter() {
+			public void mouseDoubleClick(MouseEvent e) {
+				Tree tree = (Tree) e.widget;
+				MessageDialog.openInformation(parent.getShell(), "title", "Widget : " + e.widget + ", source=" + e.getSource() + ", x=" + e.x + ", y=" + e.y + ", item=" + tree.getItem(new Point(e.x, e.y)));
+			}
+		});
 
 		// Création du viewer
 		treeViewer = new TreeViewer(tree);
 		treeViewer.setCellModifier(this);
 		treeViewer.setContentProvider(this);
 		treeViewer.setLabelProvider(this);
+
+		// Création des polices de caractère
+		disabledBGColor = tree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW);
+		disabledFGColor = tree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
 
 		// Configuration des colonnes
 		treeColsMgr = new TableOrTreeColumnsMgr();
@@ -164,10 +246,11 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 		treeColsMgr.addColumn("CONSUMED", "Consumed", 70, SWT.RIGHT);
 		treeColsMgr.addColumn("TODO", "Todo", 70, SWT.RIGHT);
 		treeColsMgr.addColumn("DELTA", "Delta", 70, SWT.RIGHT);
+		treeColsMgr.addColumn("COMMENT", "Comment", 200, SWT.LEFT);
 		treeColsMgr.configureTree(treeViewer);
 
 		// Configuration des éditeurs de cellules
-		CellEditor[] editors = new CellEditor[7];
+		CellEditor[] editors = new CellEditor[8];
 		editors[NAME_COLUMN_IDX] = new TextCellEditor(tree);
 		editors[CODE_COLUMN_IDX] = new TextCellEditor(tree);
 		editors[INITIAL_FUND_COLUMN_IDX] = new TextCellEditor(tree);
@@ -175,10 +258,11 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 		editors[CONSUMED_COLUMN_IDX] = null;
 		editors[TODO_COLUMN_IDX] = new TextCellEditor(tree);
 		editors[DELTA_COLUMN_IDX] = null;
+		editors[COMMENT_COLUMN_IDX] = new TextCellEditor(tree);
 		treeViewer.setCellEditors(editors);
 		
 		// Initialisation des popups
-		taskChooserDialog = new TasksChooserDialog(parent.getShell());
+		taskChooserDialog = new TaskChooserTreeWithHistoryDialog(parent.getShell());
 		contribsViewerDialog = new ContributionsViewerDialog(parent.getShell());
 		
 		// Configuration du menu popup
@@ -212,21 +296,24 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 		moveToRootItem = new MenuItem(moveToMenu, SWT.CASCADE);
 		moveToRootItem.setText("under root");
 		moveToRootItem.addSelectionListener(this);
-		listTaskContributionsItem = new MenuItem(menu, SWT.CASCADE);
-		listTaskContributionsItem.setText("List contrib.");
-		listTaskContributionsItem.addSelectionListener(this);
+		copyItem = new MenuItem(menu, SWT.CASCADE);
+		copyItem.setText("Copy (Ctrl + c)");
+		copyItem.addSelectionListener(this);
 		removeItem = new MenuItem(menu, SWT.CASCADE);
 		removeItem.setText("Remove");
 		removeItem.addSelectionListener(this);
-		refreshItem = new MenuItem(menu, SWT.CASCADE);
-		refreshItem.setText("Refresh");
-		refreshItem.addSelectionListener(this);
 		expandItem = new MenuItem(menu, SWT.CASCADE);
 		expandItem.setText("Expand all");
 		expandItem.addSelectionListener(this);
 		collapseItem = new MenuItem(menu, SWT.CASCADE);
 		collapseItem.setText("Collapse all");
 		collapseItem.addSelectionListener(this);
+		listTaskContributionsItem = new MenuItem(menu, SWT.CASCADE);
+		listTaskContributionsItem.setText("List contrib.");
+		listTaskContributionsItem.addSelectionListener(this);
+		refreshItem = new MenuItem(menu, SWT.CASCADE);
+		refreshItem.setText("Refresh");
+		refreshItem.addSelectionListener(this);
 		exportItem = new MenuItem(menu, SWT.CASCADE);
 		exportItem.setText("Export");
 		exportItem.addSelectionListener(this);
@@ -236,24 +323,25 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 		// Ajout de KeyListeners pour faciliter le déplacement vers le bas et
 		// vers le haut des taches
 		// (Rq: les accélérateurs sont ignorés dans les menus contextuels)
-		tree.addKeyListener(new KeyListener() {
-			public void keyPressed(KeyEvent e) {
-			}
+		KeyListener keyListener = new KeyAdapter() {
 			public void keyReleased(KeyEvent e) {
-				if ((e.keyCode==SWT.ARROW_UP) && (e.stateMask==SWT.CTRL)) {
+				Widget simulatedWidget = null;
+				if ((e.keyCode==SWT.ARROW_UP) && (e.stateMask==SWT.CTRL))
+					simulatedWidget = moveUpItem;
+				else if ((e.keyCode==SWT.ARROW_DOWN) && (e.stateMask==SWT.CTRL))
+					simulatedWidget = moveDownItem;
+				else if ((e.keyCode=='c') && (e.stateMask==SWT.CTRL))
+					simulatedWidget = copyItem;
+				if (simulatedWidget!=null) {
 					Event event = new Event();
-					event.widget = moveUpItem;
-					SelectionEvent se = new SelectionEvent(event);
-					widgetSelected(se);
-				}
-				else if ((e.keyCode==SWT.ARROW_DOWN) && (e.stateMask==SWT.CTRL)) {
-					Event event = new Event();
-					event.widget = moveDownItem;
+					event.widget = simulatedWidget;
 					SelectionEvent se = new SelectionEvent(event);
 					widgetSelected(se);
 				}
 			}
-		});
+		};
+		parentComposite.addKeyListener(keyListener);
+		tree.addKeyListener(keyListener);
 	}
 
 	/* (non-Javadoc)
@@ -314,6 +402,9 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 					case (DELTA_COLUMN_IDX) :
 						canModify = false;
 						break;
+					case (COMMENT_COLUMN_IDX) :
+						canModify = true;
+						break;
 					default : 
 						throw new UITechException("Colonne inconnue");
 				}
@@ -362,6 +453,9 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 							- taskSums.getTodoSum();
 						value = StringHelper.hundredthToEntry(delta);
 						break;
+					case (COMMENT_COLUMN_IDX) :
+						value = task.getComment()!=null ? task.getComment() : "";
+						break;
 					default : 
 						throw new UITechException("Colonne inconnue");
 				}
@@ -407,6 +501,15 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 						task.setTodo(newTodo);
 						parentsMustBeRefreshed = true;
 						break;
+					case (COMMENT_COLUMN_IDX) :
+						String comment = (String) value;
+						if (comment!=null)
+							comment = comment.trim();
+						// Si le commentaire est vide, il devient nul
+						if ("".equals(comment))
+							comment = null;
+						task.setComment((String)value);
+						break;
 					case (CONSUMED_COLUMN_IDX) :
 					case (DELTA_COLUMN_IDX) :
 						throw new UITechException("Cette colonne ne peut pas être modifiée");
@@ -424,6 +527,8 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 					// Notification de la mise à jour uniquement pour la tache
 					notifyLabelProviderListener(new LabelProviderChangedEvent(labelProvider, new Object[] { task }));
 				}
+				// Notification de la mise à jour de la tache pour les listeners
+				notifyTaskUpdated(task);
 				return null;
 			}
 		};
@@ -506,6 +611,20 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 	}
 
 	/* (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.ITableColorProvider#getBackground(java.lang.Object, int)
+	 */
+	public Color getBackground(Object element, int columnIndex) {
+		return canModify(element, treeColsMgr.getColumnCode(columnIndex)) ? treeViewer.getTree().getBackground() : disabledBGColor;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.viewers.ITableColorProvider#getForeground(java.lang.Object, int)
+	 */
+	public Color getForeground(Object element, int columnIndex) {
+		return canModify(element, treeColsMgr.getColumnCode(columnIndex)) ? treeViewer.getTree().getForeground() : disabledFGColor;
+	}
+
+	/* (non-Javadoc)
 	 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
 	 */
 	public void widgetSelected(final SelectionEvent e) {
@@ -520,26 +639,36 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 					TreeItem parentItem = selection.length>0 ? selection[0].getParentItem() : null;
 					Task parentTask = parentItem==null ? null : (Task) parentItem.getData();
 					// Création de la tache
-					newTask(parentTask);
+					Task newTask = newTask(parentTask);
+					// Notification des listeners
+					notifyTaskAdded(newTask);
 				}
 				// Cas d'une création de sous tache
 				else if (newSubtaskItem.equals(source)) {
 					Task selectedTask = (Task) selection[0].getData();
-					newTask(selectedTask);
+					Task newTask = newTask(selectedTask);
+					// Notification des listeners
+					notifyTaskAdded(newTask);
 				}
 				// Cas d'une demande de déplacement vers le haut
 				else if (moveUpItem.equals(source)) {
 					Task selectedTask = (Task) selection[0].getData();
+					String oldTaskFullpath = selectedTask.getFullPath();
 					ModelMgr.moveUpTask(selectedTask);
 					// Mise à jour de l'IHM
 					treeViewer.refresh(selection[0].getParent().getData(), true);
+					// Notification des listeners
+					notifyTaskMoved(oldTaskFullpath, selectedTask);
 				}
 				// Cas d'une demande de déplacement vers le haut
 				else if (moveDownItem.equals(source)) {
 					Task selectedTask = (Task) selection[0].getData();
+					String oldTaskFullpath = selectedTask.getFullPath();
 					ModelMgr.moveDownTask(selectedTask);
 					// Mise à jour de l'IHM
 					treeViewer.refresh(selection[0].getParent().getData(), true);
+					// Notification des listeners
+					notifyTaskMoved(oldTaskFullpath, selectedTask);
 				}
 				// Cas d'une demande de déplacement vers une autre tache
 				else if (moveToAnotherTaskItem.equals(source)) {
@@ -567,6 +696,7 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 					if (taskChooserDialog.open()==Dialog.OK) {
 						newParentTask = (Task) taskChooserDialog.getValue();
 						log.debug("Selected parent task=" + newParentTask);
+						String oldTaskFullpath = taskToMove.getFullPath();
 						ModelMgr.moveTask(taskToMove, newParentTask);
 						// Rafraichir l'ancien et le nouveau parent ne suffit pas
 						// dans le cas ou le parent destination change de numéro 
@@ -575,23 +705,46 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 						//treeViewer.refresh(newParentTask);
 						//treeViewer.refresh(srcParentTask);
 						treeViewer.refresh();
+						// Notification des listeners
+						notifyTaskMoved(oldTaskFullpath, taskToMove);
 					}
 				}
 				// Cas d'une demande de déplacement vers la racine
 				else if (moveToRootItem.equals(source)) {
 					TreeItem selectedItem = selection[0];
 					Task taskToMove = (Task) selectedItem.getData();
+					String oldTaskFullpath = taskToMove.getFullPath();
 					// Déplacement
 					ModelMgr.moveTask(taskToMove, null);
 					treeViewer.refresh();
+					// Notification des listeners
+					notifyTaskMoved(oldTaskFullpath, taskToMove);
 				}
-				// Cas d'une demande de liste des contributions
-				else if (listTaskContributionsItem.equals(source)) {
-					TreeItem selectedItem = selection[0];
-					Task selectedTask = (Task) selectedItem.getData();
-					contribsViewerDialog.setFilter(selectedTask, null, null, null, null);
-					// Ouverture du dialogue
-					contribsViewerDialog.open();
+				// Cas d'une demande de copie des taches sélectionnées (on met dans le presse papier 
+				// le chemin de la tache)
+				else if (copyItem.equals(source)) {
+					// Implémentation en multi sélection => pour l'instant on ne veut gérer qu'une seule tache à la fois
+					//TreeItem[] selectedItems = treeViewer.getTree().getSelection();
+					//Clipboard clipboard = new Clipboard(parent.getDisplay());
+					//String[] taskCodePaths = new String[selectedItems.length];
+					//Transfer[] transfers = new Transfer[selectedItems.length];
+					//for (int i=0; i<selectedItems.length; i++) {
+					//	Task task = (Task) selectedItems[i].getData();
+					//	taskCodePaths[i] = ModelMgr.getTaskCodePath(task);
+					//	transfers[i] = TextTransfer.getInstance();
+					//}
+					//clipboard.setContents(taskCodePaths, transfers);
+					//clipboard.dispose();
+					
+					// Implémentation en sélection simple
+					if (selection!=null && selection.length>0) {
+						TreeItem selectedItem = selection[0];
+						Clipboard clipboard = new Clipboard(parent.getDisplay());
+						Task task = (Task) selectedItem.getData();
+						String taskCodePath = ModelMgr.getTaskCodePath(task);
+						clipboard.setContents(new String[] { taskCodePath }, new Transfer[] { TextTransfer.getInstance() });
+						clipboard.dispose();
+					}
 				}
 				// Cas d'une suppression
 				else if (removeItem.equals(source)) {
@@ -610,18 +763,8 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 						treeViewer.refresh(parentTask);
 					else
 						treeViewer.refresh();
-				}
-				// Cas d'une demande de rafraichissement
-				else if (refreshItem.equals(source)) {
-					// Récupération du noeud parent
-					TreeItem selectedItem = selection[0];
-					TreeItem parentItem = selectedItem.getParentItem();
-					Task parentTask = (parentItem!=null) ? (Task) parentItem.getData() : null;
-					// Mise à jour
-					if (parentTask != null)
-						treeViewer.refresh(parentTask);
-					else
-						treeViewer.refresh();
+					// Notification des listeners
+					notifyTaskRemoved(selectedTask);
 				}
 				// Cas d'une demande d'expansion d'un noeud
 				else if (expandItem.equals(source)) {
@@ -634,6 +777,26 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 					TreeItem selectedItem = treeViewer.getTree().getSelection()[0];
 					treeViewer.collapseToLevel(
 							selectedItem.getData(), AbstractTreeViewer.ALL_LEVELS);
+				}
+				// Cas d'une demande de liste des contributions
+				else if (listTaskContributionsItem.equals(source)) {
+					TreeItem selectedItem = selection[0];
+					Task selectedTask = (Task) selectedItem.getData();
+					contribsViewerDialog.setFilter(selectedTask, null, null, null, null);
+					// Ouverture du dialogue
+					contribsViewerDialog.open();
+				}
+				// Cas d'une demande de rafraichissement
+				else if (refreshItem.equals(source)) {
+					// Récupération du noeud parent
+					TreeItem selectedItem = selection[0];
+					TreeItem parentItem = selectedItem.getParentItem();
+					Task parentTask = (parentItem!=null) ? (Task) parentItem.getData() : null;
+					// Mise à jour
+					if (parentTask != null)
+						treeViewer.refresh(parentTask);
+					else
+						treeViewer.refresh();
 				}
 				// Cas d'une demande d'export du tableau
 				else if (exportItem.equals(source)) {
@@ -659,14 +822,16 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 	 * @param parentTask la tache parent ou null pour une tache racine.
 	 * @throws DbException levé en cas d'incident associé à la persistence.
 	 * @throws ModelException levé en cas de violation du modèle de données.
+	 * @return la tache créée.
 	 */
-	private void newTask(Task parentTask) throws DbException, ModelException {
+	private Task newTask(Task parentTask) throws DbException, ModelException {
 		log.debug("newTask(" + parentTask + ")");
 		// Création de la nouvelle tache
 		Task newTask = ModelMgr.createNewTask(parentTask);
 		// Ajout dans l'arbre et création en base
 		treeViewer.add(parentTask==null ? treeViewer.getInput() : parentTask, newTask);
 		treeViewer.setSelection(new StructuredSelection(newTask), true);
+		return newTask;
 	}
 	
 	/* (non-Javadoc)
@@ -684,11 +849,12 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 		moveDownItem.setEnabled(singleSelection);
 		moveToAnotherTaskItem.setEnabled(singleSelection);
 		moveToRootItem.setEnabled(singleSelection && !rootSingleSelection);
-		listTaskContributionsItem.setEnabled(singleSelection);
+		copyItem.setEnabled(!emptySelection);
 		removeItem.setEnabled(singleSelection);
-		refreshItem.setEnabled(singleSelection);
 		expandItem.setEnabled(singleSelection);
 		collapseItem.setEnabled(singleSelection);
+		listTaskContributionsItem.setEnabled(singleSelection);
+		refreshItem.setEnabled(singleSelection);
 		exportItem.setEnabled(true);
 	}
 	
@@ -718,4 +884,77 @@ public class TasksUI extends AbstractTableMgr implements DbStatusListener, ICell
 		}
 	}
 
+	/**
+	 * Ajoute un listener.
+	 * @param listener le nouveau listener.
+	 */
+	public void addTaskListener(ITaskListener listener) {
+		listeners.add(listener);
+	}
+
+	/**
+	 * Ajoute un listener.
+	 * @param listener le nouveau listener.
+	 */
+	public void removeTaskListener(ITaskListener listener) {
+		listeners.remove(listener);
+	}
+
+	/**
+	 * Notifie les listeners qu'une tache a été ajoutée.
+	 * @param newTask la tache ajouté.
+	 */
+	private void notifyTaskAdded(Task newTask) {
+		Iterator it = listeners.iterator();
+		while (it.hasNext()) {
+			ITaskListener listener = (ITaskListener) it.next();
+			listener.taskAdded(newTask);
+		}
+		// Transfert de la notification au popup de choix de tache
+		taskChooserDialog.taskAdded(newTask);
+	}
+
+	/**
+	 * Notifie les listeners qu'une tache a été supprimée.
+	 * @param task la tache supprimée.
+	 */
+	private void notifyTaskRemoved(Task task) {
+		Iterator it = listeners.iterator();
+		while (it.hasNext()) {
+			ITaskListener listener = (ITaskListener) it.next();
+			listener.taskRemoved(task);
+		}
+		// Transfert de la notification au popup de choix de tache
+		taskChooserDialog.taskRemoved(task);
+	}
+
+	/**
+	 * Notifie les listeners qu'une tache a été modifiée.
+	 * @param task la tache modifiée.
+	 */
+	private void notifyTaskUpdated(Task task) {
+		Iterator it = listeners.iterator();
+		while (it.hasNext()) {
+			ITaskListener listener = (ITaskListener) it.next();
+			listener.taskUpdated(task);
+		}
+		// Transfert de la notification au popup de choix de tache
+		taskChooserDialog.taskUpdated(task);
+	}
+
+	/**
+	 * Notifie les listeners qu'une tache a été déplacée.
+	 * @param task la tache modifiée.
+	 */
+	private void notifyTaskMoved(String oldTaskPath, Task task) {
+		Iterator it = listeners.iterator();
+		while (it.hasNext()) {
+			ITaskListener listener = (ITaskListener) it.next();
+			listener.taskMoved(oldTaskPath, task);
+		}
+		// Transfert de la notification au popup de choix de tache
+		taskChooserDialog.taskMoved(oldTaskPath, task);
+	}
+
+	
 }

@@ -2,10 +2,18 @@
 <!DOCTYPE model SYSTEM "activitymgr.dtd">
 <model>
 	<durations>
-		<duration>25</duration>
-		<duration>50</duration>
-		<duration>75</duration>
-		<duration>100</duration>
+		<duration>
+			<value>25</value>
+		</duration>
+		<duration>
+			<value>50</value>
+		</duration>
+		<duration>
+			<value>75</value>
+		</duration>
+		<duration>
+			<value>100</value>
+		</duration>
 	</durations>
 	<collaborators>
 		<collaborator>

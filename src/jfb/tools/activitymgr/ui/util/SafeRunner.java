@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2006, Jean-François Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -31,9 +31,7 @@ import jfb.tools.activitymgr.AbstractException;
 import jfb.tools.activitymgr.ui.dialogs.ErrorDialog;
 
 import org.apache.log4j.Logger;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Cursor;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Shell;
 
 /**
@@ -61,6 +59,16 @@ public abstract class SafeRunner {
 	private static Logger log = Logger.getLogger(SafeRunner.class);
 
 	/**
+	 * Classe permettant de stoker le résultat du traitement.
+	 * (sans cet objet il n'est pas possible de récupérer le résultat
+	 * dans le traitement exécuté dans le Runnable puisqu'il faut
+	 * passer par une référence finale).
+	 */
+	private static class Result {
+		public Object value;
+	}
+	
+	/**
 	 * Lance le traitement dans le contexte sécurisé.
 	 * @param parentShell shell parent (peut être nul).
 	 * @return le résultat du traitement.
@@ -75,32 +83,55 @@ public abstract class SafeRunner {
 	 * @param defaultValue la valeur à retourner par défaut.
 	 * @return le résultat du traitement.
 	 */
-	public Object run(Shell parentShell, Object defaultValue) {
+// TODO Supprimer ce bout de code si il n'y a pas de pb
+//	public Object run(Shell parentShell, Object defaultValue) {
+//		log.debug("ParentShell : " + parentShell);
+//		Object result = defaultValue;
+//		// Changement du curseur
+//		Cursor waitCursor = parentShell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT);
+//		parentShell.setCursor(waitCursor);
+//		// Exécution du traitement
+//		try { result = runUnsafe(); }
+//		catch (AbstractException e) {
+//			log.info("UI Exception", e);
+//			Shell parent = Display.getCurrent().getActiveShell();
+//			new ErrorDialog(parent, "Unable to complete operation : '" + e.getMessage() + "'", e).open();
+//		}
+//		catch (Throwable t) {
+//			log.error("Unexpected error", t);
+//			Shell parent = Display.getCurrent().getActiveShell();
+//			new ErrorDialog(parent, "Unexpected error", t).open();
+//		}
+//		finally {
+//			// Retour du curseur normal
+//			Cursor normalCursor = parentShell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW);
+//			parentShell.setCursor(normalCursor);
+//		}
+//		// Retour du résultat
+//		log.debug(" -> result='" + result + "'");
+//		return result;
+//	}
+	public Object run(final Shell parentShell, Object defaultValue) {
 		log.debug("ParentShell : " + parentShell);
-		Object result = defaultValue;
-		// Changement du curseur
-		Cursor waitCursor = parentShell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT);
-		parentShell.setCursor(waitCursor);
+		final Result result = new Result();
+		result.value = defaultValue;
 		// Exécution du traitement
-		try { result = runUnsafe();	}
-		catch (AbstractException e) {
-			log.info("UI Exception", e);
-			Shell parent = Display.getCurrent().getActiveShell();
-			new ErrorDialog(parent, "Unable to complete operation : '" + e.getMessage() + "'", e).open();
-		}
-		catch (Throwable t) {
-			log.error("Unexpected error", t);
-			Shell parent = Display.getCurrent().getActiveShell();
-			new ErrorDialog(parent, "Unexpected error", t).open();
-		}
-		finally {
-			// Retour du curseur normal
-			Cursor normalCursor = parentShell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW);
-			parentShell.setCursor(normalCursor);
-		}
+		BusyIndicator.showWhile(parentShell.getDisplay(), new Runnable() {
+			public void run() {
+				try { result.value = runUnsafe(); }
+				catch (AbstractException e) {
+					log.info("UI Exception", e);
+					new ErrorDialog(parentShell, "Unable to complete operation : '" + e.getMessage() + "'", e).open();
+				}
+				catch (Throwable t) {
+					log.error("Unexpected error", t);
+					new ErrorDialog(parentShell, "Unexpected error", t).open();
+				}
+			}
+		});
 		// Retour du résultat
-		log.debug(" -> result='" + result + "'");
-		return result;
+		log.debug(" -> result='" + result.value + "'");
+		return result.value;
 	}
 
 	/**

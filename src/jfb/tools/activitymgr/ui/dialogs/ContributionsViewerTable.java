@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2006, Jean-François Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -28,7 +28,10 @@
 package jfb.tools.activitymgr.ui.dialogs;
 
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 
+import jfb.tools.activitymgr.core.DbException;
+import jfb.tools.activitymgr.core.ModelException;
 import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Collaborator;
 import jfb.tools.activitymgr.core.beans.Contribution;
@@ -69,8 +72,9 @@ public class ContributionsViewerTable extends AbstractTableMgr
 	/** Constantes associées aux colonnes */
 	public static final int DATE_COLUMN_IDX = 0;
 	public static final int COLLABORATOR_COLUMN_IDX = 1;
-	public static final int TASK_COLUMN_IDX = 2;
-	public static final int DURATION_COLUMN_IDX = 3;
+	public static final int TASK_CODE_PATH_COLUMN_IDX = 2;
+	public static final int TASK_NAME_COLUMN_IDX = 3;
+	public static final int DURATION_COLUMN_IDX = 4;
 	private static TableOrTreeColumnsMgr tableColsMgr;
 	
 	/** Formatteur de date */
@@ -85,14 +89,25 @@ public class ContributionsViewerTable extends AbstractTableMgr
 	/** Items de menu */
 	private MenuItem exportItem;
 
+	/** Cache de taches */
+	private HashMap tasksCache = new HashMap();
+
+	/** Cache de chemins de tache */
+	private HashMap taskCodePathsCache = new HashMap();
+
+	/** Cache de collaborateurs */
+	private HashMap collaboratorsCache = new HashMap();
+
 	/**
 	 * Constructeur par défaut.
 	 * @param parentComposite composant parent.
+	 * @param layoutData données associées au layout.
 	 */
-	public ContributionsViewerTable(Composite parentComposite) {
+	public ContributionsViewerTable(Composite parentComposite, Object layoutData) {
 		log.debug("new ContributionsViewerTable()");
 		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
+		parent.setLayoutData(layoutData);
 		parent.setLayout(new GridLayout(1, false));
 		
 		// Arbre tableau
@@ -113,7 +128,8 @@ public class ContributionsViewerTable extends AbstractTableMgr
 		tableColsMgr = new TableOrTreeColumnsMgr();
 		tableColsMgr.addColumn("DATE", "Date", 70, SWT.LEFT);
 		tableColsMgr.addColumn("COLLABORATOR", "Collaborator", 100, SWT.LEFT);
-		tableColsMgr.addColumn("TASK", "Task", 170, SWT.LEFT);
+		tableColsMgr.addColumn("TASK_NAME", "Task path", 170, SWT.LEFT);
+		tableColsMgr.addColumn("TASK_NAME", "Task name", 170, SWT.LEFT);
 		tableColsMgr.addColumn("DURATION", "Duration", 50, SWT.LEFT);
 		tableColsMgr.configureTable(tableViewer);
 
@@ -174,15 +190,17 @@ public class ContributionsViewerTable extends AbstractTableMgr
 						text = sdf.format(c.getDate().getTime());
 						break;
 					case (COLLABORATOR_COLUMN_IDX) :
-						Collaborator collaborator = ModelMgr.getCollaborator(c.getContributorId());
+						Collaborator collaborator = getCachedCollaborator(c.getContributorId());
 						text = collaborator.getFirstName() + " " + collaborator.getLastName();
 						break;
-					case (TASK_COLUMN_IDX) :
-						Task task = ModelMgr.getTask(c.getTaskId());
-						text = task.getName();
+					case (TASK_CODE_PATH_COLUMN_IDX) :
+						text = getCachedTaskCodePath(c.getTaskId());
+						break;
+					case (TASK_NAME_COLUMN_IDX) :
+						text = getCachedTask(c.getTaskId()).getName();
 						break;
 					case (DURATION_COLUMN_IDX) :
-						text = StringHelper.hundredthToEntry(c.getDuration());
+						text = StringHelper.hundredthToEntry(c.getDurationId());
 						break;
 					default : throw new Error("Colonne inconnue");
 				}
@@ -193,6 +211,59 @@ public class ContributionsViewerTable extends AbstractTableMgr
 		return (String) safeRunner.run(parent.getShell(), "");
 	}
 
+	/**
+	 * Retourne le chemin de la tache associée à l'identifiant spécifié.
+	 * @param taskId l'identifiant de la tache.
+	 * @return le chemin.
+	 * @throws ModelException levé en cas de viloation du modèle.
+	 * @throws DbException levé en cas d'incident associé à l'accès à la base de données.
+	 */
+	private String getCachedTaskCodePath(long taskId) throws ModelException, DbException {
+		Long _taskId = new Long(taskId);
+		String taskCodePath = (String) taskCodePathsCache.get(_taskId);
+		if (taskCodePath==null) {
+			log.debug("Registering in cache task code path for taskId=" + taskId);
+			Task task = getCachedTask(taskId);
+			taskCodePath = ModelMgr.getTaskCodePath(task);
+			taskCodePathsCache.put(_taskId, taskCodePath);
+		}
+		return taskCodePath;
+	}
+	
+	/**
+	 * Retourne la tache associée à l'identifiant spécifié.
+	 * @param taskId l'identifiant de la tache.
+	 * @return la tache.
+	 * @throws DbException levé en cas d'incident associé à l'accès à la base de données.
+	 */
+	private Task getCachedTask(long taskId) throws DbException {
+		Long _taskId = new Long(taskId);
+		Task task = (Task) tasksCache.get(_taskId);
+		if (task==null) {
+			log.debug("Registering in cache task for taskId=" + taskId);
+			task = ModelMgr.getTask(taskId);
+			tasksCache.put(_taskId, task);
+		}
+		return task;
+	}
+	
+	/**
+	 * Retourne le collaborateur associée à l'identifiant spécifié.
+	 * @param collaboratorId l'identifiant du collaborateur.
+	 * @return le collaborateur.
+	 * @throws DbException levé en cas d'incident associé à l'accès à la base de données.
+	 */
+	private Collaborator getCachedCollaborator(long collaboratorId) throws DbException {
+		Long _collaboratorId = new Long(collaboratorId);
+		Collaborator collaborator = (Collaborator) collaboratorsCache.get(_collaboratorId);
+		if (collaborator==null) {
+			log.debug("Registering in cache collaborator for collaboratorId=" + collaboratorId);
+			collaborator = ModelMgr.getCollaborator(collaboratorId);
+			collaboratorsCache.put(_collaboratorId, collaborator);
+		}
+		return collaborator;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.eclipse.swt.events.MenuListener#menuShown(org.eclipse.swt.events.MenuEvent)
 	 */

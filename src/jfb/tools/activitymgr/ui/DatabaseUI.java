@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2006, Jean-François Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -39,6 +39,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import jfb.tools.activitymgr.core.DbException;
 import jfb.tools.activitymgr.core.ModelException;
 import jfb.tools.activitymgr.core.ModelMgr;
+import jfb.tools.activitymgr.core.beans.Duration;
 import jfb.tools.activitymgr.ui.util.CfgMgr;
 import jfb.tools.activitymgr.ui.util.SafeRunner;
 import jfb.tools.activitymgr.ui.util.UITechException;
@@ -75,7 +76,7 @@ public class DatabaseUI implements ModifyListener {
 	 * Interface utilisée pour notifier de l'état de la connexion
 	 * à la base de données.
 	 */
-	public static interface DbStatusListener {
+	public static interface IDbStatusListener {
 
 		/**
 		 * Notifie de l'ouverture de l'accès à la base de données.
@@ -590,7 +591,7 @@ public class DatabaseUI implements ModifyListener {
 	 * Ajoute un listener.
 	 * @param listener le nouveau listener.
 	 */
-	public void addDbStatusListener(DbStatusListener listener) {
+	public void addDbStatusListener(IDbStatusListener listener) {
 		listeners.add(listener);
 	}
 
@@ -598,7 +599,7 @@ public class DatabaseUI implements ModifyListener {
 	 * Ajoute un listener.
 	 * @param listener le nouveau listener.
 	 */
-	public void removeDbStatusListener(DbStatusListener listener) {
+	public void removeDbStatusListener(IDbStatusListener listener) {
 		listeners.remove(listener);
 	}
 
@@ -693,7 +694,7 @@ public class DatabaseUI implements ModifyListener {
 			// Notification de changement de statut de la connexion
 			Iterator it = listeners.iterator();
 			while (it.hasNext()) {
-				DbStatusListener listener = (DbStatusListener) it.next();
+				IDbStatusListener listener = (IDbStatusListener) it.next();
 				listener.databaseOpened();
 			}
 		}
@@ -721,7 +722,7 @@ public class DatabaseUI implements ModifyListener {
 		// Notification de changement de statut de la connexion
 		Iterator it = listeners.iterator();
 		while (it.hasNext()) {
-			DbStatusListener listener = (DbStatusListener) it.next();
+			IDbStatusListener listener = (IDbStatusListener) it.next();
 			listener.databaseClosed();
 		}
 	}
@@ -744,10 +745,15 @@ public class DatabaseUI implements ModifyListener {
 				"  - if you are about to import an XML file, choose no to avoid data conflicts.\n" +
 				"  - if you choose no, you may have to create it manually.")) {
 			try {
-				ModelMgr.createDuration(25);
-				ModelMgr.createDuration(50);
-				ModelMgr.createDuration(75);
-				ModelMgr.createDuration(100);
+				Duration duration = new Duration();
+				duration.setId(25);
+				ModelMgr.createDuration(duration);
+				duration.setId(50);
+				ModelMgr.createDuration(duration);
+				duration.setId(75);
+				ModelMgr.createDuration(duration);
+				duration.setId(100);
+				ModelMgr.createDuration(duration);
 			}
 			catch (ModelException e) {
 				log.error("Unexpected error while creating default durations", e);
@@ -757,7 +763,7 @@ public class DatabaseUI implements ModifyListener {
 		// Notification des listeners (reset équivalent à réouverture de la BDD)
 		Iterator it = listeners.iterator();
 		while (it.hasNext()) {
-			DbStatusListener listener = (DbStatusListener) it.next();
+			IDbStatusListener listener = (IDbStatusListener) it.next();
 			listener.databaseOpened();
 		}
 	}
@@ -858,7 +864,7 @@ public class DatabaseUI implements ModifyListener {
 				// Notification de fikn de chargement (équivalent ouverture BDD)
 				Iterator it = listeners.iterator();
 				while (it.hasNext()) {
-					DbStatusListener listener = (DbStatusListener) it.next();
+					IDbStatusListener listener = (IDbStatusListener) it.next();
 					listener.databaseOpened();
 				}
 				// Popup d'info de fin de traitement

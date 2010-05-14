@@ -8,6 +8,7 @@ import jfb.tools.activitymgr.core.ModelException;
 import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Collaborator;
 import jfb.tools.activitymgr.core.beans.Contribution;
+import jfb.tools.activitymgr.core.beans.Duration;
 import jfb.tools.activitymgr.core.beans.Task;
 import jfb.tst.tools.activitymgr.AbstractModelTestCase;
 
@@ -24,7 +25,7 @@ public class ContributionTest extends AbstractModelTestCase {
 	/** Collaborateurs de test */
 	private Collaborator col1;
 	private Collaborator col2;
-	private long duration;
+	private Duration duration;
 	
 	/** Contributions */
 	private Contribution c1;
@@ -92,7 +93,9 @@ public class ContributionTest extends AbstractModelTestCase {
 		col2 = ModelMgr.updateCollaborator(col2);
 		
 		// Récupération des durées
-		duration = ModelMgr.createDuration(100);
+		duration = new Duration();
+		duration.setId(100);
+		duration = ModelMgr.createDuration(duration);
 		
 		// Création de contributions
 		if (createContributions) {
@@ -101,7 +104,7 @@ public class ContributionTest extends AbstractModelTestCase {
 			c1 = new Contribution();
 			c1.setDate(date);
 			c1.setContributorId(col1.getId());
-			c1.setDuration(duration);
+			c1.setDurationId(duration.getId());
 			c1.setTaskId(task111.getId());
 			ModelMgr.createContribution(c1);
 
@@ -109,7 +112,7 @@ public class ContributionTest extends AbstractModelTestCase {
 			c2 = new Contribution();
 			c2.setDate(date);
 			c2.setContributorId(col2.getId());
-			c2.setDuration(duration);
+			c2.setDurationId(duration.getId());
 			c2.setTaskId(task112.getId());
 			ModelMgr.createContribution(c2);
 		
@@ -117,7 +120,7 @@ public class ContributionTest extends AbstractModelTestCase {
 			c3 = new Contribution();
 			c3.setDate(date);
 			c3.setContributorId(col2.getId());
-			c3.setDuration(duration);
+			c3.setDurationId(duration.getId());
 			c3.setTaskId(task111.getId());
 			ModelMgr.createContribution(c3);
 		}
@@ -161,7 +164,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		// Test...
 		Contribution c = new Contribution();
 		c.setContributorId(col1.getId());
-		c.setDuration(duration);
+		c.setDurationId(duration.getId());
 		c.setDate(cal);
 
 		// Vérification du calendrier

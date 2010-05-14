@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE model SYSTEM "activitymgr.dtd">
+<!-- 
+  Root tasks check sums :
+  * Root task[0]='/PROJ1' (My first project)
+    - Budgets :           29.5
+    - InitiallyConsumed : 0.0
+    - Consumed :          11.0
+    - Todo :              18.5
+    - Contibutions nb :   13
+  * Root task[1]='/PROJ2' (My second project)
+    - Budgets :           20.0
+    - InitiallyConsumed : 0.0
+    - Consumed :          0.0
+    - Todo :              20.0
+    - Contibutions nb :   0
+  * Root task[2]='/OTHER' (Other)
+    - Budgets :           3.0
+    - InitiallyConsumed : 0.0
+    - Consumed :          3.0
+    - Todo :              0.0
+    - Contibutions nb :   3
+  -->
+<model>
+  <durations>
+    <duration>
+      <value>25</value>
+      <is-active>true</is-active>
+    </duration>
+    <duration>
+      <value>50</value>
+      <is-active>true</is-active>
+    </duration>
+    <duration>
+      <value>75</value>
+      <is-active>true</is-active>
+    </duration>
+    <duration>
+      <value>100</value>
+      <is-active>true</is-active>
+    </duration>
+  </durations>
+  <collaborators>
+    <collaborator>
+      <login>dlovering</login>
+      <first-name>David</first-name>
+      <last-name>Lovering</last-name>
+      <is-active>true</is-active>
+    </collaborator>
+    <collaborator>
+      <login>fblack</login>
+      <first-name>Francis</first-name>
+      <last-name>Black</last-name>
+      <is-active>true</is-active>
+    </collaborator>
+    <collaborator>
+      <login>jsantiago</login>
+      <first-name>Joe</first-name>
+      <last-name>Santiago</last-name>
+      <is-active>true</is-active>
+    </collaborator>
+    <collaborator>
+      <login>kdeal</login>
+      <first-name>Kim</first-name>
+      <last-name>Deal</last-name>
+      <is-active>true</is-active>
+    </collaborator>
+  </collaborators>
+  <tasks>
+    <task>
+      <path>/PROJ1</path>
+      <name>My first project</name>
+      <budget>0</budget>
+      <initially-consumed>0</initially-consumed>
+      <todo>0</todo>
+    </task>
+    <task>
+      <path>/PROJ1/LAUNC</path>
+      <name>Launching</name>
+      <budget>150</budget>
+      <initially-consumed>0</initially-consumed>
+      <todo>0</todo>
+    </task>
+    <task>
+      <path>/PROJ1/CONCE</path>
+      <name>Conception</name>
+      <budget>500</budget>
+      <initially-consumed>0</initially-consumed>
+      <todo>100</todo>
+    </task>
+    <task>
+      <path>/PROJ1/DEVPT</path>
+      <name>Development</name>
+      <budget>0</budget>
+      <initially-consumed>0</initially-consumed>
+      <todo>0</todo>
+    </task>
+    <task>
+      <path>/PROJ1/DEVPT/MOD1</path>
+      <name>Module 1</name>
+      <budget>350</budget>
+      <initially-consumed>0</initially-consumed>
+      <todo>0</todo>
+    </task>
+    <task>
+      <path>/PROJ1/DEVPT/MOD2</path>
+      <name>Module 2</name>
+      <budget>700</budget>
+      <initially-consumed>0</initially-consumed>
+      <todo>500</todo>
+    </task>
+    <task>
+      <path>/PROJ1/DEVPT/MOD3</path>
+      <name>Module 3</name>
+      <budget>450</budget>
+      <initially-consumed>0</initially-consumed>
+      <todo>450</todo>
+    </task>
+    <task>
+      <path>/PROJ1/INTGR</path>
+      <name>Integration</name>
+      <budget>500</budget>
+      <initially-consumed>0</initially-consumed>
+      <todo>500</todo>
+    </task>
+    <task>
+      <path>/PROJ1/GUAR</path>
+      <name>Guarantee</name>
+      <budget>300</budget>
+      <initially-consumed>0</initially-consumed>
+      <todo>300</todo>
+    </task>
+    <task>
+      <path>/PROJ2</path>
+      <name>My second project</name>
+      <budget>0</budget>
+      <initially-consumed>0</initially-consumed>
+      <todo>0</todo>
+    </task>
+    <task>
+      <path>/PROJ2/&lt;N&gt;</path>
+      <name>&lt;NEW&gt;</name>
+      <budget>2000</budget>
+      <initially-consumed>0</initially-consumed>
+      <todo>2000</todo>
+    </task>
+    <task>
+      <path>/OTHER</path>
+      <name>Other</name>
+      <budget>0</budget>
+      <initially-consumed>0</initially-consumed>
+      <todo>0</todo>
+    </task>
+    <task>
+      <path>/OTHER/HOL</path>
+      <name>Holidays</name>
+      <budget>100</budget>
+      <initially-consumed>0</initially-consumed>
+      <todo>0</todo>
+    </task>
+    <task>
+      <path>/OTHER/ILL</path>
+      <name>Illness</name>
+      <budget>200</budget>
+      <initially-consumed>0</initially-consumed>
+      <todo>0</todo>
+    </task>
+  </tasks>
+  <contributions>
+    <contribution year="2006" month="12" day="18" duration="100">
+      <contributor-ref>fblack</contributor-ref>
+      <task-ref>/PROJ1/LAUNC</task-ref>
+    </contribution>
+    <contribution year="2006" month="12" day="19" duration="50">
+      <contributor-ref>fblack</contributor-ref>
+      <task-ref>/PROJ1/LAUNC</task-ref>
+    </contribution>
+    <contribution year="2006" month="12" day="19" duration="50">
+      <contributor-ref>fblack</contributor-ref>
+      <task-ref>/PROJ1/CONCE</task-ref>
+    </contribution>
+    <contribution year="2006" month="12" day="19" duration="100">
+      <contributor-ref>kdeal</contributor-ref>
+      <task-ref>/OTHER/ILL</task-ref>
+    </contribution>
+    <contribution year="2006" month="12" day="20" duration="100">
+      <contributor-ref>fblack</contributor-ref>
+      <task-ref>/PROJ1/CONCE</task-ref>
+    </contribution>
+    <contribution year="2006" month="12" day="20" duration="100">
+      <contributor-ref>jsantiago</contributor-ref>
+      <task-ref>/OTHER/HOL</task-ref>
+    </contribution>
+    <contribution year="2006" month="12" day="20" duration="100">
+      <contributor-ref>kdeal</contributor-ref>
+      <task-ref>/OTHER/ILL</task-ref>
+    </contribution>
+    <contribution year="2006" month="12" day="21" duration="100">
+      <contributor-ref>fblack</contributor-ref>
+      <task-ref>/PROJ1/CONCE</task-ref>
+    </contribution>
+    <contribution year="2006" month="12" day="21" duration="100">
+      <contributor-ref>kdeal</contributor-ref>
+      <task-ref>/PROJ1/CONCE</task-ref>
+    </contribution>
+    <contribution year="2006" month="12" day="21" duration="100">
+      <contributor-ref>jsantiago</contributor-ref>
+      <task-ref>/PROJ1/DEVPT/MOD1</task-ref>
+    </contribution>
+    <contribution year="2006" month="12" day="21" duration="100">
+      <contributor-ref>dlovering</contributor-ref>
+      <task-ref>/PROJ1/DEVPT/MOD1</task-ref>
+    </contribution>
+    <contribution year="2006" month="12" day="22" duration="25">
+      <contributor-ref>fblack</contributor-ref>
+      <task-ref>/PROJ1/CONCE</task-ref>
+    </contribution>
+    <contribution year="2006" month="12" day="22" duration="75">
+      <contributor-ref>fblack</contributor-ref>
+      <task-ref>/PROJ1/DEVPT/MOD1</task-ref>
+    </contribution>
+    <contribution year="2006" month="12" day="22" duration="100">
+      <contributor-ref>jsantiago</contributor-ref>
+      <task-ref>/PROJ1/DEVPT/MOD1</task-ref>
+    </contribution>
+    <contribution year="2006" month="12" day="22" duration="100">
+      <contributor-ref>kdeal</contributor-ref>
+      <task-ref>/PROJ1/DEVPT/MOD2</task-ref>
+    </contribution>
+    <contribution year="2006" month="12" day="22" duration="100">
+      <contributor-ref>dlovering</contributor-ref>
+      <task-ref>/PROJ1/DEVPT/MOD2</task-ref>
+    </contribution>
+  </contributions>
+</model>

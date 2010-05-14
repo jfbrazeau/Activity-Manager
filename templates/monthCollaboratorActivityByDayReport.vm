@@ -13,7 +13,11 @@
 		#set($dateList=$dates.buildDayInterval($fromDate, $toDate))
 		
 		## Récupération des collaborateurs
-		#set($cols=$model.collaborators)
+		#if($props.ignoreUnactiveCollaborators.get()=='true')
+			#set($cols=$model.getActiveCollaborators(3, true))
+		#else
+			#set($cols=$model.getCollaborators(3, true))
+		#end
 
 		<a name="hautPage"><h3>Month activity</h3></a>
 
@@ -22,7 +26,6 @@
 			[<a href="#$col.login">$col.firstName $col.lastName</a>]	
 		#end
 		<br>
-		
 		## Itération sur les collaborateurs
 		#foreach ($col in $cols)
 			<br>

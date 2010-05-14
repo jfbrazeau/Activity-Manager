@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2006, Jean-François Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -27,14 +27,14 @@
  */
 package jfb.tools.activitymgr.ui.dialogs;
 
-import jfb.tools.activitymgr.AbstractTechnicalException;
+import jfb.tools.activitymgr.ui.util.UITechException;
 
 import org.eclipse.swt.widgets.Control;
 
 /**
  * Exception utilisée dans les dialogues. 
  */
-public class DialogException extends AbstractTechnicalException {
+public class DialogException extends UITechException {
 
 	/** Contrôle à l'origine de la levée de l'exception */
 	private Control control;

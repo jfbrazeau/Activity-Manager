@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2006, Jean-François Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -38,11 +38,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
 
 import jfb.tools.activitymgr.core.beans.Collaborator;
 import jfb.tools.activitymgr.core.beans.Contribution;
+import jfb.tools.activitymgr.core.beans.Duration;
 import jfb.tools.activitymgr.core.beans.Task;
+import jfb.tools.activitymgr.core.beans.TaskSearchFilter;
 import jfb.tools.activitymgr.core.beans.TaskSums;
 import jfb.tools.activitymgr.core.util.StringHelper;
 
@@ -245,8 +249,8 @@ public class DbMgr {
 
 			// Découpage et exécution du batch
 			stmt = con.createStatement();
-			LineNumberReader lnr = new LineNumberReader(new StringReader(batchContent));
 			// TODO Externaliser le découpage du script SQL
+			LineNumberReader lnr = new LineNumberReader(new StringReader(batchContent));
 			StringBuffer buf = new StringBuffer();
 			boolean proceed = true;
 			do {
@@ -330,10 +334,11 @@ public class DbMgr {
 			Connection con = tx.getConnection();
 			
 			// Préparation de la requête
-			pStmt = con.prepareStatement("insert into collaborator (clb_login, clb_first_name, clb_last_name) values (?, ?, ?)");
-			pStmt.setString(1, newCollaborator.getLogin());
-			pStmt.setString(2, newCollaborator.getFirstName());
-			pStmt.setString(3, newCollaborator.getLastName());
+			pStmt = con.prepareStatement("insert into collaborator (clb_login, clb_first_name, clb_last_name, clb_is_active) values (?, ?, ?, ?)");
+			pStmt.setString (1, newCollaborator.getLogin());
+			pStmt.setString (2, newCollaborator.getFirstName());
+			pStmt.setString (3, newCollaborator.getLastName());
+			pStmt.setBoolean(4, newCollaborator.getIsActive());
 			pStmt.executeUpdate();
 
 			// Récupération de l'identifiant généré
@@ -378,7 +383,7 @@ public class DbMgr {
 			pStmt.setInt   (3, newContribution.getDay());
 			pStmt.setLong  (4, newContribution.getContributorId());
 			pStmt.setLong  (5, newContribution.getTaskId());
-			pStmt.setLong  (6, newContribution.getDuration());
+			pStmt.setLong  (6, newContribution.getDurationId());
 			pStmt.executeUpdate();
 
 			// Fermeture du statement
@@ -405,15 +410,16 @@ public class DbMgr {
 	 * @return la durée après création.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static long createDuration(DbTransaction tx, long newDuration) throws DbException {
+	protected static Duration createDuration(DbTransaction tx, Duration newDuration) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
 			// Récupération de la connexion
 			Connection con = tx.getConnection();
 			
 			// Préparation de la requête
-			pStmt = con.prepareStatement("insert into duration (dur_id) values (?)");
-			pStmt.setLong (1, newDuration);
+			pStmt = con.prepareStatement("insert into duration (dur_id, dur_is_active) values (?, ?)");
+			pStmt.setLong   (1, newDuration.getId());
+			pStmt.setBoolean(2, newDuration.getIsActive());
 			pStmt.executeUpdate();
 
 			// Fermeture du statement
@@ -459,7 +465,7 @@ public class DbMgr {
 			newTask.setNumber(taskNumber);
 			
 			// Préparation de la requête
-			pStmt = con.prepareStatement("insert into task (tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo) values (?, ?, ?, ?, ?, ?, ?)");
+			pStmt = con.prepareStatement("insert into task (tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo, tsk_comment) values (?, ?, ?, ?, ?, ?, ?, ?)");
 			pStmt.setString(1, newTask.getPath());
 			pStmt.setByte  (2, newTask.getNumber());
 			pStmt.setString(3, newTask.getCode());
@@ -467,6 +473,7 @@ public class DbMgr {
 			pStmt.setLong  (5, newTask.getBudget());
 			pStmt.setLong  (6, newTask.getInitiallyConsumed());
 			pStmt.setLong  (7, newTask.getTodo());
+			pStmt.setString(8, newTask.getComment());
 			pStmt.executeUpdate();
 
 			// Récupération de l'identifiant généré
@@ -497,7 +504,7 @@ public class DbMgr {
 	 * @return un booléen indiquant si la durée est utilisée.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static boolean durationIsUsed(DbTransaction tx, long duration) throws DbException {
+	protected static boolean durationIsUsed(DbTransaction tx, Duration duration) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
@@ -506,7 +513,7 @@ public class DbMgr {
 			
 			// Préparation de la requête
 			pStmt = con.prepareStatement("select count(*) from contribution where ctb_duration=?");
-			pStmt.setLong  (1, duration);
+			pStmt.setLong  (1, duration.getId());
 	
 			// Exécution de la requête
 			rs = pStmt.executeQuery();
@@ -560,7 +567,7 @@ public class DbMgr {
 			Connection con = tx.getConnection();
 			
 			// Préparation de la requête
-			pStmt = con.prepareStatement("select clb_login, clb_first_name, clb_last_name from collaborator where clb_id=?");
+			pStmt = con.prepareStatement("select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from collaborator where clb_id=?");
 			pStmt.setLong  (1, collaboratorId);
 	
 			// Exécution de la requête
@@ -568,13 +575,8 @@ public class DbMgr {
 			
 			// Préparation du résultat
 			Collaborator collaborator = null;
-			if (rs.next()) {
-				collaborator = new Collaborator();
-				collaborator.setId(collaboratorId);
-				collaborator.setLogin(rs.getString(1));
-				collaborator.setFirstName(rs.getString(2));
-				collaborator.setLastName(rs.getString(3));
-			}
+			if (rs.next())
+				collaborator = rsToCollaborator(rs);
 
 			// Fermeture du statement
 			pStmt.close();
@@ -593,6 +595,22 @@ public class DbMgr {
 	}
 
 	/**
+	 * Convertit le résultat d'une requête en collaborateur.
+	 * @param rs le result set.
+	 * @return le collaborateur.
+	 * @throws SQLException levé en cas de problème SQL.
+	 */
+	private static Collaborator rsToCollaborator(ResultSet rs) throws SQLException {
+		Collaborator collaborator = new Collaborator();
+		collaborator.setId(rs.getLong(1));
+		collaborator.setLogin(rs.getString(2));
+		collaborator.setFirstName(rs.getString(3));
+		collaborator.setLastName(rs.getString(4));
+		collaborator.setIsActive(rs.getBoolean(5));
+		return collaborator;
+	}
+	
+	/**
 	 * @param tx le contexte de transaction.
 	 * @param login l'identifiant de connexion du collaborateur recherché.
 	 * @return le collaborateur dont l'identifiant de connexion est spécifié.
@@ -606,7 +624,7 @@ public class DbMgr {
 			Connection con = tx.getConnection();
 			
 			// Préparation de la requête
-			pStmt = con.prepareStatement("select clb_id from collaborator where clb_login=?");
+			pStmt = con.prepareStatement("select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from collaborator where clb_login=?");
 			pStmt.setString(1, login);
 	
 			// Exécution de la requête
@@ -614,10 +632,8 @@ public class DbMgr {
 			
 			// Préparation du résultat
 			Collaborator collaborator = null;
-			if (rs.next()) {
-				long collaboratorId = rs.getLong(1);
-				collaborator = getCollaborator(tx, collaboratorId);
-			}
+			if (rs.next())
+				collaborator = rsToCollaborator(rs);
 
 			// Fermeture du ResultSet
 			pStmt.close();
@@ -637,10 +653,14 @@ public class DbMgr {
 
 	/**
 	 * @param tx le contexte de transaction.
+	 * @param orderByClauseFieldIndex index de l'attribut utilisé pour le tri.
+	 * @param ascendantSort booléen indiquant si le tri doit être ascendant.
+	 * @param onlyActiveCollaborators booléen indiquant si l'on ne doit retourner que
+	 * 		les collaborateurs actifs.
 	 * @return la liste des collaborateurs.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Collaborator[] getCollaborators(DbTransaction tx) throws DbException {
+	protected static Collaborator[] getCollaborators(DbTransaction tx, int orderByClauseFieldIndex, boolean ascendantSort, boolean onlyActiveCollaborators) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
@@ -648,18 +668,41 @@ public class DbMgr {
 			Connection con = tx.getConnection();
 			
 			// Préparation de la requête
-			pStmt = con.prepareStatement("select clb_id from collaborator");
+			StringBuffer request = new StringBuffer("select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from collaborator ");
+			if (onlyActiveCollaborators)
+				request.append("where clb_is_active=?");
+			request.append("order by ");
+			switch (orderByClauseFieldIndex) {
+				case Collaborator.ID_FIELD_IDX :
+					request.append("clb_id");
+					break;
+				case Collaborator.LOGIN_FIELD_IDX :
+					request.append("clb_login");
+					break;
+				case Collaborator.FIRST_NAME_FIELD_IDX :
+					request.append("clb_first_name");
+					break;
+				case Collaborator.LAST_NAME_FIELD_IDX :
+					request.append("clb_last_name");
+					break;
+				case Collaborator.IS_ACTIVE_FIELD_IDX :
+					request.append("clb_is_active");
+					break;
+				default :
+					throw new DbException("Unknown field index '" + orderByClauseFieldIndex + "'.", null);
+			}
+			request.append(ascendantSort ? " asc" : " desc");
+			pStmt = con.prepareStatement(request.toString());
+			if (onlyActiveCollaborators)
+				pStmt.setBoolean(1, true);
 
 			// Exécution de la requête
 			rs = pStmt.executeQuery();
 
 			// Recherche des sous-taches
 			ArrayList list = new ArrayList();
-			while (rs.next()) {
-				long collaboratorId = rs.getLong(1);
-				Collaborator collaborator = getCollaborator(tx, collaboratorId);
-				list.add(collaborator);
-			}
+			while (rs.next())
+				list.add(rsToCollaborator(rs));
 
 			// Fermeture du ResultSet
 			pStmt.close();
@@ -706,7 +749,7 @@ public class DbMgr {
 			rs = pStmt.executeQuery();
 
 			// Extraction du résultat
-			Contribution[] result = extractContributions(rs);
+			Contribution[] result = rsToContributions(rs);
 			
 			// Fermeture du ResultSet
 			pStmt.close();
@@ -730,7 +773,7 @@ public class DbMgr {
 	 * @return les contributions extraites.
 	 * @throws SQLException levé en cas d'incident avec la base de données.
 	 */
-	private static Contribution[] extractContributions(ResultSet rs) throws SQLException {
+	private static Contribution[] rsToContributions(ResultSet rs) throws SQLException {
 		// Recherche des sous-taches
 		ArrayList list = new ArrayList();
 		while (rs.next()) {
@@ -741,7 +784,7 @@ public class DbMgr {
 			contribution.setDay(rs.getInt(3));
 			contribution.setContributorId(rs.getInt(4));
 			contribution.setTaskId(rs.getInt(5));
-			contribution.setDuration(rs.getLong(6));
+			contribution.setDurationId(rs.getLong(6));
 			list.add(contribution);
 		}
 		log.debug("  => found " + list.size() + " entrie(s)");
@@ -841,7 +884,7 @@ public class DbMgr {
 			rs = pStmt.executeQuery();
 
 			// Extraction du résultat
-			Contribution[] result = extractContributions(rs);
+			Contribution[] result = rsToContributions(rs);
 			
 			// Fermeture du statement
 			pStmt.close();
@@ -1026,10 +1069,11 @@ public class DbMgr {
 
 	/**
 	 * @param tx le contexte de transaction.
-	 * @return la liste des durées.
+	 * @param durationId l'identifiant de la durée.
+	 * @return la durée.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static long[] getDurations(DbTransaction tx) throws DbException {
+	protected static Duration getDuration(DbTransaction tx, long durationId) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
@@ -1037,36 +1081,91 @@ public class DbMgr {
 			Connection con = tx.getConnection();
 			
 			// Préparation de la requête
-			pStmt = con.prepareStatement("select dur_id from duration order by dur_id asc");
+			pStmt = con.prepareStatement("select dur_id, dur_is_active from duration where dur_id=?");
+			pStmt.setLong(1, durationId);
 
 			// Exécution de la requête
 			rs = pStmt.executeQuery();
 
-			// Recherche des sous-taches
-			ArrayList list = new ArrayList();
-			while (rs.next()) {
-				long durationId = rs.getLong(1);
-				list.add(new Long(durationId));
-			}
+			// Reécupération du résultat
+			Duration duration = null;
+			if (rs.next())
+				duration = rsToDuration(rs);
 
 			// Fermeture du ResultSet
 			pStmt.close();
 			pStmt = null;
 			
 			// Retour du résultat
-			log.debug("  => found " + list.size() + " entrie(s)");
-			long[] result = new long[list.size()];
-			for (int i=0; i<result.length; i++)
-				result[i] = ((Long) list.get(i)).longValue();
-			return result;
+			return duration;
 		}
 		catch (SQLException e) {
 			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération des collaborateurs'", e);
+			throw new DbException("Echec lors de la récupération dde la durée '" + durationId + "'", e);
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
 		}
+	}
+
+	/**
+	 * @param tx le contexte de transaction.
+	 * @param onlyActiveCollaborators booléen indiquant si l'on ne doit retourner que
+	 * 		les collaborateurs actifs.
+	 * @return la liste des durées.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	protected static Duration[] getDurations(DbTransaction tx, boolean onlyActiveCollaborators) throws DbException {
+		PreparedStatement pStmt = null;
+		ResultSet rs = null;
+		try {
+			// Récupération de la connexion
+			Connection con = tx.getConnection();
+			
+			// Préparation de la requête
+			StringBuffer request = new StringBuffer("select dur_id, dur_is_active from duration ");
+			if (onlyActiveCollaborators)
+				request.append("where dur_is_active=?");
+			request.append("order by dur_id asc");
+			pStmt = con.prepareStatement(request.toString());
+			if (onlyActiveCollaborators)
+				pStmt.setBoolean(1, true);
+
+			// Exécution de la requête
+			rs = pStmt.executeQuery();
+
+			// Recherche des sous-taches
+			ArrayList list = new ArrayList();
+			while (rs.next())
+				list.add(rsToDuration(rs));
+
+			// Fermeture du ResultSet
+			pStmt.close();
+			pStmt = null;
+			
+			// Retour du résultat
+			return (Duration[]) list.toArray(new Duration[list.size()]);
+		}
+		catch (SQLException e) {
+			log.info("Incident SQL", e);
+			throw new DbException("Echec lors de la récupération des durées'", e);
+		}
+		finally {
+			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
+		}
+	}
+
+	/**
+	 * Convertit le résultat d'une requête en durée.
+	 * @param rs le result set.
+	 * @return la durée.
+	 * @throws SQLException levé en cas de problème SQL.
+	 */
+	private static Duration rsToDuration(ResultSet rs) throws SQLException {
+		Duration duration = new Duration();
+		duration.setId(rs.getLong(1));
+		duration.setIsActive(rs.getBoolean(2));
+		return duration;
 	}
 
 	/**
@@ -1078,7 +1177,6 @@ public class DbMgr {
 	protected static Task getParentTask(DbTransaction tx, Task task) throws DbException {
 		Task parentTask = null;
 		String parentTaskFullPath = task.getPath();
-log.debug(parentTaskFullPath);
 		// Si le chemin est vide, la tache parent est nulle (tache racine)
 		if (parentTaskFullPath!=null && !"".equals(parentTaskFullPath)) {
 			// Extraction du chemin et du numéro de la tache recherchée
@@ -1154,6 +1252,124 @@ log.debug(parentTaskFullPath);
 	}
 
 	/**
+	 * Retourn la liste des taches correspondant au filtre de recherche spécifié.
+	 * @param tx le contexte de transaction.
+	 * @param filter le filtre de recherche.
+	 * @return la liste des taches correspondant au filtre de recherche spécifié.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	protected static Task[] getTasks(DbTransaction tx, TaskSearchFilter filter) throws DbException {
+		PreparedStatement pStmt = null;
+		ResultSet rs = null;
+		try {
+			// Récupération de la connexion
+			Connection con = tx.getConnection();
+
+			// Préparation de la requête
+			StringBuffer request = new StringBuffer("select tsk_id from task where ");
+			// Ajout du nom de champ
+			switch (filter.getFieldIndex()) {
+				case TaskSearchFilter.TASK_NAME_FIELD_IDX :
+					request.append("tsk_name");
+					break;
+				case TaskSearchFilter.TASK_CODE_FIELD_IDX :
+					request.append("tsk_code");
+					break;
+				default :
+					throw new DbException("Unknown field index '" + filter.getFieldIndex() + "'.", null);
+			}
+			// Ajout du critère de comparaison
+			switch (filter.getCriteriaIndex()) {
+				case TaskSearchFilter.IS_EQUAL_TO_CRITERIA_IDX :
+					request.append("=?");
+					break;
+				case TaskSearchFilter.STARTS_WITH_CRITERIA_IDX :
+				case TaskSearchFilter.ENDS_WITH_CRITERIA_IDX :
+				case TaskSearchFilter.CONTAINS_WITH_CRITERIA_IDX :
+					request.append(" like ?");
+					break;
+				default :
+					throw new DbException("Unknown criteria index '" + filter.getCriteriaIndex() + "'.", null);
+			}
+			// Préparation de la requête
+			log.debug("Search request : '" + request + "'");
+			pStmt = con.prepareStatement(request.toString());
+			String parameter = null;
+			switch (filter.getCriteriaIndex()) {
+				case TaskSearchFilter.IS_EQUAL_TO_CRITERIA_IDX :
+					parameter = filter.getFieldValue();
+					break;
+				case TaskSearchFilter.STARTS_WITH_CRITERIA_IDX :
+					parameter = filter.getFieldValue() + "%";
+					break;
+				case TaskSearchFilter.ENDS_WITH_CRITERIA_IDX :
+					parameter = "%" + filter.getFieldValue();
+					break;
+				case TaskSearchFilter.CONTAINS_WITH_CRITERIA_IDX :
+					parameter = "%" + filter.getFieldValue() + "%";
+					break;
+				default :
+					throw new DbException("Unknown criteria index '" + filter.getCriteriaIndex() + "'.", null);
+			}
+			log.debug("Search parameter : '" + parameter + "'");
+			pStmt.setString(1, parameter);
+			
+			// Exécution de la requête
+			rs = pStmt.executeQuery();
+
+			// Récupération du résultat
+			ArrayList list = new ArrayList();
+			while (rs.next()) {
+				long taskId = rs.getLong(1);
+				Task task = getTask(tx, taskId);
+				list.add(task);
+			}
+			
+			// Fermeture du ResultSet
+			pStmt.close();
+			pStmt = null;
+			
+			// Préparation du résultat
+			Task[] tasks = (Task[]) list.toArray(new Task[list.size()]);
+			
+			// On trie les taches manuellement car le tri base de données
+			// pose un problème dans la mesure ou la BDD considère le champ
+			// tsk_path comme numérique pour le tri ce qui pose un pb
+			// Ex : 
+			// ROOT        (path : 01)
+			//   +- T1     (path : 0101)
+			//   |  +- T11 (path : 010101)
+			//   |  +- T12 (path : 010102) 
+			//   +- T2     (path : 0102)
+			// Si on ramène l'ensemble des sous taches de ROOT, on voudrait avoir
+			// dans l'ordre T1, T11, T12, T2
+			// Avec un tri base de donnée, on obtiendrait T1, T2, T11, T12 ; T2 ne se
+			// trouve pas ou on l'attend, ceci en raison du fait qu'en comparaison 
+			// numérique 0102 est < à 010101 et à 010102. Par contre, en comparaison 
+			// de chaînes (en java), on a bien 0102 > 010101 et 010102.
+			Arrays.sort(tasks, new Comparator() {
+				public int compare(Object o1, Object o2) {
+					Task t1 = (Task) o1;
+					Task t2 = (Task) o2;
+					return t1.getFullPath().compareTo(t2.getFullPath());
+				}
+				
+			});
+			
+			// Retour du résultat
+			return tasks;
+		}
+		catch (SQLException e) {
+			log.info("Incident SQL", e);
+			throw new DbException("Unexpected error while searching tasks", e);
+		}
+		finally {
+			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
+		}
+	}
+	
+	
+	/**
 	 * @param tx le contexte de transaction.
 	 * @param taskId l'identifiant de la tache recherchée.
 	 * @return la tache dont l'identifiant est spécifié.
@@ -1167,7 +1383,7 @@ log.debug(parentTaskFullPath);
 			Connection con = tx.getConnection();
 
 			// Préparation de la requête
-			pStmt = con.prepareStatement("select tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo from task where tsk_id=?");
+			pStmt = con.prepareStatement("select tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo, tsk_comment from task where tsk_id=?");
 			pStmt.setLong  (1, taskId);
 	
 			// Exécution de la requête
@@ -1185,6 +1401,7 @@ log.debug(parentTaskFullPath);
 				task.setBudget(rs.getLong(5));
 				task.setInitiallyConsumed(rs.getLong(6));
 				task.setTodo(rs.getLong(7));
+				task.setComment(rs.getString(8));
 			}
 			// Fermeture du ResultSet
 			pStmt.close();
@@ -1327,7 +1544,7 @@ log.debug(parentTaskFullPath);
 			Connection con = tx.getConnection();
 
 			// Préparation de la requête
-			pStmt = con.prepareStatement("select distinct ctb_task, tsk_path from contribution, task where ctb_task=tsk_id and ctb_contributor=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) between ? and ? order by tsk_path");
+			pStmt = con.prepareStatement("select distinct ctb_task, tsk_path, tsk_number from contribution, task where ctb_task=tsk_id and ctb_contributor=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) between ? and ? order by tsk_path, tsk_number");
 			pStmt.setLong  (1, collaborator.getId());
 			pStmt.setString(2, sdf.format(fromDate.getTime()));
 			pStmt.setString(3, sdf.format(toDate.getTime()));
@@ -1516,7 +1733,7 @@ log.debug(parentTaskFullPath);
 	 * @param duration la durée à supprimer.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static void removeDuration(DbTransaction tx, long duration) throws DbException {
+	protected static void removeDuration(DbTransaction tx, Duration duration) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
 			// Récupération de la connexion
@@ -1524,7 +1741,7 @@ log.debug(parentTaskFullPath);
 
 			// Préparation de la requête
 			pStmt = con.prepareStatement("delete from duration where dur_id=?");
-			pStmt.setLong  (1, duration);
+			pStmt.setLong  (1, duration.getId());
 
 			// Exécution de la requête
 			int removed = pStmt.executeUpdate();
@@ -1611,11 +1828,12 @@ log.debug(parentTaskFullPath);
 			Connection con = tx.getConnection();
 
 			// Préparation de la requête
-			pStmt = con.prepareStatement("update collaborator set clb_login=?, clb_first_name=?, clb_last_name=? where clb_id=?");
-			pStmt.setString(1, collaborator.getLogin());
-			pStmt.setString(2, collaborator.getFirstName());
-			pStmt.setString(3, collaborator.getLastName());
-			pStmt.setLong  (4, collaborator.getId());
+			pStmt = con.prepareStatement("update collaborator set clb_login=?, clb_first_name=?, clb_last_name=?, clb_is_active=? where clb_id=?");
+			pStmt.setString (1, collaborator.getLogin());
+			pStmt.setString (2, collaborator.getFirstName());
+			pStmt.setString (3, collaborator.getLastName());
+			pStmt.setBoolean(4, collaborator.getIsActive());
+			pStmt.setLong   (5, collaborator.getId());
 
 			// Exécution de la requête
 			int updated = pStmt.executeUpdate();
@@ -1653,7 +1871,7 @@ log.debug(parentTaskFullPath);
 
 			// Préparation de la requête
 			pStmt = con.prepareStatement("update contribution set ctb_duration=? where ctb_year=? and ctb_month=? and ctb_day=? and ctb_contributor=? and ctb_task=?");
-			pStmt.setLong  (1, contribution.getDuration());
+			pStmt.setLong  (1, contribution.getDurationId());
 			pStmt.setInt   (2, contribution.getYear());
 			pStmt.setInt   (3, contribution.getMonth());
 			pStmt.setInt   (4, contribution.getDay());
@@ -1681,6 +1899,44 @@ log.debug(parentTaskFullPath);
 		}
 	}
 
+	/**
+	 * Met à jour une durée.
+	 * @param tx le contexte de transaction.
+	 * @param duration la durée à mettre à jour.
+	 * @return la durée mise à jour.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	protected static Duration updateDuration(DbTransaction tx, Duration duration) throws DbException {
+		PreparedStatement pStmt = null;
+		try {
+			// Récupération de la connexion
+			Connection con = tx.getConnection();
+
+			// Préparation de la requête
+			pStmt = con.prepareStatement("update duration set dur_is_active=? where dur_id=?");
+			pStmt.setBoolean(1, duration.getIsActive());
+			pStmt.setLong   (2, duration.getId());
+			
+			// Exécution de la requête
+			int updated = pStmt.executeUpdate();
+			if (updated!=1)
+				throw new SQLException("No row was updated");
+
+			// Fermeture du statement
+			pStmt.close();
+			pStmt = null;
+
+			// Retour du résultat
+			return duration;
+		}
+		catch (SQLException e) {
+			log.info("Incident SQL", e);
+			throw new DbException("Echec lors de la mise à jour de la durée '" + duration.getId() + "'", e);
+		}
+		finally {
+			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
+		}
+	}
 	/**
 	 * Change la tache d'une contribution.
 	 * @param tx contexte de transaction.
@@ -1744,7 +2000,7 @@ log.debug(parentTaskFullPath);
 			Connection con = tx.getConnection();
 
 			// Préparation de la requête
-			pStmt = con.prepareStatement("update task set tsk_path=?, tsk_number=?, tsk_code=?, tsk_name=?, tsk_budget=?, tsk_initial_cons=?, tsk_todo=? where tsk_id=?");
+			pStmt = con.prepareStatement("update task set tsk_path=?, tsk_number=?, tsk_code=?, tsk_name=?, tsk_budget=?, tsk_initial_cons=?, tsk_todo=?, tsk_comment=? where tsk_id=?");
 			pStmt.setString(1, task.getPath());
 			pStmt.setByte  (2, task.getNumber());
 			pStmt.setString(3, task.getCode());
@@ -1752,7 +2008,8 @@ log.debug(parentTaskFullPath);
 			pStmt.setLong  (5, task.getBudget());
 			pStmt.setLong  (6, task.getInitiallyConsumed());
 			pStmt.setLong  (7, task.getTodo());
-			pStmt.setLong  (8, task.getId());
+			pStmt.setString(8, task.getComment());
+			pStmt.setLong  (9, task.getId());
 	
 			// Exécution de la requête
 			int updated = pStmt.executeUpdate();

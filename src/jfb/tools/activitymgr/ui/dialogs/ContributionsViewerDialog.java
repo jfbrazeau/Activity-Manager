@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2006, Jean-François Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,7 @@ import jfb.tools.activitymgr.core.beans.Task;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
@@ -69,7 +70,8 @@ public class ContributionsViewerDialog extends AbstractDialog {
 	protected Control createDialogArea(Composite parent) {
 		log.debug("createDialogArea");
 		Composite c = (Composite) super.createDialogArea(parent);
-		contributionsTable = new ContributionsViewerTable(c);
+		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+		contributionsTable = new ContributionsViewerTable(c, gridData);
 		contributionsTable.setFilter(task, contributor, year, month, day);
 		return c;
 	}

@@ -13,6 +13,7 @@ import jfb.tools.activitymgr.core.ModelException;
 import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Collaborator;
 import jfb.tools.activitymgr.core.beans.Contribution;
+import jfb.tools.activitymgr.core.beans.Duration;
 import jfb.tools.activitymgr.core.beans.Task;
 import jfb.tst.tools.activitymgr.AbstractModelTestCase;
 
@@ -47,20 +48,24 @@ public class XmlTest extends AbstractModelTestCase {
 
 	public void testCreateDurations() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de durées
-		long[] initialDurations = ModelMgr.getDurations();
+		Duration[] initialDurations = ModelMgr.getDurations();
 
 		// Import du fichier associé au test
 		importTestFile();
 		
 		// Vérification du nombre de durées après import
-		long[] durations = ModelMgr.getDurations();
+		Duration[] durations = ModelMgr.getDurations();
 		assertNotNull(durations);
 		assertEquals(initialDurations.length + 3, durations.length);
 
 		// Suppression des durées
-		ModelMgr.removeDuration(200);
-		ModelMgr.removeDuration(300);
-		ModelMgr.removeDuration(400);
+		Duration duration = new Duration();
+		duration.setId(200);
+		ModelMgr.removeDuration(duration);
+		duration.setId(300);
+		ModelMgr.removeDuration(duration);
+		duration.setId(400);
+		ModelMgr.removeDuration(duration);
 	}
 	
 	public void testCreateCollaborators() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
@@ -139,7 +144,7 @@ public class XmlTest extends AbstractModelTestCase {
 		Collaborator[] collaborators = ModelMgr.getCollaborators();
 		ModelMgr.removeCollaborator(collaborators[0]);
 		ModelMgr.removeCollaborator(collaborators[1]);
-		long durations[] = ModelMgr.getDurations();
+		Duration durations[] = ModelMgr.getDurations();
 		for (int i=0; i<durations.length; i++)
 			ModelMgr.removeDuration(durations[i]);
 		
@@ -147,7 +152,9 @@ public class XmlTest extends AbstractModelTestCase {
 	
 	public void testExportAndImport() throws DbException, ModelException, IOException, ParserConfigurationException, SAXException {
 		// Création des objets de test
-		long duration = ModelMgr.createDuration(100);
+		Duration duration = new Duration();
+		duration.setId(100);
+		duration = ModelMgr.createDuration(duration);
 		Collaborator collaborator = new Collaborator();
 		collaborator.setLogin("login");
 		collaborator.setFirstName("FirstName");
@@ -170,7 +177,7 @@ public class XmlTest extends AbstractModelTestCase {
 		contribution.setDay(01);
 		contribution.setContributorId(collaborator.getId());
 		contribution.setTaskId(task.getId());
-		contribution.setDuration(duration);
+		contribution.setDurationId(duration.getId());
 		contribution = ModelMgr.createContribution(contribution);
 
 		// Export

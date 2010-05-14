@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2006, Jean-François Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -30,8 +30,11 @@ package jfb.tools.activitymgr.core.util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.LineNumberReader;
+import java.io.StringReader;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 import org.apache.log4j.Logger;
@@ -140,6 +143,71 @@ public class StringHelper {
 		}
 		in.close();
 		return new String(out.toByteArray());
+	}
+
+	/**
+	 * Découpe un script pour en extraire les requêtes SQL.
+	 * @param script le script à découper.
+	 * @return les requêtes.
+	 */
+	public static String[] getQueries(String script) {
+		ArrayList queries = new ArrayList();
+		LineNumberReader lnr = new LineNumberReader(new StringReader(script.trim()));
+		StringBuffer buf = new StringBuffer();
+		boolean proceed = true;
+		do {
+			String line = null;
+			// On ne lit dans le flux que si la ligne courante n'est pas
+			// encore totalement traitée
+			if (line == null) {
+				try {
+					line = lnr.readLine();
+				}
+				catch (IOException e) {
+					log.debug("Unexpected I/O error while reading memory stream!", e);
+					throw new Error("Unexpected I/O error while reading memory stream!", null);
+				}
+				log.debug("Line read : '" + line + "'");
+			}
+			// Si le flux est vide, on sort de la boucle
+			if (line == null) {
+				proceed = false;
+			}
+			// Sinon on traite la ligne
+			else {
+				line = line.trim();
+				// Si la ligne est un commentaire on l'ignore
+				if (line.startsWith("--")) {
+					line = null;
+				} 
+				else {
+					// Sinon on regarde si la ligne possède
+					// un point virgule
+					int idx = line.indexOf(';');
+					// Si c'est le cas, on découpe la chaîne et on
+					// exécute la requête
+					if (idx >= 0) {
+						buf.append(line.subSequence(0, idx));
+						line = line.substring(idx);
+						String sql = buf.toString();
+						buf.setLength(0);
+						log.debug(" - sql='" + sql + "'");
+						if (!"".equals(sql))
+							queries.add(sql);
+					}
+					// sinon on ajoute la ligne au buffer de requeête
+					else {
+						buf.append(line);
+						buf.append('\n');
+					}
+				}
+			}
+
+		} while (proceed);
+		// Ajout de la dernière requête (éventuellement)
+		if (buf.length()!=0)
+			queries.add(buf.toString());
+		return (String[]) queries.toArray(new String[queries.size()]);
 	}
 
 }

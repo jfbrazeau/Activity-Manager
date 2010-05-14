@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2006, Jean-François Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,18 @@ package jfb.tools.activitymgr.core.beans;
  */
 public class Collaborator extends SimpleIdentityBean {
 
+	/** Index de l'attribut 'login' du collaborateur */
+	public static final int LOGIN_FIELD_IDX = 1;
+
+	/** Index de l'attribut 'firstName' du collaborateur */
+	public static final int FIRST_NAME_FIELD_IDX = 2;
+
+	/** Index de l'attribut 'lastName' du collaborateur */
+	public static final int LAST_NAME_FIELD_IDX = 3;
+	
+	/** Index de l'attribut 'isActive' du collaborateur */
+	public static final int IS_ACTIVE_FIELD_IDX = 4;
+	
 	/** Identifiant du collaborateur */
 	private String login;
 
@@ -40,6 +52,9 @@ public class Collaborator extends SimpleIdentityBean {
 	
 	/** Prénom */
 	private String lastName;
+	
+	/** Booléen indiquant si le collaborateur est actif ou non */
+	private boolean isActive = true;
 	
 	/**
 	 * @return le prénom du collaborateur.
@@ -84,5 +99,21 @@ public class Collaborator extends SimpleIdentityBean {
 	 */
 	public void setLogin(String login) {
 		this.login = login;
+	}
+
+	/**
+	 * Retourne un booléen indiquant si le collaborateur est actif ou non.
+	 * @return un booléen indiquant si le collaborateur est actif ou non.
+	 */
+	public boolean getIsActive() {
+		return isActive;
+	}
+
+	/**
+	 * Définit si le collaborateur est actif ou non.
+	 * @param isActive un booléen indiquant si le collaborateur est actif ou non.
+	 */
+	public void setIsActive(boolean isActive) {
+		this.isActive = isActive;
 	}
 }

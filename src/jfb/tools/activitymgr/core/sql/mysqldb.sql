@@ -11,6 +11,7 @@ create table COLLABORATOR (
 	CLB_LOGIN      varchar( 8) unique not null,
 	CLB_FIRST_NAME varchar(20) not null,
 	CLB_LAST_NAME  varchar(20) not null,
+ 	CLB_IS_ACTIVE  integer( 1) not null,
     index CLB_LOGIN_IDX (CLB_LOGIN),
     constraint CLB_PK primary key (CLB_ID) 
 ) type=innodb;
@@ -19,14 +20,15 @@ create table COLLABORATOR (
 -- Taches
 --------------------------------------------------------------
 create table TASK (
-	TSK_ID           integer(  4) not null auto_increment,
-	TSK_PATH         varchar(255) not null,
-	TSK_NUMBER       integer(  3) not null,
-	TSK_CODE         varchar( 10) not null,
-	TSK_NAME         varchar( 50) not null,
-	TSK_BUDGET       integer(  8) not null,
-	TSK_INITIAL_CONS integer(  8) not null,
-	TSK_TODO         integer(  8) not null,
+	TSK_ID           integer(   4) not null auto_increment,
+	TSK_PATH         varchar( 255) not null,
+	TSK_NUMBER       integer(   3) not null,
+	TSK_CODE         varchar(  10) not null,
+	TSK_NAME         varchar(  50) not null,
+	TSK_BUDGET       integer(   8) not null,
+	TSK_INITIAL_CONS integer(   8) not null,
+	TSK_TODO         integer(   8) not null,
+	TSK_COMMENT      text,
     index TSK_PATH_IDX (TSK_PATH),
     index TSK_FULLPATH_IDX (TSK_PATH, TSK_NUMBER),
     index TSK_PATH_CODE_IDX (TSK_PATH, TSK_CODE),
@@ -41,7 +43,8 @@ create table TASK (
 -- Durées
 --------------------------------------------------------------
 create table DURATION (
-	DUR_ID    integer(3) not null,
+	DUR_ID         integer(3) not null,
+	DUR_IS_ACTIVE  integer(1) not null,
     constraint DUR_PK primary key (DUR_ID)
 ) type=innodb;
 

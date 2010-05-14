@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2006, Jean-François Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -28,20 +28,23 @@
 package jfb.tools.activitymgr.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Collaborator;
-import jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener;
+import jfb.tools.activitymgr.ui.DatabaseUI.IDbStatusListener;
 import jfb.tools.activitymgr.ui.dialogs.ContributionsViewerDialog;
+import jfb.tools.activitymgr.ui.images.ImagesDatas;
+import jfb.tools.activitymgr.ui.util.AbstractTableMgr;
 import jfb.tools.activitymgr.ui.util.SWTHelper;
 import jfb.tools.activitymgr.ui.util.SafeRunner;
-import jfb.tools.activitymgr.ui.util.AbstractTableMgr;
 import jfb.tools.activitymgr.ui.util.TableOrTreeColumnsMgr;
 import jfb.tools.activitymgr.ui.util.UITechException;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.CheckboxCellEditor;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.LabelProviderChangedEvent;
@@ -53,34 +56,39 @@ import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 /**
  * IHM de gestion des collaborateurs.
  */
-public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListener, ICellModifier, SelectionListener, MenuListener {
+public class CollaboratorsUI extends AbstractTableMgr implements IDbStatusListener, ICellModifier, SelectionListener, MenuListener {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(CollaboratorsUI.class);
 
 	/** Constantes associées aux colonnes */
-	public static final int IDENTIFIER_COLUMN_IDX =      0;
-	public static final int FIRST_NAME_COLUMN_IDX = 1;
-	public static final int LAST_NAME_COLUMN_IDX =  2;
+	public static final int IS_ACTIVE_COLUMN_IDX =  0;
+	public static final int IDENTIFIER_COLUMN_IDX =  1;
+	public static final int FIRST_NAME_COLUMN_IDX = 2;
+	public static final int LAST_NAME_COLUMN_IDX =  3;
 	private static TableOrTreeColumnsMgr tableColsMgr;
 
 	/**
 	 * Interface utilisée pour permettre l'écoute de la suppression ou de
 	 * l'ajout de collaborateurs.
 	 */
-	public static interface CollaboratorListener {
+	public static interface ICollaboratorListener {
 		
 		/**
 		 * Indique qu'un collaborateur a été ajouté au référentiel.
@@ -95,12 +103,22 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 		public void collaboratorRemoved(Collaborator collaborator);
 
 		/**
-		 * Indique qu'un collaborateur a été modifié duans le référentiel.
+		 * Indique qu'un collaborateur a été modifié du référentiel.
 		 * @param collaborator le collaborateur modifié.
 		 */
 		public void collaboratorUpdated(Collaborator collaborator);
+
+		/**
+		 * Indique que l'état d'activation d'un collaborateur a été désactivé dans le référentiel.
+		 * @param collaborator le collaborateur modifié.
+		 */
+		public void collaboratorActivationStatusChanged(Collaborator collaborator);
+
 	}
 	
+	/** Listeners */
+	private ArrayList listeners = new ArrayList();
+
 	/** Viewer */
 	private TableViewer tableViewer;
 
@@ -116,9 +134,15 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 	/** Popup permettant de lister les contributions d'une tache */
 	private ContributionsViewerDialog contribsViewerDialog;
 	
-	/** Listeners */
-	private ArrayList listeners = new ArrayList();
-
+	/** Index de la colonne utilisé pour trier les collaborateurs */
+	private int sortColumnIndex = LAST_NAME_COLUMN_IDX;
+	
+	/** Icone utilisé pour marquer le collaborateur actifs */
+	private Image checkedIcon;
+	
+	/** Icone utilisé pour les collaborateurs non actifs */
+	private Image uncheckedIcon;
+	
 	/**
 	 * Constructeur permettant de placer l'IHM dans un onglet.
 	 * @param tabItem item parent.
@@ -145,6 +169,9 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 		table.setLinesVisible(true);
 		table.setHeaderVisible(true);
 		table.setEnabled(true);
+		table.setToolTipText("Use the first column to activate or disactivate the collaborators\n" +
+				"(disactivated collaborators are not deleted from the database but are hidden\n" +
+				"in the contributions tab)");
 
 		// Création du viewer
 		tableViewer = new TableViewer(table);
@@ -154,13 +181,43 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 
 		// Configuration des colonnes
 		tableColsMgr = new TableOrTreeColumnsMgr();
+		tableColsMgr.addColumn("IS_ACTIVE", "!", 20, SWT.CENTER);
 		tableColsMgr.addColumn("IDENTIFIER", "Identifier", 100, SWT.LEFT);
 		tableColsMgr.addColumn("FIRST_NAME", "First name", 100, SWT.LEFT);
 		tableColsMgr.addColumn("LAST_NAME", "Last name", 100, SWT.LEFT);
 		tableColsMgr.configureTable(tableViewer);
 
+		// Ajout du listener de gestion du tri des colonnes
+		// Add sort indicator and sort data when column selected
+		Listener sortListener = new Listener() {
+			public void handleEvent(Event e) {
+				log.debug("handleEvent(" + e + ")");
+				TableColumn previousSortColumn = table.getSortColumn();
+				TableColumn newSortColumn = (TableColumn) e.widget;
+				int dir = table.getSortDirection();
+				if (previousSortColumn == newSortColumn) {
+					dir = dir == SWT.UP ? SWT.DOWN : SWT.UP;
+				}
+				else {
+					table.setSortColumn(newSortColumn);
+					dir = SWT.UP;
+				}
+				table.setSortDirection(dir);
+				sortColumnIndex = Arrays.asList(table.getColumns()).indexOf(newSortColumn);
+				// Rafraichissement des données
+				tableViewer.refresh();
+			}
+		};
+		table.getColumns()[IS_ACTIVE_COLUMN_IDX].addListener(SWT.Selection, sortListener);
+		table.getColumns()[IDENTIFIER_COLUMN_IDX].addListener(SWT.Selection, sortListener);
+		table.getColumns()[FIRST_NAME_COLUMN_IDX].addListener(SWT.Selection, sortListener);
+		table.getColumns()[LAST_NAME_COLUMN_IDX].addListener(SWT.Selection, sortListener);
+		table.setSortColumn(table.getColumns()[sortColumnIndex]);
+		table.setSortDirection(SWT.UP);
+		
 		// Configuration des éditeurs de cellules
 		CellEditor[] editors = new CellEditor[9];
+		editors[IS_ACTIVE_COLUMN_IDX] = new CheckboxCellEditor(table);
 		editors[IDENTIFIER_COLUMN_IDX] = new TextCellEditor(table);
 		editors[FIRST_NAME_COLUMN_IDX] = new TextCellEditor(table);
 		editors[LAST_NAME_COLUMN_IDX] = new TextCellEditor(table);
@@ -186,6 +243,9 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 		exportItem.addSelectionListener(this);
 		table.setMenu(menu);
 		
+		// Chargement des icones
+		checkedIcon = new Image(parentComposite.getDisplay(), ImagesDatas.CHECKED_ICON);
+		uncheckedIcon = new Image(parentComposite.getDisplay(), ImagesDatas.UNCHECKED_ICON);
 	}
 
 	/* (non-Javadoc)
@@ -196,7 +256,24 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				// Recherche des collaborateurs 
-				return ModelMgr.getCollaborators();
+				int orderByFieldIndex = -1;
+				switch (sortColumnIndex) {
+				case IS_ACTIVE_COLUMN_IDX:
+					orderByFieldIndex = Collaborator.IS_ACTIVE_FIELD_IDX;
+					break;
+				case IDENTIFIER_COLUMN_IDX:
+					orderByFieldIndex = Collaborator.LOGIN_FIELD_IDX;
+					break;
+				case FIRST_NAME_COLUMN_IDX:
+					orderByFieldIndex = Collaborator.FIRST_NAME_FIELD_IDX;
+					break;
+				case LAST_NAME_COLUMN_IDX:
+				default :
+					orderByFieldIndex = Collaborator.LAST_NAME_FIELD_IDX;
+					break;
+				}
+				// Récupération
+				return ModelMgr.getCollaborators(orderByFieldIndex, tableViewer.getTable().getSortDirection()==SWT.UP);
 			}
 		};
 		// Exécution
@@ -220,21 +297,24 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				Collaborator collaborator = (Collaborator) element;
-				String text = null;
+				Object value = null;
 				int columnIndex = tableColsMgr.getColumnIndex(property);
 				switch (columnIndex) {
+					case (IS_ACTIVE_COLUMN_IDX) :
+						value = collaborator.getIsActive() ? Boolean.TRUE : Boolean.FALSE;
+						break;
 					case (IDENTIFIER_COLUMN_IDX) :
-						text = collaborator.getLogin();
+						value = collaborator.getLogin();
 						break;
 					case (FIRST_NAME_COLUMN_IDX) :
-						text = collaborator.getFirstName();
+						value = collaborator.getFirstName();
 						break;
 					case (LAST_NAME_COLUMN_IDX) :
-						text = collaborator.getLastName();
+						value = collaborator.getLastName();
 						break;
 					default : throw new Error("Colonne inconnue");
 				}
-				return text;
+				return value;
 			}
 		};
 		// Exécution
@@ -244,7 +324,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.viewers.ICellModifier#modify(java.lang.Object, java.lang.String, java.lang.Object)
 	 */
-	public void modify(final Object element, String property, final Object value) {
+	public void modify(final Object element, final String property, final Object value) {
 		log.debug("ICellModifier.modify(" + element + ", " + property + ", " + value + ")");
 		TableItem item = (TableItem) element;
 		final Collaborator collaborator = (Collaborator) item.getData();
@@ -252,18 +332,28 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 		final int columnIndex = tableColsMgr.getColumnIndex(property);
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
+				boolean mustNotifyUpdateEvent = false;
+				boolean mustNotifyActivationStatusChangeEvent = false;
 				switch (columnIndex) {
+					case (IS_ACTIVE_COLUMN_IDX) :
+						Boolean isActive = (Boolean) value;
+						collaborator.setIsActive(isActive.booleanValue());
+						mustNotifyActivationStatusChangeEvent = true;
+						break;
 					case (IDENTIFIER_COLUMN_IDX) :
 						String newIdentifier = (String) value;
 						if (!collaborator.getLogin().equals(newIdentifier)) {
 							collaborator.setLogin(newIdentifier);
 						}
+						mustNotifyUpdateEvent = true;
 						break;
 					case (FIRST_NAME_COLUMN_IDX) :
 						collaborator.setFirstName((String) value);
+						mustNotifyUpdateEvent = true;
 						break;
 					case (LAST_NAME_COLUMN_IDX) :
 						collaborator.setLastName((String) value);
+						mustNotifyUpdateEvent = true;
 						break;
 					default : throw new UITechException("Colonne inconnue");
 				}
@@ -271,7 +361,10 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 				ModelMgr.updateCollaborator(collaborator);
 				// Notification des listeners
 				notifyLabelProviderListener(new LabelProviderChangedEvent(labelProvider, collaborator));
-				notifyCollaboratorUpdated(collaborator);
+				if (mustNotifyUpdateEvent)
+					notifyCollaboratorUpdated(collaborator);
+				if (mustNotifyActivationStatusChangeEvent)
+					notifyCollaboratorActivationStatusChanged(collaborator);
 				return null;
 			}
 		};
@@ -289,6 +382,9 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 				Collaborator collaborator = (Collaborator) element;
 				String text = null;
 				switch (columnIndex) {
+					case (IS_ACTIVE_COLUMN_IDX) :
+						text = ""; // La colonne est renseignée par une icone
+						break;
 					case (IDENTIFIER_COLUMN_IDX) :
 						text = collaborator.getLogin();
 						break;
@@ -308,10 +404,38 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 	}
 
 	/* (non-Javadoc)
+	 * @see jfb.tools.activitymgr.ui.util.AbstractTableMgr#getColumnImage(java.lang.Object, int)
+	 */
+	public Image getColumnImage(final Object element, final int columnIndex) {
+		log.debug("ITableLabelProvider.getColumnImage(" + element + ", " + columnIndex + ")");
+		SafeRunner safeRunner = new SafeRunner() {
+			public Object runUnsafe() throws Exception {
+				Collaborator collaborator = (Collaborator) element;
+				Image image = null;
+				switch (columnIndex) {
+					case (IS_ACTIVE_COLUMN_IDX) :
+						image = collaborator.getIsActive() ? checkedIcon : uncheckedIcon;
+						break;
+					case (IDENTIFIER_COLUMN_IDX) :
+					case (FIRST_NAME_COLUMN_IDX) :
+					case (LAST_NAME_COLUMN_IDX) :
+						image = null;
+						break;
+					default : throw new Error("Colonne inconnue");
+				}
+				return image;
+			}
+		};
+		// Exécution
+		return (Image) safeRunner.run(parent.getShell());
+	}
+
+	/* (non-Javadoc)
 	 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
 	 */
 	public void widgetSelected(final SelectionEvent e) {
 		log.debug("SelectionListener.widgetSelected(" + e + ")");
+		log.debug("   e.source=" + e.getSource() + ")");
 		final Object source = e.getSource();
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
@@ -395,7 +519,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 	 * Ajoute un listener.
 	 * @param listener le nouveau listener.
 	 */
-	public void addCollaboratorListener(CollaboratorListener listener) {
+	public void addCollaboratorListener(ICollaboratorListener listener) {
 		listeners.add(listener);
 	}
 
@@ -403,7 +527,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 	 * Ajoute un listener.
 	 * @param listener le nouveau listener.
 	 */
-	public void removeCollaboratorListener(CollaboratorListener listener) {
+	public void removeCollaboratorListener(ICollaboratorListener listener) {
 		listeners.remove(listener);
 	}
 
@@ -414,7 +538,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 	private void notifyCollaboratorAdded(Collaborator newCollaborator) {
 		Iterator it = listeners.iterator();
 		while (it.hasNext()) {
-			CollaboratorListener listener = (CollaboratorListener) it.next();
+			ICollaboratorListener listener = (ICollaboratorListener) it.next();
 			listener.collaboratorAdded(newCollaborator);
 		}
 	}
@@ -426,7 +550,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 	private void notifyCollaboratorRemoved(Collaborator collaborator) {
 		Iterator it = listeners.iterator();
 		while (it.hasNext()) {
-			CollaboratorListener listener = (CollaboratorListener) it.next();
+			ICollaboratorListener listener = (ICollaboratorListener) it.next();
 			listener.collaboratorRemoved(collaborator);
 		}
 	}
@@ -438,8 +562,20 @@ public class CollaboratorsUI extends AbstractTableMgr implements DbStatusListene
 	private void notifyCollaboratorUpdated(Collaborator collaborator) {
 		Iterator it = listeners.iterator();
 		while (it.hasNext()) {
-			CollaboratorListener listener = (CollaboratorListener) it.next();
+			ICollaboratorListener listener = (ICollaboratorListener) it.next();
 			listener.collaboratorUpdated(collaborator);
+		}
+	}
+
+	/**
+	 * Notifie les listeners que l'état d'activation d'un collaborateur a été modifié.
+	 * @param collaborator le collaborateur modifié.
+	 */
+	private void notifyCollaboratorActivationStatusChanged(Collaborator collaborator) {
+		Iterator it = listeners.iterator();
+		while (it.hasNext()) {
+			ICollaboratorListener listener = (ICollaboratorListener) it.next();
+			listener.collaboratorActivationStatusChanged(collaborator);
 		}
 	}
 

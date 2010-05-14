@@ -9,6 +9,7 @@ import jfb.tools.activitymgr.core.ModelException;
 import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Collaborator;
 import jfb.tools.activitymgr.core.beans.Contribution;
+import jfb.tools.activitymgr.core.beans.Duration;
 import jfb.tools.activitymgr.core.beans.Task;
 
 import org.apache.log4j.Logger;
@@ -39,9 +40,9 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		 * @return la durée créée.
 		 * @throws DbException levé en cas d'incident technique d'accès à la base.
 		 * @throws ModelException levé dans la cas ou la durée existe déjà.
-		 * @see jfb.tools.activitymgr.core.ModelMgr#createDuration(long)
+		 * @see jfb.tools.activitymgr.core.ModelMgr#createDuration(Duration)
 		 */
-		public long createDuration(DbTransaction tx, long duration) throws ModelException, DbException;
+		public Duration createDuration(DbTransaction tx, Duration duration) throws ModelException, DbException;
 		
 		/**
 		 * Crée un collaborateur dans un contexte de transaction.
@@ -116,6 +117,7 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	public static final String LOGIN_NODE = "login";
 	public static final String FIRST_NAME_NODE = "first-name";
 	public static final String LAST_NAME_NODE = "last-name";
+	public static final String IS_ACTIVE_NODE = "is-active";
 	public static final String YEAR_ATTRIBUTE = "year";
 	public static final String MONTH_ATTRIBUTE = "month";
 	public static final String DAY_ATTRIBUTE = "day";
@@ -127,6 +129,8 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	public static final String BUDGET_NODE = "budget";
 	public static final String INITIALLY_CONSUMED_NODE = "initially-consumed";
 	public static final String TODO_NODE = "todo";
+	public static final String COMMENT_NODE = "comment";
+	public static final String VALUE_NODE = "value";
 	
 	/** Contexte de transaction */
 	private DbTransaction transaction;
@@ -135,6 +139,7 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	private ModelMgrDelegate modelMgrDelegate;
 	
 	/** Sauvegarde des objets en cours de chargement */
+	private Duration currentDuration;
 	private Collaborator currentCollaborator;
 	private Task currentParentTask;
 	private Task currentTask;
@@ -197,7 +202,7 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		log.debug("start(" + qName + ")");
 		if (MODEL_NODE.equals(qName)
 			|| DURATIONS_NODE.equals(qName)
-			|| DURATION_NODE.equals(qName)
+			|| VALUE_NODE.equals(qName)
 			|| COLLABORATORS_NODE.equals(qName)
 			|| LOGIN_NODE.equals(qName)
 			|| FIRST_NAME_NODE.equals(qName)
@@ -205,13 +210,18 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 			|| TASKS_NODE.equals(qName)
 			|| PATH_NODE.equals(qName)
 			|| NAME_NODE.equals(qName)
+			|| IS_ACTIVE_NODE.equals(qName)
 			|| BUDGET_NODE.equals(qName)
 			|| INITIALLY_CONSUMED_NODE.equals(qName)
 			|| TODO_NODE.equals(qName)
+			|| COMMENT_NODE.equals(qName)
 			|| CONTRIBUTIONS_NODE.equals(qName)
 			|| CONTRIBUTOR_REF_NODE.equals(qName)
 			|| TASK_REF_NODE.equals(qName)) {
 			// Do nothing...
+		}
+		else if (DURATION_NODE.equals(qName))  {
+			currentDuration = new Duration();
 		}
 		else if (COLLABORATOR_NODE.equals(qName)) {
 			currentCollaborator = new Collaborator();
@@ -224,7 +234,7 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 			currentContribution.setYear((int) getNumAttrValue(atts, YEAR_ATTRIBUTE));
 			currentContribution.setMonth((int) getNumAttrValue(atts, MONTH_ATTRIBUTE));
 			currentContribution.setDay((int) getNumAttrValue(atts, DAY_ATTRIBUTE));
-			currentContribution.setDuration(getNumAttrValue(atts, DURATION_ATTRIBUTE));
+			currentContribution.setDurationId(getNumAttrValue(atts, DURATION_ATTRIBUTE));
 		}
 		else {
 			error(new SAXParseException("Unexpected node '" + qName + "'", locator));
@@ -270,7 +280,8 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 				// Do nothing...
 			}
 			else if (DURATION_NODE.equals(qName)) {
-				long durationToCreate = Long.parseLong(textToSave);
+				Duration durationToCreate = currentDuration;
+				currentDuration = null;
 				modelMgrDelegate.createDuration(transaction, durationToCreate);
 			}
 			else if (COLLABORATOR_NODE.equals(qName)) {
@@ -286,6 +297,16 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 			}
 			else if (LAST_NAME_NODE.equals(qName)) {
 				currentCollaborator.setLastName(textToSave);
+			}
+			else if (IS_ACTIVE_NODE.equals(qName)) {
+				boolean isActive = "true".equalsIgnoreCase(textToSave);
+				if (currentCollaborator!=null)
+					currentCollaborator.setIsActive(isActive);
+				else 
+					currentDuration.setIsActive(isActive);
+			}
+			else if (VALUE_NODE.equals(qName)) {
+				currentDuration.setId(Long.parseLong(textToSave));
 			}
 			else if (TASK_NODE.equals(qName)) {
 				Task taskToCreate = currentTask;
@@ -313,6 +334,12 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 			}
 			else if (TODO_NODE.equals(qName)) {
 				currentTask.setTodo(Long.parseLong(textToSave));
+			}
+			else if (COMMENT_NODE.equals(qName)) {
+				String comment = textToSave!=null ? textToSave.trim() : "";
+				if ("".equals(comment))
+					comment = null;
+				currentTask.setComment(comment);
 			}
 			else if (CONTRIBUTION_NODE.equals(qName)) {
 				Contribution contributionToCreate = currentContribution;

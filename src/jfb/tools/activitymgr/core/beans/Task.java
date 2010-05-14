@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2006, Jean-François Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -58,6 +58,9 @@ public class Task extends SimpleIdentityBean {
 	/** Reste à faire */
 	private long todo;
 
+	/** Commentaire sur la tache */
+	private String comment;
+	
 	/**
 	 * @return le code de la tache.
 	 */
@@ -186,6 +189,22 @@ public class Task extends SimpleIdentityBean {
 		StringBuffer result = new StringBuffer(path!=null ? path : "");
 		result.append(StringHelper.toHex(number));
 		return result.toString();
+	}
+
+	/**
+	 * Retourne le commentaire associé à la tache.
+	 * @return le commentaire associé à la tache.
+	 */
+	public String getComment() {
+		return comment;
+	}
+
+	/**
+	 * Définit le commentaire de la tache.
+	 * @param comment le nouveau commentaire.
+	 */
+	public void setComment(String comment) {
+		this.comment = comment;
 	}
 
 	/* (non-Javadoc)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2006, Jean-François Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -31,8 +31,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
-import java.net.URL;
 
+import jfb.tools.activitymgr.ui.images.ImagesDatas;
 import jfb.tools.activitymgr.ui.util.SafeRunner;
 
 import org.apache.log4j.Logger;
@@ -89,17 +89,9 @@ public class AboutUI implements SelectionListener {
 		log.debug("About UI initialized");
 		
 		// Logo
-		Label logo = null;
-		try {
-			logo = new Label(centeredPanel, SWT.NONE);
-			logo.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false));
-			URL iconUrl = AboutUI.class.getResource("logo-385x100.png");
-			Image icon = new Image(parentComposite.getDisplay(), iconUrl.openStream());
-			logo.setImage(icon);
-		}
-		catch (IOException e) {
-			logo.setText("Error while loading logo");
-		}
+		Label logo = new Label(centeredPanel, SWT.NONE);
+		logo.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false));
+		logo.setImage(new Image(parentComposite.getDisplay(), ImagesDatas.APPLICATION_LOGO));
 		
 		// Contact
 		Link contactText = new Link(centeredPanel, SWT.NONE);
@@ -110,7 +102,7 @@ public class AboutUI implements SelectionListener {
 		// Documentation
 		Link documentationText = new Link(centeredPanel, SWT.NONE);
 		documentationText.setText("For more information about Activity Manager, please refer to the documentation\n" +
-				"at : <a>http://jfbrazeau.users.mcs2.netarray.com/main</a>");
+				"at : <a>http://www.jfbrazeau.fr</a>");
 		documentationText.addSelectionListener(this);
 
 		// Apache license

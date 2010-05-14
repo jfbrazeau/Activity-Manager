@@ -11,6 +11,7 @@ create table COLLABORATOR (
 	CLB_LOGIN      varchar( 8) not null,
 	CLB_FIRST_NAME varchar(20) not null,
 	CLB_LAST_NAME  varchar(20) not null,
+	CLB_IS_ACTIVE  boolean not null,
     constraint CLB_PK primary key (CLB_ID) 
 )
 create unique index CLB_LOGIN_IDX on COLLABORATOR (CLB_LOGIN);
@@ -27,6 +28,7 @@ create table TASK (
 	TSK_BUDGET       integer      not null,
 	TSK_INITIAL_CONS integer      not null,
 	TSK_TODO         integer      not null,
+	TSK_COMMENT      varchar,
     constraint TSK_PK primary key (TSK_ID)
 );
 create index TSK_PATH_IDX on TASK (TSK_PATH);
@@ -38,7 +40,8 @@ create unique index TSK_PATH_CODE_IDX on TASK (TSK_PATH, TSK_CODE);
 -- Durées
 --------------------------------------------------------------
 create table DURATION (
-	DUR_ID    integer not null,
+	DUR_ID         integer not null,
+	DUR_IS_ACTIVE  boolean not null,
     constraint DUR_PK primary key (DUR_ID)
 );
 -- set table DURATION source "DURATION.csv";
