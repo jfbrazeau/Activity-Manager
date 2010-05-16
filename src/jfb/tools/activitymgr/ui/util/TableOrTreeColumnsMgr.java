@@ -29,6 +29,8 @@ package jfb.tools.activitymgr.ui.util;
 
 import java.util.ArrayList;
 
+import jfb.tools.activitymgr.core.util.Strings;
+
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -53,7 +55,7 @@ public class TableOrTreeColumnsMgr {
 	 * @param treeViewer le viewer de l'arbre.
 	 */
 	public void configureTree(TreeViewer treeViewer) {
-		log.debug("configureTree");
+		log.debug("configureTree"); //$NON-NLS-1$
 		treeViewer.setColumnProperties(getColumnCodes());
 		Tree tree = treeViewer.getTree();
 		Column[] columns = getColumns();
@@ -70,7 +72,7 @@ public class TableOrTreeColumnsMgr {
 	 * @param tableViewer le viewer du tableau.
 	 */
 	public void configureTable(TableViewer tableViewer) {
-		log.debug("configureTable");
+		log.debug("configureTable"); //$NON-NLS-1$
 		tableViewer.setColumnProperties(getColumnCodes());
 		Table table = tableViewer.getTable();
 		Column[] columns = getColumns();
@@ -92,7 +94,7 @@ public class TableOrTreeColumnsMgr {
 	public void addColumn(String columnCode, String columnName, int columnWidth, int columnAlignment) {
 		Column newColumn = new Column();
 		if (columnName==null)
-			throw new NullPointerException("Column name cannot be null");
+			throw new NullPointerException(Strings.getString("TableOrTreeColumnsMgr.errors.COLUMN_NAME_REQUIRED")); //$NON-NLS-1$
 		newColumn.code = columnCode;
 		newColumn.name = columnName;
 		newColumn.width = columnWidth;
@@ -106,7 +108,7 @@ public class TableOrTreeColumnsMgr {
 	 */
 	public String getColumnCode(int columnIndex) {
 		String code = ((Column) columns.get(columnIndex)).code;
-		log.debug("getColumnCode(" + columnIndex + ")=" + code);
+		log.debug("getColumnCode(" + columnIndex + ")=" + code); //$NON-NLS-1$ //$NON-NLS-2$
 		return code;
 	}
 	
@@ -121,7 +123,7 @@ public class TableOrTreeColumnsMgr {
 			if (column.code.equals(columnCode))
 				index = i;
 		}
-		log.debug("getColumnIndex(" + columnCode + ")=" + index);
+		log.debug("getColumnIndex(" + columnCode + ")=" + index); //$NON-NLS-1$ //$NON-NLS-2$
 		return index;
 	}
 

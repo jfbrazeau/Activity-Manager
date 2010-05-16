@@ -186,7 +186,7 @@ public class Task extends SimpleIdentityBean {
 	 * @return le chemin complet de la tâche.
 	 */
 	public String getFullPath() {
-		StringBuffer result = new StringBuffer(path!=null ? path : "");
+		StringBuffer result = new StringBuffer(path!=null ? path : ""); //$NON-NLS-1$
 		result.append(StringHelper.toHex(number));
 		return result.toString();
 	}
@@ -211,13 +211,13 @@ public class Task extends SimpleIdentityBean {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		return new StringBuffer("Task(")
-			.append(getId()).append(", ")
-			.append(code).append(", ")
-			.append(name).append(",")
-			.append(path).append(",")
-			.append(number).append(",")
-			.append(getFullPath()).append(")")
+		return new StringBuffer("Task(") //$NON-NLS-1$
+			.append(getId()).append(", ") //$NON-NLS-1$
+			.append(code).append(", ") //$NON-NLS-1$
+			.append(name).append(",") //$NON-NLS-1$
+			.append(path).append(",") //$NON-NLS-1$
+			.append(number).append(",") //$NON-NLS-1$
+			.append(getFullPath()).append(")") //$NON-NLS-1$
 			.toString();
 	}
 

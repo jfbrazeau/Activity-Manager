@@ -136,8 +136,8 @@ public class XmlTest extends AbstractModelTestCase {
 		assertEquals(2, contributions.length);
 
 		// Suppression des données
-		ModelMgr.removeContribution(contributions[0]);
-		ModelMgr.removeContribution(contributions[1]);
+		ModelMgr.removeContribution(contributions[0], false);
+		ModelMgr.removeContribution(contributions[1], false);
 		Task[] tasks = ModelMgr.getSubtasks(null);
 		ModelMgr.removeTask(tasks[1]);
 		ModelMgr.removeTask(tasks[0]);
@@ -178,7 +178,7 @@ public class XmlTest extends AbstractModelTestCase {
 		contribution.setContributorId(collaborator.getId());
 		contribution.setTaskId(task.getId());
 		contribution.setDurationId(duration.getId());
-		contribution = ModelMgr.createContribution(contribution);
+		contribution = ModelMgr.createContribution(contribution, false);
 
 		// Export
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -189,7 +189,7 @@ public class XmlTest extends AbstractModelTestCase {
 		log.debug(export);
 
 		// Supression des objets de test
-		ModelMgr.removeContribution(contribution);
+		ModelMgr.removeContribution(contribution, true);
 		ModelMgr.removeTask(task);
 		ModelMgr.removeTask(parentTask);
 		ModelMgr.removeCollaborator(collaborator);
@@ -211,7 +211,7 @@ public class XmlTest extends AbstractModelTestCase {
 
 		// Supression des objets de test ayant été réimportés
 		contribution = ModelMgr.getContributions(null, null, null, null, null)[0];
-		ModelMgr.removeContribution(contribution);
+		ModelMgr.removeContribution(contribution, false);
 		task = ModelMgr.getTaskByCodePath("/Par/Code");
 		ModelMgr.removeTask(task);
 		parentTask = ModelMgr.getTaskByCodePath("/Par");

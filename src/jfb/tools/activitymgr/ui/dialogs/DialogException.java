@@ -36,6 +36,9 @@ import org.eclipse.swt.widgets.Control;
  */
 public class DialogException extends UITechException {
 
+	/** Fake serial version UID */
+	private static final long serialVersionUID = 1L;
+
 	/** Contrôle à l'origine de la levée de l'exception */
 	private Control control;
 

@@ -32,6 +32,8 @@ package jfb.tools.activitymgr;
  */
 public abstract class AbstractTechnicalException extends AbstractException {
 
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Constructeur avec un message.
 	 * @param message le message d'erreur.

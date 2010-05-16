@@ -28,11 +28,18 @@
 package jfb.tools.activitymgr.core;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import org.apache.log4j.Logger;
 
 /**
  * Contexte de transaction.
  */
 public class DbTransaction {
+	
+	/** Logger */
+	private static Logger log = Logger.getLogger(DbTransaction.class);
 
 	/** Connexion SQL */
 	private Connection con;
@@ -52,4 +59,15 @@ public class DbTransaction {
 		return con;
 	}
 
+	/**
+	 * Prépare une requête SQL.
+	 * @param sql requête SQL.
+	 * @return la requête initialisée.
+	 * @throws SQLException en cas d'erreur lié à la BDD.
+	 */
+	protected PreparedStatement prepareStatement(String sql) throws SQLException {
+		log.debug(sql);
+		return con.prepareStatement(sql);
+	}
+	
 }

@@ -29,8 +29,9 @@ package jfb.tools.activitymgr.ui.dialogs;
 
 import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Task;
-import jfb.tools.activitymgr.ui.util.SafeRunner;
+import jfb.tools.activitymgr.core.util.Strings;
 import jfb.tools.activitymgr.ui.util.AbstractTableMgr;
+import jfb.tools.activitymgr.ui.util.SafeRunner;
 import jfb.tools.activitymgr.ui.util.TableOrTreeColumnsMgr;
 
 import org.apache.log4j.Logger;
@@ -83,8 +84,8 @@ public class TasksChooserTree extends AbstractTableMgr implements ITreeContentPr
 
 		// Configuration des colonnes
 		treeColsMgr = new TableOrTreeColumnsMgr();
-		treeColsMgr.addColumn("NAME", "Task name", 200, SWT.LEFT);
-		treeColsMgr.addColumn("CODE", "Task code", 70, SWT.LEFT);
+		treeColsMgr.addColumn("NAME", Strings.getString("TasksChooserTree.columns.TASK_NAME"), 200, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		treeColsMgr.addColumn("CODE", Strings.getString("TasksChooserTree.columns.TASK_CODE"), 70, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
 		treeColsMgr.configureTree(treeViewer);
 
 		// Création d'une racine fictive
@@ -102,7 +103,7 @@ public class TasksChooserTree extends AbstractTableMgr implements ITreeContentPr
 	 * @see org.eclipse.jface.viewers.ICellModifier#getValue(java.lang.Object, java.lang.String)
 	 */
 	public Object getValue(Object element, String property) {
-		log.debug("ICellModifier.getValue(" + element + ", " + property + ")");
+		log.debug("ICellModifier.getValue(" + element + ", " + property + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		Task task = (Task) element;
 		String value = null;
 		int propertyIdx = treeColsMgr.getColumnIndex(property);
@@ -113,7 +114,7 @@ public class TasksChooserTree extends AbstractTableMgr implements ITreeContentPr
 			case (CODE_COLUMN_IDX) :
 				value = task.getCode();
 				break;
-			default : throw new Error("Colonne inconnue");
+			default : throw new Error(Strings.getString("TasksChooserTree.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 		}
 		return value;
 	}
@@ -122,7 +123,7 @@ public class TasksChooserTree extends AbstractTableMgr implements ITreeContentPr
 	 * @see org.eclipse.jface.viewers.ITreeContentProvider#hasChildren(java.lang.Object)
 	 */
 	public boolean hasChildren(Object element) {
-		log.debug("ITreeContentProvider.getChildren(" + element + ")");
+		log.debug("ITreeContentProvider.getChildren(" + element + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		final Task task = (Task) element;
 		return task.getSubTasksCount()>0;
 	}
@@ -131,7 +132,7 @@ public class TasksChooserTree extends AbstractTableMgr implements ITreeContentPr
 	 * @see org.eclipse.jface.viewers.ITreeContentProvider#getChildren(java.lang.Object)
 	 */
 	public Object[] getChildren(Object parentElement) {
-		log.debug("ITreeContentProvider.getChildren(" + parentElement + ")");
+		log.debug("ITreeContentProvider.getChildren(" + parentElement + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		final Task parentTask = (Task) parentElement;
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
@@ -146,7 +147,7 @@ public class TasksChooserTree extends AbstractTableMgr implements ITreeContentPr
 	 * @see org.eclipse.jface.viewers.ITreeContentProvider#getParent(java.lang.Object)
 	 */
 	public Object getParent(Object element) {
-		log.debug("ITreeContentProvider.getParent(" + element + ")");
+		log.debug("ITreeContentProvider.getParent(" + element + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		final Task task = (Task) element;
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
@@ -163,7 +164,7 @@ public class TasksChooserTree extends AbstractTableMgr implements ITreeContentPr
 	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
 	 */
 	public String getColumnText(Object element, int columnIndex) {
-		log.debug("ITableLabelProvider.getColumnText(" + element + ", " + columnIndex + ")");
+		log.debug("ITableLabelProvider.getColumnText(" + element + ", " + columnIndex + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		Task task = (Task) element;
 		String text = null;
 		switch (columnIndex) {
@@ -173,7 +174,7 @@ public class TasksChooserTree extends AbstractTableMgr implements ITreeContentPr
 			case CODE_COLUMN_IDX :
 				text = task.getCode();
 				break;
-			default : throw new Error("Colonne inconnue");
+			default : throw new Error(Strings.getString("TasksChooserTree.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 		}
 		return text;
 	}

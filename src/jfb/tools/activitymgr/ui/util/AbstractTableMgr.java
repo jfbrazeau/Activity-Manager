@@ -48,7 +48,7 @@ public abstract class AbstractTableMgr implements ITableLabelProvider, IStructur
 	private static Logger log = Logger.getLogger(AbstractTableMgr.class);
 
 	/** Noeud racine */
-	protected static Object ROOT_NODE = "ROOT_NODE"; 
+	protected static Object ROOT_NODE = "ROOT_NODE";  //$NON-NLS-1$
 	
 	/** Liste des ILabelProviderListener */
 	private ArrayList labelProviderListeners = new ArrayList();
@@ -57,7 +57,7 @@ public abstract class AbstractTableMgr implements ITableLabelProvider, IStructur
 	 * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
 	 */
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		log.debug("ITreeContentProvider.inputChanged(" + viewer + ", " + oldInput + ", " + newInput + ")");
+		log.debug("ITreeContentProvider.inputChanged(" + viewer + ", " + oldInput + ", " + newInput + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 	}
 	
 	/* (non-Javadoc)
@@ -71,7 +71,7 @@ public abstract class AbstractTableMgr implements ITableLabelProvider, IStructur
 	 * @see org.eclipse.jface.viewers.IBaseLabelProvider#addListener(org.eclipse.jface.viewers.ILabelProviderListener)
 	 */
 	public void addListener(ILabelProviderListener listener) {
-		log.debug("ContentProvider.addListener(" + listener + ")");
+		log.debug("ContentProvider.addListener(" + listener + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		if (!labelProviderListeners.contains(listener))
 			labelProviderListeners.add(listener);
 	}
@@ -93,7 +93,7 @@ public abstract class AbstractTableMgr implements ITableLabelProvider, IStructur
 	 * @see org.eclipse.jface.viewers.IBaseLabelProvider#removeListener(org.eclipse.jface.viewers.ILabelProviderListener)
 	 */
 	public void removeListener(ILabelProviderListener listener) {
-		log.debug("ContentProvider.addListener(" + listener + ")");
+		log.debug("ContentProvider.addListener(" + listener + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		labelProviderListeners.remove(listener);
 	}
 	
@@ -105,7 +105,7 @@ public abstract class AbstractTableMgr implements ITableLabelProvider, IStructur
 		Iterator it = labelProviderListeners.iterator();
 		while (it.hasNext()) {
 			ILabelProviderListener listener = (ILabelProviderListener) it.next();
-			log.debug("notifying listener(" + listener + ")");
+			log.debug("notifying listener(" + listener + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 			listener.labelProviderChanged(e);
 		}
 	}

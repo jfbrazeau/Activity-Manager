@@ -27,6 +27,8 @@
  */
 package jfb.tools.activitymgr.ui.dialogs;
 
+import jfb.tools.activitymgr.core.util.Strings;
+
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -101,7 +103,7 @@ public abstract class AbstractDialog extends Dialog {
 	 */
 	protected void okPressed() {
 		try {
-			log.debug("Ok pressed");
+			log.debug("Ok pressed"); //$NON-NLS-1$
 			value = validateUserEntry();
 			super.okPressed();
 		}
@@ -113,7 +115,7 @@ public abstract class AbstractDialog extends Dialog {
 				text.selectAll();
 			}
 			// Affichage du message d'erreur
-			MessageDialog.openWarning(getShell(), "Error", e.getMessage());
+			MessageDialog.openWarning(getShell(), Strings.getString("AbstractDialog.dialog.TITLE"), e.getMessage()); //$NON-NLS-1$
 		}
 	}
 
@@ -121,7 +123,7 @@ public abstract class AbstractDialog extends Dialog {
 	 * @see org.eclipse.jface.dialogs.Dialog#cancelPressed()
 	 */
 	protected void cancelPressed() {
-		log.debug("Cancel pressed");
+		log.debug("Cancel pressed"); //$NON-NLS-1$
 		super.cancelPressed();
 	}
 

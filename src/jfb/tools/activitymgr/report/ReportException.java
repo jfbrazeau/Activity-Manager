@@ -34,6 +34,9 @@ import jfb.tools.activitymgr.AbstractTechnicalException;
  */
 public class ReportException extends AbstractTechnicalException {
 
+	/** Fake serial version UID */
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Constructeur par défaut.
 	 * @param message message d'erreur.

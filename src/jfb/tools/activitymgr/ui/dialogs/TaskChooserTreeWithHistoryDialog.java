@@ -31,6 +31,8 @@ import java.util.ArrayList;
 
 import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Task;
+import jfb.tools.activitymgr.core.util.Strings;
+import jfb.tools.activitymgr.ui.DatabaseUI.IDbStatusListener;
 import jfb.tools.activitymgr.ui.TasksUI.ITaskListener;
 import jfb.tools.activitymgr.ui.util.ITaskSelectionListener;
 import jfb.tools.activitymgr.ui.util.SafeRunner;
@@ -52,7 +54,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 
-public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements ITaskListener {
+public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements ITaskListener, IDbStatusListener {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(TaskChooserTreeWithHistoryDialog.class);
@@ -77,7 +79,7 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements 
 	 * @param parentShell shell parent.
 	 */
 	public TaskChooserTreeWithHistoryDialog(Shell parentShell) {
-		super(parentShell, "Choose a task", null, null);
+		super(parentShell, Strings.getString("TaskChooserTreeWithHistoryDialog.texts.TITLE"), null, null); //$NON-NLS-1$
 		setShellStyle(SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 	}
 
@@ -85,15 +87,15 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements 
 	 * @see jfb.tools.activitymgr.ui.util.AbstractDialog#validateUserEntry()
 	 */
 	protected Object validateUserEntry() throws DialogException {
-		log.debug("validateUserEntry");
+		log.debug("validateUserEntry"); //$NON-NLS-1$
 		Task selectedTask = null;
 		Tree tree = tasksTree.getTreeViewer().getTree();
 		TreeItem[] selection = tree.getSelection();
 		if (selection.length>0)
 			selectedTask = (Task) selection[0].getData();
-		log.debug("Selected task = " + selectedTask);
+		log.debug("Selected task = " + selectedTask); //$NON-NLS-1$
 		if (selectedTask==null)
-			throw new DialogException("Please choose a task", null);
+			throw new DialogException(Strings.getString("TaskChooserTreeWithHistoryDialog.errors.TASK_REQUIRED"), null); //$NON-NLS-1$
 		if (validator!=null)
 			validator.validateChoosenTask(selectedTask);
 		// Suppression puis enregistrement de la tache dans l'historique
@@ -134,7 +136,7 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements 
 		if (!showHistoryPanel)
 			gridData.horizontalSpan = 2;
 		Group taskTreeGroup = new Group(parentComposite, SWT.NONE);
-		taskTreeGroup.setText("Task tree");
+		taskTreeGroup.setText(Strings.getString("TaskChooserTreeWithHistoryDialog.labels.TASK_TREE")); //$NON-NLS-1$
 		taskTreeGroup.setLayoutData(gridData);
 		taskTreeGroup.setLayout(new FillLayout());
 		tasksTree = new TaskChooserTree(taskTreeGroup, null);
@@ -153,7 +155,7 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements 
 		if (showHistoryPanel) {
 			gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 			Group lastSelectionsGroup = new Group(parentComposite, SWT.NONE);
-			lastSelectionsGroup.setText("Previous selection(s)");
+			lastSelectionsGroup.setText(Strings.getString("TaskChooserTreeWithHistoryDialog.labels.PREVIOUS_SELECTION")); //$NON-NLS-1$
 			lastSelectionsGroup.setLayoutData(gridData);
 			lastSelectionsGroup.setLayout(new FillLayout());
 			// Récupération de l'hitorique avec tri inversé (le premier arrivé est affiché en dernier)
@@ -295,6 +297,19 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements 
 			}
 			
 		}.run(getParentShell());
+	}
+
+	/* (non-Javadoc)
+	 * @see jfb.tools.activitymgr.ui.DatabaseUI.IDbStatusListener#databaseClosed()
+	 */
+	public void databaseClosed() {
+		previouslySelectedTasks.clear();
+	}
+
+	/* (non-Javadoc)
+	 * @see jfb.tools.activitymgr.ui.DatabaseUI.IDbStatusListener#databaseOpened()
+	 */
+	public void databaseOpened() {
 	}
 	
 }

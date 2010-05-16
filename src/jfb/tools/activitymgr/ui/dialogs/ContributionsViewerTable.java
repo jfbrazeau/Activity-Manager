@@ -37,6 +37,7 @@ import jfb.tools.activitymgr.core.beans.Collaborator;
 import jfb.tools.activitymgr.core.beans.Contribution;
 import jfb.tools.activitymgr.core.beans.Task;
 import jfb.tools.activitymgr.core.util.StringHelper;
+import jfb.tools.activitymgr.core.util.Strings;
 import jfb.tools.activitymgr.ui.util.AbstractTableMgr;
 import jfb.tools.activitymgr.ui.util.SWTHelper;
 import jfb.tools.activitymgr.ui.util.SafeRunner;
@@ -78,7 +79,7 @@ public class ContributionsViewerTable extends AbstractTableMgr
 	private static TableOrTreeColumnsMgr tableColsMgr;
 	
 	/** Formatteur de date */
-	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy"); //$NON-NLS-1$
 	
 	/** Viewer */
 	private TableViewer tableViewer;
@@ -104,7 +105,7 @@ public class ContributionsViewerTable extends AbstractTableMgr
 	 * @param layoutData données associées au layout.
 	 */
 	public ContributionsViewerTable(Composite parentComposite, Object layoutData) {
-		log.debug("new ContributionsViewerTable()");
+		log.debug("new ContributionsViewerTable()"); //$NON-NLS-1$
 		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayoutData(layoutData);
@@ -126,18 +127,18 @@ public class ContributionsViewerTable extends AbstractTableMgr
 
 		// Configuration des colonnes
 		tableColsMgr = new TableOrTreeColumnsMgr();
-		tableColsMgr.addColumn("DATE", "Date", 70, SWT.LEFT);
-		tableColsMgr.addColumn("COLLABORATOR", "Collaborator", 100, SWT.LEFT);
-		tableColsMgr.addColumn("TASK_NAME", "Task path", 170, SWT.LEFT);
-		tableColsMgr.addColumn("TASK_NAME", "Task name", 170, SWT.LEFT);
-		tableColsMgr.addColumn("DURATION", "Duration", 50, SWT.LEFT);
+		tableColsMgr.addColumn("DATE", Strings.getString("ContributionsViewerTable.columns.DATE"), 70, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr.addColumn("COLLABORATOR", Strings.getString("ContributionsViewerTable.columns.COLLABORATOR"), 100, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr.addColumn("TASK_PATH", Strings.getString("ContributionsViewerTable.columns.TASK_PATH"), 170, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr.addColumn("TASK_NAME", Strings.getString("ContributionsViewerTable.columns.TASK_NAME"), 170, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr.addColumn("DURATION", Strings.getString("ContributionsViewerTable.columns.CONTRIBUTION_DURATION"), 50, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
 		tableColsMgr.configureTable(tableViewer);
 
 		// Configuration du menu popup
 		final Menu menu = new Menu(table);
 		menu.addMenuListener(this);
 		exportItem = new MenuItem(menu, SWT.CASCADE);
-		exportItem.setText("Export");
+		exportItem.setText(Strings.getString("ContributionsViewerTable.menuitems.EXPORT")); //$NON-NLS-1$
 		exportItem.addSelectionListener(this);
 		table.setMenu(menu);
 	}
@@ -191,7 +192,7 @@ public class ContributionsViewerTable extends AbstractTableMgr
 						break;
 					case (COLLABORATOR_COLUMN_IDX) :
 						Collaborator collaborator = getCachedCollaborator(c.getContributorId());
-						text = collaborator.getFirstName() + " " + collaborator.getLastName();
+						text = collaborator.getFirstName() + " " + collaborator.getLastName(); //$NON-NLS-1$
 						break;
 					case (TASK_CODE_PATH_COLUMN_IDX) :
 						text = getCachedTaskCodePath(c.getTaskId());
@@ -202,13 +203,13 @@ public class ContributionsViewerTable extends AbstractTableMgr
 					case (DURATION_COLUMN_IDX) :
 						text = StringHelper.hundredthToEntry(c.getDurationId());
 						break;
-					default : throw new Error("Colonne inconnue");
+					default : throw new Error(Strings.getString("ContributionsViewerTable.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
 				return text;
 			}
 		};
 		// Exécution
-		return (String) safeRunner.run(parent.getShell(), "");
+		return (String) safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
 	/**
@@ -222,7 +223,7 @@ public class ContributionsViewerTable extends AbstractTableMgr
 		Long _taskId = new Long(taskId);
 		String taskCodePath = (String) taskCodePathsCache.get(_taskId);
 		if (taskCodePath==null) {
-			log.debug("Registering in cache task code path for taskId=" + taskId);
+			log.debug("Registering in cache task code path for taskId=" + taskId); //$NON-NLS-1$
 			Task task = getCachedTask(taskId);
 			taskCodePath = ModelMgr.getTaskCodePath(task);
 			taskCodePathsCache.put(_taskId, taskCodePath);
@@ -240,7 +241,7 @@ public class ContributionsViewerTable extends AbstractTableMgr
 		Long _taskId = new Long(taskId);
 		Task task = (Task) tasksCache.get(_taskId);
 		if (task==null) {
-			log.debug("Registering in cache task for taskId=" + taskId);
+			log.debug("Registering in cache task for taskId=" + taskId); //$NON-NLS-1$
 			task = ModelMgr.getTask(taskId);
 			tasksCache.put(_taskId, task);
 		}
@@ -257,7 +258,7 @@ public class ContributionsViewerTable extends AbstractTableMgr
 		Long _collaboratorId = new Long(collaboratorId);
 		Collaborator collaborator = (Collaborator) collaboratorsCache.get(_collaboratorId);
 		if (collaborator==null) {
-			log.debug("Registering in cache collaborator for collaboratorId=" + collaboratorId);
+			log.debug("Registering in cache collaborator for collaboratorId=" + collaboratorId); //$NON-NLS-1$
 			collaborator = ModelMgr.getCollaborator(collaboratorId);
 			collaboratorsCache.put(_collaboratorId, collaborator);
 		}
@@ -268,7 +269,7 @@ public class ContributionsViewerTable extends AbstractTableMgr
 	 * @see org.eclipse.swt.events.MenuListener#menuShown(org.eclipse.swt.events.MenuEvent)
 	 */
 	public void menuShown(MenuEvent e) {
-		log.debug("menuShown(" + e + ")");
+		log.debug("menuShown(" + e + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 //		TableItem[] selection = tableViewer.getTable().getSelection();
 //		boolean emptySelection = selection.length==0;
 //		boolean singleSelection = selection.length==1;
@@ -286,7 +287,7 @@ public class ContributionsViewerTable extends AbstractTableMgr
 	 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
 	 */
 	public void widgetSelected(final SelectionEvent e) {
-		log.debug("SelectionListener.widgetSelected(" + e + ")");
+		log.debug("SelectionListener.widgetSelected(" + e + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		final Object source = e.getSource();
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {

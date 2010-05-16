@@ -44,7 +44,7 @@ public class TaskSearchFilter {
 	/** Index du critere de recherche 'finit par' */
 	public static final int ENDS_WITH_CRITERIA_IDX = 2;
 	/** Index du critere de recherche 'contient' */
-	public static final int CONTAINS_WITH_CRITERIA_IDX = 3;
+	public static final int CONTAINS_CRITERIA_IDX = 3;
 
 	/** Champ de la tache utilisé pour effectuer la recherche */
 	private int fieldIndex;

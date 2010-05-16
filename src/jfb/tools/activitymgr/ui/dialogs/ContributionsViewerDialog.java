@@ -29,6 +29,7 @@ package jfb.tools.activitymgr.ui.dialogs;
 
 import jfb.tools.activitymgr.core.beans.Collaborator;
 import jfb.tools.activitymgr.core.beans.Task;
+import jfb.tools.activitymgr.core.util.Strings;
 
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
@@ -60,7 +61,7 @@ public class ContributionsViewerDialog extends AbstractDialog {
 	 * @param parentShell shell parent.
 	 */
 	public ContributionsViewerDialog(Shell parentShell) {
-		super(parentShell, "Selected contributions", null, null);
+		super(parentShell, Strings.getString("ContributionsViewerDialog.texts.TITLE"), null, null); //$NON-NLS-1$
 		setShellStyle(SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 	}
 
@@ -68,7 +69,7 @@ public class ContributionsViewerDialog extends AbstractDialog {
 	 * @see jfb.tools.activitymgr.ui.util.AbstractDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
 	 */
 	protected Control createDialogArea(Composite parent) {
-		log.debug("createDialogArea");
+		log.debug("createDialogArea"); //$NON-NLS-1$
 		Composite c = (Composite) super.createDialogArea(parent);
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		contributionsTable = new ContributionsViewerTable(c, gridData);

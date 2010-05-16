@@ -1,8 +1,14 @@
 package jfb.tst.tools.activitymgr.core;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
 import jfb.tools.activitymgr.core.DbException;
 import jfb.tools.activitymgr.core.ModelException;
 import jfb.tools.activitymgr.core.ModelMgr;
+import jfb.tools.activitymgr.core.beans.Collaborator;
+import jfb.tools.activitymgr.core.beans.Contribution;
+import jfb.tools.activitymgr.core.beans.Duration;
 import jfb.tools.activitymgr.core.beans.Task;
 import jfb.tools.activitymgr.core.beans.TaskSearchFilter;
 import jfb.tools.activitymgr.core.beans.TaskSums;
@@ -298,33 +304,92 @@ public class TaskTest extends AbstractModelTestCase {
 	public void testTasksSum() throws DbException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
-		try {
-			// Récupération des sommes
-			TaskSums taskSums = ModelMgr.getTaskSums(rootTask);
-			assertEquals(
-					task111.getBudget()
-						+ task112.getBudget()
-						+ task2.getBudget(),
-					taskSums.getBudgetSum());
-			assertEquals(
-					task111.getInitiallyConsumed()
-						+ task112.getInitiallyConsumed()
-						+ task2.getInitiallyConsumed(),
-					taskSums.getInitiallyConsumedSum());
-			assertEquals(
-					task111.getTodo()
-						+ task112.getTodo()
-						+ task2.getTodo(),
-					taskSums.getTodoSum());
-			
-			assertEquals(
-					0,
-					taskSums.getContributionsNb());
-		}
-		finally {
-			// Suppression des taches de test
-			removeSampleTasks();
-		}
+
+		// Récupération des sommes (sans critère de date)
+		TaskSums taskSums = ModelMgr.getTaskSums(rootTask, null, null);
+		assertEquals(
+				task111.getBudget()
+					+ task112.getBudget()
+					+ task2.getBudget(),
+				taskSums.getBudgetSum());
+		assertEquals(
+				task111.getInitiallyConsumed()
+					+ task112.getInitiallyConsumed()
+					+ task2.getInitiallyConsumed(),
+				taskSums.getInitiallyConsumedSum());
+		assertEquals(
+				task111.getTodo()
+					+ task112.getTodo()
+					+ task2.getTodo(),
+				taskSums.getTodoSum());
+		
+		assertEquals(
+				0,
+				taskSums.getContributionsNb());
+
+		// Préparation de dates
+		GregorianCalendar today = new GregorianCalendar();
+		GregorianCalendar yesterday = new GregorianCalendar();
+		yesterday.add(Calendar.DATE, -1);
+		GregorianCalendar tomorrow = new GregorianCalendar();
+		tomorrow.add(Calendar.DATE, +1);
+		
+		// Ajout de deux contributions
+		Duration duration = new Duration();
+		duration.setId(100);
+		ModelMgr.createDuration(duration);
+		Collaborator col = ModelMgr.createNewCollaborator();
+		Contribution c1 = new Contribution();
+		c1.setContributorId(col.getId());
+		c1.setDate(yesterday);
+		c1.setTaskId(task111.getId());
+		c1.setDurationId(100);
+		ModelMgr.createContribution(c1, false);
+		Contribution c2 = new Contribution();
+		c2.setContributorId(col.getId());
+		c2.setDate(today);
+		c2.setTaskId(task111.getId());
+		c2.setDurationId(100);
+		ModelMgr.createContribution(c2, false);
+		
+		// Calcul du consommé sur une période allant d'aujour'hui à aujourd'hui
+		taskSums = ModelMgr.getTaskSums(rootTask, today, today);
+		assertEquals(100, taskSums.getConsumedSum());
+		assertEquals(1, taskSums.getContributionsNb());
+		
+		// Calcul du consommé & RAF sur une période allant d'hier à aujourd'hui
+		taskSums = ModelMgr.getTaskSums(rootTask, yesterday, today);
+		assertEquals(200, taskSums.getConsumedSum());
+		assertEquals(2, taskSums.getContributionsNb());
+		assertEquals(task111.getTodo() 
+				+ task112.getTodo() 
+				+ task2.getTodo(), taskSums.getTodoSum());
+		
+		// Calcul du consommé & RAF sur une période allant jusqu'à hier
+		taskSums = ModelMgr.getTaskSums(rootTask, null, yesterday);
+		assertEquals(100, taskSums.getConsumedSum());
+		assertEquals(1, taskSums.getContributionsNb());
+		assertEquals(task111.getTodo() 
+				+ task112.getTodo() 
+				+ task2.getTodo() 
+				+ c2.getDurationId(), taskSums.getTodoSum());
+		
+		// Calcul du consommé & RAF sur une période débutant demain
+		taskSums = ModelMgr.getTaskSums(rootTask, tomorrow, null);
+		assertEquals(0, taskSums.getConsumedSum());
+		assertEquals(0, taskSums.getContributionsNb());
+		assertEquals(task111.getTodo() 
+				+ task112.getTodo() 
+				+ task2.getTodo(), taskSums.getTodoSum());
+
+		// Suppression des données de test
+		ModelMgr.removeContribution(c1, false);
+		ModelMgr.removeContribution(c2, false);
+		ModelMgr.removeDuration(duration);
+		ModelMgr.removeCollaborator(col);
+	
+		// Suppression des taches de test
+		removeSampleTasks();
 	}
 
 	public void testSearchTasks() throws DbException, ModelException {
@@ -368,7 +433,7 @@ public class TaskTest extends AbstractModelTestCase {
 			// Recherche d'une tache avec le critère "dont le code contient..."
 			filter = new TaskSearchFilter();
 			filter.setFieldIndex(TaskSearchFilter.TASK_CODE_FIELD_IDX);
-			filter.setCriteriaIndex(TaskSearchFilter.CONTAINS_WITH_CRITERIA_IDX);
+			filter.setCriteriaIndex(TaskSearchFilter.CONTAINS_CRITERIA_IDX);
 			filter.setFieldValue("T");
 			tasks = ModelMgr.getTasks(filter);
 			assertNotNull(tasks);
@@ -417,16 +482,16 @@ public class TaskTest extends AbstractModelTestCase {
 			// Recherche d'une tache avec le critère "dont le code contient..."
 			filter = new TaskSearchFilter();
 			filter.setFieldIndex(TaskSearchFilter.TASK_NAME_FIELD_IDX);
-			filter.setCriteriaIndex(TaskSearchFilter.CONTAINS_WITH_CRITERIA_IDX);
-			filter.setFieldValue("T");
+			filter.setCriteriaIndex(TaskSearchFilter.CONTAINS_CRITERIA_IDX);
+			filter.setFieldValue("ask 1");
 			tasks = ModelMgr.getTasks(filter);
 			assertNotNull(tasks);
-			assertEquals(5, tasks.length);
+
+			assertEquals(4, tasks.length);
 			assertEquals("Task 1", tasks[0].getName());
 			assertEquals("Task 11", tasks[1].getName());
 			assertEquals("Task 111", tasks[2].getName());
 			assertEquals("Task 112", tasks[3].getName());
-			assertEquals("Task 2", tasks[4].getName());
 		}
 		finally {
 			// Suppression des taches de test
@@ -434,5 +499,68 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 
+	public void testMoveUpOrDownTask() throws DbException, ModelException {
+		createSampleTasks();
+		try {
+			// Création d'une tache avec 50 taches filles
+			Task parentTask = new Task();
+			parentTask.setCode("PARENT");
+			parentTask.setName("Parent task");
+			parentTask = ModelMgr.createTask(rootTask, parentTask);
+			for (int i=1; i<=50; i++) {
+				Task newTask = new Task();
+				newTask.setCode("CD" + i);
+				newTask.setName("Task # " + i);
+				newTask = ModelMgr.createTask(parentTask, newTask);
+			}
+			// Reload pour rafraichissement du nombre de taches filles
+			parentTask = ModelMgr.getTask(parentTask.getId());
+			assertEquals(50, parentTask.getSubTasksCount());
+			
+			// Déplacement impossible
+			Task oneTask = ModelMgr.getTaskByCodePath("/RT/PARENT/CD34");
+			assertEquals(34, oneTask.getNumber());
+			try {
+				ModelMgr.moveTaskUpOrDown(oneTask, 100);
+				fail("Moving task to 200 is not possible!");
+			}
+			catch (ModelException e) {
+				// Do nothing...
+			}
+			
+			// Déplacement d'une tache vers le haut
+			ModelMgr.moveTaskUpOrDown(oneTask, (byte) 3);
+			Task oneTaskClone = ModelMgr.getTaskByCodePath("/RT/PARENT/CD34");
+			assertEquals(oneTask.getId(), oneTaskClone.getId());
+			assertEquals(oneTask.getName(), oneTaskClone.getName());
+			assertEquals(3, oneTaskClone.getNumber());
+			// Vérification du nombre d'enfants de la tache parent 
+			assertEquals(50, ModelMgr.getTask(parentTask.getId()).getSubTasksCount());
+			// Vérification des numéros des taches
+			for (int i=1; i<=50; i++) {
+				int taskNumber = ModelMgr.getTaskByCodePath("/RT/PARENT/CD" + i).getNumber();
+				if (i<3)
+					assertEquals(i, taskNumber);
+				else if (i>=3 && i<34)
+					assertEquals(i+1, taskNumber);
+				else if (i==34)
+					assertEquals(3, taskNumber);
+				else 
+					assertEquals(i, taskNumber);
+			}
+			
+			// Déplacement inverse
+			ModelMgr.moveTaskUpOrDown(oneTaskClone, (byte) 34);
+			// Vérification des numéros des taches
+			for (int i=1; i<=50; i++) {
+				int taskNumber = ModelMgr.getTaskByCodePath("/RT/PARENT/CD" + i).getNumber();
+				assertEquals(i, taskNumber);
+			}
+			
+		}
+		finally {
+			removeSampleTasks();
+		}
+	}
 
 }

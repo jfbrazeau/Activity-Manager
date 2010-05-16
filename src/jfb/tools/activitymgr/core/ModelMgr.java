@@ -49,6 +49,7 @@ import jfb.tools.activitymgr.core.beans.Task;
 import jfb.tools.activitymgr.core.beans.TaskSearchFilter;
 import jfb.tools.activitymgr.core.beans.TaskSums;
 import jfb.tools.activitymgr.core.util.StringHelper;
+import jfb.tools.activitymgr.core.util.Strings;
 import jfb.tools.activitymgr.core.util.XmlHelper;
 import jfb.tools.activitymgr.core.util.XmlHelper.ModelMgrDelegate;
 
@@ -78,7 +79,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static void initDatabaseAccess(String driverName, String url, String user, String password) throws DbException {
-		log.info("initDatabaseAccess(" + driverName + ", " + url + ", " + user + ")");
+		log.info("initDatabaseAccess(" + driverName + ", " + url + ", " + user + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		DbMgr.initDatabaseAccess(driverName, url, user, password);
 	}
 
@@ -96,7 +97,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static boolean tablesExist() throws DbException {
-		log.info("tablesExist()");
+		log.info("tablesExist()"); //$NON-NLS-1$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -122,7 +123,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static void createTables() throws DbException {
-		log.info("createTables()");
+		log.info("createTables()"); //$NON-NLS-1$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -159,7 +160,7 @@ public class ModelMgr {
 		StringBuffer buf = new StringBuffer(newPath);
 		while (it.hasNext()) {
 			Task task = (Task) it.next();
-			log.debug("Updating path of task '" + task.getName() + "'");
+			log.debug("Updating path of task '" + task.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 			// Mise à jour des taches filles
 			Task[] subTasks = DbMgr.getSubtasks(tx, task);
 			if (subTasks.length>0)
@@ -167,9 +168,9 @@ public class ModelMgr {
 			// Puis mise à jour de la tache elle-même
 			buf.setLength(newPathLength);
 			buf.append(task.getPath().substring(oldPathLength));
-			log.debug(" - old path : '" + task.getPath() + "'");
+			log.debug(" - old path : '" + task.getPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 			task.setPath(buf.toString());
-			log.debug(" - new path : '" + task.getPath() + "'");
+			log.debug(" - new path : '" + task.getPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 			// Mise à jour
 			DbMgr.updateTask(tx, task);
 		}
@@ -193,13 +194,13 @@ public class ModelMgr {
 			// n'est pas déjà associée à un consommé (ie: à des contributions)
 			long contribsNb = DbMgr.getContributionsNb(tx, task, null, null, null, null);
 			if (contribsNb!=0)
-				throw new ModelException("The task '" + task.getName() + "' is already used (contribsNb=" + contribsNb + "). It cannot accet sub tasks.");
+				throw new ModelException(Strings.getString("ModelMgr.errors.TASK_USED_BY_CONTRIBUTIONS", task.getName(), new Long(contribsNb))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			if (task.getBudget()!=0)
-				throw new ModelException("This task's 'budget' is not null. It cannot accept a sub task.");
+				throw new ModelException(Strings.getString("ModelMgr.errors.NON_NULL_TASK_BUDGET")); //$NON-NLS-1$
 			if (task.getInitiallyConsumed()!=0)
-				throw new ModelException("This task's 'initially consummed' is not null. It cannot accept a sub task.");
+				throw new ModelException(Strings.getString("ModelMgr.errors.NON_NULL_TASK_INITIALLY_CONSUMMED")); //$NON-NLS-1$
 			if (task.getTodo()!=0)
-				throw new ModelException("This task's 'todo' is not null. It cannot accept a sub task.");
+				throw new ModelException(Strings.getString("ModelMgr.errors.NON_NULL_TASK_ESTIMATED_TIME_TO_COMPLETE")); //$NON-NLS-1$
 		}
 	}
 
@@ -210,7 +211,7 @@ public class ModelMgr {
 	 * @throws ModelException levé dans la cas ou la tache de destination ne peut recevoir de sous-tache.
 	 */
 	public static void checkAcceptsSubtasks(Task task) throws DbException, ModelException {
-		log.info("checkAcceptsSubtasks(" + task + ")");
+		log.info("checkAcceptsSubtasks(" + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -243,21 +244,21 @@ public class ModelMgr {
 		try {
 			_task = DbMgr.getTask(tx, task.getId());
 			if (_task==null)
-				throw new ModelException("Task does not exist in the database");
+				throw new ModelException(Strings.getString("ModelMgr.errors.UNKNOWN_TASK")); //$NON-NLS-1$
 			if (!_task.getPath().equals(task.getPath()))
-				throw new ModelException("Task's path has changed in the database");
+				throw new ModelException(Strings.getString("ModelMgr.errors.TASK_PATH_UPDATE_DETECTED")); //$NON-NLS-1$
 			if (_task.getNumber()!=task.getNumber())
-				throw new ModelException("Task's number has changed in the database");
+				throw new ModelException(Strings.getString("ModelMgr.errors.TASK_NUMBER_UPDATE_DETECTED")); //$NON-NLS-1$
 			task.setSubTasksCount(_task.getSubTasksCount());
 			// Si aucune erreur n'est intervenue...
 			noErrorOccured = true;
 		}
 		finally {
 			if (!noErrorOccured && _task!=null && task!=null) {
-				log.error("Task id = " + task.getId());
-				log.error("     name = " + task.getName());
-				log.error("     fullath = " + task.getPath() + "/" + task.getNumber());
-				log.error("     db fullath = " + _task.getPath() + "/" + _task.getNumber());
+				log.error("Task id = " + task.getId()); //$NON-NLS-1$
+				log.error("     name = " + task.getName()); //$NON-NLS-1$
+				log.error("     fullath = " + task.getPath() + "/" + task.getNumber()); //$NON-NLS-1$ //$NON-NLS-2$
+				log.error("     db fullath = " + _task.getPath() + "/" + _task.getNumber()); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		}
 	}
@@ -274,7 +275,7 @@ public class ModelMgr {
 		Collaborator colWithSameLogin = DbMgr.getCollaborator(tx, collaborator.getLogin());
 		// Vérification du login
 		if (colWithSameLogin!=null && !colWithSameLogin.equals(collaborator))
-			throw new ModelException("login \"" + colWithSameLogin.getLogin() + "\" is already affected to another user");
+			throw new ModelException(Strings.getString("ModelMgr.errors.NON_UNIQUE_COLLABORATOR_LOGIN", colWithSameLogin.getLogin())); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	/**
@@ -316,7 +317,7 @@ public class ModelMgr {
 	 * @throws ModelException levé dans la cas ou la tache de destination ne peut recevoir de sous-tache.
 	 */
 	private static Collaborator createCollaborator(DbTransaction tx, Collaborator collaborator) throws DbException, ModelException {
-		log.info("createCollaborator(" + collaborator + ")");
+		log.info("createCollaborator(" + collaborator + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		// Control de l'unicité du login
 		checkUniqueLogin(tx, collaborator);
 
@@ -330,18 +331,19 @@ public class ModelMgr {
 	/**
 	 * Crée une contribution.
 	 * @param contribution la contribution à créer.
+	 * @param updateEstimatedTimeToComlete booléen indiquant si le reste à faire doit être décrémenté.
 	 * @return la contribution après création.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException levé dans la cas ou la tache de destination ne peut recevoir de contribution.
 	 */
-	public static Contribution createContribution(Contribution contribution) throws DbException, ModelException {
+	public static Contribution createContribution(Contribution contribution, boolean updateEstimatedTimeToComlete) throws DbException, ModelException {
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
 			// Création de la contribution
-			contribution = createContribution(tx, contribution);
+			contribution = createContribution(tx, contribution, updateEstimatedTimeToComlete);
 
 			// Commit et fin de la transaction
 			DbMgr.commitTransaction(tx);
@@ -361,20 +363,29 @@ public class ModelMgr {
 	 * Crée une contribution dans un contexte de transaction.
 	 * @param tx le contexte de transaction.
 	 * @param contribution la contribution à créer.
+	 * @param updateEstimatedTimeToComlete booléen indiquant si le reste à faire doit être décrémenté.
 	 * @return la contribution après création.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException levé dans la cas ou la tache de destination ne peut recevoir de contribution.
 	 */
-	private static Contribution createContribution(DbTransaction tx, Contribution contribution) throws DbException, ModelException {
-		log.info("createContribution(" + contribution + ")");
+	private static Contribution createContribution(DbTransaction tx, Contribution contribution, boolean updateEstimatedTimeToComlete) throws DbException, ModelException {
+		log.info("createContribution(" + contribution + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		// La tache ne peut accepter une contribution que
 		// si elle n'admet aucune sous-tache
 		Task task = DbMgr.getTask(tx, contribution.getTaskId());
 		if (task.getSubTasksCount()>0)
-			throw new ModelException("This task has one or more sub tasks. It cannot accept a contribution.");
+			throw new ModelException(Strings.getString("ModelMgr.errors.TASK_WITH_AT_LEAST_ONE_SUBTASK_CANNOT_ACCEPT_CONTRIBUTIONS")); //$NON-NLS-1$
 		
 		// Création de la contribution
 		contribution = DbMgr.createContribution(tx, contribution);
+
+		// Faut-il mettre à jour automatiquement le RAF de la tache ?
+		if (updateEstimatedTimeToComlete) {
+			// Mise à jour du RAF de la tache
+			long newEtc = task.getTodo() - contribution.getDurationId();
+			task.setTodo(newEtc > 0 ? newEtc : 0);
+			DbMgr.updateTask(tx, task);
+		}
 
 		// Retour du résultat
 		return contribution;
@@ -419,14 +430,14 @@ public class ModelMgr {
 	 * @throws ModelException levé dans la cas ou la durée existe déjà.
 	 */
 	private static Duration createDuration(DbTransaction tx, Duration duration) throws DbException, ModelException {
-		log.info("createDuration(" + duration + ")");
+		log.info("createDuration(" + duration + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		// Vérification de l'unicité
 		if (durationExists(tx, duration))
-			throw new ModelException("This duration already exists");
+			throw new ModelException(Strings.getString("ModelMgr.errros.DUPLICATE_DURATION")); //$NON-NLS-1$
 
 		// Vérification de la non nullité
 		if (duration.getId()==0)
-			throw new ModelException("A duration cannot be null");
+			throw new ModelException(Strings.getString("ModelMgr.errors.NUL_DURATION_FORBIDDEN")); //$NON-NLS-1$
 
 		// Création
 		duration = DbMgr.createDuration(tx, duration);
@@ -441,7 +452,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Collaborator createNewCollaborator() throws DbException {
-		log.info("createNewCollaborator()");
+		log.info("createNewCollaborator()"); //$NON-NLS-1$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -453,15 +464,15 @@ public class ModelMgr {
 			boolean unique = false;
 			String newLogin = null;
 			while (!unique) {
-				newLogin = "<NEW" + (idx==0 ? "" : String.valueOf(idx)) + ">";
+				newLogin = "<" + Strings.getString("ModelMgr.defaults.COLLABORATOR_LOGIN_PREFIX") + (idx==0 ? "" : String.valueOf(idx)) + ">"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 				unique = DbMgr.getCollaborator(tx, newLogin)==null;
 				idx ++;
 			}
 			// Création du nouveau collaborateur
 			Collaborator collaborator = new Collaborator();
 			collaborator.setLogin(newLogin);
-			collaborator.setFirstName("<NEW>");
-			collaborator.setLastName("<NEW>");
+			collaborator.setFirstName("<" + Strings.getString("ModelMgr.defaults.COLLABORATOR_FIRST_NAME") + ">"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			collaborator.setLastName("<" + Strings.getString("ModelMgr.defaults.COLLABORATOR_LAST_NAME") + ">"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			// Création en base
 			collaborator = DbMgr.createCollaborator(tx, collaborator);
 
@@ -495,7 +506,7 @@ public class ModelMgr {
 	 * @see jfb.tools.activitymgr.core.ModelMgr#checkAcceptsSubtasks(Task)
 	 */
 	public static synchronized Task createNewTask(Task parentTask) throws DbException, ModelException {
-		log.info("createNewTask(" + parentTask + ")");
+		log.info("createNewTask(" + parentTask + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -506,15 +517,15 @@ public class ModelMgr {
 			int idx = 0;
 			boolean unique = false;
 			String newCode = null;
-			String taskPath = parentTask!=null ? parentTask.getFullPath() : "";
+			String taskPath = parentTask!=null ? parentTask.getFullPath() : ""; //$NON-NLS-1$
 			while (!unique) {
-				newCode = "<N" + (idx==0 ? "" : String.valueOf(idx)) + ">";
+				newCode = "<N" + (idx==0 ? "" : String.valueOf(idx)) + ">"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				unique = DbMgr.getTask(tx, taskPath, newCode)==null;
 				idx ++;
 			}
 			// Création du nouveau collaborateur
 			Task task = new Task();
-			task.setName("<NEW>");
+			task.setName("<" + Strings.getString("ModelMgr.defaults.TASK_NAME") + ">"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			task.setCode(newCode);
 			
 			// Création en base
@@ -552,16 +563,16 @@ public class ModelMgr {
 	 * @see jfb.tools.activitymgr.core.ModelMgr#checkAcceptsSubtasks(Task)
 	 */
 	private synchronized static Task createTask(DbTransaction tx, Task parentTask, Task task) throws DbException, ModelException {
-		log.info("createTask(" + parentTask + ", " + task + ")");
+		log.info("createTask(" + parentTask + ", " + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		// Une tache ne peut admettre une sous-tache que si elle
 		// n'est pas déjà associée à un consommé
 		if (parentTask!=null)
 			checkAcceptsSubtasks(tx, parentTask);
 
 		// Check sur l'unicité du code pour le chemin considéré
-		Task sameCodeTask = DbMgr.getTask(tx, parentTask!=null ? parentTask.getFullPath() : "", task.getCode());
+		Task sameCodeTask = DbMgr.getTask(tx, parentTask!=null ? parentTask.getFullPath() : "", task.getCode()); //$NON-NLS-1$
 		if (sameCodeTask!=null && !sameCodeTask.equals(task))
-			throw new ModelException("This code is already in use");
+			throw new ModelException(Strings.getString("ModelMgr.errors.TASK_CODE_ALREADY_USED")); //$NON-NLS-1$
 		
 		// Création de la tache
 		task = DbMgr.createTask(tx, parentTask, task);
@@ -584,7 +595,7 @@ public class ModelMgr {
 	 * @see jfb.tools.activitymgr.core.ModelMgr#checkAcceptsSubtasks(Task)
 	 */
 	public static Task createTask(Task parentTask, Task task) throws DbException, ModelException {
-		log.info("createTask(" + parentTask + ", " + task + ")");
+		log.info("createTask(" + parentTask + ", " + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -626,7 +637,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static boolean durationExists(Duration duration) throws DbException {
-		log.info("durationExists(" + duration + ")");
+		log.info("durationExists(" + duration + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -657,7 +668,7 @@ public class ModelMgr {
 	 * @throws ModelException levé en cas d'incohérence des données lors de l'import
 	 */
 	public static void importFromXML(InputStream in) throws IOException, DbException, ParserConfigurationException, SAXException, ModelException {
-		log.info("importFromXML()");
+		log.info("importFromXML()"); //$NON-NLS-1$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -682,7 +693,7 @@ public class ModelMgr {
 					return task;
 				}
 				public Contribution createContribution(DbTransaction tx, Contribution contribution) throws DbException, ModelException {
-					return ModelMgr.createContribution(tx, contribution);
+					return ModelMgr.createContribution(tx, contribution, false);
 				}
 				public Task getTaskByCodePath(DbTransaction tx, String codePath) throws DbException, ModelException {
 					Task task = (Task) taskCache.get(codePath);
@@ -717,7 +728,7 @@ public class ModelMgr {
 			reader.setContentHandler(xmlHelper);
 			// Parsing du fichier
 			InputSource is = new InputSource(in);
-			is.setSystemId(""); // Pour empêcher la levée d'erreur associé à l'URI de la DTD
+			is.setSystemId(""); // Pour empêcher la levée d'erreur associé à l'URI de la DTD //$NON-NLS-1$
 			reader.parse(is);
 
 			// Fermeture du flux de données
@@ -750,92 +761,92 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident avec la base de données.
 	 */
 	public static void exportToXML(OutputStream out) throws IOException, DbException {
-		log.info("exportToXML()");
+		log.info("exportToXML()"); //$NON-NLS-1$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
 			// Entête XML
-			XmlHelper.println(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-			XmlHelper.println(out, "<!DOCTYPE model SYSTEM \"activitymgr.dtd\">");
+			XmlHelper.println(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); //$NON-NLS-1$
+			XmlHelper.println(out, "<!DOCTYPE model SYSTEM \"activitymgr.dtd\">"); //$NON-NLS-1$
 			
 			// Ajout des sommes de controle
 			Task[] rootTasks = DbMgr.getSubtasks(tx, null);
 			if (rootTasks.length>0) {
-				XmlHelper.println(out, "<!-- ");
-				XmlHelper.println(out, "  Root tasks check sums :");
+				XmlHelper.println(out, "<!-- "); //$NON-NLS-1$
+				XmlHelper.println(out, Strings.getString("ModelMgr.xmlexport.comment.ROOT_TASKS_CHECK_SUMS")); //$NON-NLS-1$
 				for (int i=0; i<rootTasks.length; i++) {
 					Task rootTask = rootTasks[i];
-					TaskSums sums = DbMgr.getTaskSums(tx, rootTask);
-					XmlHelper.println(out, "  * Root task[" + i + "]='/" + rootTask.getCode() + "' (" + rootTask.getName() + ")");
-					XmlHelper.println(out, "    - Budgets :           " + (sums.getBudgetSum()/100d));
-					XmlHelper.println(out, "    - InitiallyConsumed : " + (sums.getInitiallyConsumedSum()/100d));
-					XmlHelper.println(out, "    - Consumed :          " + (sums.getConsumedSum()/100d));
-					XmlHelper.println(out, "    - Todo :              " + (sums.getTodoSum()/100d));
-					XmlHelper.println(out, "    - Contibutions nb :   " + sums.getContributionsNb());
+					TaskSums sums = DbMgr.getTaskSums(tx, rootTask, null, null);
+					XmlHelper.println(out, Strings.getString("ModelMgr.xmlexport.comment.ROOT_TASK", new Integer(i), rootTask.getCode(), rootTask.getName())); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+					XmlHelper.println(out, Strings.getString("ModelMgr.xmlexport.comment.BUDGET") + (sums.getBudgetSum()/100d)); //$NON-NLS-1$
+					XmlHelper.println(out, Strings.getString("ModelMgr.xmlexport.comment.INITIALLY_CONSUMED") + (sums.getInitiallyConsumedSum()/100d)); //$NON-NLS-1$
+					XmlHelper.println(out, Strings.getString("ModelMgr.xmlexport.comment.CONSUMED") + (sums.getConsumedSum()/100d)); //$NON-NLS-1$
+					XmlHelper.println(out, Strings.getString("ModelMgr.xmlexport.comment.ESTIMATED_TIME_TO_COMPLETE") + (sums.getTodoSum()/100d)); //$NON-NLS-1$
+					XmlHelper.println(out, Strings.getString("ModelMgr.xmlexport.comment.CONTRIBUTIONS_NUMBER") + sums.getContributionsNb()); //$NON-NLS-1$
 				}
-				XmlHelper.println(out, "  -->");
+				XmlHelper.println(out, "  -->"); //$NON-NLS-1$
 			}
 
 			// Ajout du noeud racine
-			XmlHelper.startXmlNode(out, "", XmlHelper.MODEL_NODE);
-			final String INDENT = "      ";
+			XmlHelper.startXmlNode(out, "", XmlHelper.MODEL_NODE); //$NON-NLS-1$
+			final String INDENT = "      "; //$NON-NLS-1$
 
 			// Exportation des durées
 			Duration[] durations = DbMgr.getDurations(tx, false);
 			if (durations.length>0) {
-				XmlHelper.startXmlNode(out, "  ", XmlHelper.DURATIONS_NODE);
+				XmlHelper.startXmlNode(out, "  ", XmlHelper.DURATIONS_NODE); //$NON-NLS-1$
 				for (int i=0; i<durations.length; i++) {
 					Duration duration = durations[i];
-					XmlHelper.startXmlNode(out, "    ", XmlHelper.DURATION_NODE);
+					XmlHelper.startXmlNode(out, "    ", XmlHelper.DURATION_NODE); //$NON-NLS-1$
 					XmlHelper.printTextNode(out, INDENT, XmlHelper.VALUE_NODE, String.valueOf(duration.getId()));
 					XmlHelper.printTextNode(out, INDENT, XmlHelper.IS_ACTIVE_NODE, String.valueOf(duration.getIsActive()));
-					XmlHelper.endXmlNode(out, "    ", XmlHelper.DURATION_NODE);
+					XmlHelper.endXmlNode(out, "    ", XmlHelper.DURATION_NODE); //$NON-NLS-1$
 				}
-				XmlHelper.endXmlNode(out, "  ", XmlHelper.DURATIONS_NODE);
+				XmlHelper.endXmlNode(out, "  ", XmlHelper.DURATIONS_NODE); //$NON-NLS-1$
 			}
 			// Exportation des collaborateurs
 			Collaborator[] collaborators = DbMgr.getCollaborators(tx, Collaborator.LOGIN_FIELD_IDX, true, false);
 			HashMap collaboratorsLoginsMap = new HashMap();
 			if (collaborators.length>0) {
-				XmlHelper.startXmlNode(out, "  ", XmlHelper.COLLABORATORS_NODE);
+				XmlHelper.startXmlNode(out, "  ", XmlHelper.COLLABORATORS_NODE); //$NON-NLS-1$
 				for (int i=0; i<collaborators.length; i++) {
 					Collaborator collaborator = collaborators[i];
 					// Enregitrement du login dans le dictionnaire de logins
 					collaboratorsLoginsMap.put(new Long(collaborator.getId()), collaborator.getLogin());
-					XmlHelper.startXmlNode(out, "    ", XmlHelper.COLLABORATOR_NODE);
+					XmlHelper.startXmlNode(out, "    ", XmlHelper.COLLABORATOR_NODE); //$NON-NLS-1$
 					XmlHelper.printTextNode(out, INDENT, XmlHelper.LOGIN_NODE, collaborator.getLogin());
 					XmlHelper.printTextNode(out, INDENT, XmlHelper.FIRST_NAME_NODE, collaborator.getFirstName());
 					XmlHelper.printTextNode(out, INDENT, XmlHelper.LAST_NAME_NODE, collaborator.getLastName());
 					XmlHelper.printTextNode(out, INDENT, XmlHelper.IS_ACTIVE_NODE, String.valueOf(collaborator.getIsActive()));
-					XmlHelper.endXmlNode(out, "    ", XmlHelper.COLLABORATOR_NODE);
+					XmlHelper.endXmlNode(out, "    ", XmlHelper.COLLABORATOR_NODE); //$NON-NLS-1$
 				}
-				XmlHelper.endXmlNode(out, "  ", XmlHelper.COLLABORATORS_NODE);
+				XmlHelper.endXmlNode(out, "  ", XmlHelper.COLLABORATORS_NODE); //$NON-NLS-1$
 			}
 			// Exportation des taches
 			HashMap tasksCodePathMap = new HashMap();
-			exportSubTasksToXML(tx, out, INDENT, null, "", tasksCodePathMap);
+			exportSubTasksToXML(tx, out, INDENT, null, "", tasksCodePathMap); //$NON-NLS-1$
 			// Exportation des contributions
 			Contribution[] contributions = DbMgr.getContributions(tx, null, null, null, null, null);
 			if (contributions.length>0) {
-				XmlHelper.startXmlNode(out, "  ", XmlHelper.CONTRIBUTIONS_NODE);
+				XmlHelper.startXmlNode(out, "  ", XmlHelper.CONTRIBUTIONS_NODE); //$NON-NLS-1$
 				for (int i=0; i<contributions.length; i++) {
 					Contribution contribution = contributions[i];
-					XmlHelper.print(out, "    <");
+					XmlHelper.print(out, "    <"); //$NON-NLS-1$
 					XmlHelper.print(out, XmlHelper.CONTRIBUTION_NODE);
 					XmlHelper.printTextAttribute(out, XmlHelper.YEAR_ATTRIBUTE, String.valueOf(contribution.getYear()));
 					XmlHelper.printTextAttribute(out, XmlHelper.MONTH_ATTRIBUTE, String.valueOf(contribution.getMonth()));
 					XmlHelper.printTextAttribute(out, XmlHelper.DAY_ATTRIBUTE, String.valueOf(contribution.getDay()));
 					XmlHelper.printTextAttribute(out, XmlHelper.DURATION_ATTRIBUTE, String.valueOf(contribution.getDurationId()));
-					XmlHelper.println(out, ">");
+					XmlHelper.println(out, ">"); //$NON-NLS-1$
 					XmlHelper.printTextNode(out, INDENT, XmlHelper.CONTRIBUTOR_REF_NODE, (String) collaboratorsLoginsMap.get(new Long(contribution.getContributorId())));
 					XmlHelper.printTextNode(out, INDENT, XmlHelper.TASK_REF_NODE, (String) tasksCodePathMap.get(new Long(contribution.getTaskId())));
-					XmlHelper.endXmlNode(out, "    ", XmlHelper.CONTRIBUTION_NODE);
+					XmlHelper.endXmlNode(out, "    ", XmlHelper.CONTRIBUTION_NODE); //$NON-NLS-1$
 				}
-				XmlHelper.endXmlNode(out, "  ", XmlHelper.CONTRIBUTIONS_NODE);
+				XmlHelper.endXmlNode(out, "  ", XmlHelper.CONTRIBUTIONS_NODE); //$NON-NLS-1$
 			}
-			XmlHelper.endXmlNode(out, "", "model");
+			XmlHelper.endXmlNode(out, "", "model"); //$NON-NLS-1$ //$NON-NLS-2$
 			out.flush();
 
 			// Fin de la transaction
@@ -869,11 +880,11 @@ public class ModelMgr {
 		if (tasks.length>0) {
 			// Cas particulier pour la racine
 			if (parentTask==null)
-				XmlHelper.startXmlNode(out, "  ", XmlHelper.TASKS_NODE);
+				XmlHelper.startXmlNode(out, "  ", XmlHelper.TASKS_NODE); //$NON-NLS-1$
 			for (int i=0; i<tasks.length; i++) {
 				Task task = tasks[i];
-				XmlHelper.startXmlNode(out, "    ", XmlHelper.TASK_NODE);
-				String taskCodePath = parentCodePath + "/" + task.getCode();
+				XmlHelper.startXmlNode(out, "    ", XmlHelper.TASK_NODE); //$NON-NLS-1$
+				String taskCodePath = parentCodePath + "/" + task.getCode(); //$NON-NLS-1$
 				// Enregistrement du chemin dans le dictionnaire de chemins
 				taskCodesPathMap.put(new Long(task.getId()), taskCodePath);
 				XmlHelper.printTextNode(out, indent, XmlHelper.PATH_NODE, taskCodePath);
@@ -883,14 +894,14 @@ public class ModelMgr {
 				XmlHelper.printTextNode(out, indent, XmlHelper.TODO_NODE, String.valueOf(task.getTodo()));
 				if (task.getComment()!=null)
 					XmlHelper.printTextNode(out, indent, XmlHelper.COMMENT_NODE, task.getComment());
-				XmlHelper.endXmlNode(out, "    ", XmlHelper.TASK_NODE);
+				XmlHelper.endXmlNode(out, "    ", XmlHelper.TASK_NODE); //$NON-NLS-1$
 				if (task.getSubTasksCount()>0) {
 					exportSubTasksToXML(tx, out, indent, task, taskCodePath, taskCodesPathMap);
 				}
 			}
 			// Cas particulier pour la racine
 			if (parentTask==null)
-				XmlHelper.endXmlNode(out, "  ", XmlHelper.TASKS_NODE);
+				XmlHelper.endXmlNode(out, "  ", XmlHelper.TASKS_NODE); //$NON-NLS-1$
 		}
 	}
 
@@ -900,7 +911,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Collaborator getCollaborator(long collaboratorId) throws DbException {
-		log.info("getCollaborator(" + collaboratorId + ")");
+		log.info("getCollaborator(" + collaboratorId + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -921,6 +932,33 @@ public class ModelMgr {
 		}
 	}
 	
+	/**
+	 * @param login l'identifiant de connexion du collaborateur recherché.
+	 * @return le collaborateur dont l'identifiant de connexion est spécifié.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	public static Collaborator getCollaborator(String login) throws DbException {
+		log.info("getCollaborator(" + login + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+		DbTransaction tx = null;
+		try {
+			// Ouverture de la transaction
+			tx = DbMgr.beginTransaction();
+
+			// Récupération des collaborateurs
+			Collaborator collaborator = DbMgr.getCollaborator(tx, login);
+
+			// Fin de la transaction
+			DbMgr.endTransaction(tx);
+			tx = null;
+			
+			// Retour du résultat
+			return collaborator;
+		}
+		finally {
+			if (tx!=null) try { DbMgr.endTransaction(tx); } catch (DbException ignored) {}
+		}
+	}
+
 	/**
 	 * @return la liste des collaborateurs.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
@@ -958,7 +996,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	private static Collaborator[] getCollaborators(int orderByClauseFieldIndex, boolean ascendantSort, boolean onlyActiveCollaborators) throws DbException {
-		log.info("getCollaborators()");
+		log.info("getCollaborators()"); //$NON-NLS-1$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -994,7 +1032,7 @@ public class ModelMgr {
 	 * @see jfb.tools.activitymgr.core.DbMgr#getContributions(DbTransaction, Task, Collaborator, Integer, Integer, Integer)
 	 */
 	public static Contribution[] getContributions(Task task, Collaborator contributor, Integer year, Integer month, Integer day) throws ModelException, DbException {
-		log.info("getContributions(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")");
+		log.info("getContributions(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1035,7 +1073,7 @@ public class ModelMgr {
 	 * @see jfb.tools.activitymgr.core.DbMgr#getContributionsNb(DbTransaction, Task, Collaborator, Integer, Integer, Integer)
 	 */
 	public static long getContributionsNb(Task task, Collaborator contributor, Integer year, Integer month, Integer day) throws ModelException, DbException {
-		log.info("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")");
+		log.info("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1043,6 +1081,37 @@ public class ModelMgr {
 
 			// Récupération du résultat
 			long sum = getContributionsNb(tx, task, contributor, year, month, day);
+
+			// Fin de la transaction
+			DbMgr.endTransaction(tx);
+			tx = null;
+			
+			// Retour du résultat
+			return sum;
+		}
+		finally {
+			if (tx!=null) try { DbMgr.endTransaction(tx); } catch (DbException ignored) {}
+		}
+	}
+
+	/**
+	 * Calcule le total des contributions associée aux paramètres spécifiés.
+	 * 
+	 * @param contributor le collaborateur associé aux contributions (facultatif).
+	 * @param fromDate la date de départ.
+	 * @param toDate la date de fin.
+	 * @return la seomme des contributions.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	public static long getContributionsSum(Task task, Collaborator contributor, Calendar fromDate, Calendar toDate) throws DbException {
+		log.info("getContributionsSum(" + task + ", " + contributor + ", " + StringHelper.toYYYYMMDD(fromDate) + ", " + StringHelper.toYYYYMMDD(toDate) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+		DbTransaction tx = null;
+		try {
+			// Ouverture de la transaction
+			tx = DbMgr.beginTransaction();
+
+			// Récupération du résultat
+			long sum = DbMgr.getContributionsSum(tx, task, contributor, fromDate, toDate);
 
 			// Fin de la transaction
 			DbMgr.endTransaction(tx);
@@ -1072,7 +1141,7 @@ public class ModelMgr {
 	 * @see jfb.tools.activitymgr.core.DbMgr#getContributionsSum(DbTransaction, Task, Collaborator, Integer, Integer, Integer)
 	 */
 	public static long getContributionsSum(Task task, Collaborator contributor, Integer year, Integer month, Integer day) throws ModelException, DbException {
-		log.info("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")");
+		log.info("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1139,17 +1208,19 @@ public class ModelMgr {
 	 * 		à la date de début spécifiée.
 	 */
 	public static Contribution[] getDaysContributions(Collaborator contributor, Task task, Calendar fromDate, Calendar toDate) throws DbException, ModelException {
-		log.info("getDaysContributions(" + contributor + ", " + task + ", " + StringHelper.toYYYYMMDD(fromDate) + ", " + StringHelper.toYYYYMMDD(toDate) + ")");
+		log.info("getDaysContributions(" + contributor + ", " + task + ", " + StringHelper.toYYYYMMDD(fromDate) + ", " + StringHelper.toYYYYMMDD(toDate) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
 			// Préparation du résultat
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+			SimpleDateFormat sdf = null;
+			if (log.isDebugEnabled())
+				sdf = new SimpleDateFormat("yyyyMMdd"); //$NON-NLS-1$
 			// Control sur la date
 			if (fromDate.getTime().compareTo(toDate.getTime())>0) 
-				throw new ModelException("'from date' must be before 'to date'");
+				throw new ModelException(Strings.getString("ModelMgr.errors.FROM_DATE_MUST_BE_BEFORE_TO_DATE")); //$NON-NLS-1$
 			// Récupération des contributions
 			Contribution[] contributionsArray = DbMgr.getContributions(tx, contributor, task, fromDate, toDate);
 			// Classement des contributions
@@ -1158,7 +1229,8 @@ public class ModelMgr {
 			for (Calendar date = (Calendar) fromDate.clone();
 					date.getTime().compareTo(toDate.getTime())<=0;
 					date.add(Calendar.DATE, 1)) {
-				log.debug(" - cal :" + sdf.format(date.getTime()));
+				if (log.isDebugEnabled())
+					log.debug(" - cal :" + sdf.format(date.getTime())); //$NON-NLS-1$
 				int n = contributions.size();
 				boolean found = false;
 				for (int i=0; i<n && !found; i++) {
@@ -1167,12 +1239,12 @@ public class ModelMgr {
 						&& contribution.getMonth()==(date.get(Calendar.MONTH)+1)
 						&& contribution.getDay()==date.get(Calendar.DAY_OF_MONTH);
 					if (found) {
-						log.debug("  Adding :" + contribution);
+						log.debug("  Adding :" + contribution); //$NON-NLS-1$
 						result.add(contribution);
 					}
 				}
 				if (!found) {
-					log.debug("  Adding : null");
+					log.debug("  Adding : null"); //$NON-NLS-1$
 					result.add(null);
 				}
 			}
@@ -1212,7 +1284,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	private static Duration[] getDurations(boolean onlyActiveCollaborators) throws DbException {
-		log.info("getDurations()");
+		log.info("getDurations()"); //$NON-NLS-1$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1239,7 +1311,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Duration getDuration(long durationId) throws DbException {
-		log.info("getDurations()");
+		log.info("getDurations()"); //$NON-NLS-1$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1266,7 +1338,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Task getParentTask(Task task) throws DbException {
-		log.info("getParentTask(" + task + ")");
+		log.info("getParentTask(" + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1293,7 +1365,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Task[] getSubtasks(Task parentTask) throws DbException {
-		log.info("getSubtasks(" + parentTask + ")");
+		log.info("getSubtasks(" + parentTask + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1320,7 +1392,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Task getTask(long taskId) throws DbException {
-		log.info("getTask(" + taskId + ")");
+		log.info("getTask(" + taskId + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1348,7 +1420,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Task[] getTasks(TaskSearchFilter filter) throws DbException {
-		log.info("getTasks(" + filter + ")");
+		log.info("getTasks(" + filter + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1376,7 +1448,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Task getTask(String taskPath, String taskCode) throws DbException {
-		log.info("getTask(" + taskPath + ", " + taskCode + ")");
+		log.info("getTask(" + taskPath + ", " + taskCode + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1406,7 +1478,7 @@ public class ModelMgr {
 	 * @throws ModelException levé dans le cas ou le chemin de tache est inconnu. 
 	 */
 	public static Task getTaskByCodePath(final String codePath) throws DbException, ModelException {
-		log.info("getTaskByCodePath(" + codePath + ")");
+		log.info("getTaskByCodePath(" + codePath + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1433,23 +1505,23 @@ public class ModelMgr {
 	 * @throws ModelException levé dans le cas ou le chemin de tache est inconnu. 
 	 */
 	private static Task getTaskByCodePath(DbTransaction tx, final String codePath) throws DbException, ModelException {
-		log.info("getTaskByCodePath(" + codePath + ")");
-		if (!codePath.startsWith("/"))
-			throw new ModelException("A valid path must start with '/'");
+		log.info("getTaskByCodePath(" + codePath + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+		if (!codePath.startsWith("/")) //$NON-NLS-1$
+			throw new ModelException(Strings.getString("ModelMgr.errors.INVALID_TASK_CODE_PATH")); //$NON-NLS-1$
 		// Recherche de la tache
 		String subpath = codePath.trim().substring(1);
-		log.debug("Processing task path '" + subpath + "'");
+		log.debug("Processing task path '" + subpath + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 		Task task = null;
 		while (subpath.length()>0) {
 			int idx = subpath.indexOf('/');
 			String taskCode = idx>=0 ? subpath.substring(0, idx) : subpath;
-			String taskPath = task!=null ? task.getFullPath() : "";
-			subpath = idx>=0 ? subpath.substring(idx + 1) : "";
+			String taskPath = task!=null ? task.getFullPath() : ""; //$NON-NLS-1$
+			subpath = idx>=0 ? subpath.substring(idx + 1) : ""; //$NON-NLS-1$
 			task = DbMgr.getTask(tx, taskPath, taskCode);
 			if (task==null)
-				throw new ModelException("Unknown task code path '" + codePath + "'");
+				throw new ModelException(Strings.getString("ModelMgr.errors.UNKNOWN_TASK_CODE_PATH", codePath)); //$NON-NLS-1$ //$NON-NLS-2$
 		}
-		log.debug("Found " + task);
+		log.debug("Found " + task); //$NON-NLS-1$
 
 		// Retour du résultat
 		return task;
@@ -1463,7 +1535,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Task[] getTasks(Collaborator collaborator, Calendar fromDate, Calendar toDate) throws DbException {
-		log.info("getTasks(" + collaborator + ", " + StringHelper.toYYYYMMDD(fromDate) + ", " + StringHelper.toYYYYMMDD(toDate) + ")");
+		log.info("getTasks(" + collaborator + ", " + StringHelper.toYYYYMMDD(fromDate) + ", " + StringHelper.toYYYYMMDD(toDate) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1492,7 +1564,7 @@ public class ModelMgr {
 	 * @throws ModelException levé dans le cas ou une tache n'existe pas.
 	 */
 	public static Task[] getTasksByCodePath(String[] codePaths) throws DbException, ModelException {
-		log.info("getTasksByCodePath(" + codePaths + ")");
+		log.info("getTasksByCodePath(" + codePaths + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1502,11 +1574,11 @@ public class ModelMgr {
 			Task[] tasks = new Task[codePaths.length];
 			for (int i=0; i<codePaths.length; i++) {
 				String codePath = codePaths[i].trim();
-				log.debug("Searching task path '" + codePath + "'");
+				log.debug("Searching task path '" + codePath + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 				Task task = ModelMgr.getTaskByCodePath(tx, codePath);
 				// Enregistrement dans le tableau
 				if (task==null)
-					throw new ModelException("Unknown task : '" + codePath + "'");
+					throw new ModelException(Strings.getString("ModelMgr.errors.UNKNOWN_TASK", codePath)); //$NON-NLS-1$ //$NON-NLS-2$
 				tasks[i] = task;
 			}
 
@@ -1520,13 +1592,15 @@ public class ModelMgr {
 
 	/**
 	 * @param task la tâche pour laquelle on souhaite connaître les totaux.
+	 * @param fromDate date de départ à prendre en compte pour le calcul.
+	 * @param toDate date de fin à prendre en compte pour le calcul.
 	 * @return les totaux associés à une tache (consommé, etc.).
 	 * @throws ModelException levé dans le cas ou le chemin ou le numéro de la tache en base ne sont
 	 * 		pas ceux de la tache spécifiée.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
-	public static TaskSums getTaskSums(Task task) throws ModelException, DbException {
-		log.info("getTaskSums(" + task + ")");
+	public static TaskSums getTaskSums(Task task, Calendar fromDate, Calendar toDate) throws ModelException, DbException {
+		log.info("getTaskSums(" + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1538,7 +1612,7 @@ public class ModelMgr {
 				checkTaskPathAndUpdateSubTasksCount(tx, task);
 			
 			// Calcul des sommes
-			TaskSums sums = DbMgr.getTaskSums(tx, task);
+			TaskSums sums = DbMgr.getTaskSums(tx, task, fromDate, toDate);
 
 			// Fin de la transaction
 			DbMgr.endTransaction(tx);
@@ -1561,7 +1635,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique avec la base de données.
 	 */
 	public static String getTaskCodePath(Task task) throws ModelException, DbException {
-		log.info("moveDownTask(" + task + ")");
+		log.info("moveDownTask(" + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1596,11 +1670,11 @@ public class ModelMgr {
 	 */
 	private static String getTaskCodePath(DbTransaction tx, Task task) throws DbException {
 		// Construction
-		StringBuffer taskPath = new StringBuffer("");
+		StringBuffer taskPath = new StringBuffer(""); //$NON-NLS-1$
 		Task cursor = task;
 		while (cursor != null) {
 			taskPath.insert(0, cursor.getCode());
-			taskPath.insert(0, "/");
+			taskPath.insert(0, "/"); //$NON-NLS-1$
 			cursor = DbMgr.getParentTask(tx, cursor);
 		}
 
@@ -1622,7 +1696,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique avec la base de données.
 	 */
 	public static void moveDownTask(Task task) throws ModelException, DbException {
-		log.info("moveDownTask(" + task + ")");
+		log.info("moveDownTask(" + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1637,7 +1711,7 @@ public class ModelMgr {
 			byte taskToMoveUpNumber = (byte) (task.getNumber() + 1);
 			Task taskToMoveUp = DbMgr.getTask(tx, task.getPath(), taskToMoveUpNumber);
 			if (taskToMoveUp==null)
-				throw new ModelException("This task can not be moved down");
+				throw new ModelException(Strings.getString("ModelMgr.errors.TASK_CANNOT_BE_MOVED_DOWN")); //$NON-NLS-1$
 			
 			// Inversion des taches
 			toggleTasks(tx, task, taskToMoveUp);
@@ -1651,6 +1725,57 @@ public class ModelMgr {
 			if (tx!=null) try { DbMgr.rollbackTransaction(tx); } catch (DbException ignored) {}
 			if (tx!=null) try { DbMgr.endTransaction(tx); } catch (DbException ignored) {}
 		}
+	}
+	
+
+	/**
+	 * Déplace une tache de plus d'un cran (au contraire des méthodes <code>moveUp</code>
+	 * et <code>moveDown</code>.
+	 * @param task la tache à déplacer.
+	 * @param newTaskNumber le nouveau numéro de la tâche.
+	 * @throws ModelException levé en cas de violation du modèle.
+	 * @throws DbException levé en cas d'incident technique avec la base de données.
+	 */
+	public static void moveTaskUpOrDown(Task task, int newTaskNumber) throws ModelException, DbException {
+		log.info("moveTaskUpOrDown(" + task + ", " + newTaskNumber + ")");
+		DbTransaction tx = null;
+		try {
+			// Ouverture de la transaction
+			tx = DbMgr.beginTransaction();
+			
+			// Le chemin de la tache et son numéro ne doivent pas avoir changés
+			// pour pouvoir invoquer cette méthode
+			checkTaskPathAndUpdateSubTasksCount(tx, task);
+
+			// Pour que la méthode fonctionne, il faut que le nombre
+			// cible soit différent du nombre courant
+			if (task.getNumber()==newTaskNumber)
+				throw new ModelException("New task number is equal to current task number ; task not moved");
+
+			// Récupération de la tache parent, et contrôle du modèle
+			// (le numéro de destination ne peut être hors intervalle)
+			Task parentTask = DbMgr.getParentTask(tx, task);
+			if (newTaskNumber>parentTask.getSubTasksCount() || newTaskNumber<1)
+				throw new ModelException("Invalid task number");
+
+			// Définition du sens de déplacement
+			int stepSign = task.getNumber() > newTaskNumber ? -1 : 1;
+			for (int i = task.getNumber() ; i != newTaskNumber+stepSign ; i = i + stepSign) {
+				Task taskToToggle = DbMgr.getTask(tx, task.getPath(), (byte) i);
+				toggleTasks(tx, task, taskToToggle);
+				task.setNumber((byte) i);
+			}
+
+			// Commit et fin de la transaction
+			DbMgr.commitTransaction(tx);
+			DbMgr.endTransaction(tx);
+			tx = null;
+		}
+		finally {
+			if (tx!=null) try { DbMgr.rollbackTransaction(tx); } catch (DbException ignored) {}
+			if (tx!=null) try { DbMgr.endTransaction(tx); } catch (DbException ignored) {}
+		}
+		
 	}
 	
 	/**
@@ -1671,7 +1796,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique avec la base de données.
 	 */
 	public static synchronized void moveTask(Task task, Task destParentTask) throws ModelException, DbException {
-		log.info("moveTask(" + task + ", " + destParentTask + ")");
+		log.info("moveTask(" + task + ", " + destParentTask + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1693,7 +1818,7 @@ public class ModelMgr {
 			Task cursor = destParentTask;
 			while (cursor!=null) {
 				if (cursor.equals(task))
-					throw new ModelException("Moving a task under itself or one of its subtasks is not allowed.");
+					throw new ModelException(Strings.getString("ModelMgr.errors.TASK_CANNOT_BE_MOVED_UNDER_ITSELF")); //$NON-NLS-1$
 				cursor = DbMgr.getParentTask(tx, cursor);
 			}
 			
@@ -1706,10 +1831,10 @@ public class ModelMgr {
 			// avec un code d'une autre tache fille de la tache parent
 			// de destination
 			String destPath = 
-				destParentTask!=null ? destParentTask.getFullPath() : "";
+				destParentTask!=null ? destParentTask.getFullPath() : ""; //$NON-NLS-1$
 			Task sameCodeTask = DbMgr.getTask(tx, destPath, task.getCode());
 			if (sameCodeTask!=null)
-				throw new ModelException("The task's code '" + task.getCode() + "' already exists in the destination path.");
+				throw new ModelException(Strings.getString("ModelMgr.errors.TASK_CODE_EXIST_AT_DESTINATION", task.getCode())); //$NON-NLS-1$ //$NON-NLS-2$
 			
 			/**
 			 * Déplacement de la tache.
@@ -1759,7 +1884,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique avec la base de données.
 	 */
 	public static void moveUpTask(Task task) throws ModelException, DbException {
-		log.info("moveUpTask(" + task + ")");
+		log.info("moveUpTask(" + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1774,7 +1899,7 @@ public class ModelMgr {
 			byte taskToMoveDownNumber = (byte) (task.getNumber() - 1);
 			Task taskToMoveDown = DbMgr.getTask(tx, task.getPath(), taskToMoveDownNumber);
 			if (taskToMoveDown==null)
-				throw new ModelException("This task can not be moved up");
+				throw new ModelException(Strings.getString("ModelMgr.errors.TASK_CANNOT_BE_MOVED_UP")); //$NON-NLS-1$
 			
 			// Inversion des taches
 			toggleTasks(tx, task, taskToMoveDown);
@@ -1821,7 +1946,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static void removeCollaborator(Collaborator collaborator) throws ModelException, DbException {
-		log.info("removeCollaborator(" + collaborator + ")");
+		log.info("removeCollaborator(" + collaborator + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1830,7 +1955,7 @@ public class ModelMgr {
 			// Vérification que le collaborateur n'est pas utilisé
 			long contribsNb = getContributionsNb(tx, null, collaborator, null, null, null);
 			if (contribsNb!=0)
-				throw new ModelException("This collaborator has " + contribsNb + " contributions");
+				throw new ModelException(Strings.getString("ModelMgr.errros.COLLABORATOR_WITH_CONTRIBUTIONS_CANNOT_BE_REMOVED", new Long(contribsNb))); //$NON-NLS-1$ //$NON-NLS-2$
 
 			// Suppression du collaborateur
 			DbMgr.removeCollaborator(tx, collaborator);
@@ -1849,17 +1974,48 @@ public class ModelMgr {
 	/**
 	 * Supprime une contribution.
 	 * @param contribution la contribution à supprimer.
+	 * @param updateEstimatedTimeToComlete booléen indiquant si le reste à faire doit être incrémenté.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 * @throws ModelException levé dans le cas ou la donnée a changé en base de données.
 	 */
-	public static void removeContribution(Contribution contribution) throws DbException {
-		log.info("removeContribution(" + contribution + ")");
+	public static void removeContribution(Contribution contribution, boolean updateEstimatedTimeToComlete) throws DbException, ModelException {
+		log.info("removeContribution(" + contribution + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Suppression de la contribution
-			DbMgr.removeContribution(tx, contribution);
+			// Faut-il mettre à jour automatiquement le RAF de la tache ?
+			if (!updateEstimatedTimeToComlete) {
+				// Suppression de la contribution
+				DbMgr.removeContribution(tx, contribution);
+			}
+			else {
+				// Récupération des éléments de la contribution
+				Collaborator contributor = DbMgr.getCollaborator(tx, contribution.getContributorId());
+				Task task = DbMgr.getTask(tx, contribution.getTaskId());
+				// Récupération de la contribution correspondante en base
+				Contribution[] contributions = DbMgr.getContributions(tx, contributor, task, contribution.getDate(), contribution.getDate());
+				if (contributions.length==0) {
+					// Si la contribution n'existait pas, il n'yu a rien à faire
+					// de plus
+				}
+				// Sinon, il y a forcément une seule contribution
+				else {
+					// On vérifie que la donnée en base est en phase avec l'entrant
+					// pour s'assurer qu'on ne va pas incrémeter le RAF de la tache 
+					// avec une valeur incohérente
+					if (contribution.getDurationId() != contributions[0].getDurationId())
+						throw new ModelException(Strings.getString("ModelMgr.errors.CONTRIBUTION_UPDATE_DETECTED")); //$NON-NLS-1$
+					
+					// Suppression de la contribution
+					DbMgr.removeContribution(tx, contribution);
+					
+					// Mise à jour du RAF de la tache
+					task.setTodo(task.getTodo() + contribution.getDurationId());
+					DbMgr.updateTask(tx, task);
+				}
+			}
 
 			// Commit et fin de la transaction
 			DbMgr.commitTransaction(tx);
@@ -1878,7 +2034,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static void removeContributions(Contribution[] contributions) throws DbException {
-		log.info("removeContributions(" + contributions + ")");
+		log.info("removeContributions(" + contributions + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1906,7 +2062,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static void removeDuration(Duration duration) throws ModelException, DbException {
-		log.info("removeDuration(" + duration + ")");
+		log.info("removeDuration(" + duration + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1936,11 +2092,11 @@ public class ModelMgr {
 	private static void removeDuration(DbTransaction tx, Duration duration) throws ModelException, DbException {
 		// Vérification de l'existance
 		if (!durationExists(tx, duration))
-			throw new ModelException("This duration does not exist");
+			throw new ModelException(Strings.getString("ModelMgr.errors.DURATION_DOES_NOT_EXIST")); //$NON-NLS-1$
 
 		// Vérification de la non utilisation de la durée
 		if (DbMgr.durationIsUsed(tx, duration))
-			throw new ModelException("This duration is used. It cannot be removed.");
+			throw new ModelException(Strings.getString("ModelMgr.errors.UNMOVEABLE_DURATION")); //$NON-NLS-1$
 		
 		// Suppression
 		DbMgr.removeDuration(tx, duration);
@@ -1957,7 +2113,7 @@ public class ModelMgr {
 	 * @throws ModelException levé en cas de violation d'une contrainte d'intégrité du modèle.
 	 */
 	public static synchronized void removeTask(Task task) throws DbException, ModelException {
-		log.info("removeTask(" + task + ")");
+		log.info("removeTask(" + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -1969,7 +2125,7 @@ public class ModelMgr {
 			// Vérification que la tache n'est pas utilisé
 			long contribsNb = getContributionsNb(tx, task, null, null, null, null);
 			if (contribsNb!=0)
-				throw new ModelException("This task and its subtasks have " + contribsNb + " contributions");
+				throw new ModelException(Strings.getString("ModelMgr.errors.TASK_HAS_SUBTASKS", new Long(contribsNb))); //$NON-NLS-1$ //$NON-NLS-2$
 			
 			// Récupération de la tâche parent pour reconstruction des
 			// numéros de taches
@@ -2033,7 +2189,7 @@ public class ModelMgr {
 	 * @throws ModelException levé en cas de non unicité du login.
 	 */
 	public static Collaborator updateCollaborator(Collaborator collaborator) throws DbException, ModelException {
-		log.info("updateCollaborator(" + collaborator + ")");
+		log.info("updateCollaborator(" + collaborator + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -2066,7 +2222,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Duration updateDuration(Duration duration) throws DbException {
-		log.info("updateDuration(" + duration + ")");
+		log.info("updateDuration(" + duration + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -2092,19 +2248,50 @@ public class ModelMgr {
 	/**
 	 * Modifie les attributs d'une contribution.
 	 * @param contribution la contribution à modifier.
+	 * @param updateEstimatedTimeToComlete booléen indiquant si le reste à faire doit être décrémenté.
 	 * @return la contribution modifiée.
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 * @throws ModelException levé dans le cas ou la donnée a changé en base de données.
 	 */
-	public static Contribution updateContribution(Contribution contribution) throws DbException {
-		log.info("updateContribution(" + contribution + ")");
+	public static Contribution updateContribution(Contribution contribution, boolean updateEstimatedTimeToComlete) throws DbException, ModelException {
+		log.info("updateContribution(" + contribution + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Mise à jour des données
-			Contribution result = DbMgr.updateContribution(tx, contribution);
-
+			Contribution result = null;
+			// Faut-il mettre à jour automatiquement le RAF de la tache ?
+			if (!updateEstimatedTimeToComlete) {
+				// Mise à jour des données
+				result = DbMgr.updateContribution(tx, contribution);
+			}
+			else {
+				// Récupération des éléments de la contribution
+				Collaborator contributor = DbMgr.getCollaborator(tx, contribution.getContributorId());
+				Task task = DbMgr.getTask(tx, contribution.getTaskId());
+				// Récupération de la contribution correspondante en base
+				Contribution[] contributions = DbMgr.getContributions(tx, contributor, task, contribution.getDate(), contribution.getDate());
+				if (contributions.length==0) {
+					// Si la contribution n'existe pas, c'est qu'il y a déphasage
+					// entre les données de l'appelant et la BDD
+					throw new ModelException(Strings.getString("ModelMgr.errors.CONTRIBUTION_DELETION_DETECTED")); //$NON-NLS-1$
+				}
+				// Sinon, il y a forcément une seule contribution
+				else {
+					long oldDuration = contributions[0].getDurationId();
+					long newDuration = contribution.getDurationId();
+					
+					// Suppression de la contribution
+					DbMgr.updateContribution(tx, contribution);
+					
+					// Mise à jour du RAF de la tache
+					long newEtc = task.getTodo() + oldDuration - newDuration;
+					task.setTodo(newEtc > 0 ? newEtc : 0);
+					DbMgr.updateTask(tx, task);
+				}
+			}
+			
 			// Commit et fin de la transaction
 			DbMgr.commitTransaction(tx);
 			DbMgr.endTransaction(tx);
@@ -2132,7 +2319,7 @@ public class ModelMgr {
 	public static Contribution[] changeContributionTask(
 		Contribution[] contributions, Task newContributionTask)
 		throws DbException, ModelException {
-		log.info("changeContributionTask(" + contributions + ", " + newContributionTask + ")");
+		log.info("changeContributionTask(" + contributions + ", " + newContributionTask + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -2141,7 +2328,7 @@ public class ModelMgr {
 			// La tache ne peut accepter une contribution que
 			// si elle n'admet aucune sous-tache
 			if (newContributionTask.getSubTasksCount()>0)
-				throw new ModelException("This task has one or more sub tasks. It cannot accept a contribution.");
+				throw new ModelException(Strings.getString("ModelMgr.errors.A_TASK_WITH_SUBTASKS_CANNOT_ACCEPT_CONTRIBUTIONS")); //$NON-NLS-1$
 			
 			// Mise à jour des identifiants de tâche
 			for (int i=0; i<contributions.length; i++) {
@@ -2176,7 +2363,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique avec la base de données.
 	 */
 	public static Duration updateDuration(Duration duration, Duration newDuration) throws ModelException, DbException {
-		log.info("updateDuration(" + duration + ", " + newDuration + ")");
+		log.info("updateDuration(" + duration + ", " + newDuration + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		DbTransaction tx = null;
 		try {
 			// Si la nouvelle durée est égale à l'ancienne, il n'y a rien 
@@ -2221,7 +2408,7 @@ public class ModelMgr {
 	 * @throws DbException levé en cas d'incident technique avec la base de données.
 	 */
 	public static Task updateTask(Task task) throws ModelException, DbException {
-		log.info("updateTask(" + task + ")");
+		log.info("updateTask(" + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
@@ -2234,9 +2421,9 @@ public class ModelMgr {
 			
 			// Check sur l'unicité du code pour le chemin considéré
 			Task parentTask = DbMgr.getParentTask(tx, task);
-			Task sameCodeTask = DbMgr.getTask(tx, parentTask!=null ? parentTask.getFullPath() : "", task.getCode());
+			Task sameCodeTask = DbMgr.getTask(tx, parentTask!=null ? parentTask.getFullPath() : "", task.getCode()); //$NON-NLS-1$
 			if (sameCodeTask!=null && !sameCodeTask.equals(task))
-				throw new ModelException("This code is already in use");
+				throw new ModelException(Strings.getString("ModelMgr.errors.TASK_CODE_ALREADY_IN_USE")); //$NON-NLS-1$
 
 			// Mise à jour des données
 			task = DbMgr.updateTask(tx, task);

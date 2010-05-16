@@ -119,7 +119,7 @@ public class DurationTest extends AbstractModelTestCase {
 		ctb.setTaskId(task.getId());
 		ctb.setDate(new GregorianCalendar());
 		ctb.setDurationId(duration.getId());
-		ctb = ModelMgr.createContribution(ctb);
+		ctb = ModelMgr.createContribution(ctb, false);
 
 		// Tentative de modif d'une durée utilisée
 		try {
@@ -132,7 +132,7 @@ public class DurationTest extends AbstractModelTestCase {
 		}
 		
 		// Suppression des données
-		ModelMgr.removeContribution(ctb);
+		ModelMgr.removeContribution(ctb, false);
 		ModelMgr.removeTask(task);
 		ModelMgr.removeCollaborator(collaborator);
 		ModelMgr.removeDuration(duration);

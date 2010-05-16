@@ -30,6 +30,8 @@ package jfb.tools.activitymgr.ui.util;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import jfb.tools.activitymgr.core.util.Strings;
+
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -64,8 +66,8 @@ public class SWTHelper {
 		Point parentShellLocation = popupShell.getParent().getLocation();
 		Point parentShellSize = popupShell.getParent().getSize();
 		Point popupShellSize = popupShell.getSize();
-		log.debug("parentShellSize = " + parentShellSize);
-		log.debug("popupShellSize = " + popupShellSize);
+		log.debug("parentShellSize = " + parentShellSize); //$NON-NLS-1$
+		log.debug("popupShellSize = " + popupShellSize); //$NON-NLS-1$
 		int x = parentShellLocation.x + (parentShellSize.x - popupShellSize.x)
 				/ 2;
 		int y = parentShellLocation.y + (parentShellSize.y - popupShellSize.y)
@@ -74,8 +76,8 @@ public class SWTHelper {
 			x = 0;
 		if (y < 0)
 			y = 0;
-		log.debug("x = " + x);
-		log.debug("y = " + y);
+		log.debug("x = " + x); //$NON-NLS-1$
+		log.debug("y = " + y); //$NON-NLS-1$
 		popupShell.setLocation(x, y);
 		popupShell.setVisible(true);
 	}
@@ -88,14 +90,14 @@ public class SWTHelper {
 	public static void exportToWorkBook(Tree tree) throws UITechException{
 		// Demande du nom de fichier
 		FileDialog fd = new FileDialog(tree.getShell());
-		fd.setFilterExtensions(new String[] { "*.xls", "*" });
+		fd.setFilterExtensions(new String[] { "*.xls", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
 		String fileName = fd.open();
 		// Si le nom est spécifié
 		if (fileName != null) {
 			try {
 				// Correction du nom du fichier si besoin
-				if (!fileName.endsWith(".xls"))
-					fileName += ".xls";
+				if (!fileName.endsWith(".xls")) //$NON-NLS-1$
+					fileName += ".xls"; //$NON-NLS-1$
 				// Sauvegarde du document
 				HSSFWorkbook wb = toWorkBook(tree);
 				FileOutputStream out = new FileOutputStream(fileName);
@@ -103,8 +105,8 @@ public class SWTHelper {
 				out.close();
 			}
 			catch (IOException e) {
-				log.error("I/O exception", e);
-				throw new UITechException("I/O exception while exporting.", e);
+				log.error("I/O exception", e); //$NON-NLS-1$
+				throw new UITechException(Strings.getString("SWTHelper.errors.IO_EXCEPTION_WHILE_EXPORTING"), e); //$NON-NLS-1$
 			}
 		}
 	}
@@ -117,7 +119,7 @@ public class SWTHelper {
 	public static HSSFWorkbook toWorkBook(Tree tree) {
 	    // Création du fichier EXCEL et du feuillet
 		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet = wb.createSheet("export");
+		HSSFSheet sheet = wb.createSheet(Strings.getString("SWTHelper.excelsheet.TAB_NAME")); //$NON-NLS-1$
 		sheet.createFreezePane(0, 1, 0, 1);
 		sheet.setColumnWidth((short) 0, (short) 10000);
 		// Création du style de l'entête
@@ -147,7 +149,7 @@ public class SWTHelper {
 		bodyCellStyle.setBorderTop(bodyCellStyle.getBorderBottom());
 		// Exportation des lignes du tableau
 		TreeItem[] items = tree.getItems();
-		appendToWorkbook("", sheet, bodyCellStyle, items, columns.length);
+		appendToWorkbook("", sheet, bodyCellStyle, items, columns.length); //$NON-NLS-1$
 		// Retour du résultat
 		return wb;
 	}
@@ -163,20 +165,20 @@ public class SWTHelper {
 	 * @param columnsNb le nombre de colonnes à exporter dans le feuillet. 
 	 */
 	private static void appendToWorkbook(String indent, HSSFSheet sheet, HSSFCellStyle cellStyle, TreeItem[] treeItems, int columnsNb) {
-		log.debug("sheet.getLastRowNum() : " + sheet.getLastRowNum());
+		log.debug("sheet.getLastRowNum() : " + sheet.getLastRowNum()); //$NON-NLS-1$
 		int startRowNum = sheet.getLastRowNum() + 1;
 		for (int i = 0; i<treeItems.length; i++) {
 			TreeItem treeItem = treeItems[i];
-			log.debug(" +-> TreeItem : " + i + ", expanded=" + 	treeItem.getExpanded() + ", data='" + treeItem.getData() + "'");
+			log.debug(" +-> TreeItem : " + i + ", expanded=" + 	treeItem.getExpanded() + ", data='" + treeItem.getData() + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			if (treeItem.getData()!=null) {
 				HSSFRow row = sheet.createRow((short) (sheet.getLastRowNum()+1));
 				String rowName = treeItem.getText(0);
-				log.debug("  +-> Row : '" + rowName + "'");
+				log.debug("  +-> Row : '" + rowName + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 				HSSFCell cell = row.createCell((short) 0);
 				cell.setCellValue(indent + rowName);
 				cell.setCellStyle(cellStyle);
 				for (int j=1; j<columnsNb; j++) {
-					log.debug("  +-> Cell : " + j + ", '" + treeItem.getText(j) + "'");
+					log.debug("  +-> Cell : " + j + ", '" + treeItem.getText(j) + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					cell = row.createCell((short) j);
 					cell.setCellStyle(cellStyle);
 					String cellValue = treeItem.getText(j);
@@ -189,13 +191,13 @@ public class SWTHelper {
 					}
 				}
 				if (treeItem.getExpanded())
-					appendToWorkbook(indent + "    ", sheet, cellStyle, treeItem.getItems(), columnsNb);
+					appendToWorkbook(indent + "    ", sheet, cellStyle, treeItem.getItems(), columnsNb); //$NON-NLS-1$
 			}
 		}
 		int endRowNum = sheet.getLastRowNum();
-		log.debug("startRowNum=" + startRowNum + ", endRowNum=" + endRowNum);
-		if (!"".equals(indent) && (endRowNum-startRowNum>=1)) {
-			log.debug(" -> grouped!");
+		log.debug("startRowNum=" + startRowNum + ", endRowNum=" + endRowNum); //$NON-NLS-1$ //$NON-NLS-2$
+		if (!"".equals(indent) && (endRowNum-startRowNum>=1)) { //$NON-NLS-1$
+			log.debug(" -> grouped!"); //$NON-NLS-1$
 			sheet.groupRow((short) startRowNum, (short) endRowNum);
 		}
 	}
@@ -208,14 +210,14 @@ public class SWTHelper {
 	public static void exportToWorkBook(Table table) throws UITechException{
 		// Demande du nom de fichier
 		FileDialog fd = new FileDialog(table.getShell());
-		fd.setFilterExtensions(new String[] { "*.xls", "*" });
+		fd.setFilterExtensions(new String[] { "*.xls", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
 		String fileName = fd.open();
 		// Si le nom est spécifié
 		if (fileName != null) {
 			try {
 				// Correction du nom du fichier si besoin
-				if (!fileName.endsWith(".xls"))
-					fileName += ".xls";
+				if (!fileName.endsWith(".xls")) //$NON-NLS-1$
+					fileName += ".xls"; //$NON-NLS-1$
 				// Sauvegarde du document
 				HSSFWorkbook wb = toWorkBook(table);
 				FileOutputStream out = new FileOutputStream(fileName);
@@ -223,8 +225,8 @@ public class SWTHelper {
 				out.close();
 			}
 			catch (IOException e) {
-				log.error("I/O exception", e);
-				throw new UITechException("I/O exception while exporting.", e);
+				log.error("I/O exception", e); //$NON-NLS-1$
+				throw new UITechException(Strings.getString("SWTHelper.errors.IO_EXCEPTION_WHILE_EXPORTING"), e); //$NON-NLS-1$
 			}
 		}
 	}
@@ -237,7 +239,7 @@ public class SWTHelper {
 	public static HSSFWorkbook toWorkBook(Table table) {
 	    // Création du fichier EXCEL et du feuillet
 		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet = wb.createSheet("export");
+		HSSFSheet sheet = wb.createSheet(Strings.getString("SWTHelper.excelsheet.TAB_NAME")); //$NON-NLS-1$
 		sheet.createFreezePane(0, 1, 0, 1);
 		// Création du style de l'entête
 		HSSFCellStyle headerCellStyle = wb.createCellStyle();
@@ -279,20 +281,20 @@ public class SWTHelper {
 	 * @param columnsNb le nombre de colonnes à exporter dans le feuillet. 
 	 */
 	private static void appendToWorkbook(HSSFSheet sheet, HSSFCellStyle cellStyle, TableItem[] tableItems, int columnsNb) {
-		log.debug("sheet.getLastRowNum() : " + sheet.getLastRowNum());
+		log.debug("sheet.getLastRowNum() : " + sheet.getLastRowNum()); //$NON-NLS-1$
 		int startRowNum = sheet.getLastRowNum() + 1;
 		for (int i = 0; i<tableItems.length; i++) {
 			TableItem tableItem = tableItems[i];
-			log.debug(" +-> TreeItem : " + i + ", data='" + tableItem.getData() + "'");
+			log.debug(" +-> TreeItem : " + i + ", data='" + tableItem.getData() + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			if (tableItem.getData()!=null) {
 				HSSFRow row = sheet.createRow((short) (sheet.getLastRowNum()+1));
 				String rowName = tableItem.getText(0);
-				log.debug("  +-> Row : '" + rowName + "'");
+				log.debug("  +-> Row : '" + rowName + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 				HSSFCell cell = row.createCell((short) 0);
 				cell.setCellValue(rowName);
 				cell.setCellStyle(cellStyle);
 				for (int j=1; j<columnsNb; j++) {
-					log.debug("  +-> Cell : " + j + ", '" + tableItem.getText(j) + "'");
+					log.debug("  +-> Cell : " + j + ", '" + tableItem.getText(j) + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					cell = row.createCell((short) j);
 					cell.setCellStyle(cellStyle);
 					String cellValue = tableItem.getText(j);
@@ -307,7 +309,7 @@ public class SWTHelper {
 			}
 		}
 		int endRowNum = sheet.getLastRowNum();
-		log.debug("startRowNum=" + startRowNum + ", endRowNum=" + endRowNum);
+		log.debug("startRowNum=" + startRowNum + ", endRowNum=" + endRowNum); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 }

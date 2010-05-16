@@ -34,6 +34,8 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.PrintStream;
 
+import jfb.tools.activitymgr.core.util.Strings;
+
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IconAndMessageDialog;
@@ -85,7 +87,7 @@ public class ErrorDialog extends IconAndMessageDialog {
      */
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
-        shell.setText("Error");
+        shell.setText(Strings.getString("ErrorDialog.texts.TITLE")); //$NON-NLS-1$
         shell.setImage(getImage());
     }
 
@@ -140,13 +142,13 @@ public class ErrorDialog extends IconAndMessageDialog {
 				        LineNumberReader lin = new LineNumberReader(new InputStreamReader(in));
 				        String line = null;
 				        while ((line = lin.readLine())!=null) {
-				        	list.add(line.replaceFirst("\t", "    "));
+				        	list.add(line.replaceFirst("\t", "    ")); //$NON-NLS-1$ //$NON-NLS-2$
 				        }
 			        }
 			        catch (IOException e) {
-			        	log.error("Unexpected I/O error while printing stack trace.", e);
-			        	list.add("Unexpected I/O error while printing stack trace.");
-			        	list.add("See logs for more details.");
+			        	log.error(Strings.getString("ErrorDialog.3"), e); //$NON-NLS-1$
+			        	list.add(Strings.getString("ErrorDialog.infos.IO_ERROR_WHILE_PRINTING_STACKTRACE")); //$NON-NLS-1$
+			        	list.add(Strings.getString("ErrorDialog.infos.SEE_LOGS_FOR_MORE_DETAILS")); //$NON-NLS-1$
 			        }
 				}
 				else {

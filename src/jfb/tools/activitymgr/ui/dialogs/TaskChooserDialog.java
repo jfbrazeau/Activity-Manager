@@ -28,6 +28,7 @@
 package jfb.tools.activitymgr.ui.dialogs;
 
 import jfb.tools.activitymgr.core.beans.Task;
+import jfb.tools.activitymgr.core.util.Strings;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -57,7 +58,7 @@ public class TaskChooserDialog extends AbstractDialog {
 	 * @param parentShell shell parent.
 	 */
 	public TaskChooserDialog(Shell parentShell) {
-		super(parentShell, "Choose a task", null, null);
+		super(parentShell, Strings.getString("TaskChooserDialog.texts.TITLE"), null, null); //$NON-NLS-1$
 		setShellStyle(SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 	}
 
@@ -65,7 +66,7 @@ public class TaskChooserDialog extends AbstractDialog {
 	 * @see jfb.tools.activitymgr.ui.util.AbstractDialog#validateUserEntry()
 	 */
 	protected Object validateUserEntry() throws DialogException {
-		log.debug("validateUserEntry");
+		log.debug("validateUserEntry"); //$NON-NLS-1$
 		Task selectedTask = (Task) ((IStructuredSelection)tasksTable.getTableViewer().getSelection()).getFirstElement();
 		// Validation du choix de la tache
 		return selectedTask;
@@ -83,7 +84,7 @@ public class TaskChooserDialog extends AbstractDialog {
 		gridData = new GridData(SWT.FILL, SWT.FILL, false, false);
 		gridData.horizontalSpan = 2;
 		label.setLayoutData(gridData);
-		label.setText("Found tasks :");
+		label.setText(Strings.getString("TaskChooserDialog.labels.FOUND_TASKS")); //$NON-NLS-1$
 		// Ajout de la liste des sélections précédentes
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData.horizontalSpan = 2;

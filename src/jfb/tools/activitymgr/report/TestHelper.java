@@ -45,7 +45,7 @@ public class TestHelper {
 	 * @return un booléen indiquant si val1 &gt; val2.
 	 */
 	public boolean gt(double val1, double val2) {
-		log.debug("gt(" + val1 + ", " + val2 + ")");
+		log.debug("gt(" + val1 + ", " + val2 + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		return val1 > val2;
 	}
 
@@ -56,7 +56,7 @@ public class TestHelper {
 	 * @return un booléen indiquant si val1 == val2.
 	 */
 	public boolean eq(double val1, double val2) {
-		log.debug("gt(" + val1 + ", " + val2 + ")");
+		log.debug("gt(" + val1 + ", " + val2 + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		return val1 == val2;
 	}
 }

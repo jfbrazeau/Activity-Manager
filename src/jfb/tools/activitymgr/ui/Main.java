@@ -28,6 +28,7 @@
 package jfb.tools.activitymgr.ui;
 
 import jfb.tools.activitymgr.core.ModelMgr;
+import jfb.tools.activitymgr.core.util.Strings;
 import jfb.tools.activitymgr.ui.DatabaseUI.IDbStatusListener;
 import jfb.tools.activitymgr.ui.images.ImagesDatas;
 import jfb.tools.activitymgr.ui.util.CfgMgr;
@@ -75,7 +76,7 @@ public class Main {
 	public static void main(String[] args) {
 		try {
 			// Initialisation des logs et chargement de la config
-			PropertyConfigurator.configure("cfg/log4j.properties");
+			PropertyConfigurator.configure("cfg/log4j.properties"); //$NON-NLS-1$
 			CfgMgr.load();
 			Display display = new Display();
 
@@ -96,7 +97,7 @@ public class Main {
 			// Ouverture de la fenêtre
 			final Shell shell = new Shell(display);
 			shell.setSize(910, 550);
-			shell.setText("ActivityManager V0.3");
+			shell.setText(Strings.getString("Main.texts.TITLE")); //$NON-NLS-1$
 			shell.setLayout(new GridLayout(1, false));
 			shell.setImage(new Image(display, ImagesDatas.APPLICATION_ICON));
 			shell.addShellListener(new ShellAdapter() {
@@ -117,32 +118,32 @@ public class Main {
 
 			// Création de l'onglet de paramétrage de l'accès à la base de données
 			databaseTab = new TabItem(tabFolder, SWT.NONE);
-			databaseTab.setText("Database");
+			databaseTab.setText(Strings.getString("Main.tabs.DATABASE")); //$NON-NLS-1$
 			databaseUI = new DatabaseUI(databaseTab);
 			
 			// Création de l'onglet de gestion des durées
 			durationsTab = new TabItem(tabFolder, SWT.NONE);
-			durationsTab.setText("Durations");
+			durationsTab.setText(Strings.getString("Main.tabs.DURATIONS")); //$NON-NLS-1$
 			durationsUI = new DurationsUI(durationsTab);
 
 			// Création de l'onglet de gestion des collaborateurs
 			collaboratorsTab = new TabItem(tabFolder, SWT.NONE);
-			collaboratorsTab.setText("Collaborators");
+			collaboratorsTab.setText(Strings.getString("Main.tabs.COLLABORATORS")); //$NON-NLS-1$
 			collaboratorsUI = new CollaboratorsUI(collaboratorsTab);
 
 			// Création de l'onglet de gestion des taches
 			tasksTab = new TabItem(tabFolder, SWT.NONE);
-			tasksTab.setText("Tasks");
+			tasksTab.setText(Strings.getString("Main.tabs.TASKS")); //$NON-NLS-1$
 			tasksUI = new TasksUI(tasksTab);
 
 			// Création de l'onglet de gestion des contributions
 			contributionsTab = new TabItem(tabFolder, SWT.NONE);
-			contributionsTab.setText("Contributions");
+			contributionsTab.setText(Strings.getString("Main.tabs.CONTRIBUTIONS")); //$NON-NLS-1$
 			contributionsUI = new ContributionsUI(contributionsTab);
 
 			// Création de l'onglet contenant les informations générales
 			aboutTab = new TabItem(tabFolder, SWT.NONE);
-			aboutTab.setText("About");
+			aboutTab.setText(Strings.getString("Main.tabs.ABOUT")); //$NON-NLS-1$
 			new AboutUI(aboutTab);
 
 			// Enregistrement des listeners
@@ -153,18 +154,19 @@ public class Main {
 			durationsUI.addDurationListener(contributionsUI);
 			collaboratorsUI.addCollaboratorListener(contributionsUI);
 			tasksUI.addTaskListener(contributionsUI);
+			contributionsUI.addContributionListener(tasksUI);
 			
 			// Barre de statut
 			final Label statusBar = new Label(shell, SWT.NONE);
 			statusBar.setLayoutData(new GridData(SWT.RIGHT, SWT.NONE, false, false));
 			statusBar.setAlignment(SWT.RIGHT);
-			statusBar.setText("Not connected");
+			statusBar.setText(Strings.getString("Main.status.NOT_CONNECTED")); //$NON-NLS-1$
 			databaseUI.addDbStatusListener(new IDbStatusListener() {
 				public void databaseOpened() {
-					statusBar.setText("Connected");
+					statusBar.setText(Strings.getString("Main.status.CONNECTED")); //$NON-NLS-1$
 				}
 				public void databaseClosed() {
-					statusBar.setText("Not connected");
+					statusBar.setText(Strings.getString("Main.status.NOT_CONNECTED")); //$NON-NLS-1$
 				}
 			});
 
@@ -180,7 +182,7 @@ public class Main {
 			splashLabel.dispose();
 			splashImage.dispose();
 			shell.setEnabled(true);
-			log.info("Application started");
+			log.info("Application started"); //$NON-NLS-1$
 
 			// Exécution jusqu'à l'arrêt
 			while (!shell.isDisposed()) {

@@ -49,7 +49,7 @@ public class SumHelper {
 	 * @param value la valeur de la somme.
 	 */
 	public void set(String sumName, double value) {
-		log.debug("sh.set(" + sumName + ", " + value + ")");
+		log.debug("sh.set(" + sumName + ", " + value + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		sumMap.put(sumName, new Double(value));
 	}
 
@@ -59,7 +59,7 @@ public class SumHelper {
 	 * @return la valeur de la somme.
 	 */
 	public double get(String sumName) {
-		log.debug("sh.get(" + sumName + ")");
+		log.debug("sh.get(" + sumName + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		Double sum = (Double) sumMap.get(sumName);
 		double _sum = 0;
 		if (sum!=null) {
@@ -74,7 +74,7 @@ public class SumHelper {
 	 * @param value la valeur à ajouter.
 	 */
 	public void add(String sumName, double value) {
-		log.debug("sh.add(" + sumName + ", " + value + ")");
+		log.debug("sh.add(" + sumName + ", " + value + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		double sum = get(sumName);
 		set(sumName, sum + value);
 	}

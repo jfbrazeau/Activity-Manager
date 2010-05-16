@@ -33,24 +33,26 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import jfb.tools.activitymgr.core.util.Strings;
+
 /**
  * Gestionnaire de la configuration.
  */
 public class CfgMgr {
 
 	/** Constantes associées au paramétrage */
-	public static final String DATABASE_TYPE = "database.type";
-	public static final String JDBC_DRIVER = "jdbc.driver";
-	public static final String DATABASE_HOST = "database.host";
-	public static final String DATABASE_PORT = "database.port";
-	public static final String DATABASE_DATA_FILE = "datafile.name";
-	public static final String DATABASE_NAME = "database.name";
-	public static final String JDBC_URL = "jdbc.url";
-	public static final String JDBC_USER = "jdbc.user";
-	public static final String JDBC_PASSWORD = "jdbc.password";
+	public static final String DATABASE_TYPE = "database.type"; //$NON-NLS-1$
+	public static final String JDBC_DRIVER = "jdbc.driver"; //$NON-NLS-1$
+	public static final String DATABASE_HOST = "database.host"; //$NON-NLS-1$
+	public static final String DATABASE_PORT = "database.port"; //$NON-NLS-1$
+	public static final String DATABASE_DATA_FILE = "datafile.name"; //$NON-NLS-1$
+	public static final String DATABASE_NAME = "database.name"; //$NON-NLS-1$
+	public static final String JDBC_URL = "jdbc.url"; //$NON-NLS-1$
+	public static final String JDBC_USER = "jdbc.user"; //$NON-NLS-1$
+	public static final String JDBC_PASSWORD = "jdbc.password"; //$NON-NLS-1$
 	
 	/** Nom du fichier de configuration */
-	private static final String CFG_FILE = "cfg/activitymgr.properties";
+	private static final String CFG_FILE = "cfg/activitymgr.properties"; //$NON-NLS-1$
 
 	/** Configuration */
 	private static Properties props = new Properties();
@@ -80,7 +82,7 @@ public class CfgMgr {
 	 */
 	public static void save() throws IOException {
 		FileOutputStream out = new FileOutputStream(CFG_FILE);
-		props.store(out, "Activity Manager configuration data");
+		props.store(out, Strings.getString("CfgMgr.texts.PROPERTY_FILE_TITLE")); //$NON-NLS-1$
 		out.close();
 	}
 

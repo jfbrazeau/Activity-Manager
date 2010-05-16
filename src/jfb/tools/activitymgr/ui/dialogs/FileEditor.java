@@ -63,7 +63,7 @@ public class FileEditor {
 		fileText = new Text(panel, SWT.BORDER);
 		fileText.setText(title);
 		browseButton = new Button(panel, SWT.NONE);
-		browseButton.setText("...");
+		browseButton.setText("..."); //$NON-NLS-1$
 	}
 
 	

@@ -29,6 +29,7 @@ package jfb.tools.activitymgr.ui.dialogs;
 
 import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Task;
+import jfb.tools.activitymgr.core.util.Strings;
 import jfb.tools.activitymgr.ui.util.AbstractTableMgr;
 import jfb.tools.activitymgr.ui.util.SafeRunner;
 import jfb.tools.activitymgr.ui.util.TableOrTreeColumnsMgr;
@@ -88,8 +89,8 @@ public class TaskChooserTable extends AbstractTableMgr {
 
 		// Configuration des colonnes
 		tableColsMgr = new TableOrTreeColumnsMgr();
-		tableColsMgr.addColumn("TASK_PATH", "Task path", 150, SWT.LEFT);
-		tableColsMgr.addColumn("TASK", "Task name", 200, SWT.LEFT);
+		tableColsMgr.addColumn("TASK_PATH", Strings.getString("TaskChooserTable.columns.TASK_PATH"), 150, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr.addColumn("TASK", Strings.getString("TaskChooserTable.columns.TASK_NAME"), 200, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
 		tableColsMgr.configureTable(tableViewer);
 		
 		// Initialisation du tableau
@@ -100,7 +101,7 @@ public class TaskChooserTable extends AbstractTableMgr {
 	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
 	 */
 	public String getColumnText(final Object element, final int columnIndex) {
-		log.debug("ITableLabelProvider.getColumnText(" + element + ", " + columnIndex + ")");
+		log.debug("ITableLabelProvider.getColumnText(" + element + ", " + columnIndex + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				Task task = (Task) element;
@@ -112,13 +113,13 @@ public class TaskChooserTable extends AbstractTableMgr {
 					case (TASK_COLUMN_IDX) :
 						text = task.getName();
 						break;
-					default : throw new Error("Colonne inconnue");
+					default : throw new Error(Strings.getString("TaskChooserTable.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
 				return text;
 			}
 		};
 		// Exécution
-		return (String) safeRunner.run(parent.getShell(), "");
+		return (String) safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)

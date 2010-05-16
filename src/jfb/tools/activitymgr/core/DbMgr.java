@@ -49,6 +49,7 @@ import jfb.tools.activitymgr.core.beans.Task;
 import jfb.tools.activitymgr.core.beans.TaskSearchFilter;
 import jfb.tools.activitymgr.core.beans.TaskSums;
 import jfb.tools.activitymgr.core.util.StringHelper;
+import jfb.tools.activitymgr.core.util.Strings;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
@@ -63,7 +64,7 @@ public class DbMgr {
 	private static Logger log = Logger.getLogger(DbMgr.class);
 
 	/** Formatteur de date */
-	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd"); //$NON-NLS-1$
 
 	/** Datasource */
 	private static BasicDataSource ds = null;
@@ -90,7 +91,7 @@ public class DbMgr {
 			
 			// Initialisation de la Datasource
 			newDs = new BasicDataSource();
-			log.info("Connecting to '" + url + "'");
+			log.info("Connecting to '" + url + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 			newDs.setDriverClassName(driverName);
 			newDs.setUrl(url);
 			newDs.setUsername(user);
@@ -106,8 +107,8 @@ public class DbMgr {
 			ds = newDs;
 		}
 		catch (SQLException e) {
-			log.info("SQL Exception", e);
-			throw new DbException("Couldn't get a SQL Connection", e);
+			log.info("SQL Exception", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.SQL_CONNECTION_OPEN"), e); //$NON-NLS-1$
 		}
 	}
 	
@@ -124,7 +125,7 @@ public class DbMgr {
 				// Cas d'une base HSQLDB embarquée
 				if (isEmbeddedHSQLDB(con)) {
 					// Extinction de la base de données
-					con.createStatement().execute("shutdown");
+					con.createStatement().execute("shutdown"); //$NON-NLS-1$
 				}
 
 				// Fermeture de la datasource
@@ -133,8 +134,8 @@ public class DbMgr {
 			}
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la fermeture de la base de données", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.SQL_DISCONNECTION_FAILURE"), e); //$NON-NLS-1$
 		}
 	}
 	
@@ -152,18 +153,18 @@ public class DbMgr {
 		try {
 			// Est-on connecté à la BDD ?
 			if (ds==null)
-				throw new DbException("Database connection not established", null);
+				throw new DbException(Strings.getString("DbMgr.errors.SQL_CONNECTION_ESTABLISHMENT_FAILURE"), null); //$NON-NLS-1$
 			// Obtention d'une connexion
 			Connection con = ds.getConnection();
 			if (threadLocal.get()!=null)
-				throw new Error("Conflicting transaction");
+				throw new Error(Strings.getString("DbMgr.errors.SQL_MULTI_TRANSACTION_DETECTED")); //$NON-NLS-1$
 			threadLocal.set(con);
 			//log.debug("Active : " + ds.getNumActive() + ", Idle : " + ds.getNumIdle() + ", Connexion : " + con);
 			return new DbTransaction(con);
 		}
 		catch (SQLException e) {
-			log.info("SQL Exception", e);
-			throw new DbException("Couldn't get a SQL Connection", e);
+			log.info("SQL Exception", e); //$NON-NLS-1$
+			throw new DbException("Couldn't get a SQL Connection", e); //$NON-NLS-1$
 		}
 	}
 
@@ -175,8 +176,8 @@ public class DbMgr {
 	protected static void commitTransaction(DbTransaction tx) throws DbException {
 		try { tx.getConnection().commit();	}
 		catch (SQLException e ) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec du commit", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.SQL_COMMIT_FAILURE"), e); //$NON-NLS-1$
 		}
 	}
 	
@@ -188,10 +189,10 @@ public class DbMgr {
 	 */
 	protected static boolean tablesExist(DbTransaction tx) throws DbException {
 		boolean tablesExist = true;
-		tablesExist &= tableExists(tx, "COLLABORATOR");
-		tablesExist &= tableExists(tx, "CONTRIBUTION");
-		tablesExist &= tableExists(tx, "DURATION");
-		tablesExist &= tableExists(tx, "TASK");
+		tablesExist &= tableExists(tx, "COLLABORATOR"); //$NON-NLS-1$
+		tablesExist &= tableExists(tx, "CONTRIBUTION"); //$NON-NLS-1$
+		tablesExist &= tableExists(tx, "DURATION"); //$NON-NLS-1$
+		tablesExist &= tableExists(tx, "TASK"); //$NON-NLS-1$
 		return tablesExist;
 	}
 	
@@ -209,7 +210,7 @@ public class DbMgr {
 			Connection con = tx.getConnection();
 
 			// Recherche de la table
-			ResultSet rs = con.getMetaData().getTables(null, null, tableName, new String[] { "TABLE" } );
+			ResultSet rs = con.getMetaData().getTables(null, null, tableName, new String[] { "TABLE" } ); //$NON-NLS-1$
 
 			// Récupération du résultat
 			boolean exists = rs.next();
@@ -218,8 +219,8 @@ public class DbMgr {
 			return exists;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors du test d'existance de la table '" + tableName + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.SQL_TABLES_DETECTION_FAILURE", tableName), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -238,13 +239,13 @@ public class DbMgr {
 			Connection con = tx.getConnection();
 			
 			// Lecture du fichier SQL de création de la BDD
-			String batchName = "sql/" + (isHSQLDB(con) ? "hsqldb.sql" : "mysqldb.sql");
+			String batchName = "sql/" + (isHSQLDB(con) ? "hsqldb.sql" : "mysqldb.sql"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			InputStream in = DbMgr.class.getResourceAsStream(batchName);
 			String batchContent = null;
 			try { batchContent = StringHelper.fromInputStream(in); }
 			catch (IOException e) {
-				log.info("I/O error while loading table creation SQL script.", e);
-				throw new DbException("I/O error while loading table creation SQL script.", null);
+				log.info("I/O error while loading table creation SQL script.", e); //$NON-NLS-1$
+				throw new DbException(Strings.getString("DbMgr.errors.SQL_SCRIPT_LOAD_FAILURE"), null); //$NON-NLS-1$
 			}
 
 			// Découpage et exécution du batch
@@ -260,10 +261,10 @@ public class DbMgr {
 				if (line==null) {
 					try { line = lnr.readLine(); }
 					catch (IOException e) {
-						log.info("Unexpected I/O error while reading memory stream!", e);
-						throw new DbException("Unexpected I/O error while reading memory stream!", null);
+						log.info("Unexpected I/O error while reading memory stream!", e); //$NON-NLS-1$
+						throw new DbException(Strings.getString("DbMgr.errors.MEMORY_IO_FAILURE"), null); //$NON-NLS-1$
 					}
-					log.debug("Line read : '" + line + "'");
+					log.debug("Line read : '" + line + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 				// Si le flux est vide, on sort de la boucle
 				if (line==null) {
@@ -273,7 +274,7 @@ public class DbMgr {
 				else {
 					line = line.trim();
 					// Si la ligne est un commentaire on l'ignore
-					if (line.startsWith("--")) {
+					if (line.startsWith("--")) { //$NON-NLS-1$
 						line = null;
 					}
 					else {
@@ -287,8 +288,8 @@ public class DbMgr {
 							line = line.substring(idx);
 							String sql = buf.toString();
 							buf.setLength(0);
-							log.debug(" - sql='" + sql + "'"); 
-							if (!"".equals(sql)) 
+							log.debug(" - sql='" + sql + "'");  //$NON-NLS-1$ //$NON-NLS-2$
+							if (!"".equals(sql))  //$NON-NLS-1$
 								stmt.executeUpdate(sql);
 						}
 						// sinon on ajoute la ligne au buffer de requeête
@@ -304,15 +305,15 @@ public class DbMgr {
 			
 			// Test de l'existence des tables
 			if (!tablesExist(tx))
-				throw new DbException("Database table creation failure", null);
+				throw new DbException(Strings.getString("DbMgr.errors.SQL_TABLE_CREATION_FAILURE"), null); //$NON-NLS-1$
 
 			// Fermeture du statement
 			stmt.close();
 			stmt = null;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Database table creation failure", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException("Database table creation failure", e); //$NON-NLS-1$
 		}
 		finally {
 			if (stmt!=null) try { stmt.close(); } catch (Throwable ignored) { }
@@ -330,11 +331,8 @@ public class DbMgr {
 	protected static Collaborator createCollaborator(DbTransaction tx, Collaborator newCollaborator) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-			
 			// Préparation de la requête
-			pStmt = con.prepareStatement("insert into collaborator (clb_login, clb_first_name, clb_last_name, clb_is_active) values (?, ?, ?, ?)");
+			pStmt = tx.prepareStatement("insert into collaborator (clb_login, clb_first_name, clb_last_name, clb_is_active) values (?, ?, ?, ?)"); //$NON-NLS-1$
 			pStmt.setString (1, newCollaborator.getLogin());
 			pStmt.setString (2, newCollaborator.getFirstName());
 			pStmt.setString (3, newCollaborator.getLastName());
@@ -343,7 +341,7 @@ public class DbMgr {
 
 			// Récupération de l'identifiant généré
 			long generatedId = getGeneratedId(pStmt);
-			log.debug("Generated id=" + generatedId);
+			log.debug("Generated id=" + generatedId); //$NON-NLS-1$
 			newCollaborator.setId(generatedId);
 
 			// Fermeture du statement
@@ -354,8 +352,8 @@ public class DbMgr {
 			return newCollaborator;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la création du collaborateur '" + newCollaborator.getLogin() + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.COLLABORATOR_CREATION_FAILUE", newCollaborator.getLogin()), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -373,11 +371,8 @@ public class DbMgr {
 	protected static Contribution createContribution(DbTransaction tx, Contribution newContribution) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-			
 			// Préparation de la requête
-			pStmt = con.prepareStatement("insert into contribution (ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration) values (?, ?, ?, ?, ?, ?)");
+			pStmt = tx.prepareStatement("insert into contribution (ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration) values (?, ?, ?, ?, ?, ?)"); //$NON-NLS-1$
 			pStmt.setInt   (1, newContribution.getYear());
 			pStmt.setInt   (2, newContribution.getMonth());
 			pStmt.setInt   (3, newContribution.getDay());
@@ -394,8 +389,8 @@ public class DbMgr {
 			return newContribution;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la création d'une contribution", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.CONTRIBUTION_CREATION_FAILUE"), e); //$NON-NLS-1$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -413,11 +408,8 @@ public class DbMgr {
 	protected static Duration createDuration(DbTransaction tx, Duration newDuration) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-			
 			// Préparation de la requête
-			pStmt = con.prepareStatement("insert into duration (dur_id, dur_is_active) values (?, ?)");
+			pStmt = tx.prepareStatement("insert into duration (dur_id, dur_is_active) values (?, ?)"); //$NON-NLS-1$
 			pStmt.setLong   (1, newDuration.getId());
 			pStmt.setBoolean(2, newDuration.getIsActive());
 			pStmt.executeUpdate();
@@ -430,8 +422,8 @@ public class DbMgr {
 			return newDuration;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la création de la durée : '" + newDuration + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.DURATION_CREATION_FAILUE", newDuration), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -453,11 +445,8 @@ public class DbMgr {
 	protected static Task createTask(DbTransaction tx, Task parentTask, Task newTask) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-			
 			// Mise à jour du chemin de la tâche
-			String parentPath = parentTask==null ? "" : parentTask.getFullPath();
+			String parentPath = parentTask==null ? "" : parentTask.getFullPath(); //$NON-NLS-1$
 			newTask.setPath(parentPath);
 
 			// Génération du numéro de la tâche
@@ -465,7 +454,7 @@ public class DbMgr {
 			newTask.setNumber(taskNumber);
 			
 			// Préparation de la requête
-			pStmt = con.prepareStatement("insert into task (tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo, tsk_comment) values (?, ?, ?, ?, ?, ?, ?, ?)");
+			pStmt = tx.prepareStatement("insert into task (tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo, tsk_comment) values (?, ?, ?, ?, ?, ?, ?, ?)"); //$NON-NLS-1$
 			pStmt.setString(1, newTask.getPath());
 			pStmt.setByte  (2, newTask.getNumber());
 			pStmt.setString(3, newTask.getCode());
@@ -478,7 +467,7 @@ public class DbMgr {
 
 			// Récupération de l'identifiant généré
 			long generatedId = getGeneratedId(pStmt);
-			log.debug("Generated id=" + generatedId);
+			log.debug("Generated id=" + generatedId); //$NON-NLS-1$
 			newTask.setId(generatedId);
 
 			// Fermeture du ResultSet
@@ -489,8 +478,8 @@ public class DbMgr {
 			return newTask;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la création de la tache '" + newTask.getName() + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.TASK_CREATION_FAILURE", newTask.getName()), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -508,11 +497,8 @@ public class DbMgr {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-			
 			// Préparation de la requête
-			pStmt = con.prepareStatement("select count(*) from contribution where ctb_duration=?");
+			pStmt = tx.prepareStatement("select count(*) from contribution where ctb_duration=?"); //$NON-NLS-1$
 			pStmt.setLong  (1, duration.getId());
 	
 			// Exécution de la requête
@@ -520,7 +506,7 @@ public class DbMgr {
 			
 			// Préparation du résultat
 			if (!rs.next())
-				throw new DbException("Nothing returned by the query", null);
+				throw new DbException(Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
 			boolean durationIsUsed = rs.getInt(1)>0;
 
 			// Fermeture du statement
@@ -531,8 +517,8 @@ public class DbMgr {
 			return durationIsUsed;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la vérification de l'utilisation de la durée '" + duration + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.SQL_DURATION_CHECK_FAILURE", duration), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -547,8 +533,8 @@ public class DbMgr {
 	protected static void endTransaction(DbTransaction tx) throws DbException {
 		try { tx.getConnection().close();	}
 		catch (SQLException e ) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la cloture de la connexion", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.SQL_DISCONNECTION_FAILURE"), e); //$NON-NLS-1$
 		}
 		threadLocal.set(null);
 	}
@@ -563,11 +549,7 @@ public class DbMgr {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-			
-			// Préparation de la requête
-			pStmt = con.prepareStatement("select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from collaborator where clb_id=?");
+			pStmt = tx.prepareStatement("select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from collaborator where clb_id=?"); //$NON-NLS-1$
 			pStmt.setLong  (1, collaboratorId);
 	
 			// Exécution de la requête
@@ -586,8 +568,8 @@ public class DbMgr {
 			return collaborator;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération du collaborateur d'identifiant '" + collaboratorId + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.COLLABORATOR_SELECTION_BY_ID_FAILURE", new Long(collaboratorId)), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -620,11 +602,8 @@ public class DbMgr {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-			
 			// Préparation de la requête
-			pStmt = con.prepareStatement("select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from collaborator where clb_login=?");
+			pStmt = tx.prepareStatement("select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from collaborator where clb_login=?"); //$NON-NLS-1$
 			pStmt.setString(1, login);
 	
 			// Exécution de la requête
@@ -643,8 +622,8 @@ public class DbMgr {
 			return collaborator;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération ddu collaborateur de login '" + login + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.COLLABORATOR_SELECTION_BY_LOGIN_FAILURE", login), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -664,35 +643,32 @@ public class DbMgr {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-			
 			// Préparation de la requête
-			StringBuffer request = new StringBuffer("select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from collaborator ");
+			StringBuffer request = new StringBuffer("select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from collaborator "); //$NON-NLS-1$
 			if (onlyActiveCollaborators)
-				request.append("where clb_is_active=?");
-			request.append("order by ");
+				request.append("where clb_is_active=?"); //$NON-NLS-1$
+			request.append("order by "); //$NON-NLS-1$
 			switch (orderByClauseFieldIndex) {
 				case Collaborator.ID_FIELD_IDX :
-					request.append("clb_id");
+					request.append("clb_id"); //$NON-NLS-1$
 					break;
 				case Collaborator.LOGIN_FIELD_IDX :
-					request.append("clb_login");
+					request.append("clb_login"); //$NON-NLS-1$
 					break;
 				case Collaborator.FIRST_NAME_FIELD_IDX :
-					request.append("clb_first_name");
+					request.append("clb_first_name"); //$NON-NLS-1$
 					break;
 				case Collaborator.LAST_NAME_FIELD_IDX :
-					request.append("clb_last_name");
+					request.append("clb_last_name"); //$NON-NLS-1$
 					break;
 				case Collaborator.IS_ACTIVE_FIELD_IDX :
-					request.append("clb_is_active");
+					request.append("clb_is_active"); //$NON-NLS-1$
 					break;
 				default :
-					throw new DbException("Unknown field index '" + orderByClauseFieldIndex + "'.", null);
+					throw new DbException(Strings.getString("DbMgr.errors.UNKNOWN_FIELD_INDEX", new Integer(orderByClauseFieldIndex)), null); //$NON-NLS-1$ //$NON-NLS-2$
 			}
-			request.append(ascendantSort ? " asc" : " desc");
-			pStmt = con.prepareStatement(request.toString());
+			request.append(ascendantSort ? " asc" : " desc"); //$NON-NLS-1$ //$NON-NLS-2$
+			pStmt = tx.prepareStatement(request.toString());
 			if (onlyActiveCollaborators)
 				pStmt.setBoolean(1, true);
 
@@ -709,12 +685,12 @@ public class DbMgr {
 			pStmt = null;
 			
 			// Retour du résultat
-			log.debug("  => found " + list.size() + " entrie(s)");
+			log.debug("  => found " + list.size() + " entrie(s)"); //$NON-NLS-1$ //$NON-NLS-2$
 			return (Collaborator[]) list.toArray(new Collaborator[list.size()]);
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération des collaborateurs'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.COLLABORATORS_SELECTION_FAILURE"), e); //$NON-NLS-1$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -731,19 +707,30 @@ public class DbMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	protected static Contribution[] getContributions(DbTransaction tx, Collaborator contributor, Task task, Calendar fromDate, Calendar toDate) throws DbException {
-		log.debug("getContributions(" + contributor + ", " + task + ", " + sdf.format(fromDate.getTime()) + ", " + sdf.format(toDate.getTime()) + ")");
+		log.debug("getContributions(" + contributor + ", " + task + ", " + sdf.format(fromDate.getTime()) + ", " + sdf.format(toDate.getTime()) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
+			// Conversion des dates
+			String fromDateStr = sdf.format(fromDate.getTime());
+			String toDateStr = sdf.format(toDate.getTime());
 			
 			// Préparation de la requête
-			pStmt = con.prepareStatement("select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from contribution where ctb_contributor=? and ctb_task=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) between ? and ?");
-			pStmt.setLong  (1, contributor.getId());
-			pStmt.setLong  (2, task.getId());
-			pStmt.setString(3, sdf.format(fromDate.getTime()));
-			pStmt.setString(4, sdf.format(toDate.getTime()));
+			// 1° cas : les deux dates sont différentes
+			if (!fromDateStr.equals(toDateStr)) {
+				pStmt = tx.prepareStatement("select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from contribution where ctb_contributor=? and ctb_task=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) between ? and ?"); //$NON-NLS-1$
+				pStmt.setLong  (1, contributor.getId());
+				pStmt.setLong  (2, task.getId());
+				pStmt.setString(3, fromDateStr);
+				pStmt.setString(4, toDateStr);
+			}
+			// 2° cas : les deux dates sont égales
+			else {
+				pStmt = tx.prepareStatement("select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from contribution where ctb_contributor=? and ctb_task=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) = ?"); //$NON-NLS-1$
+				pStmt.setLong  (1, contributor.getId());
+				pStmt.setLong  (2, task.getId());
+				pStmt.setString(3, fromDateStr);
+			}
 
 			// Exécution de la requête
 			rs = pStmt.executeQuery();
@@ -759,8 +746,8 @@ public class DbMgr {
 			return result;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération des contributions", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.CONTRIBUTIONS_SELECTION_FAILURE"), e); //$NON-NLS-1$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -787,7 +774,7 @@ public class DbMgr {
 			contribution.setDurationId(rs.getLong(6));
 			list.add(contribution);
 		}
-		log.debug("  => found " + list.size() + " entrie(s)");
+		log.debug("  => found " + list.size() + " entrie(s)"); //$NON-NLS-1$ //$NON-NLS-2$
 		return (Contribution[]) list.toArray(new Contribution[list.size()]);
 	}
 		
@@ -814,15 +801,12 @@ public class DbMgr {
 	 * @see jfb.tools.activitymgr.core.DbMgr#getContributionsSum(DbTransaction, Task, Collaborator, Integer, Integer, Integer)
 	 */
 	protected static Contribution[] getContributions(DbTransaction tx, Task task, Collaborator contributor, Integer year, Integer month, Integer day) throws DbException {
-		log.debug("getContributions(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")");
+		log.debug("getContributions(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-			
-			StringBuffer baseRequest = new StringBuffer("select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from contribution, task where ctb_task=tsk_id");
-			String orderByClause = " order by ctb_year, ctb_month, ctb_day, tsk_path, tsk_number, ctb_contributor, ctb_duration";
+			StringBuffer baseRequest = new StringBuffer("select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from contribution, task where ctb_task=tsk_id"); //$NON-NLS-1$
+			String orderByClause = " order by ctb_year, ctb_month, ctb_day, tsk_path, tsk_number, ctb_contributor, ctb_duration"; //$NON-NLS-1$
 			// Cas ou la tache n'est pas spécifiée
 			if (task==null) {
 				// Préparation de la requête
@@ -835,7 +819,7 @@ public class DbMgr {
 					);
 				baseRequest.append(orderByClause);
 				String request = baseRequest.toString();
-				pStmt = con.prepareStatement(request);
+				pStmt = tx.prepareStatement(request);
 				completeContributionReqParams(pStmt, 1, contributor, year, month, day);
 			}
 			// Si la tache n'admet pas de sous-taches, le cumul de 
@@ -843,7 +827,7 @@ public class DbMgr {
 			// égaux à ceux de la tache
 			else if (task.getSubTasksCount()==0) {
 				// Préparation de la requête
-				baseRequest.append(" and tsk_id=?");
+				baseRequest.append(" and tsk_id=?"); //$NON-NLS-1$
 				completeContributionRequest(
 						baseRequest,
 						contributor,
@@ -853,18 +837,18 @@ public class DbMgr {
 					);
 				baseRequest.append(orderByClause);
 				String request = baseRequest.toString();
-				pStmt = con.prepareStatement(request);
+				pStmt = tx.prepareStatement(request);
 				pStmt.setLong(1, task.getId());
-				log.debug(" taskId=" + task.getId());
+				log.debug(" taskId=" + task.getId()); //$NON-NLS-1$
 				completeContributionReqParams(pStmt, 2, contributor, year, month, day);
 			}
 			// Sinon, il faut calculer
 			else {
 				// Paramètre pour la clause 'LIKE'
-				String pathLike = task.getFullPath() + "%";
+				String pathLike = task.getFullPath() + "%"; //$NON-NLS-1$
 					
 				// Préparation de la requête
-				baseRequest.append(" and tsk_path like ?");
+				baseRequest.append(" and tsk_path like ?"); //$NON-NLS-1$
 				completeContributionRequest(
 						baseRequest,
 						contributor,
@@ -874,13 +858,13 @@ public class DbMgr {
 					);
 				baseRequest.append(orderByClause);
 				String request = baseRequest.toString();
-				pStmt = con.prepareStatement(request);
+				pStmt = tx.prepareStatement(request);
 				pStmt.setString(1, pathLike);
 				completeContributionReqParams(pStmt, 2, contributor, year, month, day);
 			}		
 
 			// Exécution de la requête
-			log.debug("Request : " + baseRequest);
+			log.debug("Request : " + baseRequest); //$NON-NLS-1$
 			rs = pStmt.executeQuery();
 
 			// Extraction du résultat
@@ -894,15 +878,95 @@ public class DbMgr {
 			return result;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération des contributions", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.CONTRIBUTIONS_SELECTION_FAILURE"), e); //$NON-NLS-1$
 		}
 		finally {
 			try { if (pStmt!=null) pStmt.close(); } catch (Throwable ignored) { }
 		}
 	}
 
+	/**
+	 * Calcule le total des contributions associée aux paramètres spécifiés.
+	 * 
+	 * @param tx le contexte de transaction.
+	 * @param contributor le collaborateur associé aux contributions (facultatif).
+	 * @param fromDate la date de départ.
+	 * @param toDate la date de fin.
+	 * @return la seomme des contributions.
+	 * @throws DbException levé en cas d'incident technique d'accès à la base.
+	 */
+	protected static long getContributionsSum(DbTransaction tx, Task task, Collaborator contributor, Calendar fromDate, Calendar toDate) throws DbException {
+		PreparedStatement pStmt = null;
+		ResultSet rs = null;
+		try {
+			// Préparation de la requête
+			StringBuffer request = new StringBuffer("select sum(ctb_duration) from contribution");
+			if (task!=null)
+				request.append(", task");
+			if (contributor!=null)
+				request.append(", collaborator");
+			request.append(" where ");
+			if (task!=null) {
+				request.append("ctb_task=tsk_id and tsk_id=?");
+			}
+			if (contributor!=null) {
+				if (task!=null)
+					request.append(" and ");
+				request.append("ctb_contributor=clb_id and clb_id=?");
+			}
+			// Y'a-t-il un critère de date  à ajouter ?
+			if (fromDate!=null || toDate!=null) {
+				request.append(" and ( ctb_year*10000 + ( ctb_month*100 + ctb_day ) )");
+				// Deux dates spécifiées
+				if (fromDate!=null && toDate!=null)
+					request.append(" between ? and ?");
+				// Seule la date de début spécifiée
+				else if (fromDate!=null)
+					request.append(">=?");
+				// Seule la date de fin spécifiée
+				else
+					request.append("<=?");
+			}
+			
+			// Calcul du consommé
+			log.debug("request : " + request);
+			pStmt = tx.prepareStatement(request.toString()); //$NON-NLS-1$
+			int idx = 1;
+			if (task!=null)
+				pStmt.setLong(idx++, task.getId());
+			if (contributor!=null)
+				pStmt.setLong(idx++, contributor.getId());
+			
+			// Y'a-t-il un critère de date  à ajouter ?
+			if (fromDate!=null || toDate!=null) {
+				int i = 2;
+				if (fromDate!=null)
+					pStmt.setString(i++, sdf.format(fromDate.getTime()));
+				if (toDate!=null)
+					pStmt.setString(i++, sdf.format(toDate.getTime()));
+			}
+			// Exécution de le requête et extraction du résultat
+			rs = pStmt.executeQuery();
+			if (!rs.next())
+				throw new DbException(Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
+			long contributionSums = rs.getLong(1);
+			pStmt.close();
+			pStmt = null;
+			
+			// Retour du résultat
+			return contributionSums;
+		}
+		catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException("Erreur lors du calcul du consommé d'un collaborateur sur un intervalle de temps donné", e);
+		}
+		finally {
+			try { if (pStmt!=null) pStmt.close(); } catch (Throwable ignored) { }
+		}
+	}
 
+	
 	/**
 	 * Calcule le nombre des contributions associée aux paramètres spécifiés.
 	 * 
@@ -925,8 +989,8 @@ public class DbMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	protected static long getContributionsNb(DbTransaction tx, Task task, Collaborator contributor, Integer year, Integer month, Integer day) throws DbException {
-		log.debug("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")");
-		return getContributionsAggregation(tx, "count(ctb_duration)", task, contributor, year, month, day);
+		log.debug("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+		return getContributionsAggregation(tx, "count(ctb_duration)", task, contributor, year, month, day); //$NON-NLS-1$
 	}
 
 	/**
@@ -952,8 +1016,8 @@ public class DbMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	protected static long getContributionsSum(DbTransaction tx, Task task, Collaborator contributor, Integer year, Integer month, Integer day) throws DbException {
-		log.debug("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")");
-		return getContributionsAggregation(tx, "sum(ctb_duration)", task, contributor, year, month, day);
+		log.debug("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+		return getContributionsAggregation(tx, "sum(ctb_duration)", task, contributor, year, month, day); //$NON-NLS-1$
 	}
 
 	/**
@@ -980,16 +1044,13 @@ public class DbMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	private static long getContributionsAggregation(DbTransaction tx, String aggregation, Task task, Collaborator contributor, Integer year, Integer month, Integer day) throws DbException {
-		log.debug("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")");
+		log.debug("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-			
-			StringBuffer baseRequest = new StringBuffer("select ")
+			StringBuffer baseRequest = new StringBuffer("select ") //$NON-NLS-1$
 				.append(aggregation)
-				.append(" from contribution, task where ctb_task=tsk_id");
+				.append(" from contribution, task where ctb_task=tsk_id"); //$NON-NLS-1$
 			// Cas ou la tache n'est pas spécifiée
 			if (task==null) {
 				// Préparation de la requête
@@ -1001,7 +1062,7 @@ public class DbMgr {
 						day
 					);
 				String request = baseRequest.toString();
-				pStmt = con.prepareStatement(request);
+				pStmt = tx.prepareStatement(request);
 				completeContributionReqParams(pStmt, 1, contributor, year, month, day);
 			}
 			// Si la tache n'admet pas de sous-taches, le cumul de 
@@ -1009,7 +1070,7 @@ public class DbMgr {
 			// égaux à ceux de la tache
 			else if (task.getSubTasksCount()==0) {
 				// Préparation de la requête
-				baseRequest.append(" and tsk_id=?");
+				baseRequest.append(" and tsk_id=?"); //$NON-NLS-1$
 				completeContributionRequest(
 						baseRequest,
 						contributor,
@@ -1018,18 +1079,18 @@ public class DbMgr {
 						day
 					);
 				String request = baseRequest.toString();
-				pStmt = con.prepareStatement(request);
+				pStmt = tx.prepareStatement(request);
 				pStmt.setLong(1, task.getId());
-				log.debug(" taskId=" + task.getId());
+				log.debug(" taskId=" + task.getId()); //$NON-NLS-1$
 				completeContributionReqParams(pStmt, 2, contributor, year, month, day);
 			}
 			// Sinon, il faut calculer
 			else {
 				// Paramètre pour la clause 'LIKE'
-				String pathLike = task.getFullPath() + "%";
+				String pathLike = task.getFullPath() + "%"; //$NON-NLS-1$
 					
 				// Préparation de la requête
-				baseRequest.append(" and tsk_path like ?");
+				baseRequest.append(" and tsk_path like ?"); //$NON-NLS-1$
 				completeContributionRequest(
 						baseRequest,
 						contributor,
@@ -1038,16 +1099,16 @@ public class DbMgr {
 						day
 					);
 				String request = baseRequest.toString();
-				pStmt = con.prepareStatement(request);
+				pStmt = tx.prepareStatement(request);
 				pStmt.setString(1, pathLike);
 				completeContributionReqParams(pStmt, 2, contributor, year, month, day);
 			}		
 
 			// Exécution de la requête
-			log.debug("Request : " + baseRequest);
+			log.debug("Request : " + baseRequest); //$NON-NLS-1$
 			rs = pStmt.executeQuery();
 			if (!rs.next())
-				throw new DbException("Nothing returned from this query", null);
+				throw new DbException(Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
 			long agregation = rs.getLong(1);
 			
 			// Fermeture du statement
@@ -1055,12 +1116,12 @@ public class DbMgr {
 			pStmt = null;
 			
 			// Retour du résultat
-			log.info("agregation=" + agregation);
+			log.info("agregation=" + agregation); //$NON-NLS-1$
 			return agregation;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération des cumuls", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.CONTRIBUTIONS_SUM_COMPUTATION_FAILURE"), e); //$NON-NLS-1$
 		}
 		finally {
 			try { if (pStmt!=null) pStmt.close(); } catch (Throwable ignored) { }
@@ -1077,11 +1138,8 @@ public class DbMgr {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-			
 			// Préparation de la requête
-			pStmt = con.prepareStatement("select dur_id, dur_is_active from duration where dur_id=?");
+			pStmt = tx.prepareStatement("select dur_id, dur_is_active from duration where dur_id=?"); //$NON-NLS-1$
 			pStmt.setLong(1, durationId);
 
 			// Exécution de la requête
@@ -1100,8 +1158,8 @@ public class DbMgr {
 			return duration;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération dde la durée '" + durationId + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.DURATION_SELECTION_BY_ID", new Long(durationId)), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -1119,15 +1177,12 @@ public class DbMgr {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-			
 			// Préparation de la requête
-			StringBuffer request = new StringBuffer("select dur_id, dur_is_active from duration ");
+			StringBuffer request = new StringBuffer("select dur_id, dur_is_active from duration "); //$NON-NLS-1$
 			if (onlyActiveCollaborators)
-				request.append("where dur_is_active=?");
-			request.append("order by dur_id asc");
-			pStmt = con.prepareStatement(request.toString());
+				request.append("where dur_is_active=?"); //$NON-NLS-1$
+			request.append("order by dur_id asc"); //$NON-NLS-1$
+			pStmt = tx.prepareStatement(request.toString());
 			if (onlyActiveCollaborators)
 				pStmt.setBoolean(1, true);
 
@@ -1147,8 +1202,8 @@ public class DbMgr {
 			return (Duration[]) list.toArray(new Duration[list.size()]);
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération des durées'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.DURATIONS_SELECTION_FAILURE"), e); //$NON-NLS-1$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -1178,13 +1233,13 @@ public class DbMgr {
 		Task parentTask = null;
 		String parentTaskFullPath = task.getPath();
 		// Si le chemin est vide, la tache parent est nulle (tache racine)
-		if (parentTaskFullPath!=null && !"".equals(parentTaskFullPath)) {
+		if (parentTaskFullPath!=null && !"".equals(parentTaskFullPath)) { //$NON-NLS-1$
 			// Extraction du chemin et du numéro de la tache recherchée
-			log.debug("Fullpath='" + parentTaskFullPath + "'");
+			log.debug("Fullpath='" + parentTaskFullPath + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 			String path = parentTaskFullPath.substring(0, parentTaskFullPath.length()-2);
 			byte number = StringHelper.toByte(parentTaskFullPath.substring(parentTaskFullPath.length()-2));
-			log.debug(" => path=" + path);
-			log.debug(" => number=" + number);
+			log.debug(" => path=" + path); //$NON-NLS-1$
+			log.debug(" => number=" + number); //$NON-NLS-1$
 			
 			// Recherche de la tache
 			parentTask = getTask(tx, path, number);
@@ -1203,11 +1258,8 @@ public class DbMgr {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-			
 			// Préparation de la requête
-			pStmt = con.prepareStatement("select tsk_id from task where tsk_path=? order by tsk_number");
+			pStmt = tx.prepareStatement("select tsk_id from task where tsk_path=? order by tsk_number"); //$NON-NLS-1$
 			pStmt.setString(1, path);
 
 			// Exécution de la requête
@@ -1226,12 +1278,12 @@ public class DbMgr {
 			pStmt = null;
 			
 			// Retour du résultat
-			log.debug("  => found " + list.size() + " entrie(s)");
+			log.debug("  => found " + list.size() + " entrie(s)"); //$NON-NLS-1$ //$NON-NLS-2$
 			return (Task[]) list.toArray(new Task[list.size()]);
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération des sous taches de chemin '" + path + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.TASK_SELECTION_BY_PATH", path), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -1246,8 +1298,8 @@ public class DbMgr {
 	 */
 	protected static Task[] getSubtasks(DbTransaction tx, Task parentTask) throws DbException {
 		// Récupération du chemin à partir de la tache parent
-		String fullpath = parentTask==null ? "" : parentTask.getFullPath();
-		log.debug("Looking for tasks with path='" + fullpath + "'");
+		String fullpath = parentTask==null ? "" : parentTask.getFullPath(); //$NON-NLS-1$
+		log.debug("Looking for tasks with path='" + fullpath + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 		return getTasks(tx, fullpath);
 	}
 
@@ -1262,56 +1314,53 @@ public class DbMgr {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-
 			// Préparation de la requête
-			StringBuffer request = new StringBuffer("select tsk_id from task where ");
+			StringBuffer request = new StringBuffer("select tsk_id from task where "); //$NON-NLS-1$
 			// Ajout du nom de champ
 			switch (filter.getFieldIndex()) {
 				case TaskSearchFilter.TASK_NAME_FIELD_IDX :
-					request.append("tsk_name");
+					request.append("tsk_name"); //$NON-NLS-1$
 					break;
 				case TaskSearchFilter.TASK_CODE_FIELD_IDX :
-					request.append("tsk_code");
+					request.append("tsk_code"); //$NON-NLS-1$
 					break;
 				default :
-					throw new DbException("Unknown field index '" + filter.getFieldIndex() + "'.", null);
+					throw new DbException("Unknown field index '" + filter.getFieldIndex() + "'.", null); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 			// Ajout du critère de comparaison
 			switch (filter.getCriteriaIndex()) {
 				case TaskSearchFilter.IS_EQUAL_TO_CRITERIA_IDX :
-					request.append("=?");
+					request.append("=?"); //$NON-NLS-1$
 					break;
 				case TaskSearchFilter.STARTS_WITH_CRITERIA_IDX :
 				case TaskSearchFilter.ENDS_WITH_CRITERIA_IDX :
-				case TaskSearchFilter.CONTAINS_WITH_CRITERIA_IDX :
-					request.append(" like ?");
+				case TaskSearchFilter.CONTAINS_CRITERIA_IDX :
+					request.append(" like ?"); //$NON-NLS-1$
 					break;
 				default :
-					throw new DbException("Unknown criteria index '" + filter.getCriteriaIndex() + "'.", null);
+					throw new DbException(Strings.getString("DbMgr.errors.UNKNOWN_CRITERIA_INDEX", new Integer(filter.getCriteriaIndex())), null); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 			// Préparation de la requête
-			log.debug("Search request : '" + request + "'");
-			pStmt = con.prepareStatement(request.toString());
+			log.debug("Search request : '" + request + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+			pStmt = tx.prepareStatement(request.toString());
 			String parameter = null;
 			switch (filter.getCriteriaIndex()) {
 				case TaskSearchFilter.IS_EQUAL_TO_CRITERIA_IDX :
 					parameter = filter.getFieldValue();
 					break;
 				case TaskSearchFilter.STARTS_WITH_CRITERIA_IDX :
-					parameter = filter.getFieldValue() + "%";
+					parameter = filter.getFieldValue() + "%"; //$NON-NLS-1$
 					break;
 				case TaskSearchFilter.ENDS_WITH_CRITERIA_IDX :
-					parameter = "%" + filter.getFieldValue();
+					parameter = "%" + filter.getFieldValue(); //$NON-NLS-1$
 					break;
-				case TaskSearchFilter.CONTAINS_WITH_CRITERIA_IDX :
-					parameter = "%" + filter.getFieldValue() + "%";
+				case TaskSearchFilter.CONTAINS_CRITERIA_IDX :
+					parameter = "%" + filter.getFieldValue() + "%"; //$NON-NLS-1$ //$NON-NLS-2$
 					break;
 				default :
-					throw new DbException("Unknown criteria index '" + filter.getCriteriaIndex() + "'.", null);
+					throw new DbException("Unknown criteria index '" + filter.getCriteriaIndex() + "'.", null); //$NON-NLS-1$ //$NON-NLS-2$
 			}
-			log.debug("Search parameter : '" + parameter + "'");
+			log.debug("Search parameter : '" + parameter + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 			pStmt.setString(1, parameter);
 			
 			// Exécution de la requête
@@ -1360,8 +1409,8 @@ public class DbMgr {
 			return tasks;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Unexpected error while searching tasks", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.TASKS_SELECTION_FAILURE"), e); //$NON-NLS-1$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -1379,11 +1428,8 @@ public class DbMgr {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-
 			// Préparation de la requête
-			pStmt = con.prepareStatement("select tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo, tsk_comment from task where tsk_id=?");
+			pStmt = tx.prepareStatement("select tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo, tsk_comment from task where tsk_id=?"); //$NON-NLS-1$
 			pStmt.setLong  (1, taskId);
 	
 			// Exécution de la requête
@@ -1411,7 +1457,7 @@ public class DbMgr {
 			if (task!=null) {
 				// Recherche du nombre de sous-taches
 				String taskFullPath = task.getFullPath();
-				pStmt = con.prepareStatement("select count(*) from task where tsk_path=?");
+				pStmt = tx.prepareStatement("select count(*) from task where tsk_path=?"); //$NON-NLS-1$
 				pStmt.setString(1, taskFullPath);
 		
 				// Exécution de la requête
@@ -1429,8 +1475,8 @@ public class DbMgr {
 			return task;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération de la tache d'identifiant '" + taskId + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.TASK_SELECTION_BY_ID_FAILURE", new Long(taskId)), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -1445,15 +1491,12 @@ public class DbMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	protected static Task getTask(DbTransaction tx, String taskPath, byte taskNumber) throws DbException {
-		log.debug("getTask(" + taskPath + ", " + taskNumber + ")");
+		log.debug("getTask(" + taskPath + ", " + taskNumber + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-
 			// Préparation de la requête
-			pStmt = con.prepareStatement("select tsk_id from task where tsk_path=? and tsk_number=?");
+			pStmt = tx.prepareStatement("select tsk_id from task where tsk_path=? and tsk_number=?"); //$NON-NLS-1$
 			pStmt.setString(1, taskPath);
 			pStmt.setByte  (2, taskNumber);
 
@@ -1471,12 +1514,12 @@ public class DbMgr {
 			pStmt = null;
 			
 			// Retour du résultat
-			log.debug("task = " + task);
+			log.debug("task = " + task); //$NON-NLS-1$
 			return task;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération de la tache N° " + taskNumber + " du chemin '" + taskPath + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.TASK_SELECTION_BY_NUMBER_FROM_PATH_FAILURE", new Byte(taskNumber), taskPath), e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -1494,11 +1537,8 @@ public class DbMgr {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-
 			// Préparation de la requête
-			pStmt = con.prepareStatement("select tsk_id from task where tsk_path=? and tsk_code=?");
+			pStmt = tx.prepareStatement("select tsk_id from task where tsk_path=? and tsk_code=?"); //$NON-NLS-1$
 			pStmt.setString(1, taskPath);
 			pStmt.setString(2, taskCode);
 
@@ -1519,8 +1559,8 @@ public class DbMgr {
 			return task;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération de la tache de code '" + taskCode + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.TASK_SELECTION_BY_CODE_FAILURE", taskCode), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -1536,15 +1576,12 @@ public class DbMgr {
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
 	protected static Task[] getTasks(DbTransaction tx, Collaborator collaborator, Calendar fromDate, Calendar toDate) throws DbException {
-		log.debug("getTasks(" + collaborator + ", " + sdf.format(fromDate.getTime()) + ", " + sdf.format(toDate.getTime()) + ")");
+		log.debug("getTasks(" + collaborator + ", " + sdf.format(fromDate.getTime()) + ", " + sdf.format(toDate.getTime()) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-
 			// Préparation de la requête
-			pStmt = con.prepareStatement("select distinct ctb_task, tsk_path, tsk_number from contribution, task where ctb_task=tsk_id and ctb_contributor=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) between ? and ? order by tsk_path, tsk_number");
+			pStmt = tx.prepareStatement("select distinct ctb_task, tsk_path, tsk_number from contribution, task where ctb_task=tsk_id and ctb_contributor=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) between ? and ? order by tsk_path, tsk_number"); //$NON-NLS-1$
 			pStmt.setLong  (1, collaborator.getId());
 			pStmt.setString(2, sdf.format(fromDate.getTime()));
 			pStmt.setString(3, sdf.format(toDate.getTime()));
@@ -1565,12 +1602,12 @@ public class DbMgr {
 			pStmt = null;
 			
 			// Retour du résultat
-			log.debug("  => found " + list.size() + " entrie(s)");
+			log.debug("  => found " + list.size() + " entrie(s)"); //$NON-NLS-1$ //$NON-NLS-2$
 			return (Task[]) list.toArray(new Task[list.size()]);
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération des taches associées à un collaborateur", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.TASK_SELECTION_BY_COLLABORATOR_FAILURE"), e); //$NON-NLS-1$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -1580,74 +1617,129 @@ public class DbMgr {
 	/**
 	 * @param tx le contexte de transaction.
 	 * @param task la tâche pour laquelle on souhaite connaître les totaux.
+	 * @param fromDate date de départ à prendre en compte pour le calcul.
+	 * @param toDate date de fin à prendre en compte pour le calcul.
 	 * @return les totaux associés à une tache (consommé, etc.).
 	 * @throws DbException levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static TaskSums getTaskSums(DbTransaction tx, Task task) throws DbException {
+	protected static TaskSums getTaskSums(DbTransaction tx, Task task, Calendar fromDate, Calendar toDate) throws DbException {
 		// TODO Factoriser cette méthose avec getContributionsSum
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-
 			// Préparation du résultat
 			TaskSums taskSums = new TaskSums();
+			boolean taskIsLeaf = task!=null && task.getSubTasksCount()==0;
+
+			/**
+			 * Calcul de la partie indépendante des contributions (budget / consommation initiale / reste à faire
+			 */
 			
 			// Si la tache n'admet pas de sous-taches, le cumul de 
 			// budget, de consommé initial, de reste à faire sont
 			// égaux à ceux de la tache
-			if (task!=null && task.getSubTasksCount()==0) {
+			if (taskIsLeaf) {
 				taskSums.setBudgetSum(task.getBudget());
 				taskSums.setInitiallyConsumedSum(task.getInitiallyConsumed());
 				taskSums.setTodoSum(task.getTodo());
-	
-				// Calcul du consommé
-				pStmt = con.prepareStatement("select sum(ctb_duration), count(ctb_duration) from contribution, task where ctb_task=tsk_id and tsk_id=?");
-				pStmt.setLong(1, task.getId());
-				rs = pStmt.executeQuery();
-				if (!rs.next())
-					throw new DbException("Nothing returned from this query", null);
-				taskSums.setConsumedSum(rs.getLong(1));
-				taskSums.setContributionsNb(rs.getLong(2));
-				pStmt.close();
-				pStmt = null;
 			}
 			// Sinon, il faut calculer
 			else {
-				// Paramètre pour la clause 'LIKE'
-				String pathLike = (task==null ? "" : task.getFullPath()) + "%";
-	
 				// Calcul des cumuls
-				pStmt = con.prepareStatement("select sum(tsk_budget), sum(tsk_initial_cons), sum(tsk_todo) from task where tsk_path like ?");
-				pStmt.setString(1, pathLike);
+				pStmt = tx.prepareStatement("select sum(tsk_budget), sum(tsk_initial_cons), sum(tsk_todo) from task where tsk_path like ?"); //$NON-NLS-1$
+				pStmt.setString(1, (task==null ? "" : task.getFullPath()) + "%");
 				rs = pStmt.executeQuery();
 				if (!rs.next())
-					throw new DbException("Nothing returned from this query", null);
+					throw new DbException(Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
 				taskSums.setBudgetSum(rs.getLong(1));
 				taskSums.setInitiallyConsumedSum(rs.getLong(2));
 				taskSums.setTodoSum(rs.getLong(3));
 				pStmt.close();
 				pStmt = null;
-				
-				// Calcul du consommé
-				pStmt = con.prepareStatement("select sum(ctb_duration), count(ctb_duration) from contribution, task where ctb_task=tsk_id and tsk_path like ?");
-				pStmt.setString(1, pathLike);
+			}		
+			
+			/**
+			 * Calcul du consommé
+			 */
+			
+			// Préparation de la requête
+			StringBuffer request = new StringBuffer("select sum(ctb_duration), count(ctb_duration) from contribution, task where ctb_task=tsk_id and ");
+			// En fonction du cas, on recherche soit sur la tache précise (tsk_id=?), soit sur un arbre (tsk_path like ?)
+			request.append(taskIsLeaf ? "tsk_id=?" : "tsk_path like ?");
+			// Y'a-t-il un critère de date  à ajouter ?
+			if (fromDate!=null || toDate!=null) {
+				request.append(" and ( ctb_year*10000 + ( ctb_month*100 + ctb_day ) )");
+				// Deux dates spécifiées
+				if (fromDate!=null && toDate!=null)
+					request.append(" between ? and ?");
+				// Seule la date de début spécifiée
+				else if (fromDate!=null)
+					request.append(">=?");
+				// Seule la date de fin spécifiée
+				else
+					request.append("<=?");
+			}
+			
+			// Calcul du consommé
+			pStmt = tx.prepareStatement(request.toString()); //$NON-NLS-1$
+			// En fonction du cas, on recherche soit sur la tache précise (tsk_id=?), soit sur un arbre (tsk_path like ?)
+			if (taskIsLeaf)
+				pStmt.setLong(1, task.getId());
+			else 
+				pStmt.setString(1, (task==null ? "" : task.getFullPath()) + "%");
+			// Y'a-t-il un critère de date  à ajouter ?
+			if (fromDate!=null || toDate!=null) {
+				int i = 2;
+				if (fromDate!=null)
+					pStmt.setString(i++, sdf.format(fromDate.getTime()));
+				if (toDate!=null)
+					pStmt.setString(i++, sdf.format(toDate.getTime()));
+			}
+			// Exécution de le requête et extraction du résultat
+			rs = pStmt.executeQuery();
+			if (!rs.next())
+				throw new DbException(Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
+			taskSums.setConsumedSum(rs.getLong(1));
+			taskSums.setContributionsNb(rs.getLong(2));
+			pStmt.close();
+			pStmt = null;
+			
+			/**
+			 * Si un critère de date de fin a été spécifié, il faut corriger le RAF calculé plus haut
+			 * sinon on ne tient pas compte des consommations au dela de cette date.
+			 * En effet RAF à une date donnée = RAF identifié au niveau de la tache + consommations futures déjà enregistrées dans le système
+			 */
+			if (toDate!=null) {
+				request = new StringBuffer("select sum(ctb_duration) from contribution, task where ctb_task=tsk_id and ");
+				request.append(taskIsLeaf ? "tsk_id=?" : "tsk_path like ?");
+				request.append(" and ( ctb_year*10000 + ( ctb_month*100 + ctb_day ) ) > ?");
+				// Calcul des consommations au delà de la date de fin spécifiée
+				pStmt = tx.prepareStatement(request.toString()); //$NON-NLS-1$
+				if (taskIsLeaf)
+					pStmt.setLong(1, task.getId());
+				else 
+					pStmt.setString(1, (task==null ? "" : task.getFullPath()) + "%");
+				pStmt.setString(2, sdf.format(toDate.getTime()));
+				// Exécution de le requête et extraction du résultat
 				rs = pStmt.executeQuery();
 				if (!rs.next())
-					throw new DbException("Nothing returned from this query", null);
-				taskSums.setConsumedSum(rs.getLong(1));
-				taskSums.setContributionsNb(rs.getLong(2));
+					throw new DbException(Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
+				// Mise à jour du RAF
+				taskSums.setTodoSum(taskSums.getTodoSum() + rs.getLong(1));
 				pStmt.close();
 				pStmt = null;
-				
-			}		
+			}
+			
+			/**
+			 * Retour du résultat
+			 */
+			
 			// Retour du résultat
 			return taskSums;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération des cumuls pour la tache d'identifiant '" + task.getId()+ "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.TASK_SUMS_COMPUTATION_FAILURE", new Long(task.getId())), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			try { if (pStmt!=null) pStmt.close(); } catch (Throwable ignored) { }
@@ -1663,17 +1755,14 @@ public class DbMgr {
 	protected static void removeCollaborator(DbTransaction tx, Collaborator collaborator) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-
 			// Préparation de la requête
-			pStmt = con.prepareStatement("delete from collaborator where clb_id=?");
+			pStmt = tx.prepareStatement("delete from collaborator where clb_id=?"); //$NON-NLS-1$
 			pStmt.setLong  (1, collaborator.getId());
 
 			// Exécution de la requête
 			int removed = pStmt.executeUpdate();
 			if (removed!=1)
-				throw new SQLException("No row was deleted");
+				throw new SQLException(Strings.getString("DbMgr.errors.SQL_ROW_DELETION_FAILURE")); //$NON-NLS-1$
 
 			// Fermeture du statement
 			pStmt.close();
@@ -1681,8 +1770,8 @@ public class DbMgr {
 			
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la suppression du collaborateur '" + collaborator.getLogin() + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.COLLABORATOR_DELETION_FAILURE", collaborator.getLogin()), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -1698,11 +1787,8 @@ public class DbMgr {
 	protected static void removeContribution(DbTransaction tx, Contribution contribution) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-
 			// Préparation de la requête
-			pStmt = con.prepareStatement("delete from contribution where ctb_year=? and ctb_month=? and ctb_day=? and ctb_contributor=? and ctb_task=?");
+			pStmt = tx.prepareStatement("delete from contribution where ctb_year=? and ctb_month=? and ctb_day=? and ctb_contributor=? and ctb_task=?"); //$NON-NLS-1$
 			pStmt.setInt   (1, contribution.getYear());
 			pStmt.setInt   (2, contribution.getMonth());
 			pStmt.setInt   (3, contribution.getDay());
@@ -1712,15 +1798,15 @@ public class DbMgr {
 			// Exécution de la requête
 			int removed = pStmt.executeUpdate();
 			if (removed!=1)
-				throw new SQLException("No row was deleted");
+				throw new SQLException(Strings.getString("DbMgr.errors.SQL_DISCONNECTION_FAILURE")); //$NON-NLS-1$
 
 			// Fermeture du statement
 			pStmt.close();
 			pStmt = null;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la suppression d'une contribution", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.CONTRIBUTION_DELETION_FAILURE"), e); //$NON-NLS-1$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -1736,25 +1822,22 @@ public class DbMgr {
 	protected static void removeDuration(DbTransaction tx, Duration duration) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-
 			// Préparation de la requête
-			pStmt = con.prepareStatement("delete from duration where dur_id=?");
+			pStmt = tx.prepareStatement("delete from duration where dur_id=?"); //$NON-NLS-1$
 			pStmt.setLong  (1, duration.getId());
 
 			// Exécution de la requête
 			int removed = pStmt.executeUpdate();
 			if (removed!=1)
-				throw new SQLException("No row was deleted");
+				throw new SQLException(Strings.getString("DbMgr.errors.SQL_ROW_DELETION_FAILURE")); //$NON-NLS-1$
 
 			// Fermeture du statement
 			pStmt.close();
 			pStmt = null;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la suppression de la durée '" + duration + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.DURATION_DELETION_FAILURE", new Long(duration.getId())), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -1770,9 +1853,6 @@ public class DbMgr {
 	protected static void removeTask(DbTransaction tx, Task task) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-
 			// Control sur les sous taches
 			Task[] subTasks = DbMgr.getSubtasks(tx, task);
 			for (int i=0; i<subTasks.length; i++) {
@@ -1780,21 +1860,21 @@ public class DbMgr {
 			}
 
 			// Préparation de la requête
-			pStmt = con.prepareStatement("delete from task where tsk_id=?");
+			pStmt = tx.prepareStatement("delete from task where tsk_id=?"); //$NON-NLS-1$
 			pStmt.setLong  (1, task.getId());
 
 			// Exécution de la requête
 			int removed = pStmt.executeUpdate();
 			if (removed!=1)
-				throw new SQLException("No row was deleted");
+				throw new SQLException("No row was deleted"); //$NON-NLS-1$
 
 			// Fermeture du statement
 			pStmt.close();
 			pStmt = null;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la suppression de la tache '" + task + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.TASK_DELETION_FAILURE", task.getName()), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -1809,8 +1889,8 @@ public class DbMgr {
 	protected static void rollbackTransaction(DbTransaction tx) throws DbException {
 		try { tx.getConnection().rollback();	}
 		catch (SQLException e ) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec du rollback", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.SQL_ROLLBACK_FAILURE"), e); //$NON-NLS-1$
 		}
 	}
 
@@ -1824,11 +1904,8 @@ public class DbMgr {
 	protected static Collaborator updateCollaborator(DbTransaction tx, Collaborator collaborator) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-
 			// Préparation de la requête
-			pStmt = con.prepareStatement("update collaborator set clb_login=?, clb_first_name=?, clb_last_name=?, clb_is_active=? where clb_id=?");
+			pStmt = tx.prepareStatement("update collaborator set clb_login=?, clb_first_name=?, clb_last_name=?, clb_is_active=? where clb_id=?"); //$NON-NLS-1$
 			pStmt.setString (1, collaborator.getLogin());
 			pStmt.setString (2, collaborator.getFirstName());
 			pStmt.setString (3, collaborator.getLastName());
@@ -1838,7 +1915,7 @@ public class DbMgr {
 			// Exécution de la requête
 			int updated = pStmt.executeUpdate();
 			if (updated!=1)
-				throw new SQLException("No row was updated");
+				throw new SQLException(Strings.getString("DbMgr.errors.SQL_UPDATE_FAILURE")); //$NON-NLS-1$
 
 			// Fermeture du statement
 			pStmt.close();
@@ -1848,8 +1925,8 @@ public class DbMgr {
 			return collaborator;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la mise à jour du collaborateur '" + collaborator.getLogin() + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.COLLABORATOR_UPDATE_FAILURE", collaborator.getLogin()), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -1866,11 +1943,8 @@ public class DbMgr {
 	protected static Contribution updateContribution(DbTransaction tx, Contribution contribution) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-
 			// Préparation de la requête
-			pStmt = con.prepareStatement("update contribution set ctb_duration=? where ctb_year=? and ctb_month=? and ctb_day=? and ctb_contributor=? and ctb_task=?");
+			pStmt = tx.prepareStatement("update contribution set ctb_duration=? where ctb_year=? and ctb_month=? and ctb_day=? and ctb_contributor=? and ctb_task=?"); //$NON-NLS-1$
 			pStmt.setLong  (1, contribution.getDurationId());
 			pStmt.setInt   (2, contribution.getYear());
 			pStmt.setInt   (3, contribution.getMonth());
@@ -1881,7 +1955,7 @@ public class DbMgr {
 			// Exécution de la requête
 			int updated = pStmt.executeUpdate();
 			if (updated!=1)
-				throw new SQLException("No row was updated");
+				throw new SQLException(Strings.getString("DbMgr.errors.SQL_UPDATE_FAILURE")); //$NON-NLS-1$
 
 			// Fermeture du statement
 			pStmt.close();
@@ -1891,8 +1965,8 @@ public class DbMgr {
 			return contribution;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la mise à jour d'une contribution", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.CONTRIBUTION_UPDATE_FAILURE"), e); //$NON-NLS-1$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -1909,18 +1983,15 @@ public class DbMgr {
 	protected static Duration updateDuration(DbTransaction tx, Duration duration) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-
 			// Préparation de la requête
-			pStmt = con.prepareStatement("update duration set dur_is_active=? where dur_id=?");
+			pStmt = tx.prepareStatement("update duration set dur_is_active=? where dur_id=?"); //$NON-NLS-1$
 			pStmt.setBoolean(1, duration.getIsActive());
 			pStmt.setLong   (2, duration.getId());
 			
 			// Exécution de la requête
 			int updated = pStmt.executeUpdate();
 			if (updated!=1)
-				throw new SQLException("No row was updated");
+				throw new SQLException(Strings.getString("DbMgr.errors.SQL_UPDATE_FAILURE")); //$NON-NLS-1$
 
 			// Fermeture du statement
 			pStmt.close();
@@ -1930,8 +2001,8 @@ public class DbMgr {
 			return duration;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la mise à jour de la durée '" + duration.getId() + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.DURATION_UPDATE_FAILURE", new Long(duration.getId())), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -1950,11 +2021,8 @@ public class DbMgr {
 		throws DbException {
 		PreparedStatement pStmt = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-
 			// Préparation de la requête
-			pStmt = con.prepareStatement("update contribution set ctb_task=? where ctb_year=? and ctb_month=? and ctb_day=? and ctb_contributor=? and ctb_task=?");
+			pStmt = tx.prepareStatement("update contribution set ctb_task=? where ctb_year=? and ctb_month=? and ctb_day=? and ctb_contributor=? and ctb_task=?"); //$NON-NLS-1$
 			pStmt.setLong  (1, newContributionTask.getId());
 			pStmt.setInt   (2, contribution.getYear());
 			pStmt.setInt   (3, contribution.getMonth());
@@ -1965,7 +2033,7 @@ public class DbMgr {
 			// Exécution de la requête
 			int updated = pStmt.executeUpdate();
 			if (updated!=1)
-				throw new SQLException("No row was updated");
+				throw new SQLException(Strings.getString("DbMgr.errors.SQL_UPDATE_FAILURE")); //$NON-NLS-1$
 
 			// Mise à jour de la contribution
 			contribution.setTaskId(newContributionTask.getId());
@@ -1978,8 +2046,8 @@ public class DbMgr {
 			return contribution;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la mise à jour d'une contribution", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.CONTRIBUTION_UPDATE_FAILURE"), e); //$NON-NLS-1$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -1996,11 +2064,8 @@ public class DbMgr {
 	protected static Task updateTask(DbTransaction tx, Task task) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-
 			// Préparation de la requête
-			pStmt = con.prepareStatement("update task set tsk_path=?, tsk_number=?, tsk_code=?, tsk_name=?, tsk_budget=?, tsk_initial_cons=?, tsk_todo=?, tsk_comment=? where tsk_id=?");
+			pStmt = tx.prepareStatement("update task set tsk_path=?, tsk_number=?, tsk_code=?, tsk_name=?, tsk_budget=?, tsk_initial_cons=?, tsk_todo=?, tsk_comment=? where tsk_id=?"); //$NON-NLS-1$
 			pStmt.setString(1, task.getPath());
 			pStmt.setByte  (2, task.getNumber());
 			pStmt.setString(3, task.getCode());
@@ -2014,7 +2079,7 @@ public class DbMgr {
 			// Exécution de la requête
 			int updated = pStmt.executeUpdate();
 			if (updated!=1)
-				throw new SQLException("No row was updated");
+				throw new SQLException(Strings.getString("DbMgr.errors.SQL_UPDATE_FAILURE")); //$NON-NLS-1$
 	
 			// Fermeture du statement
 			pStmt.close();
@@ -2024,8 +2089,8 @@ public class DbMgr {
 			return task;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la mise à jour de la tache '" + task.getName() + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.TASK_UPDATE_FAILURE", task.getName()), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -2041,11 +2106,11 @@ public class DbMgr {
 	 * @param day le jour (facultatif)
 	 */
 	private static void completeContributionRequest(StringBuffer requestBase, Collaborator contributor, Integer year, Integer month, Integer day) {
-		if (contributor!=null) requestBase.append(" and ctb_contributor=?");
-		if (year!=null) requestBase.append(" and ctb_year=?");
-		if (month!=null) requestBase.append(" and ctb_month=?");
-		if (day!=null) requestBase.append(" and ctb_day=?");
-		log.debug("built request : " + requestBase.toString());
+		if (contributor!=null) requestBase.append(" and ctb_contributor=?"); //$NON-NLS-1$
+		if (year!=null) requestBase.append(" and ctb_year=?"); //$NON-NLS-1$
+		if (month!=null) requestBase.append(" and ctb_month=?"); //$NON-NLS-1$
+		if (day!=null) requestBase.append(" and ctb_day=?"); //$NON-NLS-1$
+		log.debug("built request : " + requestBase.toString()); //$NON-NLS-1$
 	}
 
 	/**
@@ -2060,10 +2125,10 @@ public class DbMgr {
 	 */
 	private static void completeContributionReqParams(PreparedStatement pStmt, int startIndex, Collaborator contributor, Integer year, Integer month, Integer day) throws SQLException {
 		int idx = startIndex;
-		log.debug("contributorId=" + (contributor!=null ? String.valueOf(contributor.getId()) : "null"));
-		log.debug("year=" + year);
-		log.debug("month=" + month);
-		log.debug("day=" + day);
+		log.debug("contributorId=" + (contributor!=null ? String.valueOf(contributor.getId()) : "null")); //$NON-NLS-1$ //$NON-NLS-2$
+		log.debug("year=" + year); //$NON-NLS-1$
+		log.debug("month=" + month); //$NON-NLS-1$
+		log.debug("day=" + day); //$NON-NLS-1$
 		if (contributor!=null) pStmt.setLong(idx++, contributor.getId());
 		if (year!=null) pStmt.setInt(idx++, year.intValue());
 		if (month!=null) pStmt.setInt(idx++, month.intValue());
@@ -2081,17 +2146,14 @@ public class DbMgr {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-	
 			// Recherche du max
-			pStmt = con.prepareStatement("select max(tsk_number) from task where tsk_path=?");
+			pStmt = tx.prepareStatement("select max(tsk_number) from task where tsk_path=?"); //$NON-NLS-1$
 			pStmt.setString(1, path);
 			rs = pStmt.executeQuery();
 			if (!rs.next())
-				throw new DbException("Nothing returned from this query", null);
+				throw new DbException(Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
 			byte max = rs.getByte(1);
-			log.debug("  => max= : " + max);
+			log.debug("  => max= : " + max); //$NON-NLS-1$
 	
 			// Fermeture du statement
 			pStmt.close();
@@ -2101,8 +2163,8 @@ public class DbMgr {
 			return (byte) (max + 1);
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la génération d'un nouveau numéro de tache pour le chemin '" + path + "'", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.TASK_NUMBER_COMPUTATION_FAILURE", path), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (Throwable ignored) { }
@@ -2123,11 +2185,11 @@ public class DbMgr {
 			Connection con = pStmt.getConnection();
 			// Cas de HSQLDB
 			if (isHSQLDB(con)) {
-				log.debug("HSQL Database detected");
-				pStmt1 = con.prepareStatement("call identity()");
+				log.debug("HSQL Database detected"); //$NON-NLS-1$
+				pStmt1 = con.prepareStatement("call identity()"); //$NON-NLS-1$
 				ResultSet rs = pStmt1.executeQuery();
 				if (!rs.next())
-					throw new DbException("Nothing returned from this query", null);
+					throw new DbException(Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
 				generatedId = rs.getLong(1);
 				
 				// Fermeture du statement
@@ -2135,20 +2197,20 @@ public class DbMgr {
 				pStmt1 = null;
 			}
 			else {
-				log.debug("Generic Database detected");
+				log.debug("Generic Database detected"); //$NON-NLS-1$
 				// Récupération de l'identifiant généré
 				ResultSet rs = pStmt.getGeneratedKeys();
 				if (!rs.next())
-					throw new DbException("Nothing returned from this query", null);
+					throw new DbException(Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
 				generatedId = rs.getLong(1);
 			}
 			// Retour du résultat
-			log.debug("Generated id=" + generatedId);
+			log.debug("Generated id=" + generatedId); //$NON-NLS-1$
 			return generatedId;
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération de l'identifiant du nouvel objet", e);
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.SQL_AUTOINCREMENT_FAILURE"), e); //$NON-NLS-1$
 		}
 		finally {
 			if (pStmt1!=null) try { pStmt1.close(); } catch (Throwable ignored) { }
@@ -2165,12 +2227,12 @@ public class DbMgr {
 		try {
 			// Récupération du nom de la base de données
 			String dbName = con.getMetaData().getDatabaseProductName();
-			log.debug("DbName=" + dbName);
-			return "HSQL Database Engine".equals(dbName);
+			log.debug("DbName=" + dbName); //$NON-NLS-1$
+			return "HSQL Database Engine".equals(dbName); //$NON-NLS-1$
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération du nom de la BDD", e);
+			log.info("SQL Error", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.SQL_DATABASE_NAME_EXTRACTION_FAILURE"), e); //$NON-NLS-1$
 		}
 	}
 
@@ -2184,12 +2246,12 @@ public class DbMgr {
 		try {
 			// Récupération du nom de la base de données
 			String dbName = con.getMetaData().getDatabaseProductName();
-			log.debug("DbName=" + dbName);
-			return isHSQLDB(con) && ds.getUrl().startsWith("jdbc:hsqldb:file");
+			log.debug("DbName=" + dbName); //$NON-NLS-1$
+			return isHSQLDB(con) && ds.getUrl().startsWith("jdbc:hsqldb:file"); //$NON-NLS-1$
 		}
 		catch (SQLException e) {
-			log.info("Incident SQL", e);
-			throw new DbException("Echec lors de la récupération du nom de la BDD", e);
+			log.info("SQL Error", e); //$NON-NLS-1$
+			throw new DbException(Strings.getString("DbMgr.errors.SQL_DATABASE_NAME_EXTRACTION_FAILURE"), e); //$NON-NLS-1$
 		}
 	}
 

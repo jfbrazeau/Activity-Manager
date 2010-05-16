@@ -1,6 +1,87 @@
-- Implémenter le remove de contribution
+- Corriger pb de casse des noms de table (avec mysql linux)
 
-[20051015]
+
+- Ajouter un trim des codes saisis pour supprimer les espaces
+- BUG : lorsqu'on copie/colle une tache de l'onglet des taches vers l'onglet des contributions
+  alors qu'aucune ressource n'est sélectionnée, on a un NullPointer
+- VERIF : existe-t-il toujours un popup lors d'un double clic sur l'onglet des taches ?
+- finaliser Multilingue
+- sourceforge
+- BIRT ? améliorer reporting
+- upgrade SWT ?
+
+- Ajouter affichage de la liste de contribs sur double clic colonne conommé de l'onglet des taches
+- Ajouter un onglet présentant les tache en graphique GANTT
+- Vérifier que les images / GFX ne sont pas dans la distibution
+- Ajouter possibilité de trier les taches par chemin et par nom dans l'onglet
+  contributions
+- Externaliser les messages pour internationalisation
+- Ajouter possibilité de resizer partie collaborateur dans l'onglet contributions (utilisation
+  d'un sashform ? http://www-128.ibm.com/developerworks/library/os-jface4/index.html#SashForm)
+- Changer les listeners de modifs en posisionnement d'un statut dirty + détection affichage onglet
+
+- multilingue
+- renommage RAF en ETC (estimated time to complete)
+[]
+- Mise à jour des RAF et consommations dans l'onglet des taches lors des modifs 
+  dans l'onglet des contributions
+- Décrémentation auto du RAF lorsque l'on saisit du consommé 
+
+[20060829] - V0.3
+- BUG : quand on change l'ordre d'une tache dans l'onglet associé, et que l'autre tache
+  qui change est dans l'onglet contributions, lors du refresh, la couche métier
+  lance une exception indiquant que le chemin de la tache a changé : corrigé
+- Ajouter possibilité de chercher une tache par une chaîne de caractères (implémenté
+  dans l'onglet de saisie des taches et dans le dialogue de choix d'une tache de 
+  l'onglet de saisie des contributions)
+- Upgrader la version de SWT/JFace/Eclipse (3.1 => 3.2)
+- Ajouter dans la popup de sélection d'une tache d'une liste contenant les dernières
+  taches sélectionnées (historique)
+- Ajout automatique de l'extension .xls dans le cas ou il a été ommis
+- La mise à jour des durées ne provoque plus de réinitialisation complète de l'onglet 
+  de saisie des contributions
+- La mise à jour des collaborateurs ne provoque plus de réinitialisation complète de 
+  l'onglet de saisie des contributions
+- La mise à jour des taches ou leur déplacement ne génère plus d'erreur dans
+  l'onglet de saisie des contributions
+- Fonctionnalité de Copy/Paste entre les onglets Tasks et Contributions
+- Implémenter le remove de contribution dans l'onglet du même nom
+- Ajouter le chemin de tache dans le popup de liste de contributions
+- Ajout tri sur les colonnes dans l'onglet de gestion des collaborateurs
+- Ajouter possibilité de saisir un commentaire sur les taches
+- Ajouter possibilité d'activer/désactiver un collaborateur
+- Ajouter possibilité d'activer/désactiver une durée
+- Ajouter un gestionnaire d'images pour centraliser leur utilisation
+- Ajouter la somme des contributions d'un jour dans l'onglet contributions
+- Correction pb associé à l'onglet contribution : les taches n'étaient pas 
+  classée de la même manière que dans l'onglet tasks (le numéro de la 
+  tache n'était pas inclus dans la clause order by).
+
+[20061028] - V0.2.1
+- Corriger le fichier reports.properties => les chemins ne commencent pas par des '/'
+
+[20060325] - V0.2
+- Ajouter des raccourcis clavier (notamment pour move up, etc.)
+- Créer une RELEASE NOTES
+- Sous linux, commenter l'option "skip-networking" dans /etc/mysql/my.cnf
+  pour que la connexion fonctionne
+- Implémenter positionnement des droits UNIX sur les fichiers dans la distribution tar.gz
+
+[20060322]
+- Ajouter des boutons next week et next year
+- Ajout onglet About
+
+[20060317]
+- Ajouter possibilité d'utiliser un fichier XML en BDD
+- Ajouter mention à HSQLDB dans LEGAL
+
+[20051231]
+- Ajouter export EXCEL des tableau SWT (comme c'est le cas pour les arbres)
+
+[20051218]
+- Télécharger & intégrer le package SWT-win32
+
+[20051015] - V0.1
 - Finaliser la procédure d'installation avec
   -Djava.library.path=C:\opt\eclipse3.0\plugins\org.eclipse.swt.win32_3.0.0\os\win32\x86
 - Créer une fenêtre permettant d'accéder aux différentes

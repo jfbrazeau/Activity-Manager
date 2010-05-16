@@ -51,7 +51,7 @@ public class StringHelper {
 	private static final char[] c = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
 	/** Formatteur de date */
-	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd"); //$NON-NLS-1$
 	
 	/**
 	 * Convertit un octet en hexadécimal.
@@ -93,13 +93,13 @@ public class StringHelper {
 		StringBuffer buf = new StringBuffer(String.valueOf(hundredth));
 		switch (buf.length()) {
 			case 0 :
-				buf.insert(0, "000");
+				buf.insert(0, "000"); //$NON-NLS-1$
 				break;
 			case 1 :
-				buf.insert(0, "00");
+				buf.insert(0, "00"); //$NON-NLS-1$
 				break;
 			case 2 :
-				buf.insert(0, "0");
+				buf.insert(0, "0"); //$NON-NLS-1$
 				break;
 		}
 		// Insertion du point
@@ -118,12 +118,12 @@ public class StringHelper {
 		BigDecimal decimal = null;
 		try { decimal = new BigDecimal(entry); }
 		catch (NumberFormatException e) {
-			log.debug("Wrong format", e);
-			throw new StringFormatException("Wrong format (XXXXXX.XX)");
+			log.debug("Wrong format", e); //$NON-NLS-1$
+			throw new StringFormatException(Strings.getString("StringHelper.errors.WRONG_NUMBER_FORMAT")); //$NON-NLS-1$
 		}
 		decimal = decimal.movePointRight(2);
 		if (decimal.scale()>0)
-			throw new StringFormatException("Too many digits");
+			throw new StringFormatException(Strings.getString("StringHelper.errors.TOO_MANY_DIGITS")); //$NON-NLS-1$
 		return decimal.longValue();
 	}
 
@@ -164,10 +164,10 @@ public class StringHelper {
 					line = lnr.readLine();
 				}
 				catch (IOException e) {
-					log.debug("Unexpected I/O error while reading memory stream!", e);
-					throw new Error("Unexpected I/O error while reading memory stream!", null);
+					log.debug("Unexpected I/O error while reading memory stream!", e); //$NON-NLS-1$
+					throw new Error(Strings.getString("StringHelper.errors.MEMORY_IO_FAILURE"), null); //$NON-NLS-1$
 				}
-				log.debug("Line read : '" + line + "'");
+				log.debug("Line read : '" + line + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 			// Si le flux est vide, on sort de la boucle
 			if (line == null) {
@@ -177,7 +177,7 @@ public class StringHelper {
 			else {
 				line = line.trim();
 				// Si la ligne est un commentaire on l'ignore
-				if (line.startsWith("--")) {
+				if (line.startsWith("--")) { //$NON-NLS-1$
 					line = null;
 				} 
 				else {
@@ -191,8 +191,8 @@ public class StringHelper {
 						line = line.substring(idx);
 						String sql = buf.toString();
 						buf.setLength(0);
-						log.debug(" - sql='" + sql + "'");
-						if (!"".equals(sql))
+						log.debug(" - sql='" + sql + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+						if (!"".equals(sql)) //$NON-NLS-1$
 							queries.add(sql);
 					}
 					// sinon on ajoute la ligne au buffer de requeête

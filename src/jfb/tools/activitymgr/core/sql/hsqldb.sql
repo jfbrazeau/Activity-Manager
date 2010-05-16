@@ -13,7 +13,7 @@ create table COLLABORATOR (
 	CLB_LAST_NAME  varchar(20) not null,
 	CLB_IS_ACTIVE  boolean not null,
     constraint CLB_PK primary key (CLB_ID) 
-)
+);
 create unique index CLB_LOGIN_IDX on COLLABORATOR (CLB_LOGIN);
 -- set table COLLABORATOR source "COLLABORATOR.csv";
 --------------------------------------------------------------

@@ -28,6 +28,7 @@
 package jfb.tools.activitymgr.ui.util;
 
 import jfb.tools.activitymgr.AbstractException;
+import jfb.tools.activitymgr.core.util.Strings;
 import jfb.tools.activitymgr.ui.dialogs.ErrorDialog;
 
 import org.apache.log4j.Logger;
@@ -112,7 +113,7 @@ public abstract class SafeRunner {
 //		return result;
 //	}
 	public Object run(final Shell parentShell, Object defaultValue) {
-		log.debug("ParentShell : " + parentShell);
+		log.debug("ParentShell : " + parentShell); //$NON-NLS-1$
 		final Result result = new Result();
 		result.value = defaultValue;
 		// Exécution du traitement
@@ -120,17 +121,17 @@ public abstract class SafeRunner {
 			public void run() {
 				try { result.value = runUnsafe(); }
 				catch (AbstractException e) {
-					log.info("UI Exception", e);
-					new ErrorDialog(parentShell, "Unable to complete operation : '" + e.getMessage() + "'", e).open();
+					log.info("UI Exception", e); //$NON-NLS-1$
+					new ErrorDialog(parentShell, Strings.getString("SafeRunner.errors.UNABLE_TO_COMPLETE_OPERATION", e.getMessage()), e).open(); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 				catch (Throwable t) {
-					log.error("Unexpected error", t);
-					new ErrorDialog(parentShell, "Unexpected error", t).open();
+					log.error("Unexpected error", t); //$NON-NLS-1$
+					new ErrorDialog(parentShell, Strings.getString("SafeRunner.errors.UNEXPECTED_ERROR"), t).open(); //$NON-NLS-1$
 				}
 			}
 		});
 		// Retour du résultat
-		log.debug(" -> result='" + result.value + "'");
+		log.debug(" -> result='" + result.value + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 		return result.value;
 	}
 

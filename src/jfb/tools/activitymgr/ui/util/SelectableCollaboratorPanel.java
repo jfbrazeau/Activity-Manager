@@ -33,6 +33,7 @@ import java.util.Iterator;
 
 import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Collaborator;
+import jfb.tools.activitymgr.core.util.Strings;
 import jfb.tools.activitymgr.ui.CollaboratorsUI.ICollaboratorListener;
 import jfb.tools.activitymgr.ui.DatabaseUI.IDbStatusListener;
 import jfb.tools.activitymgr.ui.images.ImagesDatas;
@@ -124,15 +125,15 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements IDb
 
 		// Configuration des colonnes
 		tableColsMgr = new TableOrTreeColumnsMgr();
-		tableColsMgr.addColumn("FIRST_NAME", "First name", 100, SWT.LEFT);
-		tableColsMgr.addColumn("LAST_NAME", "Last name", 100, SWT.LEFT);
+		tableColsMgr.addColumn("FIRST_NAME", Strings.getString("SelectableCollaboratorPanel.columns.FIRST_NAME"), 100, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr.addColumn("LAST_NAME", Strings.getString("SelectableCollaboratorPanel.columns.LAST_NAME"), 100, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
 		tableColsMgr.configureTable(tableViewer);
 
 		// Ajout du listener de gestion du tri des colonnes
 		// Add sort indicator and sort data when column selected
 		Listener sortListener = new Listener() {
 			public void handleEvent(Event e) {
-				log.debug("handleEvent(" + e + ")");
+				log.debug("handleEvent(" + e + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 				TableColumn previousSortColumn = table.getSortColumn();
 				TableColumn newSortColumn = (TableColumn) e.widget;
 				int dir = table.getSortDirection();
@@ -231,7 +232,7 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements IDb
 	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
 	 */
 	public String getColumnText(final Object element, final int columnIndex) {
-		log.debug("ITableLabelProvider.getColumnText(" + element + ", " + columnIndex + ")");
+		log.debug("ITableLabelProvider.getColumnText(" + element + ", " + columnIndex + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				Collaborator collaborator = (Collaborator) element;
@@ -243,13 +244,13 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements IDb
 					case (LAST_NAME_COLUMN_IDX) :
 						text = collaborator.getLastName();
 						break;
-					default : throw new Error("Colonne inconnue");
+					default : throw new Error(Strings.getString("SelectableCollaboratorPanel.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
 				return text;
 			}
 		};
 		// Exécution
-		return (String) safeRunner.run(parent.getShell(), "");
+		return (String) safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
 	public Image getColumnImage(Object element, int columnIndex) {

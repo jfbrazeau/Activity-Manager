@@ -36,6 +36,9 @@ import jfb.tools.activitymgr.AbstractApplicationException;
  */
 public class ModelException extends AbstractApplicationException {
 
+	/** Fake serial version UID */
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Constructeur par défaut.
 	 * @param message message d'erreur.

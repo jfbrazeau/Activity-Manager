@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 
+import jfb.tools.activitymgr.core.util.Strings;
 import jfb.tools.activitymgr.ui.images.ImagesDatas;
 import jfb.tools.activitymgr.ui.util.SafeRunner;
 
@@ -86,7 +87,7 @@ public class AboutUI implements SelectionListener {
 		Composite centeredPanel = new Composite(parent, SWT.NONE);
 		centeredPanel.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, true));
 		centeredPanel.setLayout(new GridLayout(1, false));
-		log.debug("About UI initialized");
+		log.debug("About UI initialized"); //$NON-NLS-1$
 		
 		// Logo
 		Label logo = new Label(centeredPanel, SWT.NONE);
@@ -95,33 +96,27 @@ public class AboutUI implements SelectionListener {
 		
 		// Contact
 		Link contactText = new Link(centeredPanel, SWT.NONE);
-		contactText.setText("To report a bug, request a new feature, ask a question or anything else,\n" +
-				"please write to <a>jfbraz@yahoo.fr</a>.");
+		contactText.setText(Strings.getString("AboutUI.labels.BUG_REPORT")); //$NON-NLS-1$
 		contactText.addSelectionListener(this);
 
 		// Documentation
 		Link documentationText = new Link(centeredPanel, SWT.NONE);
-		documentationText.setText("For more information about Activity Manager, please refer to the documentation\n" +
-				"at : <a>http://www.jfbrazeau.fr</a>");
+		documentationText.setText(Strings.getString("AboutUI.labels.FOR_MORE_INFORMATION")); //$NON-NLS-1$
 		documentationText.addSelectionListener(this);
 
 		// Apache license
 		Link apacheText = new Link(centeredPanel, SWT.NONE);
-		apacheText.setText("This product includes software developed by The Apache Software Foundation\n" +
-				"(<a>http://www.apache.org/</a>).");
+		apacheText.setText(Strings.getString("AboutUI.labels.THIS_PRODUCT_INCLUDES_APACHE_SOFTWARE")); //$NON-NLS-1$
 		apacheText.addSelectionListener(this);
 
 		// Third parties licenses
 		Link thirdPartiesText = new Link(centeredPanel, SWT.NONE);
-		thirdPartiesText.setText("This product also includes software developped by \n" +
-				"   - The Eclipse foundation (<a>http://www.eclipse.org</a>)\n" +
-				"   - MySQL organization (<a>http://www.mysql.com</a>)\n" +
-				"   - The HSQLDB Development Group (<a>http://www.hsqldb.org</a>)");
+		thirdPartiesText.setText(Strings.getString("AboutUI.labels.THIS_PRODUCT_INCLUDES_ECLIPSE_SOFTWARE")); //$NON-NLS-1$
 		thirdPartiesText.addSelectionListener(this);
 
 		// Ajout de la license
 		Label label = new Label(centeredPanel, SWT.NONE);
-		label.setText("Activity Manager is distributed under a BSD License :");
+		label.setText(Strings.getString("AboutUI.labels.BSD_LICENCE")); //$NON-NLS-1$
 		List list = new List(centeredPanel, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
                 | SWT.MULTI);
         data = new GridData(SWT.NONE, SWT.FILL, false, true);
@@ -129,7 +124,7 @@ public class AboutUI implements SelectionListener {
 		
         // Ajout de la license
         try {
-        	InputStream in = AboutUI.class.getResourceAsStream("LICENSE.txt");
+        	InputStream in = AboutUI.class.getResourceAsStream("LICENSE.txt"); //$NON-NLS-1$
 	        LineNumberReader lin = new LineNumberReader(new InputStreamReader(in));
 	        String line = null;
 	        while ((line = lin.readLine())!=null) {
@@ -137,9 +132,9 @@ public class AboutUI implements SelectionListener {
 	        }
         }
         catch (IOException e) {
-        	log.error("Unexpected I/O error while printing stack trace.", e);
-        	list.add("Unexpected I/O error while printing stack trace.");
-        	list.add("See logs for more details.");
+        	log.error("Unexpected I/O error while printing stack trace.", e); //$NON-NLS-1$
+        	list.add(Strings.getString("AboutUI.infos.IO_ERROR_WHILE_PRINTING_STACKTRACE")); //$NON-NLS-1$
+        	list.add(Strings.getString("AboutUI.infos.SEE_LOGS_FOR_MORE_DETAILS")); //$NON-NLS-1$
         }
 	}
 
@@ -147,18 +142,18 @@ public class AboutUI implements SelectionListener {
 	 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
 	 */
 	public void widgetSelected(SelectionEvent e) {
-		String osName = System.getProperty("os.name");
+		String osName = System.getProperty("os.name"); //$NON-NLS-1$
 		String link = e.text;
-		if (!link.startsWith("http://"))
-			link = "mailto:" + link;
+		if (!link.startsWith("http://")) //$NON-NLS-1$
+			link = "mailto:" + link; //$NON-NLS-1$
 		final String url = link;
-		boolean windows = osName!=null && osName.toLowerCase().indexOf("windows")>=0;
+		boolean windows = osName!=null && osName.toLowerCase().indexOf("windows")>=0; //$NON-NLS-1$
 		boolean copyURLToClipboard = true;
 		// Sous windows lancement du brower ou du client de mail
 		if (windows) {
 			SafeRunner runner = new SafeRunner() {
 				protected Object runUnsafe() throws Exception {
-					Process proc = Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
+					Process proc = Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url); //$NON-NLS-1$
 					return proc;
 				}
 			};
@@ -174,10 +169,8 @@ public class AboutUI implements SelectionListener {
 			clipBoard.dispose();
 			MessageDialog.openInformation(
 					parent.getShell(), 
-					"Information", 
-					"Couldn't open default mail/browser desktop application.\n" +
-					"'" + e.text + "' has been copied to your clipboard.\n" +
-					"You may paste it in your mail/browser to proceed.");
+					Strings.getString("AboutUI.titles.INFORMATION"),  //$NON-NLS-1$
+					Strings.getString("AboutUI.errors.COULDNT_OPEN_MAIL_OR_BROWSER_APP", e.text)); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 

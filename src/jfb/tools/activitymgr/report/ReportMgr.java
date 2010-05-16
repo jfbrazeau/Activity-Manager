@@ -35,6 +35,7 @@ import java.io.PrintWriter;
 import java.util.Properties;
 
 import jfb.tools.activitymgr.core.ModelMgr;
+import jfb.tools.activitymgr.core.util.Strings;
 import jfb.tools.activitymgr.ui.util.CfgMgr;
 
 import org.apache.log4j.Logger;
@@ -62,12 +63,12 @@ public class ReportMgr {
 	public static void main(String[] args) {
 		try {
 			// Initialisation des logs et chargement de la config
-			PropertyConfigurator.configure("cfg/log4j.properties");
+			PropertyConfigurator.configure("cfg/log4j.properties"); //$NON-NLS-1$
 			CfgMgr.load();
 
 			// Chargement du fichier de config
 			Properties reportProps = new Properties();
-			reportProps.load(new FileInputStream("cfg/reports.properties"));
+			reportProps.load(new FileInputStream("cfg/reports.properties")); //$NON-NLS-1$
 
 			// Initialisation de la connexion à la base de données
 			String jdbcDriver = CfgMgr.get(CfgMgr.JDBC_DRIVER);
@@ -82,14 +83,14 @@ public class ReportMgr {
 				);
 			
 			// Quels sont les identifiants des rapports à générer ?
-			String reportList = reportProps.getProperty("reports.list");
-			String[] reportIds = reportList.split(",");
+			String reportList = reportProps.getProperty("reports.list"); //$NON-NLS-1$
+			String[] reportIds = reportList.split(","); //$NON-NLS-1$
 			// Itération sur les rapports
 			for (int i=0; i<reportIds.length; i++) {
 				// Récupération de l'ID du rapport et de son implémentation
 				String reportId = reportIds[i].trim();
-				log.info("Processing report '" + reportId + "'");
-				if (!"".equals(reportId)) {
+				log.info("Processing report '" + reportId + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+				if (!"".equals(reportId)) { //$NON-NLS-1$
 					// Génération du fichier
 					build(reportId, reportProps);
 				}
@@ -113,32 +114,32 @@ public class ReportMgr {
 	public static void build(String reportId, Properties props) throws ReportException, IOException {
 		PropertiesHelper propsHelper = new PropertiesHelper(reportId, props);
 		// Récupération du nom du template
-		String reportType = propsHelper.getProperty("type");
-		String reportTemplate = propsHelper.getProperty("template");
+		String reportType = propsHelper.getProperty("type"); //$NON-NLS-1$
+		String reportTemplate = propsHelper.getProperty("template"); //$NON-NLS-1$
 		// Absence des 2 propriétés => erreur
 		if (reportType==null && reportTemplate==null)
-			throw new ReportException("A type or a template path must be specified for identifier '" + reportId + "'", null);
+			throw new ReportException(Strings.getString("ReportMgr.errors.REQUIRED_TEMPLATE_TYPE_OR_PATH", reportId), null); //$NON-NLS-1$ //$NON-NLS-2$
 		// Si le type est spécifié, utilisation du répertoire par défaut
 		if (reportType!=null)
-			reportTemplate = "templates/" + reportType + ".vm";
+			reportTemplate = "templates/" + reportType + ".vm"; //$NON-NLS-1$ //$NON-NLS-2$
 		// Vérification du type de rapport
 		if (!new File(reportTemplate).exists())
-			throw new ReportException("Report template not found : '" + reportTemplate + "'", null);
+			throw new ReportException(Strings.getString("ReportMgr.errors.TEMPLATE_NOT_FOUND", reportTemplate), null); //$NON-NLS-1$ //$NON-NLS-2$
 
 		// Récupération du nom de fichier de sortie
-		String outputFileName = propsHelper.getProperty("outputFileName");
+		String outputFileName = propsHelper.getProperty("outputFileName"); //$NON-NLS-1$
 		if (outputFileName==null)
-			throw new ReportException("An output file name must be specified for identifier '" + reportId + "'", null);
+			throw new ReportException(Strings.getString("ReportMgr.errors.OUTPUT_FILENAME_REQUIRED", reportId), null); //$NON-NLS-1$ //$NON-NLS-2$
 		PrintWriter out = openOutputFile(outputFileName);
 
 		// Initialisation du contexte Velocity
 		VelocityContext context = new VelocityContext();
-		context.put("model", new ModelMgr());
-		context.put("dates", new DateHelper());
-		context.put("sums", new SumHelper());
-		context.put("fmt", new FormatHelper());
-		context.put("test", new TestHelper());
-		context.put("props", propsHelper);
+		context.put("model", new ModelMgr()); //$NON-NLS-1$
+		context.put("dates", new DateHelper()); //$NON-NLS-1$
+		context.put("sums", new SumHelper()); //$NON-NLS-1$
+		context.put("fmt", new FormatHelper()); //$NON-NLS-1$
+		context.put("test", new TestHelper()); //$NON-NLS-1$
+		context.put("props", propsHelper); //$NON-NLS-1$
 
 		// Initialisation du moteur Velocity
 		VelocityEngine engine = new VelocityEngine();
@@ -153,8 +154,11 @@ public class ReportMgr {
         		VelocityEngine.RUNTIME_LOG_LOGSYSTEM_CLASS,
         		SimpleLog4JLogSystem.class.getName());
         engine.setProperty(
-        		"runtime.log.logsystem.log4j.category", 
-        		ReportMgr.class.getName()); 
+        		"runtime.log.logsystem.log4j.category",  //$NON-NLS-1$
+        		ReportMgr.class.getName());
+        // Patch pour éviter le log indiquant que le fichier VM_global_library.vm
+        // n'a pas été trouvé
+        engine.setProperty(VelocityEngine.VM_LIBRARY, ""); //$NON-NLS-1$
         try {
         	// Initialisation
         	engine.init();
@@ -164,8 +168,8 @@ public class ReportMgr {
 			t.merge( context, out );
 		}
 		catch (Exception e) {
-			log.error("Unexpected error", e);
-			throw new ReportException("Unexpected error", e);
+			log.error("Unexpected error", e); //$NON-NLS-1$
+			throw new ReportException(Strings.getString("ReportMgr.errors.UNEXPECTED_ERROR"), e); //$NON-NLS-1$
 		}
 		// Fermeture du fichier généré
 		out.close();
@@ -181,13 +185,13 @@ public class ReportMgr {
 	 */
 	private static PrintWriter openOutputFile(String fileName) throws ReportException, IOException {
 		fileName = fileName.replace('\\', '/');
-		log.info(" opening file '" + fileName + "'");
+		log.info(" opening file '" + fileName + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 		int idx = fileName.lastIndexOf('/');
 		if (idx>0) {
 			String dir = fileName.substring(0, idx);
 			File _dir = new File(dir);
 			if (!_dir.exists() && !_dir.mkdirs())
-				throw new IOException("Couldn't create directories (" + dir + ")");
+				throw new IOException(Strings.getString("ReportMgr.errors.DIRECTORY_CREATION_FAILURE", dir)); //$NON-NLS-1$ //$NON-NLS-2$
 				
 		}
 		FileOutputStream fout = new FileOutputStream(fileName);

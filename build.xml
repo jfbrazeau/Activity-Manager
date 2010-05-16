@@ -147,8 +147,8 @@
 			<property name="build.dir" value="${basedir}/.dist"/>
 		</ant>
 		<!-- Création du zip -->
-		<zip basedir=".dist/doc/html"
-			destfile="${ant.project.name}_doc_${TODAY}.zip"/>
+		<zip basedir="${basedir}/.dist/doc/html"
+			destfile="${basedir}/${ant.project.name}_doc_${TODAY}.zip"/>
 	</target>
 	
 	<!--

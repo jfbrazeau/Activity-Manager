@@ -33,6 +33,7 @@ import java.util.Iterator;
 import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Task;
 import jfb.tools.activitymgr.core.beans.TaskSearchFilter;
+import jfb.tools.activitymgr.core.util.Strings;
 import jfb.tools.activitymgr.ui.dialogs.TaskChooserDialog;
 
 import org.eclipse.jface.dialogs.Dialog;
@@ -55,14 +56,14 @@ import org.eclipse.swt.widgets.Text;
 public class TaskFinderPanel extends Composite {
 
 	/** Liste de valeurs pour la liste de sélection du nom de l'attribut utilisé pour la recherche */
-	public static final String TASK_NAME_SEARCH_FIELD_LABEL = "Task name";
-	public static final String TASK_CODE_SEARCH_FIELD_LABEL = "Task code";  //  @jve:decl-index=0:
+	public static final String TASK_NAME_SEARCH_FIELD_LABEL = Strings.getString("TaskFinderPanel.attributes.TASK_NAME"); //$NON-NLS-1$
+	public static final String TASK_CODE_SEARCH_FIELD_LABEL = Strings.getString("TaskFinderPanel.attributes.TASK_CODE");  //  @jve:decl-index=0: //$NON-NLS-1$
 	
 	/** Liste de valeurs pour la liste de sélection du type de critère utilisé pour la recherche */
-	public static final String IS_EQUAL_TO_CRITERIA_LABEL = "is equal to";  //  @jve:decl-index=0:
-	public static final String STARTS_WITH_CRITERIA_LABEL = "starts with";  //  @jve:decl-index=0:
-	public static final String ENDS_WITH_CRITERIA_LABEL = "ends with";
-	public static final String CONTAINS_CRITERIA_LABEL = "contains";  //  @jve:decl-index=0:
+	public static final String IS_EQUAL_TO_CRITERIA_LABEL = Strings.getString("TaskFinderPanel.criterias.IS_EQUAL_TO");  //  @jve:decl-index=0: //$NON-NLS-1$
+	public static final String STARTS_WITH_CRITERIA_LABEL = Strings.getString("TaskFinderPanel.criterias.STARTS_WITH");  //  @jve:decl-index=0: //$NON-NLS-1$
+	public static final String ENDS_WITH_CRITERIA_LABEL = Strings.getString("TaskFinderPanel.criterias..ENDS_WITH"); //$NON-NLS-1$
+	public static final String CONTAINS_CRITERIA_LABEL = Strings.getString("TaskFinderPanel.criterias.CONTAINS");  //  @jve:decl-index=0: //$NON-NLS-1$
 	
 	/** Group contenant les controles */
 	private Group group = null;
@@ -110,7 +111,7 @@ public class TaskFinderPanel extends Composite {
 		searchCriteriaCombo.add(IS_EQUAL_TO_CRITERIA_LABEL, TaskSearchFilter.IS_EQUAL_TO_CRITERIA_IDX);
 		searchCriteriaCombo.add(STARTS_WITH_CRITERIA_LABEL, TaskSearchFilter.STARTS_WITH_CRITERIA_IDX);
 		searchCriteriaCombo.add(ENDS_WITH_CRITERIA_LABEL, TaskSearchFilter.ENDS_WITH_CRITERIA_IDX);
-		searchCriteriaCombo.add(CONTAINS_CRITERIA_LABEL, TaskSearchFilter.CONTAINS_WITH_CRITERIA_IDX);
+		searchCriteriaCombo.add(CONTAINS_CRITERIA_LABEL, TaskSearchFilter.CONTAINS_CRITERIA_IDX);
 		searchCriteriaCombo.setText(CONTAINS_CRITERIA_LABEL);
 		
 		// Ajout du KeyListener permettant de valider la saisie sur l'utilisation de
@@ -157,7 +158,7 @@ public class TaskFinderPanel extends Composite {
 				Task selectedTask = null;
 				switch (tasks.length) {
 					case 0 :
-						MessageDialog.openInformation(getShell(), "Search status", "Nothing matches your searc criterias");
+						MessageDialog.openInformation(getShell(), Strings.getString("TaskFinderPanel.titles.SEARCH_STATUS"), Strings.getString("TaskFinderPanel.errors.NOTHING_FOUND")); //$NON-NLS-1$ //$NON-NLS-2$
 						break;
 					case 1 :
 						selectedTask = tasks[0];
@@ -233,7 +234,7 @@ public class TaskFinderPanel extends Composite {
 		GridLayout gridLayout1 = new GridLayout();
 		gridLayout1.numColumns = 4;
 		group = new Group(this, SWT.NONE);
-		group.setText("Search filter");
+		group.setText(Strings.getString("TaskFinderPanel.labels.SEARCH_FILTER")); //$NON-NLS-1$
 		group.setLayout(gridLayout1);
 		group.setLayoutData(gridData1);
 		createSearchFieldCombo();
@@ -241,7 +242,7 @@ public class TaskFinderPanel extends Composite {
 		searchText = new Text(group, SWT.BORDER);
 		searchText.setLayoutData(gridData);
 		findButton = new Button(group, SWT.NONE);
-		findButton.setText("Find...");
+		findButton.setText(Strings.getString("TaskFinderPanel.buttons.FIND")); //$NON-NLS-1$
 		findButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
 				buttonPressed();

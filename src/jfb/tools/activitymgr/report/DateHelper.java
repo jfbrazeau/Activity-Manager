@@ -36,6 +36,8 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import jfb.tools.activitymgr.core.util.Strings;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -70,7 +72,7 @@ public class DateHelper {
 	 * @throws ParseException levé en cas de problème de format de la chaîne.
 	 */
 	public Calendar toDate(String yyyyMMdd) throws ParseException {
-		return toDate("yyyyMMdd", yyyyMMdd);
+		return toDate("yyyyMMdd", yyyyMMdd); //$NON-NLS-1$
 	}
 	
 	/**
@@ -83,7 +85,7 @@ public class DateHelper {
 	public Calendar toDate(String format, String date) throws ParseException {
 		Calendar _date = new GregorianCalendar();
 		_date.setTime(getDateFormat(format).parse(date));
-		log.debug("toDate(" + format + ", " + date + ")=" + _date);
+		log.debug("toDate(" + format + ", " + date + ")=" + _date); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		return _date;
 	}
 
@@ -103,7 +105,7 @@ public class DateHelper {
 	 * @return la date convertie.
 	 */
 	public String toYYYYMMDD(Calendar date) {
-		return toString("yyyyMMdd", date);
+		return toString("yyyyMMdd", date); //$NON-NLS-1$
 	}
 
 	/**
@@ -112,7 +114,7 @@ public class DateHelper {
 	 * @return l'année.
 	 */
 	public Integer getYear(Calendar date) {
-		log.debug("getYear()");
+		log.debug("getYear()"); //$NON-NLS-1$
 		return new Integer(date.get(Calendar.YEAR));
 	}
 	
@@ -122,7 +124,7 @@ public class DateHelper {
 	 * @return le mois.
 	 */
 	public Integer getMonth(Calendar date) {
-		log.debug("getMonth()");
+		log.debug("getMonth()"); //$NON-NLS-1$
 		return new Integer(date.get(Calendar.MONTH) + 1);
 	}
 
@@ -132,7 +134,7 @@ public class DateHelper {
 	 * @return le jour.
 	 */
 	public Integer getDay(Calendar date) {
-		log.debug("getDay()");
+		log.debug("getDay()"); //$NON-NLS-1$
 		return new Integer(date.get(Calendar.DATE));
 	}
 
@@ -167,9 +169,9 @@ public class DateHelper {
 	 * @return l'interval de dates.
 	 */
 	private static Calendar[] buildInterval(Calendar fromDate, Calendar toDate, int dateIncrementType) {
-		log.debug("buildInterval(" + fromDate + ", " + toDate + ")");
+		log.debug("buildInterval(" + fromDate + ", " + toDate + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		if (dateIncrementType!=Calendar.DATE && dateIncrementType!=Calendar.MONTH)
-			throw new Error("Date increment type not supported");
+			throw new Error(Strings.getString("DateHelper.errors.UNKNOWN_DATE_INCREMENT_TYPE")); //$NON-NLS-1$
 		ArrayList list = new ArrayList();
 		Calendar cal = (Calendar) toDate.clone();
 		cal.add(dateIncrementType, 1);

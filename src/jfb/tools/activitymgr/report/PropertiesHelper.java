@@ -35,6 +35,7 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jfb.tools.activitymgr.core.util.Strings;
 
 import org.apache.log4j.Logger;
 
@@ -131,37 +132,37 @@ public class PropertiesHelper implements Map {
 				buf.append('.');
 			buf.append(stack.get(i));
 		}
-		log.debug("get(" + buf.toString() + ")");
+		log.debug("get(" + buf.toString() + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		// Purge de la pile
 		stack.clear();
 		// Lecture de la 1° clé par défaut
-		String propKey0 = new StringBuffer("reports.")
+		String propKey0 = new StringBuffer("reports.") //$NON-NLS-1$
 			.append(currentReportId)
 			.append('.')
 			.append(buf.toString())
 			.toString();
-		log.debug("PropertyKey=" + propKey0);
+		log.debug("PropertyKey=" + propKey0); //$NON-NLS-1$
 		String propValue = props.getProperty(propKey0);
 		// Lecture de la 2° clé par défaut si la 1° n'a rien donné
 		if (propValue==null) {
-			String propKey1 = new StringBuffer("reports.")
+			String propKey1 = new StringBuffer("reports.") //$NON-NLS-1$
 				.append(buf.toString())
 				.toString();
-			log.debug("PropertyKey=" + propKey1);
+			log.debug("PropertyKey=" + propKey1); //$NON-NLS-1$
 			propValue = props.getProperty(propKey1);
 			// Lecture de la 3° clé par défaut si la 1° et la 2°
 			// n'ont rien donné
 			if (propValue==null) {
 				String propKey2 = buf.toString();
-				log.debug("PropertyKey=" + propKey2);
+				log.debug("PropertyKey=" + propKey2); //$NON-NLS-1$
 				propValue = props.getProperty(propKey2);
 				if (propValue==null)
-					throw new ReportException("Parameter '" + buf.toString() + "' is not specified (under '" + propKey0 + "', '" + propKey1 + "' or '" + propKey2 + "'", null);
+					throw new ReportException(Strings.getString("PropertiesHelper.errors.PARAMETER_NOT_SPECIFIED", new Object[] { buf.toString(), propKey0, propKey1, propKey2 }), null); //$NON-NLS-1$
 			}
 		}
 		// Retour du résultat
 		String value = substitueVariables(propValue);
-		log.debug("PropertyValue=" + value);
+		log.debug("PropertyValue=" + value); //$NON-NLS-1$
 		return value;
 	}
 	
@@ -173,16 +174,16 @@ public class PropertiesHelper implements Map {
 	 *    de la chaîne.
 	 */
 	public String getProperty(String postPropertyKey) throws ReportException {
-		String propKey0 = new StringBuffer("reports.")
+		String propKey0 = new StringBuffer("reports.") //$NON-NLS-1$
 			.append(currentReportId)
 			.append('.')
 			.append(postPropertyKey)
 			.toString();
-		log.debug("PropertyKey=" + propKey0);
+		log.debug("PropertyKey=" + propKey0); //$NON-NLS-1$
 		String propValue = props.getProperty(propKey0);
 		if (propValue!=null)
 			propValue = substitueVariables(propValue);
-		log.debug("PropertyValue=" + propValue);
+		log.debug("PropertyValue=" + propValue); //$NON-NLS-1$
 		return propValue;
 	}
 	
@@ -202,7 +203,7 @@ public class PropertiesHelper implements Map {
 	 * @see java.util.Map#get(java.lang.Object)
 	 */
 	public Object get(Object key) {
-		log.debug("Append '" + key + "' to property stack");
+		log.debug("Append '" + key + "' to property stack"); //$NON-NLS-1$ //$NON-NLS-2$
 		stack.push(key);
 		return this;
 	}
@@ -222,7 +223,7 @@ public class PropertiesHelper implements Map {
 		String result = null;
 		if (s!=null) {
 			// Préparation de l'expression régulière
-			Pattern pattern = Pattern.compile("\\$\\{[a-zA-Z0-9.'_-]+\\}");
+			Pattern pattern = Pattern.compile("\\$\\{[a-zA-Z0-9.'_-]+\\}"); //$NON-NLS-1$
 			Matcher matcher = pattern.matcher(s);
 			// Préparation du buffer accueillant la chaine substituée
 			StringBuffer buf = new StringBuffer();
@@ -237,8 +238,7 @@ public class PropertiesHelper implements Map {
 				String name = matched.substring(2, matched.length()-1);
 				// Si cette variable est dans la pile => référence cyclique
 				if (stack.contains(name))
-					throw new ReportException("Circular reference for" +
-							" property '${" + name + "}'", null);
+					throw new ReportException(Strings.getString("PropertiesHelper.errors.CIRCULAR_REFERENCE", name), null); //$NON-NLS-1$ //$NON-NLS-2$
 				// Récupération de sa valeur, et ajout au buffer
 				String value = props.getProperty(name);
 				if (value==null)
@@ -253,7 +253,7 @@ public class PropertiesHelper implements Map {
 				//if (value==null)
 				//	throw new ReportException("Missing property " +
 				//			"variable '${" + name + "}'", null);
-				log.debug("Var(" + name + ")='" + value  +"'");
+				log.debug("Var(" + name + ")='" + value  +"'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				// Concaténation...
 				buf.append(value!=null ? value : matched);
 				// Incrémentation de l'index
@@ -271,77 +271,77 @@ public class PropertiesHelper implements Map {
 	 * @see java.util.Map#size()
 	 */
 	public int size() {
-		throw new Error("Not implemented");
+		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#clear()
 	 */
 	public void clear() {
-		throw new Error("Not implemented");
+		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#isEmpty()
 	 */
 	public boolean isEmpty() {
-		throw new Error("Not implemented");
+		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#containsKey(java.lang.Object)
 	 */
 	public boolean containsKey(Object key) {
-		throw new Error("Not implemented");
+		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#containsValue(java.lang.Object)
 	 */
 	public boolean containsValue(Object value) {
-		throw new Error("Not implemented");
+		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#values()
 	 */
 	public Collection values() {
-		throw new Error("Not implemented");
+		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#putAll(java.util.Map)
 	 */
 	public void putAll(Map t) {
-		throw new Error("Not implemented");
+		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#entrySet()
 	 */
 	public Set entrySet() {
-		throw new Error("Not implemented");
+		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#keySet()
 	 */
 	public Set keySet() {
-		throw new Error("Not implemented");
+		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#remove(java.lang.Object)
 	 */
 	public Object remove(Object key) {
-		throw new Error("Not implemented");
+		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#put(java.lang.Object, java.lang.Object)
 	 */
 	public Object put(Object key, Object value) {
-		throw new Error("Not implemented");
+		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
 }

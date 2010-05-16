@@ -27,9 +27,9 @@
  */
 package jfb.tools.activitymgr.report;
 
-import org.apache.log4j.Logger;
-
 import jfb.tools.activitymgr.core.util.StringHelper;
+
+import org.apache.log4j.Logger;
 
 /**
  * Classe offrant des service de conversion de données au format texte.
@@ -45,7 +45,7 @@ public class FormatHelper {
 	 * @return la durée convertie.
 	 */
 	public String formatDuration(double duration) {
-		log.debug("formatDuration(" + duration + ")");
+		log.debug("formatDuration(" + duration + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		return StringHelper
 			.hundredthToEntry((long)duration)
 				.replace('.', ',');

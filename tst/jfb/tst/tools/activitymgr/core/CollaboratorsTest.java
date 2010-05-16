@@ -57,7 +57,7 @@ public class CollaboratorsTest extends AbstractModelTestCase {
 		catch (ModelException ignored) {}
 
 		// Création du collaborateur avec un autre login => doit marcher
-		collaborator2.setLogin("otherLogin");
+		collaborator2.setLogin("login1");
 		collaborator2 = ModelMgr.createCollaborator(collaborator2);
 		try {
 			// Tentative d'update avec le même login

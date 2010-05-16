@@ -33,6 +33,7 @@ import java.util.Iterator;
 
 import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Collaborator;
+import jfb.tools.activitymgr.core.util.Strings;
 import jfb.tools.activitymgr.ui.DatabaseUI.IDbStatusListener;
 import jfb.tools.activitymgr.ui.dialogs.ContributionsViewerDialog;
 import jfb.tools.activitymgr.ui.images.ImagesDatas;
@@ -169,9 +170,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements IDbStatusListen
 		table.setLinesVisible(true);
 		table.setHeaderVisible(true);
 		table.setEnabled(true);
-		table.setToolTipText("Use the first column to activate or disactivate the collaborators\n" +
-				"(disactivated collaborators are not deleted from the database but are hidden\n" +
-				"in the contributions tab)");
+		table.setToolTipText(Strings.getString("CollaboratorsUI.table.TOOL_TIP")); //$NON-NLS-1$
 
 		// Création du viewer
 		tableViewer = new TableViewer(table);
@@ -181,17 +180,17 @@ public class CollaboratorsUI extends AbstractTableMgr implements IDbStatusListen
 
 		// Configuration des colonnes
 		tableColsMgr = new TableOrTreeColumnsMgr();
-		tableColsMgr.addColumn("IS_ACTIVE", "!", 20, SWT.CENTER);
-		tableColsMgr.addColumn("IDENTIFIER", "Identifier", 100, SWT.LEFT);
-		tableColsMgr.addColumn("FIRST_NAME", "First name", 100, SWT.LEFT);
-		tableColsMgr.addColumn("LAST_NAME", "Last name", 100, SWT.LEFT);
+		tableColsMgr.addColumn("IS_ACTIVE", "!", 20, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr.addColumn("IDENTIFIER", Strings.getString("CollaboratorsUI.columns.IDENTIFIER"), 100, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr.addColumn("FIRST_NAME", Strings.getString("CollaboratorsUI.columns.FIRST_NAME"), 100, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr.addColumn("LAST_NAME", Strings.getString("CollaboratorsUI.columns.LAST_NAME"), 100, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
 		tableColsMgr.configureTable(tableViewer);
 
 		// Ajout du listener de gestion du tri des colonnes
 		// Add sort indicator and sort data when column selected
 		Listener sortListener = new Listener() {
 			public void handleEvent(Event e) {
-				log.debug("handleEvent(" + e + ")");
+				log.debug("handleEvent(" + e + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 				TableColumn previousSortColumn = table.getSortColumn();
 				TableColumn newSortColumn = (TableColumn) e.widget;
 				int dir = table.getSortDirection();
@@ -230,16 +229,16 @@ public class CollaboratorsUI extends AbstractTableMgr implements IDbStatusListen
 		final Menu menu = new Menu(table);
 		menu.addMenuListener(this);
 		newItem = new MenuItem(menu, SWT.CASCADE);
-		newItem.setText("New collaborator");
+		newItem.setText(Strings.getString("CollaboratorsUI.menuitems.NEW")); //$NON-NLS-1$
 		newItem.addSelectionListener(this);
 		removeItem = new MenuItem(menu, SWT.CASCADE);
-		removeItem.setText("Remove");
+		removeItem.setText(Strings.getString("CollaboratorsUI.menuitems.REMOVE")); //$NON-NLS-1$
 		removeItem.addSelectionListener(this);
 		listTaskContributionsItem = new MenuItem(menu, SWT.CASCADE);
-		listTaskContributionsItem.setText("List contrib.");
+		listTaskContributionsItem.setText(Strings.getString("CollaboratorsUI.menuitems.LIST_CONTRIBUTIONS")); //$NON-NLS-1$
 		listTaskContributionsItem.addSelectionListener(this);
 		exportItem = new MenuItem(menu, SWT.CASCADE);
-		exportItem.setText("Export");
+		exportItem.setText(Strings.getString("CollaboratorsUI.menuitems.EXPORT")); //$NON-NLS-1$
 		exportItem.addSelectionListener(this);
 		table.setMenu(menu);
 		
@@ -285,7 +284,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements IDbStatusListen
 	 * @see org.eclipse.jface.viewers.ICellModifier#canModify(java.lang.Object, java.lang.String)
 	 */
 	public boolean canModify(Object element, String property) {
-		log.debug("ICellModifier.canModify(" + element + ", " + property + ")");
+		log.debug("ICellModifier.canModify(" + element + ", " + property + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		return true;
 	}
 
@@ -293,7 +292,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements IDbStatusListen
 	 * @see org.eclipse.jface.viewers.ICellModifier#getValue(java.lang.Object, java.lang.String)
 	 */
 	public Object getValue(final Object element, final String property) {
-		log.debug("ICellModifier.getValue(" + element + ", " + property + ")");
+		log.debug("ICellModifier.getValue(" + element + ", " + property + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				Collaborator collaborator = (Collaborator) element;
@@ -312,20 +311,20 @@ public class CollaboratorsUI extends AbstractTableMgr implements IDbStatusListen
 					case (LAST_NAME_COLUMN_IDX) :
 						value = collaborator.getLastName();
 						break;
-					default : throw new Error("Colonne inconnue");
+					default : throw new Error(Strings.getString("CollaboratorsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
 				return value;
 			}
 		};
 		// Exécution
-		return safeRunner.run(parent.getShell(), "");
+		return safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.viewers.ICellModifier#modify(java.lang.Object, java.lang.String, java.lang.Object)
 	 */
 	public void modify(final Object element, final String property, final Object value) {
-		log.debug("ICellModifier.modify(" + element + ", " + property + ", " + value + ")");
+		log.debug("ICellModifier.modify(" + element + ", " + property + ", " + value + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		TableItem item = (TableItem) element;
 		final Collaborator collaborator = (Collaborator) item.getData();
 		final IBaseLabelProvider labelProvider = this;
@@ -355,7 +354,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements IDbStatusListen
 						collaborator.setLastName((String) value);
 						mustNotifyUpdateEvent = true;
 						break;
-					default : throw new UITechException("Colonne inconnue");
+					default : throw new UITechException(Strings.getString("CollaboratorsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
 				// Mise à jour en base
 				ModelMgr.updateCollaborator(collaborator);
@@ -376,14 +375,14 @@ public class CollaboratorsUI extends AbstractTableMgr implements IDbStatusListen
 	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
 	 */
 	public String getColumnText(final Object element, final int columnIndex) {
-		log.debug("ITableLabelProvider.getColumnText(" + element + ", " + columnIndex + ")");
+		log.debug("ITableLabelProvider.getColumnText(" + element + ", " + columnIndex + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				Collaborator collaborator = (Collaborator) element;
 				String text = null;
 				switch (columnIndex) {
 					case (IS_ACTIVE_COLUMN_IDX) :
-						text = ""; // La colonne est renseignée par une icone
+						text = ""; // La colonne est renseignée par une icone //$NON-NLS-1$
 						break;
 					case (IDENTIFIER_COLUMN_IDX) :
 						text = collaborator.getLogin();
@@ -394,20 +393,20 @@ public class CollaboratorsUI extends AbstractTableMgr implements IDbStatusListen
 					case (LAST_NAME_COLUMN_IDX) :
 						text = collaborator.getLastName();
 						break;
-					default : throw new Error("Colonne inconnue");
+					default : throw new Error(Strings.getString("CollaboratorsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
 				return text;
 			}
 		};
 		// Exécution
-		return (String) safeRunner.run(parent.getShell(), "");
+		return (String) safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
 	 * @see jfb.tools.activitymgr.ui.util.AbstractTableMgr#getColumnImage(java.lang.Object, int)
 	 */
 	public Image getColumnImage(final Object element, final int columnIndex) {
-		log.debug("ITableLabelProvider.getColumnImage(" + element + ", " + columnIndex + ")");
+		log.debug("ITableLabelProvider.getColumnImage(" + element + ", " + columnIndex + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				Collaborator collaborator = (Collaborator) element;
@@ -421,7 +420,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements IDbStatusListen
 					case (LAST_NAME_COLUMN_IDX) :
 						image = null;
 						break;
-					default : throw new Error("Colonne inconnue");
+					default : throw new Error(Strings.getString("CollaboratorsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
 				return image;
 			}
@@ -434,8 +433,8 @@ public class CollaboratorsUI extends AbstractTableMgr implements IDbStatusListen
 	 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
 	 */
 	public void widgetSelected(final SelectionEvent e) {
-		log.debug("SelectionListener.widgetSelected(" + e + ")");
-		log.debug("   e.source=" + e.getSource() + ")");
+		log.debug("SelectionListener.widgetSelected(" + e + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+		log.debug("   e.source=" + e.getSource() + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		final Object source = e.getSource();
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
@@ -498,7 +497,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements IDbStatusListen
 	 * @see org.eclipse.swt.events.MenuListener#menuShown(org.eclipse.swt.events.MenuEvent)
 	 */
 	public void menuShown(MenuEvent e) {
-		log.debug("menuShown(" + e + ")");
+		log.debug("menuShown(" + e + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		TableItem[] selection = tableViewer.getTable().getSelection();
 		boolean emptySelection = selection.length==0;
 		boolean singleSelection = selection.length==1;

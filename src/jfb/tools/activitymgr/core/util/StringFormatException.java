@@ -35,6 +35,9 @@ import jfb.tools.activitymgr.AbstractApplicationException;
  */
 public class StringFormatException extends AbstractApplicationException {
 
+	/** serialVersionUID */
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Constructeur par défaut.
 	 * @param message message d'erreur.

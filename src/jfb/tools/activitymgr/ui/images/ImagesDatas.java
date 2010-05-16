@@ -35,21 +35,21 @@ import org.eclipse.swt.graphics.ImageData;
 public interface ImagesDatas {
 
 	/** Logo de l'application */
-	public static final ImageData APPLICATION_LOGO = new ImageData(ImagesDatas.class.getResourceAsStream("logo-385x100.png"));
+	public static final ImageData APPLICATION_LOGO = new ImageData(ImagesDatas.class.getResourceAsStream("logo-385x100.png")); //$NON-NLS-1$
 	
 	/** Icone de l'application */
-	public static final ImageData APPLICATION_ICON = new ImageData(ImagesDatas.class.getResourceAsStream("logo-16x16.ico"));
+	public static final ImageData APPLICATION_ICON = new ImageData(ImagesDatas.class.getResourceAsStream("logo-16x16.ico")); //$NON-NLS-1$
 	
 	/** Icone case cochée */
-	public static final ImageData CHECKED_ICON = new ImageData(ImagesDatas.class.getResourceAsStream("checkedIcon.gif"));
+	public static final ImageData CHECKED_ICON = new ImageData(ImagesDatas.class.getResourceAsStream("checkedIcon.gif")); //$NON-NLS-1$
 
 	/** Icone case décochée */
-	public static final ImageData UNCHECKED_ICON = new ImageData(ImagesDatas.class.getResourceAsStream("uncheckedIcon.gif"));
+	public static final ImageData UNCHECKED_ICON = new ImageData(ImagesDatas.class.getResourceAsStream("uncheckedIcon.gif")); //$NON-NLS-1$
 
 	/** Icone item sélectionné */
-	public static final ImageData SELECTED_ITEM_ICON = new ImageData(ImagesDatas.class.getResourceAsStream("selectedItemIcon.gif"));
+	public static final ImageData SELECTED_ITEM_ICON = new ImageData(ImagesDatas.class.getResourceAsStream("selectedItemIcon.gif")); //$NON-NLS-1$
 
 	/** Icone item non sélectionné */
-	public static final ImageData UNSELECTED_ITEM_ICON = new ImageData(ImagesDatas.class.getResourceAsStream("unselectedItemIcon.gif"));
+	public static final ImageData UNSELECTED_ITEM_ICON = new ImageData(ImagesDatas.class.getResourceAsStream("unselectedItemIcon.gif")); //$NON-NLS-1$
 
 }
