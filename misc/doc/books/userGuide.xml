@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book SYSTEM "book.dtd">
+<book>
+	<id>userGuide</id>
+	<title>User guide</title>
+	<chapter>
+		<title>Understanding the model</title>
+		<body>
+			<p>
+				The model is very simple. It is based on four notions :
+				<ul>
+					<li>Collaborators : people who may contribute to the tasks defined
+					in the task repository</li>
+					<li>Tasks : repository containing all the tasks identified on your
+					project</li>
+					<li>Durations : possible values or a contribution's duration</li>
+					<li>Contributions (see below)</li>
+				</ul>
+				A contribution is defined by : 
+				<ul>
+					<li>a contributor (choosen in the collaborator repository)</li>
+					<li>a task (choosen in the task repository)</li>
+					<li>a duration (choosen in the duration repository)</li>
+					<li>a date</li>
+				</ul>
+				<center>
+					<img src="uml-diagram.gif"/>
+				</center>
+			</p>
+		</body>
+	</chapter>
+	<chapter>
+		<id>rules</id>
+		<title>Basic rules</title>
+		<body>
+			<p>
+				Activity Manager is based on three basic rules :
+				<ol>
+					<li>
+						A task that has one or more subtasks :
+						<ul>
+							<li>can not accept any contribution (<italic>which means that when
+							you update a collaborator's contributions through the</italic>
+							<a href="#contributions" type="book-ref"><italic>contributions tab</italic></a><italic>,
+							you can only choose leaf tasks (if you consider that the
+							task repository	is a tree)</italic>)
+							</li>
+							<li>represents an aggregation of its subtasks (<italic>for 
+							example, its contributions consumption sum is the result
+							of its subtasks contribution consumptions</italic>). For such a
+							task, 'Initial fund', 'Initial consumption' and 'Todo' 
+							fields are not updatable.
+							</li>
+						</ul>
+					</li>
+					<li>
+						A task that is associated to one or more contributions :
+						<ul>
+							<li>can not admit any subtask (<italic>which means that if you
+							try to add a subtask to such a task through the</italic>
+							<a href="#tasks" type="book-ref"><italic>tasks tab</italic></a><italic>,
+							you will get an error</italic>)
+							</li>
+							<li>has updatable 'Initial fund', 'Initial consumption' 
+							and 'Todo' fields.
+							</li>
+						</ul>
+					</li>
+					<li>
+						Sister tasks must have different codes (which means that two
+						tasks may have the same code, but then, they cannot have
+						the same parent task). 
+					</li>
+				</ol>
+			</p>
+		</body>
+	</chapter>
+	<chapter>
+		<id>startup</id>
+		<title>Starting the application</title>
+		<body>
+			<p>
+				To start the application, double click on the file 
+				<code>bin\activitymgr.bat</code>
+				<center>
+					<img thumbnail="database-tab-small.png" src="database-tab.png"/>
+				</center>
+			</p>
+		</body>
+	</chapter>	
+	<chapter>
+		<id>dbinit</id>
+		<title>Database connection and initialization</title>
+		<body>
+			<p>
+				In the database tab, choose one of the three different modes :
+				<ul>
+					<li>Standalone mode (with an embeded HSQL database)</li>
+					<li>MySQL Server mode</li>
+					<li>Custom mode (user defined database for skilled users)</li>
+				</ul>
+			</p>
+			<p>
+				Standalone mode allows to start using Activity Manager quickly.
+				In this mode, an embedded HSQLDB database is used. Just select
+				a filename (in which the data will be stored) and click on 'Connect'.
+				For the first connection, Activity Manager suggest to initialize
+				the database (click Ok in the popup).
+				
+			</p>
+			<p>
+				In MySQL server mode, you have to provide the connection settings 
+				(database host, database name, user id and password) before clicking
+				on 'Connect'. As for standalone mode, Activity Manager suggests
+				to initialize the database.
+			</p>
+			<p>
+				In Custom mode, you will have to provide a custom JDBC driver
+				(just add the driver jars in the <code>lib</code> directory and
+				restart the tool). You may also have to create the database tables
+				by yourself (with the default MySQL script as a model for example).
+				This mode is only for skilled users. If the	tables are not installed
+				when you click on 'Connect', Activity Manager will try to initialize
+				it with the MySQL initialization script (which may not be compatible
+				with your custom database; <bold>WARNING : this mode may not work
+				properly as the tool's SQL requests	may not be compatible with your
+				database</bold>).
+			</p>
+		</body>
+	</chapter>
+	<chapter>
+		<title>Durations repository administration</title>
+		<body>
+			<p>A duration is a percentage of a day.</p>
+			<p>
+				Activity Manager has a default duration repository containing 4 values 
+				that you can optionnaly install if you want (when you connect for the
+				first time to a database or when you reinstall the database) :
+				<ul>
+					<li>0.25 (=25% of a day)</li>
+					<li>0.50 (=50% of a day)</li>
+					<li>0.75 (=75% of a day)</li>
+					<li>1.00 (=100% of a day=one day)</li>
+				</ul>
+			</p>
+			<p>
+				The correspondant tab allows you to create, modify and remove
+				durations from the repository.
+				<center>
+					<img thumbnail="durations-tab-small.png" src="durations-tab.png"/>
+				</center>
+			</p>
+			<p>To add a new duration, simply click on the right mouse button and
+			choose 'New duration' on the popup menu. A new popup windows displays
+			in which you enter the new duration.</p>
+			<p>To modify a duration, double click on it and modify it.</p>
+			<p>To remove a duration, click on the right mouse button and
+			choose 'Remove' on the popup menu after having selected the duration 
+			to remove.</p>
+			<p>To enable or disable a duration, use the checkbox on the left. A
+			disabled duration will be hidden in the contributions tab.</p>
+			<p><bold>WARNING: a duration which is used at least by one contribution
+			cannot be modified or removed</bold></p>
+			<p>To export the window table content, click on the right mous button,
+			choose 'Export' and select a destination file.</p>
+		</body>
+	</chapter>
+	<chapter>
+		<title>Collaborators repository administration</title>
+		<body>
+			<p>A collaborator is characterized by :
+				<ul>
+					<li>an identifier : a unique string that identifies the collaborator</li>
+					<li>his first name</li>
+					<li>his last name</li>
+				</ul>
+			</p>
+			<p>
+				The correspondant tab allows you to create, modify and remove
+				collaborators from the repository.
+				<center>
+					<img thumbnail="collaborators-tab-small.png" src="collaborators-tab.png"/>
+				</center>
+			</p>
+			<p>To add a new collaborator, simply click on the right mouse button and
+			choose 'New collabortor' on the popup menu. A collaborator with default
+			attributes is created. Modify these attributes by clicking on it and
+			typing the new values.</p>
+			<p>To enable or disable a collaborator, use the checkbox on the left. A
+			disabled collaborator will be hidden in the contributions tab.</p>
+			<p>You can click on the column headers to sort the collaborators.</p>
+			<p>The 'List contrib.' menu item opens a popup windows listing all the
+			contributions associated to the selected user.</p>
+			<p>To export the window table content, click on the right mous button,
+			choose 'Export' and select a destination file.</p>
+		</body>
+	</chapter>
+	<chapter>
+		<id>tasks</id>
+		<title>Tasks repository administration</title>
+		<body>
+			<p>
+				A task is characterized by :
+				<ul>
+					<li>a name</li>
+					<li>a code : unique for a given task path</li>
+					<li>a budget</li>
+					<li>an initially consumed sum : consumption for this task that is
+					not traduced with contributions through the 
+					<a href="#contributions" type="book-ref">contributions tab</a>.</li>
+					<li>a consumed sum : this sum is the result of all the contributions
+					that have been created through the 
+					<a href="#contributions" type="book-ref">contributions tab</a> plus the initially
+					consumed sum.</li>
+					<li>a todo sum : represents the amount of work that still has to 
+					be done</li>
+					<li>a delta sum : a positive value indicates that you are in advance, a negative 
+					value indicates that you are late (= 'budget' - 'initially consumed'
+					- 'consummed' - 'todo')</li>
+				</ul>
+			</p>
+			<p>
+				The correspondant tab allows you to create, modify, remove and move 
+				tasks from the repository.
+				<center>
+					<img thumbnail="tasks-tab-small.png" src="tasks-tab.png"/>
+				</center>
+			</p>
+			<p>To add a new task, simply click on the right mouse button and
+			choose 'New task' or 'New subtask' on the popup menu. A task with default
+			attributes is created. Modify these attributes by clicking on it and
+			typing the new values.</p>
+			<p>Note :
+				<ul>
+					<li>The 'Name' and 'Code' columns are always updatable</li>
+					<li>The 'Budget', 'Initially consumed' and 'Todo' columns are 
+					updatable only for leaf tasks (see <a href="#rules" type="book-ref">Basic rules</a>
+					for more details).</li>
+					<li>The 'Consumed' and 'Delta' columns are read-only (calculated by
+					the application)</li>
+				</ul>
+			</p>
+			<p>The top search filter allows you to find a task by its name or its code.</p>
+			<p>The 'List contrib.' menu item opens a popup windows listing all the 
+			contributions associated to the selected task.</p>
+			<p>The 'Export' menu item allows you to generate an EXCEL file containing
+			the task tree as it is represented on the screen.</p>
+			<p>To export the window table content, click on the right mous button,
+			choose 'Export' and select a destination file (<bold>WARNING : only the tasks
+			present	on the screen will be exported, not the full tasks repository</bold>).
+			</p>
+		</body>
+	</chapter>
+	<chapter>
+		<id>contributions</id>
+		<title>Contributions management</title>
+		<body>
+			<p>
+				A contribution is characterized by :
+				<ul>
+					<li>a contributor : the collaborator involved in this contribution</li>
+					<li>a date</li>
+					<li>a task</li>
+				</ul>
+			</p>
+			<p>
+				The correspondant tab allows you to create, modify and remove
+				contributions from the repository.
+				<center>
+					<img thumbnail="contributions-tab-small.png" src="contributions-tab.png"/>
+				</center>
+			</p>
+			<p>You can choose the contributor by using the list which is on the left.</p>
+			<p>For each day, a contribution sum is calculated and shown in italic. This allows
+			to detect quickly any mistake.</p>
+			<p>
+				To add a new contribution line, simply click on the right mouse button
+				and	choose 'New contribution' on the popup menu. A popup will appear in
+				order to allow you to choose a task.
+				<center>
+					<img thumbnail="task-chooser-popup-small.png" src="task-chooser-popup.png"/>
+				</center>
+			</p>
+			<p>When the task has been chosen, a new line appears in the contributions
+			tab. Then, you can create a contribution by choosing a duration for one
+			day.</p>
+			<p>Use the bottom buttons to go to the next or the previous week/month/year.</p>
+			<p>To export the window table content, click on the right mous button,
+			choose 'Export' and select a destination file.</p>
+		</body>
+	</chapter>
+	<chapter>
+		<title>Extensible report facility</title>
+		<body>
+			<p>Activity Manager includes a report engine based on
+			<a href="http://jakarta.apache.org/velocity/">Jakarta Apache Velocity</a>.
+			This engine generates HTML output from templates files. The distribution
+			includes 4 built in templates (located in <code>templates</code> dir):
+			<ul>
+				<li>
+					tasksReport.vm (see 
+					<a target="newWin" href="tasksReportSample.html" type="local-ref">sample</a>)
+				</li>
+				<li>
+					tasksByMonthReport.vm (see 
+					<a target="newWin" href="tasksByMonthReportSample.html" type="local-ref">sample</a>)
+				</li>
+				<li>
+					taskCollaboratorByMonthReport.vm (see 
+					<a target="newWin" href="taskCollaboratorByMonthReportSample.html" type="local-ref">sample</a>)
+				</li>
+				<li>
+					monthCollaboratorActivityByDayReport.vm (see 
+					<!-- TODO : Ajuster localisation dépendances -->
+					<a target="newWin" href="monthCollaboratorActivityByDayReportSample.html" type="local-ref">sample</a>)
+				</li>
+			</ul>
+			</p>
+			<p>The report engine is configured through the 
+			<code>cfg\report.properties</code> file. The report to his file to see
+			how to configure the report facility.
+			</p>
+			<p>Once the configuration is ready, use <code>bin\reporting.bat</code>
+			to genrate the reports.
+			</p>
+			<p>Ther is no specific documentation to help to create custom templates.
+			Please report to 
+			<a target="newWin" href="http://jakarta.apache.org/velocity/docs/vtl-reference-guide.html">Velocity reference guide</a>,
+			take a look at the built in templates and consult the 
+			<!-- TODO : Ajuster localisation Javadoc -->
+			<a target="newWin" href="javadoc/jfb/tools/activitymgr/core/ModelMgr.html" type="local-ref">
+			model manager class javadoc</a> to create custom templates.
+			Velocity is simple to use. Creating custom templates may be within 
+			easy reach.
+			</p>
+		</body>
+	</chapter>
+	<chapter>
+		<title>XML export/import</title>
+		<body>
+			<p>There is nothing to say about this feature! Just select an XML
+			file and click on export and/or export ! If you have any problem with
+			<!-- TODO : Ajuster localisation page contact me! -->
+			it, follow this link to <a href="contact" type="book-ref">contact me</a>!</p>
+		</body>
+	</chapter>
+
+</book>

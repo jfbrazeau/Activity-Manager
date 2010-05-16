@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="ActivityMgrDoc" default="buildAll">
+	<property name="build.dir" value=".dist"/>
+	<property name="java.src.dir" value="../../src"/>
+	<property name="java.lib.dir" value="../../lib"/>
+	
+	<!--
+		Cible de nettoyage.
+	  -->
+	<target name="clean">
+		<delete dir="${build.dir}"/>
+	</target>
+	
+	<target name="buildJavadoc">
+		<!-- Construction de la javadoc -->
+		<javadoc 
+			destdir="${htmlOutDir}/res/html/javadoc/"
+			access="protected"
+			source="1.3" 
+			use="true" 
+			notree="false" 
+			nonavbar="false" 
+			noindex="false" 
+			splitindex="true" 
+			author="false" 
+			version="false" 
+			nodeprecatedlist="true" 
+			nodeprecated="true" 
+			sourcepath="${java.src.dir}">
+			<classpath>
+				<fileset dir="${java.lib.dir}">
+					<include name="**/*.jar"/>
+				</fileset>
+			</classpath>
+			<packageset dir="${java.src.dir}">
+				<include name="jfb/**"/>
+			</packageset>
+		</javadoc>
+	</target>
+
+	<target name="buildHtml">
+		<property name="htmlOutDir" value="${build.dir}/doc/html"/>
+		<!-- Nettoyage -->
+		<delete dir="${htmlOutDir}"/>
+		<mkdir dir="${htmlOutDir}"/>
+		<!-- Copie des ressources (images, etc.) -->
+		<copy todir="${htmlOutDir}/res">
+			<fileset dir="${basedir}/xsl/res"/>
+		</copy>
+		<!-- Construction de la javadoc -->
+		<antcall target="buildJavadoc"/>
+		<!-- Fusion XSL -->
+		<xslt basedir="books" destdir="${htmlOutDir}" style="${basedir}/xsl/html.xsl" includes="*.xml"/>
+	</target>
+	
+	<target name="buildJsp">
+		<property name="jspOutDir" value="${build.dir}/doc/jsp"/>
+		<!-- Nettoyage -->
+		<delete dir="${jspOutDir}"/>
+		<mkdir dir="${jspOutDir}"/>
+		<!-- Fusion XSL -->
+		<xslt basedir="books" destdir="${jspOutDir}" style="${basedir}/xsl/jsp.xsl" includes="*.xml" extension=".jsp"/>
+		<replace token="JSP-HEADER" dir="${jspOutDir}" includes="*.jsp">
+			<replacevalue><![CDATA[<%@ taglib uri="/WEB-INF/struts/bean.tld" prefix="bean"%>
+<%@ taglib uri="/WEB-INF/struts/html.tld" prefix="html"%>
+<%@ taglib uri="/WEB-INF/struts/logic.tld" prefix="logic"%>
+<%@ taglib uri="/WEB-INF/struts/tiles.tld" prefix="tiles"%>
+<%@ page extends="jfb.web.main.ui.servlets.HomepageHttpJspBase" %>]]></replacevalue>
+		</replace>
+	</target>
+	
+	<target name="buildAll" depends="buildHtml,buildJsp"/>
+
+</project>

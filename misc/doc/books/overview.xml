@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book SYSTEM "book.dtd">
+<book>
+	<id>overview</id>
+	<title>Overview</title>
+
+	<chapter>
+		<body>
+			<p>Activity Manager is a project management tool. It helps a project
+				leader to manage and check his collaborators activity. Simple to use,
+				lightweight, but very efficient and customizable !</p>
+			<p>Activity Manager is open source software. You can use it
+				and redistribute it freely (see <a href="legal" type="book-ref">legal</a>
+				for more details).</p>
+			<p>The tool's features are :
+				<ul>
+					<li>Durations repository administration</li>
+					<li>Collaborators repository administration</li>
+					<li>Tasks repository administration</li>
+					<li>Contributions management (=activity management)</li>
+					<li>Extensible report facility (with built in templates)</li>
+					<li>XML database export/import</li>
+					<li>EXCEL export</li>
+				</ul>
+			</p>
+			<p>The application allows to build and maintain a hierarchical task
+				tree. It works with a very simple database model that allows
+				to build quicly custom reports through the report facility or
+				through simple SQL requests. Activity Manager is customizable.</p>
+			<p>Coded in Java, Activity Manager can be used in three different modes :
+				<ul>
+					<li>Standalone mode (with an embeded HSQL database)</li>
+					<li>MySQL Server mode</li>
+					<li>Custom mode (user defined database for skilled users)</li>
+				</ul>
+				Custom mode may require advanced java notions, like CLASSPATH
+				manipulation, particulary if you wish to use a database which is
+				different from MySql and HSQL.
+			</p>
+			<p>It has been tested on Windows XP and Mandrake Linux 9.1 (GTK) and
+				may work with any version of MySQL.
+				<center>
+					<img thumbnail="tasks-tab-small.png" src="tasks-tab.png"/>
+				</center>
+			</p>
+		</body>
+	</chapter>
+
+</book>

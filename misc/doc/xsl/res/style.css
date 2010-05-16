@@ -1,0 +1,84 @@
+/**
+ * Styles généraux
+ */
+a,
+a:active,
+a:visited,
+a:hover {
+	color : #535353;
+}
+
+code {
+	color: #5a5866;
+}
+
+/**
+ * Styles principaux
+ */
+
+.main {
+	background-color: #909090;
+	border-style: solid;
+	border-width: 1px;
+	border-color: black;
+	font-weight : 100;
+	font-family : Arial;
+	font-size : 12px;
+	color : #535353;
+}
+
+.mainTitle {
+	font-size : 25px;
+	color : #fbf2fa;
+	font-weight: bold;
+}
+
+.bodyCell {
+	background-color: #e2e2e2;
+	border-top-width: 1px;
+	border-top-style: solid;
+	border-top-color: black;
+	border-left-width: 1px;
+	border-left-style: solid;
+	border-left-color: black;
+}
+
+.bodyTitle {
+	font-size : 18px;
+	font-weight : bold;
+}
+
+.menuItem {
+	font-family : Arial;
+	font-size : 12px;
+	color : #303036;
+	text-decoration: none;
+	font-weight : bold;
+}
+
+.menuSubItemSelected,
+.menuSubItemSelected:active,
+.menuSubItemSelected:visited,
+.menuSubItemSelected:hover {
+	text-decoration: none;
+	font-family : Arial;
+	font-size : 12px;
+	color : #ffffff;
+}
+
+.menuSubItem,
+.menuSubItem:active,
+.menuSubItem:visited {
+	text-decoration: none;
+	font-family : Arial;
+	font-size : 12px;
+	color : #303036;
+}
+
+.menuSubItem:hover {
+	color : #ffffff;
+}	
+
+.textTitle {
+	font-weight : bold;
+}

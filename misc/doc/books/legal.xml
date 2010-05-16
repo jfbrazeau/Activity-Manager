@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book SYSTEM "book.dtd">
+<book>
+	<id>legal</id>
+	<title>Legal</title>
+
+	<chapter>
+		<body>
+			<p>Activity Manager is licensed under a BSD License,<br/>
+				see <a target="newWin" href="LICENSE.txt" type="local-ref">LICENSE.txt</a> for details.
+			</p>
+			<p>Activity Manager includes software developed by<br/>
+				The Apache Software Foundation (<a target="newWin" href="http://www.apache.org/">http://www.apache.org/</a>).
+			</p>
+			<p>This product also includes software developped by :
+				<ul>
+					<li>The Eclipse foundation (<a target="newWin" href="http://www.eclipse.org">http://www.eclipse.org</a>)</li>
+					<li>MySQL organization (<a target="newWin" href="http://www.mysql.com">http://www.mysql.com</a>)</li>
+					<li>The HSQLDB Development Group (<a target="newWin" href="http://www.hsqldb.org">http://www.hsqldb.org</a>)</li>
+				</ul>
+			</p>
+		</body>
+	</chapter>
+
+</book>

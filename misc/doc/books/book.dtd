@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT book (id, title, chapter*)>
+<!ELEMENT id (#PCDATA)>
+<!ELEMENT title (#PCDATA)>
+
+<!ELEMENT chapter (id?, title?, body)>
+<!-- id : déjà défini pour le noeud book -->
+<!-- ELEMENT id (#PCDATA) -->
+<!-- title : déjà défini pour le noeud book -->
+<!-- ELEMENT title (#PCDATA) -->
+
+<!ELEMENT body (p*)>
+
+<!ELEMENT p (#PCDATA|bold|italic|underlined|center|code|ul|ol|img|a|br)*>
+<!ELEMENT code (#PCDATA|bold|italic|underlined)*>
+<!ELEMENT br EMPTY>
+
+<!ELEMENT ul (li+)>
+<!ELEMENT li (#PCDATA|p|bold|italic|underlined|code|ul|ol|img|a|center)*>
+
+<!ELEMENT ol (li+)>
+<!-- li : déjà défini pour le noeud ul -->
+<!-- ELEMENT li (#PCDATA) -->
+
+<!ELEMENT img EMPTY>
+<!ATTLIST img thumbnail CDATA #IMPLIED>
+<!ATTLIST img src CDATA #REQUIRED>
+
+<!ELEMENT center (#PCDATA|bold|italic|underlined|code|img|a|br)*>
+<!ELEMENT bold (#PCDATA|italic|underlined)*>
+<!ELEMENT italic (#PCDATA|bold|underlined)*>
+<!ELEMENT underlined (#PCDATA|bold|italic)*>
+
+<!ELEMENT a (#PCDATA|bold|italic|underlined|center|code|img)*>
+<!ATTLIST a href CDATA #REQUIRED>
+<!ATTLIST a target CDATA #IMPLIED>
+<!ATTLIST a type (book-ref|local-ref|external-ref) "external-ref">

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book SYSTEM "book.dtd">
+<book>
+	<id>installation</id>
+	<title>Installation</title>
+
+	<chapter>
+		<id>prerequesites</id>
+		<title>Pre-requesites</title>
+		<body>
+			<p>Activity Manager needs a Java Development Kit (see 
+				<a target="newWin" href="http://java.sun.com">http://java.sun.com</a>).
+				The JDK must be rightly configured (ie. in the PATH environment
+				variable).</p>
+			<p>Optionnaly, if you don't want to work in standalone mode
+				(refer to the <a href="userGuide#dbinit" type="book-ref">user guide</a>
+				for more details about the different modes), you will need a MySQL
+				database server.
+				In that case, we suppose that it is rightly configured and that
+				you have the root password.	MySQL Administrator and MySQL Query Browser
+				may help you to configure your server.
+			</p>
+			<p>Activity Manager has been tested with JDK1.4.2 and MySQL Server 4.1.14 on
+				a windows platform (Win2000 &amp; WinXP).</p>
+		</body>
+	</chapter>
+
+	<chapter>
+		<id>binaries</id>
+		<title>Binaries installation</title>
+		<body>
+			<p>Download the <a href="http://www.jfbrazeau.fr/main/homepage/activitymgr/download.do" type="external-ref">binary</a>
+			archive and simply uncompress it on your disk wherever you want to.</p>
+		</body>
+	</chapter>
+
+	<chapter>
+		<id>dbinit</id>
+		<title>Database initialization</title>
+		<body>
+			<p>Now, Activity Manager creates automatically the database tables.
+				For this reason, this step is really light weight.</p>
+			<p>
+				<ol>
+					<li>
+						<p><underlined>Standalone mode :</underlined> nothing to do !</p>
+					</li>
+					<li><underlined>MySQL server mode :</underlined> (database and user creation)
+						<p>Check that the parameter 'skip-networking' is commented
+						in mysql configuration file, especially on linux platforms
+						(typically located in <code>c:\windows\my.cnf</code>,
+						<code>c:\windows\my.ini</code>, <code>/etc/my.cnf</code>,
+						<code>/etc/my.ini</code>, ... (this parameter is not
+						compatible with JDBC access))</p>
+						
+						<p>If you want to work with a different account than 
+						<code>root</code> (which is a good idea!), follow these steps :</p>
+						<p>Connect to MySQL database server with your root account :<br/>
+						<code>mysql -u root -p [-h <italic>&lt;mysql host&gt;</italic>] mysql</code>
+						</p>
+						<p>Create the database by executing the following queries (choose a name for
+						your database) :<br/>
+						<code>drop database if exists <italic>&lt;your database name&gt;</italic>;</code><br/>
+						<code>create database <italic>&lt;your database name&gt;</italic>;</code>
+						</p>
+						<p>Create a user account by executing the following queries (choose
+						a name and a password for your database user) :<br/>
+						<code>delete from mysql.user where user='<italic>&lt;your user name&gt;</italic>';</code><br/>
+						<code>grant all privileges on <italic>&lt;your database name&gt;</italic>.* to <italic>&lt;your user name&gt;</italic>@'%'
+						identified by '<italic>&lt;your password&gt;</italic>';</code><br/>
+						<code>flush privileges;</code>
+						</p>
+						<p>Disconnect from the database with the command :
+						<code>quit</code></p>
+					</li>
+					<li><underlined>Custom mode :</underlined> help yourself ! (contact me if you need a help)</li>
+				</ol>
+			</p>
+		</body>
+	</chapter>
+
+	<chapter>
+		<id>datamigration</id>
+		<title>Data migration from version 0.2 to version 0.3</title>
+		<body>
+			<p>
+				In order to migrate a V0.2 model to a V0.3 compliant model, follow
+				these steps :
+				<ul>
+					<li>With Activity Manager V0.2, export the model (in the database
+					tab, specify a file name and click on export)</li>
+					<li>Make a backup of the file you've just generated</li>
+					<li>Edit the XML file with a text editor (TextPad or anything else)</li>
+					<li>Localize the duration nodes which may look like this : 
+						<code>&lt;duration&gt;25&lt;duration&gt;</code></li>
+					<li>Modify each duration node like this : 
+						<code>&lt;duration&gt;&lt;value&gt;25&lt;/value&gt;&lt;/duration&gt;</code></li>
+					<li>Save the file.</li>
+					<li>If you use MySql, prepare a database for Activity Manager 0.3 
+						(see '<a href="#dbinit" type="book-ref">Database initialization</a>'
+						for more details)</li>
+					<li>Start Activity Manager V0.3 and import this file (in the database
+						tab, specify the file name, click on import and click successively on 
+						'OK', 'Yes', 'Yes', 'Yes', 'Yes', 'No')</li>
+					<li>It should be over!</li>
+				</ul>
+			</p>
+		</body>
+	</chapter>
+
+	<chapter>
+		<id>startup</id>
+		<title>Start the application</title>
+		<body>
+			<p>Please refer to the <a href="userGuide#startup" type="book-ref">User Guide</a>
+				for more details about how to run Activity Manager.
+				<center>
+					<img thumbnail="database-tab-small.png" src="database-tab.png"/>
+				</center>
+			</p>
+		</body>
+	</chapter>
+
+</book>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book SYSTEM "book.dtd">
+<book>
+	<id>releaseNotes</id>
+	<title>Release notes</title>
+
+	<chapter>
+		<body>
+			<p>
+				<ul>
+					<li>
+						<bold>Activity Manager V0.3 :</bold>
+						<ul>
+							<li>
+								Added a task search feature<br/>
+								<img src="release-notes/0.3/task-search.png"/><br/>
+							</li>
+							<li>
+								Added a task selection history in the task chooser popup<br/>
+								<img src="release-notes/0.3/tasks-history.png"/><br/>
+							</li>
+							<li>
+								Added a column sort feature on the collaborators tab<br/>
+								<img src="release-notes/0.3/collaborators-sort-feature.png"/><br/>
+							</li>
+							<li>
+								Added a activation feature on the duration and collaborators tabs<br/>
+								<img src="release-notes/0.3/collaborators-activation-feature.png"/><br/>
+							</li>
+							<li>
+								Added a contribution sum for each day<br/>
+								<img src="release-notes/0.3/contributions-day-sum.png"/><br/>
+							</li>
+							<li>Added automatic refresh on the contribution tab when :
+								<ul>
+									<li>a duration is modified, added or removed</li>
+									<li>a collaborator is modified, added or removed</li>
+									<li>a task is modified, added or removed</li>
+								</ul>
+								<br/>
+							</li>
+							<li>
+								Added a copy/paste feature between the tasks tab and
+								the contributions tab
+							</li>
+							<li>Added a comment column in the tasks tree tab</li>
+							<li>Added tasks code paths in the contributions list popup</li>
+							<li>Added a remove feature on the contributions tab</li>
+							<li>Added automatic .xls extension for EXEL exports</li>
+							<li>SWT/JFace graphic library upgrade (v3.1=&gt;v3.2)</li>
+						</ul>
+						<br/>
+					</li>
+					<li>
+						<bold>Activity Manager V0.2.1 :</bold>
+						<ul>
+							<li>Added XSL based documentation builder (misc/doc)</li>
+							<li>Fixed sample reports configuration bug (missing / ahead task path)</li>
+						</ul>
+						<br/>
+					</li>
+					<li>
+						<bold>Activity Manager V0.2 :</bold>
+						<ul>
+							<li>Added linux compatibility</li>
+							<li>Added standalone mode (with an embedded HSQLDB database)</li>
+							<li>Added automatic database initialization (light weight installation steps)</li>
+							<li>Added durations repository administration</li>
+							<li>Added XML database export/import</li>
+							<li>Added EXCEL export of SWT tables</li>
+							<li>Added 'About' tab with general information</li>
+							<li>Added next/previous month/year navigability in the contributions tab</li>
+							<li>Added up and down accelerators to move tasks</li>
+						</ul>
+						<br/>
+					</li>
+					<li>
+						<bold>Activity Manager V0.1 :</bold>
+						<ul>
+							<li>Collaborators repository administration</li>
+							<li>Tasks repository administration</li>
+							<li>Contributions management (=activity management)</li>
+							<li>Extensible report facility (with built in templates)</li>
+						</ul>
+						<br/>
+					</li>
+				</ul>
+			</p>
+		</body>
+	</chapter>
+
+</book>

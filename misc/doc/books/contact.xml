@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book SYSTEM "book.dtd">
+<book>
+	<id>contact</id>
+	<title>Contact</title>
+
+	<chapter>
+		<body>
+			<p>If you want to report a bug, request a new feature, ask a 
+			question, give me a help or anything else, please write to
+			<a href="mailto:jfbraz@yahoo.fr">jfbraz@yahoo.fr</a>.
+			</p>
+		</body>
+	</chapter>
+
+</book>

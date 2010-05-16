@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book SYSTEM "book.dtd">
+<book>
+	<id>screenshots</id>
+	<title>Screenshots</title>
+
+	<chapter>
+		<body>
+			<p>
+				<center>
+					Database connection tab<br/>
+					<img thumbnail="database-tab-small.png" src="database-tab.png"/>
+				</center>
+				<br/>
+			</p>
+			<p>
+				<center>
+					Taks management tab<br/>
+					<img thumbnail="tasks-tab-small.png" src="tasks-tab.png"/>
+				</center>
+				<br/>
+			</p>
+			<p>
+				<center>
+					Contributions management tab<br/>
+					<img thumbnail="contributions-tab-small.png" src="contributions-tab.png"/>
+				</center>
+				<br/>
+			</p>
+			<p>
+				<center>
+					Collaborators management tab<br/>
+					<img thumbnail="collaborators-tab-small.png" src="collaborators-tab.png"/>
+				</center>
+				<br/>
+			</p>
+		</body>
+	</chapter>
+
+</book>
