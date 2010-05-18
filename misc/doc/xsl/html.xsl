@@ -58,7 +58,7 @@
 									<xsl:call-template name="buildMenuItem">
 										<xsl:with-param name="menuItemId">downloads</xsl:with-param>
 										<xsl:with-param name="menuItemTitle">Downloads</xsl:with-param>
-										<xsl:with-param name="menuItemHref">http://www.jfbrazeau.fr/main/homepage/activitymgr/download.do</xsl:with-param>
+										<xsl:with-param name="menuItemHref">https://sourceforge.net/projects/activitymanager/files/</xsl:with-param>
 									</xsl:call-template>
 								<tr>
 									<!-- Ligne permettan de définir la taille des colonnes de manière ferme -->
