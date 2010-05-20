@@ -146,7 +146,7 @@ public class ErrorDialog extends IconAndMessageDialog {
 				        }
 			        }
 			        catch (IOException e) {
-			        	log.error(Strings.getString("ErrorDialog.3"), e); //$NON-NLS-1$
+			        	log.error(Strings.getString("ErrorDialog.infos.IO_ERROR_WHILE_PRINTING_STACKTRACE"), e); //$NON-NLS-1$
 			        	list.add(Strings.getString("ErrorDialog.infos.IO_ERROR_WHILE_PRINTING_STACKTRACE")); //$NON-NLS-1$
 			        	list.add(Strings.getString("ErrorDialog.infos.SEE_LOGS_FOR_MORE_DETAILS")); //$NON-NLS-1$
 			        }

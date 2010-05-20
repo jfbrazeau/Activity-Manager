@@ -572,7 +572,7 @@ public class ModelMgr {
 		// Check sur l'unicité du code pour le chemin considéré
 		Task sameCodeTask = DbMgr.getTask(tx, parentTask!=null ? parentTask.getFullPath() : "", task.getCode()); //$NON-NLS-1$
 		if (sameCodeTask!=null && !sameCodeTask.equals(task))
-			throw new ModelException(Strings.getString("ModelMgr.errors.TASK_CODE_ALREADY_USED")); //$NON-NLS-1$
+			throw new ModelException(Strings.getString("ModelMgr.errors.TASK_CODE_ALREADY_IN_USE")); //$NON-NLS-1$
 		
 		// Création de la tache
 		task = DbMgr.createTask(tx, parentTask, task);
