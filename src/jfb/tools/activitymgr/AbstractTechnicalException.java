@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -28,7 +28,7 @@
 package jfb.tools.activitymgr;
 
 /**
- * Exception mère des exceptions techniques.
+ * Exception mï¿½re des exceptions techniques.
  */
 public abstract class AbstractTechnicalException extends AbstractException {
 
@@ -36,7 +36,9 @@ public abstract class AbstractTechnicalException extends AbstractException {
 
 	/**
 	 * Constructeur avec un message.
-	 * @param message le message d'erreur.
+	 * 
+	 * @param message
+	 *            le message d'erreur.
 	 */
 	public AbstractTechnicalException(String message) {
 		super(message);
@@ -44,8 +46,11 @@ public abstract class AbstractTechnicalException extends AbstractException {
 
 	/**
 	 * Constructeur avec un message et une cause.
-	 * @param message le message.
-	 * @param cause la cause.
+	 * 
+	 * @param message
+	 *            le message.
+	 * @param cause
+	 *            la cause.
 	 */
 	public AbstractTechnicalException(String message, Throwable cause) {
 		super(message, cause);

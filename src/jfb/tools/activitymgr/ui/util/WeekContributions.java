@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -31,29 +31,34 @@ import jfb.tools.activitymgr.core.beans.Contribution;
 import jfb.tools.activitymgr.core.beans.Task;
 
 /**
- * Contributions associées à une tache donnée sur une semaine.
+ * Contributions associï¿½es ï¿½ une tache donnï¿½e sur une semaine.
  */
 public class WeekContributions {
 
-	/** La tache associée à la liste de contributions */
+	/** La tache associï¿½e ï¿½ la liste de contributions */
 	private Task task;
-	
+
 	/** La liste des contributions */
 	private Contribution[] contributions = new Contribution[7];
-	
+
 	/**
-	 * Retourne la contribution du jour de la semaine spécifié.
-	 * @param day le jour de la semaine.
-	 * @return la contribution du jour de la semaine spécifié.
+	 * Retourne la contribution du jour de la semaine spï¿½cifiï¿½.
+	 * 
+	 * @param day
+	 *            le jour de la semaine.
+	 * @return la contribution du jour de la semaine spï¿½cifiï¿½.
 	 */
 	public Contribution getContribution(int day) {
 		return contributions[day];
 	}
 
 	/**
-	 * Définit la contribution d'un jour de la semaine.
-	 * @param day le numéro du jour de la semaine.
-	 * @param contribution les nouvelles contributions.
+	 * Dï¿½finit la contribution d'un jour de la semaine.
+	 * 
+	 * @param day
+	 *            le numï¿½ro du jour de la semaine.
+	 * @param contribution
+	 *            les nouvelles contributions.
 	 */
 	public void setContribution(int day, Contribution contribution) {
 		contributions[day] = contribution;
@@ -67,8 +72,10 @@ public class WeekContributions {
 	}
 
 	/**
-	 * Définit la tache pour cette contribution sur une semaine.
-	 * @param task la nouvelle tache.
+	 * Dï¿½finit la tache pour cette contribution sur une semaine.
+	 * 
+	 * @param task
+	 *            la nouvelle tache.
 	 */
 	public void setTask(Task task) {
 		this.task = task;
@@ -82,8 +89,10 @@ public class WeekContributions {
 	}
 
 	/**
-	 * Définit les contributions de la semaine.
-	 * @param contributions les nouvelles contributions.
+	 * Dï¿½finit les contributions de la semaine.
+	 * 
+	 * @param contributions
+	 *            les nouvelles contributions.
 	 */
 	public void setContributions(Contribution[] contributions) {
 		this.contributions = contributions;

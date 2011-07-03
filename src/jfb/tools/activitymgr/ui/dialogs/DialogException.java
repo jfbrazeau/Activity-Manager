@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -32,20 +32,23 @@ import jfb.tools.activitymgr.ui.util.UITechException;
 import org.eclipse.swt.widgets.Control;
 
 /**
- * Exception utilisée dans les dialogues. 
+ * Exception utilisï¿½e dans les dialogues.
  */
 public class DialogException extends UITechException {
 
 	/** Fake serial version UID */
 	private static final long serialVersionUID = 1L;
 
-	/** Contrôle à l'origine de la levée de l'exception */
+	/** Contrï¿½le ï¿½ l'origine de la levï¿½e de l'exception */
 	private Control control;
 
 	/**
-	 * Constructeur par défaut.
-	 * @param message le message d'erreur. 
-	 * @param control le contrôle à l'origine de la levée de l'exception.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param message
+	 *            le message d'erreur.
+	 * @param control
+	 *            le contrï¿½le ï¿½ l'origine de la levï¿½e de l'exception.
 	 */
 	public DialogException(String message, Control control) {
 		super(message);
@@ -53,7 +56,7 @@ public class DialogException extends UITechException {
 	}
 
 	/**
-	 * @return le contrôle à l'origine de la levée de l'exception.
+	 * @return le contrï¿½le ï¿½ l'origine de la levï¿½e de l'exception.
 	 */
 	public Control getControl() {
 		return control;

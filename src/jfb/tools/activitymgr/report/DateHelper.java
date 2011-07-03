@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -34,6 +34,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import jfb.tools.activitymgr.core.util.Strings;
@@ -49,16 +50,18 @@ public class DateHelper {
 	private static Logger log = Logger.getLogger(DateHelper.class);
 
 	/** Formatteurs de date */
-	private Map dateFormats = Collections.synchronizedMap(new HashMap());
+	private Map<String, SimpleDateFormat> dateFormats = Collections.synchronizedMap(new HashMap<String, SimpleDateFormat>());
 
 	/**
-	 * Retourne le formatteur de date associé à un format.
-	 * @param format le format de date.
+	 * Retourne le formatteur de date associï¿½ ï¿½ un format.
+	 * 
+	 * @param format
+	 *            le format de date.
 	 * @return le formatteur de date.
 	 */
 	private SimpleDateFormat getDateFormat(String format) {
 		SimpleDateFormat sdf = (SimpleDateFormat) dateFormats.get(format);
-		if (sdf==null) {
+		if (sdf == null) {
 			sdf = new SimpleDateFormat(format);
 			dateFormats.put(format, sdf);
 		}
@@ -66,21 +69,28 @@ public class DateHelper {
 	}
 
 	/**
-	 * Convertit une chaîne de caractères au format YYYYMMDD en date. 
-	 * @param yyyyMMdd la date au format YYYYMMDD.
+	 * Convertit une chaï¿½ne de caractï¿½res au format YYYYMMDD en date.
+	 * 
+	 * @param yyyyMMdd
+	 *            la date au format YYYYMMDD.
 	 * @return la date convertie.
-	 * @throws ParseException levé en cas de problème de format de la chaîne.
+	 * @throws ParseException
+	 *             levï¿½ en cas de problï¿½me de format de la chaï¿½ne.
 	 */
 	public Calendar toDate(String yyyyMMdd) throws ParseException {
 		return toDate("yyyyMMdd", yyyyMMdd); //$NON-NLS-1$
 	}
-	
+
 	/**
-	 * Convertit une chaîne de caractères au format spécifié en date. 
-	 * @param format le format de date.
-	 * @param date la chapine de caractères.
+	 * Convertit une chaï¿½ne de caractï¿½res au format spï¿½cifiï¿½ en date.
+	 * 
+	 * @param format
+	 *            le format de date.
+	 * @param date
+	 *            la chapine de caractï¿½res.
 	 * @return la date convertie.
-	 * @throws ParseException levé en cas de problème de format de la chaîne.
+	 * @throws ParseException
+	 *             levï¿½ en cas de problï¿½me de format de la chaï¿½ne.
 	 */
 	public Calendar toDate(String format, String date) throws ParseException {
 		Calendar _date = new GregorianCalendar();
@@ -90,9 +100,12 @@ public class DateHelper {
 	}
 
 	/**
-	 * Convertit une date au format spécifié.
-	 * @param format le format de date.
-	 * @param date la date à convertir.
+	 * Convertit une date au format spï¿½cifiï¿½.
+	 * 
+	 * @param format
+	 *            le format de date.
+	 * @param date
+	 *            la date ï¿½ convertir.
 	 * @return la date convertie.
 	 */
 	public String toString(String format, Calendar date) {
@@ -101,7 +114,9 @@ public class DateHelper {
 
 	/**
 	 * Convertit une date au format YYYYMMDD.
-	 * @param date la date à convertir.
+	 * 
+	 * @param date
+	 *            la date ï¿½ convertir.
 	 * @return la date convertie.
 	 */
 	public String toYYYYMMDD(Calendar date) {
@@ -109,18 +124,22 @@ public class DateHelper {
 	}
 
 	/**
-	 * Retourne l'année associée à une date.
-	 * @param date la date.
-	 * @return l'année.
+	 * Retourne l'annï¿½e associï¿½e ï¿½ une date.
+	 * 
+	 * @param date
+	 *            la date.
+	 * @return l'annï¿½e.
 	 */
 	public Integer getYear(Calendar date) {
 		log.debug("getYear()"); //$NON-NLS-1$
 		return new Integer(date.get(Calendar.YEAR));
 	}
-	
+
 	/**
-	 * Retourne le mois associé à une date.
-	 * @param date la date.
+	 * Retourne le mois associï¿½ ï¿½ une date.
+	 * 
+	 * @param date
+	 *            la date.
 	 * @return le mois.
 	 */
 	public Integer getMonth(Calendar date) {
@@ -129,8 +148,10 @@ public class DateHelper {
 	}
 
 	/**
-	 * Retourne le jour associé à une date.
-	 * @param date la date.
+	 * Retourne le jour associï¿½ ï¿½ une date.
+	 * 
+	 * @param date
+	 *            la date.
 	 * @return le jour.
 	 */
 	public Integer getDay(Calendar date) {
@@ -139,10 +160,13 @@ public class DateHelper {
 	}
 
 	/**
-	 * Construit un interval de dates entre deux dates spécifiées dont la 
-	 * granularité est le jour.
-	 * @param fromDate date de départ de l'interval.
-	 * @param toDate date de fin de l'interval.
+	 * Construit un interval de dates entre deux dates spï¿½cifiï¿½es dont la
+	 * granularitï¿½ est le jour.
+	 * 
+	 * @param fromDate
+	 *            date de dï¿½part de l'interval.
+	 * @param toDate
+	 *            date de fin de l'interval.
 	 * @return l'interval de dates.
 	 */
 	public static Calendar[] buildDayInterval(Calendar fromDate, Calendar toDate) {
@@ -150,45 +174,59 @@ public class DateHelper {
 	}
 
 	/**
-	 * Construit un interval de dates entre deux dates spécifiées dont la 
-	 * granularité est le mois.
-	 * @param fromDate date de départ de l'interval.
-	 * @param toDate date de fin de l'interval.
+	 * Construit un interval de dates entre deux dates spï¿½cifiï¿½es dont la
+	 * granularitï¿½ est le mois.
+	 * 
+	 * @param fromDate
+	 *            date de dï¿½part de l'interval.
+	 * @param toDate
+	 *            date de fin de l'interval.
 	 * @return l'interval de dates.
 	 */
-	public static Calendar[] buildMonthInterval(Calendar fromDate, Calendar toDate) {
+	public static Calendar[] buildMonthInterval(Calendar fromDate,
+			Calendar toDate) {
 		return buildInterval(fromDate, toDate, Calendar.MONTH);
 	}
 
 	/**
-	 * Construit un interval de dates entre deux dates spécifiées dont la 
-	 * granularité est spécifiée en paramètre.
-	 * @param fromDate date de départ de l'interval.
-	 * @param toDate date de fin de l'interval.
-	 * @param dateIncrementType granularité de l'interval.
+	 * Construit un interval de dates entre deux dates spï¿½cifiï¿½es dont la
+	 * granularitï¿½ est spï¿½cifiï¿½e en paramï¿½tre.
+	 * 
+	 * @param fromDate
+	 *            date de dï¿½part de l'interval.
+	 * @param toDate
+	 *            date de fin de l'interval.
+	 * @param dateIncrementType
+	 *            granularitï¿½ de l'interval.
 	 * @return l'interval de dates.
 	 */
-	private static Calendar[] buildInterval(Calendar fromDate, Calendar toDate, int dateIncrementType) {
+	private static Calendar[] buildInterval(Calendar fromDate, Calendar toDate,
+			int dateIncrementType) {
 		log.debug("buildInterval(" + fromDate + ", " + toDate + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		if (dateIncrementType!=Calendar.DATE && dateIncrementType!=Calendar.MONTH)
-			throw new Error(Strings.getString("DateHelper.errors.UNKNOWN_DATE_INCREMENT_TYPE")); //$NON-NLS-1$
-		ArrayList list = new ArrayList();
+		if (dateIncrementType != Calendar.DATE
+				&& dateIncrementType != Calendar.MONTH)
+			throw new Error(
+					Strings.getString("DateHelper.errors.UNKNOWN_DATE_INCREMENT_TYPE")); //$NON-NLS-1$
+		List<Calendar> list = new ArrayList<Calendar>();
 		Calendar cal = (Calendar) toDate.clone();
 		cal.add(dateIncrementType, 1);
-		if (dateIncrementType==Calendar.MONTH)
+		if (dateIncrementType == Calendar.MONTH)
 			cal.add(Calendar.DATE, -1);
 		long toDateInMillis = cal.getTimeInMillis();
 		cal = (Calendar) fromDate.clone();
-		while (cal.getTimeInMillis()<toDateInMillis) {
-			list.add(cal.clone());
+		while (cal.getTimeInMillis() < toDateInMillis) {
+			list.add((Calendar) cal.clone());
 			cal.add(dateIncrementType, 1);
 		}
 		return (Calendar[]) list.toArray(new Calendar[list.size()]);
 	}
 
 	/**
-	 * Retourne le dernier jour du mois de la date spécifiée.
-	 * @param date la date associé au mois dont on veut connaître le dernier jour.
+	 * Retourne le dernier jour du mois de la date spï¿½cifiï¿½e.
+	 * 
+	 * @param date
+	 *            la date associï¿½ au mois dont on veut connaï¿½tre le dernier
+	 *            jour.
 	 * @return le dernier jour du mois.
 	 */
 	public Calendar lastDayInMonth(Calendar date) {

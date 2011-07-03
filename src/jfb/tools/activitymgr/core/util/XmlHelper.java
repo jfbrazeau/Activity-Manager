@@ -23,84 +23,124 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
- * Classe offrant des services de manipulation ou de génération
- * de documents XML.
+ * Classe offrant des services de manipulation ou de gï¿½nï¿½ration de documents
+ * XML.
  */
 public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 
 	/**
-	 * Interface de création des objets en base de données.
+	 * Interface de crï¿½ation des objets en base de donnï¿½es.
 	 */
 	public static interface ModelMgrDelegate {
-		
+
 		/**
-		 * Crée une durée dans un contexte de transaction.
-		 * @param tx le contexte de transaction.
-		 * @param duration la durée à créer.
-		 * @return la durée créée.
-		 * @throws DbException levé en cas d'incident technique d'accès à la base.
-		 * @throws ModelException levé dans la cas ou la durée existe déjà.
+		 * Crï¿½e une durï¿½e dans un contexte de transaction.
+		 * 
+		 * @param tx
+		 *            le contexte de transaction.
+		 * @param duration
+		 *            la durï¿½e ï¿½ crï¿½er.
+		 * @return la durï¿½e crï¿½ï¿½e.
+		 * @throws DbException
+		 *             levï¿½ en cas d'incident technique d'accï¿½s ï¿½ la base.
+		 * @throws ModelException
+		 *             levï¿½ dans la cas ou la durï¿½e existe dï¿½jï¿½.
 		 * @see jfb.tools.activitymgr.core.ModelMgr#createDuration(Duration)
 		 */
-		public Duration createDuration(DbTransaction tx, Duration duration) throws ModelException, DbException;
-		
-		/**
-		 * Crée un collaborateur dans un contexte de transaction.
-		 * @param tx le contexte de transaction.
-		 * @param collaborator le collaborateur à créer.
-		 * @return le collaborateur après création.
-		 * @throws DbException levé en cas d'incident technique d'accès à la base.
-		 * @throws ModelException levé dans la cas ou la tache de destination ne peut recevoir de sous-tache.
-		 * @see jfb.tools.activitymgr.core.ModelMgr#createCollaborator(Collaborator)
-		 */
-		public Collaborator createCollaborator(DbTransaction tx, Collaborator collaborator) throws DbException, ModelException;
+		public Duration createDuration(DbTransaction tx, Duration duration)
+				throws ModelException, DbException;
 
 		/**
-		 * Crée une nouvelle tache dans un contexte de transaction.
-		 * @param tx le contexte de transaction.
-		 * @param parentTask la tache parent de destination.
-		 * @param task la tache à créer.
-		 * @return la tache crée.
-		 * @throws DbException levé en cas d'incident technique d'accès à la base.
-		 * @throws ModelException levé dans la cas ou la tache de destination ne peut recevoir de sous-tache.
+		 * Crï¿½e un collaborateur dans un contexte de transaction.
+		 * 
+		 * @param tx
+		 *            le contexte de transaction.
+		 * @param collaborator
+		 *            le collaborateur ï¿½ crï¿½er.
+		 * @return le collaborateur aprï¿½s crï¿½ation.
+		 * @throws DbException
+		 *             levï¿½ en cas d'incident technique d'accï¿½s ï¿½ la base.
+		 * @throws ModelException
+		 *             levï¿½ dans la cas ou la tache de destination ne peut
+		 *             recevoir de sous-tache.
+		 * @see jfb.tools.activitymgr.core.ModelMgr#createCollaborator(Collaborator)
+		 */
+		public Collaborator createCollaborator(DbTransaction tx,
+				Collaborator collaborator) throws DbException, ModelException;
+
+		/**
+		 * Crï¿½e une nouvelle tache dans un contexte de transaction.
+		 * 
+		 * @param tx
+		 *            le contexte de transaction.
+		 * @param parentTask
+		 *            la tache parent de destination.
+		 * @param task
+		 *            la tache ï¿½ crï¿½er.
+		 * @return la tache crï¿½e.
+		 * @throws DbException
+		 *             levï¿½ en cas d'incident technique d'accï¿½s ï¿½ la base.
+		 * @throws ModelException
+		 *             levï¿½ dans la cas ou la tache de destination ne peut
+		 *             recevoir de sous-tache.
 		 * @see jfb.tools.activitymgr.core.ModelMgr#createTask(Task, Task)
 		 */
-		public Task createTask(DbTransaction tx, Task parentTask, Task task) throws DbException, ModelException;
+		public Task createTask(DbTransaction tx, Task parentTask, Task task)
+				throws DbException, ModelException;
 
 		/**
-		 * Crée une contribution dans un contexte de transaction.
-		 * @param tx le contexte de transaction.
-		 * @param contribution la contribution à créer.
-		 * @return la contribution après création.
-		 * @throws DbException levé en cas d'incident technique d'accès à la base.
-		 * @throws ModelException levé dans la cas ou la tache de destination ne peut recevoir de contribution.
+		 * Crï¿½e une contribution dans un contexte de transaction.
+		 * 
+		 * @param tx
+		 *            le contexte de transaction.
+		 * @param contribution
+		 *            la contribution ï¿½ crï¿½er.
+		 * @return la contribution aprï¿½s crï¿½ation.
+		 * @throws DbException
+		 *             levï¿½ en cas d'incident technique d'accï¿½s ï¿½ la base.
+		 * @throws ModelException
+		 *             levï¿½ dans la cas ou la tache de destination ne peut
+		 *             recevoir de contribution.
 		 * @see jfb.tools.activitymgr.core.ModelMgr#createCollaborator(Collaborator)
 		 */
-		public Contribution createContribution(DbTransaction tx, Contribution contribution) throws DbException, ModelException;
+		public Contribution createContribution(DbTransaction tx,
+				Contribution contribution) throws DbException, ModelException;
 
 		/**
-		 * Retourne la tache associée à un chemin construit à partir de 
-		 * codes de taches.
-		 * @param tx le contexte de transaction.
-		 * @param codePath le chemin à base de code.
-		 * @return la tache trouvée.
-		 * @throws DbException levé en cas d'incident technique avec la base de données.
-		 * @throws ModelException levé dans le cas ou le chemin de tache est inconnu. 
+		 * Retourne la tache associï¿½e ï¿½ un chemin construit ï¿½ partir de codes de
+		 * taches.
+		 * 
+		 * @param tx
+		 *            le contexte de transaction.
+		 * @param codePath
+		 *            le chemin ï¿½ base de code.
+		 * @return la tache trouvï¿½e.
+		 * @throws DbException
+		 *             levï¿½ en cas d'incident technique avec la base de donnï¿½es.
+		 * @throws ModelException
+		 *             levï¿½ dans le cas ou le chemin de tache est inconnu.
 		 */
-		public Task getTaskByCodePath(DbTransaction tx, final String codePath) throws DbException, ModelException;
+		public Task getTaskByCodePath(DbTransaction tx, final String codePath)
+				throws DbException, ModelException;
 
 		/**
-		 * Retourne le collabirateur dont le login est spécifié dans un contexte
+		 * Retourne le collabirateur dont le login est spï¿½cifiï¿½ dans un contexte
 		 * de transaction.
-		 * @param tx le contexte de transaction.
-		 * @param login l'identifiant de connexion du collaborateur recherché.
-		 * @return le collaborateur dont l'identifiant de connexion est spécifié.
-		 * @throws DbException levé en cas d'incident technique d'accès à la base.
+		 * 
+		 * @param tx
+		 *            le contexte de transaction.
+		 * @param login
+		 *            l'identifiant de connexion du collaborateur recherchï¿½.
+		 * @return le collaborateur dont l'identifiant de connexion est
+		 *         spï¿½cifiï¿½.
+		 * @throws DbException
+		 *             levï¿½ en cas d'incident technique d'accï¿½s ï¿½ la base.
 		 */
-		public Collaborator getCollaborator(DbTransaction tx, String login) throws DbException;
+		public Collaborator getCollaborator(DbTransaction tx, String login)
+				throws DbException;
 
 	}
-	
+
 	/** Logger */
 	private static Logger log = Logger.getLogger(XmlHelper.class);
 
@@ -131,13 +171,13 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	public static final String TODO_NODE = "todo"; //$NON-NLS-1$
 	public static final String COMMENT_NODE = "comment"; //$NON-NLS-1$
 	public static final String VALUE_NODE = "value"; //$NON-NLS-1$
-	
+
 	/** Contexte de transaction */
 	private DbTransaction transaction;
-	
-	/** Gestionnaire du modèle */
+
+	/** Gestionnaire du modï¿½le */
 	private ModelMgrDelegate modelMgrDelegate;
-	
+
 	/** Sauvegarde des objets en cours de chargement */
 	private Duration currentDuration;
 	private Collaborator currentCollaborator;
@@ -145,48 +185,63 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	private Task currentTask;
 	private Contribution currentContribution;
 	private StringBuffer currentText = new StringBuffer();
-	
-	/** Pointeur de location dans le fichier XML parsé */
+
+	/** Pointeur de location dans le fichier XML parsï¿½ */
 	private Locator locator;
-	
+
 	/**
-	 * Constructeur par défaut.
-	 * @param modelMgrDelegate délégué du gestionnaire de modèle.
-	 * @param tx contexte de transaction.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param modelMgrDelegate
+	 *            dï¿½lï¿½guï¿½ du gestionnaire de modï¿½le.
+	 * @param tx
+	 *            contexte de transaction.
 	 */
 	public XmlHelper(ModelMgrDelegate modelMgrDelegate, DbTransaction tx) {
 		this.modelMgrDelegate = modelMgrDelegate;
 		this.transaction = tx;
 	}
-	
+
 	/** EntityResolver interface methods */
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.EntityResolver#resolveEntity(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.EntityResolver#resolveEntity(java.lang.String,
+	 * java.lang.String)
 	 */
-	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+	public InputSource resolveEntity(String publicId, String systemId)
+			throws SAXException, IOException {
 		log.debug("resolveEntity(" + publicId + ", " + systemId + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		return new InputSource(ModelMgr.class.getResourceAsStream("activitymgr.dtd")); //$NON-NLS-1$
+		return new InputSource(
+				ModelMgr.class.getResourceAsStream("activitymgr.dtd")); //$NON-NLS-1$
 	}
 
 	/** ErrorHandler interface methods */
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
 	 */
 	public void error(SAXParseException e) throws SAXParseException {
-		log.error("SAX error line : " + e.getLineNumber() + " column : " + e.getColumnNumber(), e); //$NON-NLS-1$ //$NON-NLS-2$
+		log.error(
+				"SAX error line : " + e.getLineNumber() + " column : " + e.getColumnNumber(), e); //$NON-NLS-1$ //$NON-NLS-2$
 		throw e;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.xml.sax.ErrorHandler#fatalError(org.xml.sax.SAXParseException)
 	 */
 	public void fatalError(SAXParseException e) throws SAXParseException {
 		error(e);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.xml.sax.ErrorHandler#warning(org.xml.sax.SAXParseException)
 	 */
 	public void warning(SAXParseException e) throws SAXParseException {
@@ -194,231 +249,244 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	}
 
 	/** ContentHandlet interface methods */
-	
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.ContentHandler#startElement(java.lang.String,
+	 * java.lang.String, java.lang.String, org.xml.sax.Attributes)
 	 */
-	public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
+	public void startElement(String namespaceURI, String localName,
+			String qName, Attributes atts) throws SAXException {
 		log.debug("start(" + qName + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-		if (MODEL_NODE.equals(qName)
-			|| DURATIONS_NODE.equals(qName)
-			|| VALUE_NODE.equals(qName)
-			|| COLLABORATORS_NODE.equals(qName)
-			|| LOGIN_NODE.equals(qName)
-			|| FIRST_NAME_NODE.equals(qName)
-			|| LAST_NAME_NODE.equals(qName)
-			|| TASKS_NODE.equals(qName)
-			|| PATH_NODE.equals(qName)
-			|| NAME_NODE.equals(qName)
-			|| IS_ACTIVE_NODE.equals(qName)
-			|| BUDGET_NODE.equals(qName)
-			|| INITIALLY_CONSUMED_NODE.equals(qName)
-			|| TODO_NODE.equals(qName)
-			|| COMMENT_NODE.equals(qName)
-			|| CONTRIBUTIONS_NODE.equals(qName)
-			|| CONTRIBUTOR_REF_NODE.equals(qName)
-			|| TASK_REF_NODE.equals(qName)) {
+		if (MODEL_NODE.equals(qName) || DURATIONS_NODE.equals(qName)
+				|| VALUE_NODE.equals(qName) || COLLABORATORS_NODE.equals(qName)
+				|| LOGIN_NODE.equals(qName) || FIRST_NAME_NODE.equals(qName)
+				|| LAST_NAME_NODE.equals(qName) || TASKS_NODE.equals(qName)
+				|| PATH_NODE.equals(qName) || NAME_NODE.equals(qName)
+				|| IS_ACTIVE_NODE.equals(qName) || BUDGET_NODE.equals(qName)
+				|| INITIALLY_CONSUMED_NODE.equals(qName)
+				|| TODO_NODE.equals(qName) || COMMENT_NODE.equals(qName)
+				|| CONTRIBUTIONS_NODE.equals(qName)
+				|| CONTRIBUTOR_REF_NODE.equals(qName)
+				|| TASK_REF_NODE.equals(qName)) {
 			// Do nothing...
-		}
-		else if (DURATION_NODE.equals(qName))  {
+		} else if (DURATION_NODE.equals(qName)) {
 			currentDuration = new Duration();
-		}
-		else if (COLLABORATOR_NODE.equals(qName)) {
+		} else if (COLLABORATOR_NODE.equals(qName)) {
 			currentCollaborator = new Collaborator();
-		}
-		else if (TASK_NODE.equals(qName)) {
+		} else if (TASK_NODE.equals(qName)) {
 			currentTask = new Task();
-		}
-		else if (CONTRIBUTION_NODE.equals(qName)) {
+		} else if (CONTRIBUTION_NODE.equals(qName)) {
 			currentContribution = new Contribution();
-			currentContribution.setYear((int) getNumAttrValue(atts, YEAR_ATTRIBUTE));
-			currentContribution.setMonth((int) getNumAttrValue(atts, MONTH_ATTRIBUTE));
-			currentContribution.setDay((int) getNumAttrValue(atts, DAY_ATTRIBUTE));
-			currentContribution.setDurationId(getNumAttrValue(atts, DURATION_ATTRIBUTE));
-		}
-		else {
-			error(new SAXParseException(Strings.getString("XmlHelper.errors.UNEXPECTED_NODE", qName), locator)); //$NON-NLS-1$ //$NON-NLS-2$
+			currentContribution.setYear((int) getNumAttrValue(atts,
+					YEAR_ATTRIBUTE));
+			currentContribution.setMonth((int) getNumAttrValue(atts,
+					MONTH_ATTRIBUTE));
+			currentContribution.setDay((int) getNumAttrValue(atts,
+					DAY_ATTRIBUTE));
+			currentContribution.setDurationId(getNumAttrValue(atts,
+					DURATION_ATTRIBUTE));
+		} else {
+			error(new SAXParseException(Strings.getString(
+					"XmlHelper.errors.UNEXPECTED_NODE", qName), locator)); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 
 	/**
-	 * Retourne la valeur d'un attribut numérique ou lève un exception si 
+	 * Retourne la valeur d'un attribut numï¿½rique ou lï¿½ve un exception si
 	 * l'attribut n'existe pas ou qu'il n'a pas un format correct.
-	 * @param atts la liste des attributs.
-	 * @param qName le nom de l'attribut.
+	 * 
+	 * @param atts
+	 *            la liste des attributs.
+	 * @param qName
+	 *            le nom de l'attribut.
 	 * @return la valeur de l'attribut.
-	 * @throws SAXParseException levé en cas d'absence ou de mauvais format de l'attribut.
+	 * @throws SAXParseException
+	 *             levï¿½ en cas d'absence ou de mauvais format de l'attribut.
 	 */
-	private long getNumAttrValue(Attributes atts, String qName) throws SAXParseException {
+	private long getNumAttrValue(Attributes atts, String qName)
+			throws SAXParseException {
 		String value = atts.getValue(qName);
-		if (value==null)
-			error(new SAXParseException(Strings.getString("XmlHelper.errors.MISSING_ATTRIBUTE", qName), locator)); //$NON-NLS-1$ //$NON-NLS-2$
+		if (value == null)
+			error(new SAXParseException(Strings.getString(
+					"XmlHelper.errors.MISSING_ATTRIBUTE", qName), locator)); //$NON-NLS-1$ //$NON-NLS-2$
 		// Parsing
 		long result = -1;
-		try { result = Long.parseLong(value); }
-		catch (NumberFormatException e) {
-			error(new SAXParseException(Strings.getString("XmlHelper.errors.INVALID_ATTRIBUTE", value, qName), locator)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		try {
+			result = Long.parseLong(value);
+		} catch (NumberFormatException e) {
+			error(new SAXParseException(
+					Strings.getString(
+							"XmlHelper.errors.INVALID_ATTRIBUTE", value, qName), locator)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		}
-		// Retour du résultat
+		// Retour du rï¿½sultat
 		return result;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.ContentHandler#endElement(java.lang.String,
+	 * java.lang.String, java.lang.String)
 	 */
-	public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
+	public void endElement(String namespaceURI, String localName, String qName)
+			throws SAXException {
 		log.debug("end(" + qName + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		try {
 			String textToSave = currentText.toString();
-			// Réinitialisation de la sauvegarde du texte courant
+			// Rï¿½initialisation de la sauvegarde du texte courant
 			currentText.setLength(0);
-			if (MODEL_NODE.equals(qName)
-				|| DURATIONS_NODE.equals(qName)
-				|| COLLABORATORS_NODE.equals(qName)
-				|| TASKS_NODE.equals(qName)
-				|| CONTRIBUTIONS_NODE.equals(qName)) {
+			if (MODEL_NODE.equals(qName) || DURATIONS_NODE.equals(qName)
+					|| COLLABORATORS_NODE.equals(qName)
+					|| TASKS_NODE.equals(qName)
+					|| CONTRIBUTIONS_NODE.equals(qName)) {
 				// Do nothing...
-			}
-			else if (DURATION_NODE.equals(qName)) {
+			} else if (DURATION_NODE.equals(qName)) {
 				Duration durationToCreate = currentDuration;
 				currentDuration = null;
 				modelMgrDelegate.createDuration(transaction, durationToCreate);
-			}
-			else if (COLLABORATOR_NODE.equals(qName)) {
+			} else if (COLLABORATOR_NODE.equals(qName)) {
 				Collaborator collaboratorToCreate = currentCollaborator;
 				currentCollaborator = null;
-				modelMgrDelegate.createCollaborator(transaction, collaboratorToCreate);
-			}
-			else if (LOGIN_NODE.equals(qName)) {
+				modelMgrDelegate.createCollaborator(transaction,
+						collaboratorToCreate);
+			} else if (LOGIN_NODE.equals(qName)) {
 				currentCollaborator.setLogin(textToSave);
-			}
-			else if (FIRST_NAME_NODE.equals(qName)) {
+			} else if (FIRST_NAME_NODE.equals(qName)) {
 				currentCollaborator.setFirstName(textToSave);
-			}
-			else if (LAST_NAME_NODE.equals(qName)) {
+			} else if (LAST_NAME_NODE.equals(qName)) {
 				currentCollaborator.setLastName(textToSave);
-			}
-			else if (IS_ACTIVE_NODE.equals(qName)) {
+			} else if (IS_ACTIVE_NODE.equals(qName)) {
 				boolean isActive = "true".equalsIgnoreCase(textToSave); //$NON-NLS-1$
-				if (currentCollaborator!=null)
+				if (currentCollaborator != null)
 					currentCollaborator.setIsActive(isActive);
-				else 
+				else
 					currentDuration.setIsActive(isActive);
-			}
-			else if (VALUE_NODE.equals(qName)) {
+			} else if (VALUE_NODE.equals(qName)) {
 				currentDuration.setId(Long.parseLong(textToSave));
-			}
-			else if (TASK_NODE.equals(qName)) {
+			} else if (TASK_NODE.equals(qName)) {
 				Task taskToCreate = currentTask;
 				Task parentOfTaskToCreate = currentParentTask;
 				currentTask = null;
 				currentParentTask = null;
-				modelMgrDelegate.createTask(transaction, parentOfTaskToCreate, taskToCreate);
-			}
-			else if (PATH_NODE.equals(qName)) {
+				modelMgrDelegate.createTask(transaction, parentOfTaskToCreate,
+						taskToCreate);
+			} else if (PATH_NODE.equals(qName)) {
 				log.debug("textToSave='" + textToSave + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-				String parentPath = textToSave.substring(0, textToSave.lastIndexOf('/'));
+				String parentPath = textToSave.substring(0,
+						textToSave.lastIndexOf('/'));
 				log.debug("parentPath='" + parentPath + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 				currentParentTask = "".equals(parentPath) ? null : modelMgrDelegate.getTaskByCodePath(transaction, parentPath); //$NON-NLS-1$
-				String taskCode = textToSave.substring(parentPath.length()+1);
+				String taskCode = textToSave.substring(parentPath.length() + 1);
 				currentTask.setCode(taskCode);
-			}
-			else if (NAME_NODE.equals(qName)) {
+			} else if (NAME_NODE.equals(qName)) {
 				currentTask.setName(textToSave);
-			}
-			else if (BUDGET_NODE.equals(qName)) {
+			} else if (BUDGET_NODE.equals(qName)) {
 				currentTask.setBudget(Long.parseLong(textToSave));
-			}
-			else if (INITIALLY_CONSUMED_NODE.equals(qName)) {
+			} else if (INITIALLY_CONSUMED_NODE.equals(qName)) {
 				currentTask.setInitiallyConsumed(Long.parseLong(textToSave));
-			}
-			else if (TODO_NODE.equals(qName)) {
+			} else if (TODO_NODE.equals(qName)) {
 				currentTask.setTodo(Long.parseLong(textToSave));
-			}
-			else if (COMMENT_NODE.equals(qName)) {
-				String comment = textToSave!=null ? textToSave.trim() : ""; //$NON-NLS-1$
+			} else if (COMMENT_NODE.equals(qName)) {
+				String comment = textToSave != null ? textToSave.trim() : ""; //$NON-NLS-1$
 				if ("".equals(comment)) //$NON-NLS-1$
 					comment = null;
 				currentTask.setComment(comment);
-			}
-			else if (CONTRIBUTION_NODE.equals(qName)) {
+			} else if (CONTRIBUTION_NODE.equals(qName)) {
 				Contribution contributionToCreate = currentContribution;
 				currentContribution = null;
-				modelMgrDelegate.createContribution(transaction, contributionToCreate);
-			}
-			else if (CONTRIBUTOR_REF_NODE.equals(qName)) {
-				Collaborator collaborator = modelMgrDelegate.getCollaborator(transaction, textToSave);
+				modelMgrDelegate.createContribution(transaction,
+						contributionToCreate);
+			} else if (CONTRIBUTOR_REF_NODE.equals(qName)) {
+				Collaborator collaborator = modelMgrDelegate.getCollaborator(
+						transaction, textToSave);
 				currentContribution.setContributorId(collaborator.getId());
-			}
-			else if (TASK_REF_NODE.equals(qName)) {
-				Task task = modelMgrDelegate.getTaskByCodePath(transaction, textToSave);
+			} else if (TASK_REF_NODE.equals(qName)) {
+				Task task = modelMgrDelegate.getTaskByCodePath(transaction,
+						textToSave);
 				currentContribution.setTaskId(task.getId());
+			} else {
+				error(new SAXParseException(Strings.getString(
+						"XmlHelper.errors.UNEXPECTED_NODE", qName), locator)); //$NON-NLS-1$ //$NON-NLS-2$
 			}
-			else {
-				error(new SAXParseException(Strings.getString("XmlHelper.errors.UNEXPECTED_NODE", qName), locator)); //$NON-NLS-1$ //$NON-NLS-2$
-			}
-		}
-		catch (NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			log.error("Number format error", e); //$NON-NLS-1$
-			error(new SAXParseException(Strings.getString("XmlHelper.errors.NUMBER_FORMAT_ERROR") + e.getMessage(), locator, e)); //$NON-NLS-1$
-		}
-		catch (ModelException e) {
+			error(new SAXParseException(
+					Strings.getString("XmlHelper.errors.NUMBER_FORMAT_ERROR") + e.getMessage(), locator, e)); //$NON-NLS-1$
+		} catch (ModelException e) {
 			log.error("Model violation", e); //$NON-NLS-1$
-			error(new SAXParseException(Strings.getString("XmlHelper.errors.MODEL_VIOLATION") + e.getMessage(), locator, e)); //$NON-NLS-1$
-		}
-		catch (DbException e) {
+			error(new SAXParseException(
+					Strings.getString("XmlHelper.errors.MODEL_VIOLATION") + e.getMessage(), locator, e)); //$NON-NLS-1$
+		} catch (DbException e) {
 			log.error("Unexpected database access error", e); //$NON-NLS-1$
-			throw new SAXException(Strings.getString("XmlHelper.errors.DATABASE_ACCESS_ERROR"), e); //$NON-NLS-1$
+			throw new SAXException(
+					Strings.getString("XmlHelper.errors.DATABASE_ACCESS_ERROR"), e); //$NON-NLS-1$
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.xml.sax.ContentHandler#endDocument()
 	 */
 	public void endDocument() throws SAXException {
 		log.debug("endDocument()"); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.xml.sax.ContentHandler#startDocument()
 	 */
 	public void startDocument() throws SAXException {
 		log.debug("startDocument()"); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.xml.sax.ContentHandler#characters(char[], int, int)
 	 */
-	public void characters(char[] ch, int start, int length) throws SAXException {
+	public void characters(char[] ch, int start, int length)
+			throws SAXException {
 		String chars = new String(ch, start, length);
 		log.debug("characters(" + chars + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		currentText.append(chars);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int)
 	 */
-	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+	public void ignorableWhitespace(char[] ch, int start, int length)
+			throws SAXException {
 		log.debug("ignorableWhitespace(" + new String(ch, start, length) + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
 	 */
 	public void endPrefixMapping(String prefix) throws SAXException {
-		if (!"xml".equals(prefix)
-				&& !"xmlns".equals(prefix)) 
+		if (!"xml".equals(prefix) && !"xmlns".equals(prefix))
 			saxFeatureNotImplemented("endPrefixMapping"); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String)
 	 */
 	public void skippedEntity(String name) throws SAXException {
 		saxFeatureNotImplemented("skippedEntity"); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator)
 	 */
 	public void setDocumentLocator(Locator locator) {
@@ -426,44 +494,61 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		this.locator = locator;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String,
+	 * java.lang.String)
 	 */
-	public void processingInstruction(String target, String data) throws SAXException {
+	public void processingInstruction(String target, String data)
+			throws SAXException {
 		saxFeatureNotImplemented("processingInstruction"); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String,
+	 * java.lang.String)
 	 */
-	public void startPrefixMapping(String prefix, String uri) throws SAXException {
-		if (!"xml".equals(prefix)
-				&& !"xmlns".equals(prefix)) 
+	public void startPrefixMapping(String prefix, String uri)
+			throws SAXException {
+		if (!"xml".equals(prefix) && !"xmlns".equals(prefix))
 			saxFeatureNotImplemented("startPrefixMapping"); //$NON-NLS-1$
 	}
 
 	/**
-	 * Lève une exception indiquant qu'une fontionnalité n'est pas implémentée pour ActivityManager
-	 * @param featureName nom de la fonctionnalité
-	 * @throws SAXException levée dans tous les cas.
+	 * Lï¿½ve une exception indiquant qu'une fontionnalitï¿½ n'est pas implï¿½mentï¿½e
+	 * pour ActivityManager
+	 * 
+	 * @param featureName
+	 *            nom de la fonctionnalitï¿½
+	 * @throws SAXException
+	 *             levï¿½e dans tous les cas.
 	 */
-	private void saxFeatureNotImplemented(String featureName) throws SAXException {
-		error(new SAXParseException(Strings.getString("XmlHelper.errors.NOT_IMPLEMENTED", featureName), locator)); //$NON-NLS-1$ //$NON-NLS-2$
+	private void saxFeatureNotImplemented(String featureName)
+			throws SAXException {
+		error(new SAXParseException(Strings.getString(
+				"XmlHelper.errors.NOT_IMPLEMENTED", featureName), locator)); //$NON-NLS-1$ //$NON-NLS-2$
 	}
-	
+
 	/** Static XML serialization methods */
-	
+
 	/**
-	 * Commence un noeud XML dans le flux d'écriture.
-	 * @param indent l'indentation.
-	 * @param out le flux d'écriture.
-	 * @param name le nom du noeud XML.
-	 * @throws IOException levé en cas d'incident I/O lors de l'écriture sur le flux de sortie.
+	 * Commence un noeud XML dans le flux d'ï¿½criture.
+	 * 
+	 * @param indent
+	 *            l'indentation.
+	 * @param out
+	 *            le flux d'ï¿½criture.
+	 * @param name
+	 *            le nom du noeud XML.
+	 * @throws IOException
+	 *             levï¿½ en cas d'incident I/O lors de l'ï¿½criture sur le flux de
+	 *             sortie.
 	 */
-	public static void startXmlNode(
-			OutputStream out, 
-			String indent,
-			String name) throws IOException {
+	public static void startXmlNode(OutputStream out, String indent, String name)
+			throws IOException {
 		print(out, indent);
 		out.write('<');
 		print(out, name);
@@ -472,29 +557,37 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	}
 
 	/**
-	 * Termine un noeud XML dans le flux d'écriture avec une indentation.
-	 * @param out le flux d'écriture.
-	 * @param indent l'indentation.
-	 * @param name le nom du noeud XML.
-	 * @throws IOException levé en cas d'incident I/O lors de l'écriture sur le flux de sortie.
+	 * Termine un noeud XML dans le flux d'ï¿½criture avec une indentation.
+	 * 
+	 * @param out
+	 *            le flux d'ï¿½criture.
+	 * @param indent
+	 *            l'indentation.
+	 * @param name
+	 *            le nom du noeud XML.
+	 * @throws IOException
+	 *             levï¿½ en cas d'incident I/O lors de l'ï¿½criture sur le flux de
+	 *             sortie.
 	 */
-	public static void endXmlNode(
-			OutputStream out, 
-			String indent,
-			String name) throws IOException {
+	public static void endXmlNode(OutputStream out, String indent, String name)
+			throws IOException {
 		print(out, indent);
 		endXmlNode(out, name);
 	}
 
 	/**
-	 * Termine un noeud XML dans le flux d'écriture.
-	 * @param out le flux d'écriture.
-	 * @param name le nom du noeud XML.
-	 * @throws IOException levé en cas d'incident I/O lors de l'écriture sur le flux de sortie.
+	 * Termine un noeud XML dans le flux d'ï¿½criture.
+	 * 
+	 * @param out
+	 *            le flux d'ï¿½criture.
+	 * @param name
+	 *            le nom du noeud XML.
+	 * @throws IOException
+	 *             levï¿½ en cas d'incident I/O lors de l'ï¿½criture sur le flux de
+	 *             sortie.
 	 */
-	public static void endXmlNode(
-			OutputStream out, 
-			String name) throws IOException {
+	public static void endXmlNode(OutputStream out, String name)
+			throws IOException {
 		out.write('<');
 		out.write('/');
 		print(out, name);
@@ -503,18 +596,22 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	}
 
 	/**
-	 * Ecrit un noeud XML dans le flux d'écriture.
-	 * @param indent l'indentation.
-	 * @param out le flux d'écriture.
-	 * @param name le nom du noeud XML.
-	 * @param value la valeur du noeud XML.
-	 * @throws IOException levé en cas d'incident I/O lors de l'écriture sur le flux de sortie.
+	 * Ecrit un noeud XML dans le flux d'ï¿½criture.
+	 * 
+	 * @param indent
+	 *            l'indentation.
+	 * @param out
+	 *            le flux d'ï¿½criture.
+	 * @param name
+	 *            le nom du noeud XML.
+	 * @param value
+	 *            la valeur du noeud XML.
+	 * @throws IOException
+	 *             levï¿½ en cas d'incident I/O lors de l'ï¿½criture sur le flux de
+	 *             sortie.
 	 */
-	public static void printTextNode(
-			OutputStream out, 
-			String indent, 
-			String name, 
-			String value) throws IOException {
+	public static void printTextNode(OutputStream out, String indent,
+			String name, String value) throws IOException {
 		print(out, indent);
 		out.write('<');
 		print(out, name);
@@ -524,15 +621,19 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	}
 
 	/**
-	 * Ecrit un attribut de noeud XML dans le flux d'écriture.
-	 * @param out le flux d'écriture.
-	 * @param name le nom de l'attribut XML.
-	 * @param value la valeur de l'attribut XML.
-	 * @throws IOException levé en cas d'incident I/O lors de l'écriture sur le flux de sortie.
+	 * Ecrit un attribut de noeud XML dans le flux d'ï¿½criture.
+	 * 
+	 * @param out
+	 *            le flux d'ï¿½criture.
+	 * @param name
+	 *            le nom de l'attribut XML.
+	 * @param value
+	 *            la valeur de l'attribut XML.
+	 * @throws IOException
+	 *             levï¿½ en cas d'incident I/O lors de l'ï¿½criture sur le flux de
+	 *             sortie.
 	 */
-	public static void printTextAttribute(
-			OutputStream out, 
-			String name, 
+	public static void printTextAttribute(OutputStream out, String name,
 			String value) throws IOException {
 		out.write(' ');
 		print(out, name);
@@ -542,34 +643,50 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	}
 
 	/**
-	 * Ecrit une chaîne de caractères dans le flux de sortie en remplaçant les
-	 * caractères spéciaux.
-	 * @param out le flux de sortie.
-	 * @param str la chaîne de caractères.
-	 * @throws IOException levé en cas d'incident lors de l'écriture des données sur le flux.
+	 * Ecrit une chaï¿½ne de caractï¿½res dans le flux de sortie en remplaï¿½ant les
+	 * caractï¿½res spï¿½ciaux.
+	 * 
+	 * @param out
+	 *            le flux de sortie.
+	 * @param str
+	 *            la chaï¿½ne de caractï¿½res.
+	 * @throws IOException
+	 *             levï¿½ en cas d'incident lors de l'ï¿½criture des donnï¿½es sur le
+	 *             flux.
 	 */
-	public static void printTextValue(OutputStream out, String str) throws IOException {
-		str = str.replaceAll( "&", "&amp;"); //$NON-NLS-1$ //$NON-NLS-2$
-		str = str.replaceAll( ">", "&gt;"); //$NON-NLS-1$ //$NON-NLS-2$
-		str = str.replaceAll( "<", "&lt;"); //$NON-NLS-1$ //$NON-NLS-2$
+	public static void printTextValue(OutputStream out, String str)
+			throws IOException {
+		str = str.replaceAll("&", "&amp;"); //$NON-NLS-1$ //$NON-NLS-2$
+		str = str.replaceAll(">", "&gt;"); //$NON-NLS-1$ //$NON-NLS-2$
+		str = str.replaceAll("<", "&lt;"); //$NON-NLS-1$ //$NON-NLS-2$
 		print(out, str);
 	}
 
 	/**
-	 * Ecrit une chaîne de caractères dans le flux de sortie.
-	 * @param out le flux de sortie.
-	 * @param str la chaîne de caractères.
-	 * @throws IOException levé en cas d'incident lors de l'écriture des données sur le flux.
+	 * Ecrit une chaï¿½ne de caractï¿½res dans le flux de sortie.
+	 * 
+	 * @param out
+	 *            le flux de sortie.
+	 * @param str
+	 *            la chaï¿½ne de caractï¿½res.
+	 * @throws IOException
+	 *             levï¿½ en cas d'incident lors de l'ï¿½criture des donnï¿½es sur le
+	 *             flux.
 	 */
 	public static void print(OutputStream out, String str) throws IOException {
 		out.write(str.getBytes("UTF-8")); //$NON-NLS-1$
 	}
 
 	/**
-	 * Ecrit une chaîne de caractères dans le flux de sortie.
-	 * @param out le flux de sortie.
-	 * @param s la chaîne de caractères.
-	 * @throws IOException levé en cas d'incident lors de l'écriture des données sur le flux.
+	 * Ecrit une chaï¿½ne de caractï¿½res dans le flux de sortie.
+	 * 
+	 * @param out
+	 *            le flux de sortie.
+	 * @param s
+	 *            la chaï¿½ne de caractï¿½res.
+	 * @throws IOException
+	 *             levï¿½ en cas d'incident lors de l'ï¿½criture des donnï¿½es sur le
+	 *             flux.
 	 */
 	public static void println(OutputStream out, String s) throws IOException {
 		print(out, s);

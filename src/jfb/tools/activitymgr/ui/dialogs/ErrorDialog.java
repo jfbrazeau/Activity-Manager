@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -51,30 +51,34 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 
 /**
- * Dialogue affichant une erreur avec la pile associée.
+ * Dialogue affichant une erreur avec la pile associï¿½e.
  */
 public class ErrorDialog extends IconAndMessageDialog {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(ErrorDialog.class);
-	
-	/** Bouton d'affichage du détail */
+
+	/** Bouton d'affichage du dï¿½tail */
 	private Button detailsButton;
-	
-	/** Booléen indiquant si le détail est affiché */
+
+	/** Boolï¿½en indiquant si le dï¿½tail est affichï¿½ */
 	private boolean detailsShown = false;
-	
+
 	/** Liste contenant la pile d'erreur */
 	private List list;
-	
-	/** Exception associée à l'erreur */
+
+	/** Exception associï¿½e ï¿½ l'erreur */
 	private Throwable throwable;
 
 	/**
-	 * Constructeur par défaut.
-	 * @param parentShell shell parent.
-	 * @param message le message d'erreur.
-	 * @param throwable l'exception.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param parentShell
+	 *            shell parent.
+	 * @param message
+	 *            le message d'erreur.
+	 * @param throwable
+	 *            l'exception.
 	 */
 	public ErrorDialog(Shell parentShell, String message, Throwable throwable) {
 		super(parentShell);
@@ -82,90 +86,106 @@ public class ErrorDialog extends IconAndMessageDialog {
 		this.message = message;
 	}
 
-    /*
-     * (non-Javadoc) Method declared in Window.
-     */
-    protected void configureShell(Shell shell) {
-        super.configureShell(shell);
-        shell.setText(Strings.getString("ErrorDialog.texts.TITLE")); //$NON-NLS-1$
-        shell.setImage(getImage());
-    }
+	/*
+	 * (non-Javadoc) Method declared in Window.
+	 */
+	protected void configureShell(Shell shell) {
+		super.configureShell(shell);
+		shell.setText(Strings.getString("ErrorDialog.texts.TITLE")); //$NON-NLS-1$
+		shell.setImage(getImage());
+	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets
+	 * .Composite)
 	 */
 	protected Control createDialogArea(Composite parent) {
 		Composite c = (Composite) super.createDialogArea(parent);
 		GridLayout layout = (GridLayout) c.getLayout();
 		// Changement du Nb de colonnes du Layout
 		layout.numColumns = 2;
-        createMessageArea(c);
+		createMessageArea(c);
 		return c;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse
+	 * .swt.widgets.Composite)
 	 */
 	protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL,
-                true);
-        detailsButton = createButton(parent, IDialogConstants.DETAILS_ID, IDialogConstants.SHOW_DETAILS_LABEL,
-                false);
+		createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL,
+				true);
+		detailsButton = createButton(parent, IDialogConstants.DETAILS_ID,
+				IDialogConstants.SHOW_DETAILS_LABEL, false);
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.jface.dialogs.Dialog#buttonPressed(int)
 	 */
 	protected void buttonPressed(int buttonId) {
 		switch (buttonId) {
-			case IDialogConstants.DETAILS_ID :
-		        Point windowSize = getShell().getSize();
-		        Point oldSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+		case IDialogConstants.DETAILS_ID:
+			Point windowSize = getShell().getSize();
+			Point oldSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
 
-		        detailsShown = !detailsShown;
-				detailsButton.setText(detailsShown ? IDialogConstants.HIDE_DETAILS_LABEL : IDialogConstants.SHOW_DETAILS_LABEL);
-				if (detailsShown) {
-					list = new List((Composite) getContents(), SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
-			                | SWT.MULTI);
-			        GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL
-			                | GridData.GRAB_HORIZONTAL | GridData.VERTICAL_ALIGN_FILL
-			                | GridData.GRAB_VERTICAL);
-			        data.heightHint = list.getItemHeight() * 10;
-			        data.horizontalSpan = 2;
-			        list.setLayoutData(data);
-					
-			        try {
-				        ByteArrayOutputStream out = new ByteArrayOutputStream();
-				        throwable.printStackTrace(new PrintStream(out));
-				        out.close();
-				        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-				        LineNumberReader lin = new LineNumberReader(new InputStreamReader(in));
-				        String line = null;
-				        while ((line = lin.readLine())!=null) {
-				        	list.add(line.replaceFirst("\t", "    ")); //$NON-NLS-1$ //$NON-NLS-2$
-				        }
-			        }
-			        catch (IOException e) {
-			        	log.error(Strings.getString("ErrorDialog.infos.IO_ERROR_WHILE_PRINTING_STACKTRACE"), e); //$NON-NLS-1$
-			        	list.add(Strings.getString("ErrorDialog.infos.IO_ERROR_WHILE_PRINTING_STACKTRACE")); //$NON-NLS-1$
-			        	list.add(Strings.getString("ErrorDialog.infos.SEE_LOGS_FOR_MORE_DETAILS")); //$NON-NLS-1$
-			        }
+			detailsShown = !detailsShown;
+			detailsButton
+					.setText(detailsShown ? IDialogConstants.HIDE_DETAILS_LABEL
+							: IDialogConstants.SHOW_DETAILS_LABEL);
+			if (detailsShown) {
+				list = new List((Composite) getContents(), SWT.BORDER
+						| SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
+				GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL
+						| GridData.GRAB_HORIZONTAL
+						| GridData.VERTICAL_ALIGN_FILL | GridData.GRAB_VERTICAL);
+				data.heightHint = list.getItemHeight() * 10;
+				data.horizontalSpan = 2;
+				list.setLayoutData(data);
+
+				try {
+					ByteArrayOutputStream out = new ByteArrayOutputStream();
+					throwable.printStackTrace(new PrintStream(out));
+					out.close();
+					ByteArrayInputStream in = new ByteArrayInputStream(
+							out.toByteArray());
+					LineNumberReader lin = new LineNumberReader(
+							new InputStreamReader(in));
+					String line = null;
+					while ((line = lin.readLine()) != null) {
+						list.add(line.replaceFirst("\t", "    ")); //$NON-NLS-1$ //$NON-NLS-2$
+					}
+				} catch (IOException e) {
+					log.error(
+							Strings.getString("ErrorDialog.infos.IO_ERROR_WHILE_PRINTING_STACKTRACE"), e); //$NON-NLS-1$
+					list.add(Strings
+							.getString("ErrorDialog.infos.IO_ERROR_WHILE_PRINTING_STACKTRACE")); //$NON-NLS-1$
+					list.add(Strings
+							.getString("ErrorDialog.infos.SEE_LOGS_FOR_MORE_DETAILS")); //$NON-NLS-1$
 				}
-				else {
-					list.dispose();
-				}
-		        Point newSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
-		        getShell()
-	                .setSize(
-	                        new Point(windowSize.x, windowSize.y
-	                                + (newSize.y - oldSize.y)));
-				break;
-			default :
-				super.buttonPressed(buttonId);
+			} else {
+				list.dispose();
+			}
+			Point newSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+			getShell().setSize(
+					new Point(windowSize.x, windowSize.y
+							+ (newSize.y - oldSize.y)));
+			break;
+		default:
+			super.buttonPressed(buttonId);
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.jface.dialogs.IconAndMessageDialog#getImage()
 	 */
 	protected Image getImage() {

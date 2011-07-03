@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -28,24 +28,27 @@
 package jfb.tools.activitymgr.core.beans;
 
 /**
- * Durée.
+ * Durï¿½e.
  */
 public class Duration extends SimpleIdentityBean {
-	
-	/** Booléen indiquant si la durée est active ou non */
+
+	/** Boolï¿½en indiquant si la durï¿½e est active ou non */
 	private boolean isActive = true;
 
 	/**
-	 * Retourne un booléen indiquant si la durée est active ou non.
-	 * @return un booléen indiquant si la durée est active ou non.
+	 * Retourne un boolï¿½en indiquant si la durï¿½e est active ou non.
+	 * 
+	 * @return un boolï¿½en indiquant si la durï¿½e est active ou non.
 	 */
 	public boolean getIsActive() {
 		return isActive;
 	}
 
 	/**
-	 * Définit si la durée est active ou non.
-	 * @param isActive un booléen indiquant si la durée est active ou non.
+	 * Dï¿½finit si la durï¿½e est active ou non.
+	 * 
+	 * @param isActive
+	 *            un boolï¿½en indiquant si la durï¿½e est active ou non.
 	 */
 	public void setIsActive(boolean isActive) {
 		this.isActive = isActive;

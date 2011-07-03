@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -43,38 +43,45 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 
 /**
- * Composant gérant l'historique des tâche adffiché dans le dialogue de choix d'un tâche.
+ * Composant gï¿½rant l'historique des tï¿½che adffichï¿½ dans le dialogue de choix
+ * d'un tï¿½che.
  */
 public class TaskChooserTable extends AbstractTableMgr {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(TaskChooserTree.class);
 
-	/** Constantes associées aux colonnes */
+	/** Constantes associï¿½es aux colonnes */
 	public static final int TASK_PATH_COLUMN_IDX = 0;
-	public static final int TASK_COLUMN_IDX =      1;
+	public static final int TASK_COLUMN_IDX = 1;
 	private static TableOrTreeColumnsMgr tableColsMgr;
-	
+
 	/** Viewer */
 	private TableViewer tableViewer;
 
 	/** Composant parent */
 	private Composite parent;
-	
+
 	/**
-	 * Constructeur par défaut.
-	 * @param parentComposite composant parent.
-	 * @param layoutData données du layout.
-	 * @param tasks la liste des taches à afficher.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param parentComposite
+	 *            composant parent.
+	 * @param layoutData
+	 *            donnï¿½es du layout.
+	 * @param tasks
+	 *            la liste des taches ï¿½ afficher.
 	 */
-	public TaskChooserTable(Composite parentComposite, Object layoutData, Task[] tasks) {
-		// Création du composite parent
+	public TaskChooserTable(Composite parentComposite, Object layoutData,
+			Task[] tasks) {
+		// Crï¿½ation du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayoutData(layoutData);
 		parent.setLayout(new GridLayout());
 
 		// Table
-		final Table table = new Table(parent, SWT.FULL_SELECTION | SWT.BORDER | SWT.HIDE_SELECTION | SWT.SINGLE);
+		final Table table = new Table(parent, SWT.FULL_SELECTION | SWT.BORDER
+				| SWT.HIDE_SELECTION | SWT.SINGLE);
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData.heightHint = 300;
 		table.setLayoutData(gridData);
@@ -82,23 +89,31 @@ public class TaskChooserTable extends AbstractTableMgr {
 		table.setHeaderVisible(true);
 		table.setEnabled(true);
 
-		// Création du viewer
+		// Crï¿½ation du viewer
 		tableViewer = new TableViewer(table);
 		tableViewer.setContentProvider(this);
 		tableViewer.setLabelProvider(this);
 
 		// Configuration des colonnes
 		tableColsMgr = new TableOrTreeColumnsMgr();
-		tableColsMgr.addColumn("TASK_PATH", Strings.getString("TaskChooserTable.columns.TASK_PATH"), 150, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
-		tableColsMgr.addColumn("TASK", Strings.getString("TaskChooserTable.columns.TASK_NAME"), 200, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr
+				.addColumn(
+						"TASK_PATH", Strings.getString("TaskChooserTable.columns.TASK_PATH"), 150, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr
+				.addColumn(
+						"TASK", Strings.getString("TaskChooserTable.columns.TASK_NAME"), 200, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
 		tableColsMgr.configureTable(tableViewer);
-		
+
 		// Initialisation du tableau
 		tableViewer.setInput(tasks);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang
+	 * .Object, int)
 	 */
 	public String getColumnText(final Object element, final int columnIndex) {
 		log.debug("ITableLabelProvider.getColumnText(" + element + ", " + columnIndex + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -107,31 +122,38 @@ public class TaskChooserTable extends AbstractTableMgr {
 				Task task = (Task) element;
 				String text = null;
 				switch (columnIndex) {
-					case (TASK_PATH_COLUMN_IDX) :
-						text = ModelMgr.getTaskCodePath(task);
-						break;
-					case (TASK_COLUMN_IDX) :
-						text = task.getName();
-						break;
-					default : throw new Error(Strings.getString("TaskChooserTable.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
+				case (TASK_PATH_COLUMN_IDX):
+					text = ModelMgr.getTaskCodePath(task);
+					break;
+				case (TASK_COLUMN_IDX):
+					text = task.getName();
+					break;
+				default:
+					throw new Error(
+							Strings.getString("TaskChooserTable.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
 				return text;
 			}
 		};
-		// Exécution
+		// Exï¿½cution
 		return (String) safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java
+	 * .lang.Object)
 	 */
 	public Object[] getElements(final Object inputElement) {
 		return (Task[]) inputElement;
 	}
 
 	/**
-	 * Retourne le viewer associé au tableau.
-	 * @return le viewer associé au tableau.
+	 * Retourne le viewer associï¿½ au tableau.
+	 * 
+	 * @return le viewer associï¿½ au tableau.
 	 */
 	public TableViewer getTableViewer() {
 		return tableViewer;

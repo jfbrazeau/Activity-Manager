@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -28,6 +28,7 @@
 package jfb.tools.activitymgr.ui.dialogs;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Task;
@@ -54,36 +55,44 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 
-public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements ITaskListener, IDbStatusListener {
+public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
+		ITaskListener, IDbStatusListener {
 
 	/** Logger */
-	private static Logger log = Logger.getLogger(TaskChooserTreeWithHistoryDialog.class);
+	private static Logger log = Logger
+			.getLogger(TaskChooserTreeWithHistoryDialog.class);
 
-	/** Arbre contenant la liste des tâches */
+	/** Arbre contenant la liste des tï¿½ches */
 	private TaskChooserTree tasksTree;
 
-	/** Tableau contenant les dernières taches sélectionnées */
+	/** Tableau contenant les derniï¿½res taches sï¿½lectionnï¿½es */
 	private TaskChooserTable previouslySelectedTasksTable;
-	
+
 	/** Valideur */
 	private ITaskChooserValidator validator;
-	
+
 	/** Panneau de recherche de tache */
 	private TaskFinderPanel taskFinderPanel;
-	
-	/** Liste des sélections précédentes */
-	private ArrayList previouslySelectedTasks = new ArrayList();
+
+	/** Liste des sï¿½lections prï¿½cï¿½dentes */
+	private List<Task> previouslySelectedTasks = new ArrayList<Task>();
 
 	/**
-	 * Constructeur par défaut.
-	 * @param parentShell shell parent.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param parentShell
+	 *            shell parent.
 	 */
 	public TaskChooserTreeWithHistoryDialog(Shell parentShell) {
-		super(parentShell, Strings.getString("TaskChooserTreeWithHistoryDialog.texts.TITLE"), null, null); //$NON-NLS-1$
+		super(
+				parentShell,
+				Strings.getString("TaskChooserTreeWithHistoryDialog.texts.TITLE"), null, null); //$NON-NLS-1$
 		setShellStyle(SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see jfb.tools.activitymgr.ui.util.AbstractDialog#validateUserEntry()
 	 */
 	protected Object validateUserEntry() throws DialogException {
@@ -91,28 +100,33 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements 
 		Task selectedTask = null;
 		Tree tree = tasksTree.getTreeViewer().getTree();
 		TreeItem[] selection = tree.getSelection();
-		if (selection.length>0)
+		if (selection.length > 0)
 			selectedTask = (Task) selection[0].getData();
 		log.debug("Selected task = " + selectedTask); //$NON-NLS-1$
-		if (selectedTask==null)
-			throw new DialogException(Strings.getString("TaskChooserTreeWithHistoryDialog.errors.TASK_REQUIRED"), null); //$NON-NLS-1$
-		if (validator!=null)
+		if (selectedTask == null)
+			throw new DialogException(
+					Strings.getString("TaskChooserTreeWithHistoryDialog.errors.TASK_REQUIRED"), null); //$NON-NLS-1$
+		if (validator != null)
 			validator.validateChoosenTask(selectedTask);
 		// Suppression puis enregistrement de la tache dans l'historique
-		// (la suppression permet de garantir que la tache soit la première
+		// (la suppression permet de garantir que la tache soit la premiï¿½re
 		// dans l'historique)
 		previouslySelectedTasks.remove(selectedTask);
 		if (!previouslySelectedTasks.contains(selectedTask))
 			previouslySelectedTasks.add(selectedTask);
 		// Purge de la liste si + de 20 valeurs
-		if (previouslySelectedTasks.size()==21)
+		if (previouslySelectedTasks.size() == 21)
 			previouslySelectedTasks.remove(20);
 		// Validation du choix de la tache
 		return selectedTask;
 	}
-	
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.util.AbstractDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.util.AbstractDialog#createDialogArea(org.eclipse
+	 * .swt.widgets.Composite)
 	 */
 	protected Control createDialogArea(Composite parent) {
 		Composite parentComposite = (Composite) super.createDialogArea(parent);
@@ -127,16 +141,18 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements 
 				selectTaskInTree(selectedTask);
 			}
 		});
-		
-		// Montre-t-on le panneau contenant l'hitorique des sélections ?
-		boolean showHistoryPanel = (previouslySelectedTasks.size()!=0);
-		
+
+		// Montre-t-on le panneau contenant l'hitorique des sï¿½lections ?
+		boolean showHistoryPanel = (previouslySelectedTasks.size() != 0);
+
 		// Arbre contenant les taches
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		if (!showHistoryPanel)
 			gridData.horizontalSpan = 2;
 		Group taskTreeGroup = new Group(parentComposite, SWT.NONE);
-		taskTreeGroup.setText(Strings.getString("TaskChooserTreeWithHistoryDialog.labels.TASK_TREE")); //$NON-NLS-1$
+		taskTreeGroup
+				.setText(Strings
+						.getString("TaskChooserTreeWithHistoryDialog.labels.TASK_TREE")); //$NON-NLS-1$
 		taskTreeGroup.setLayoutData(gridData);
 		taskTreeGroup.setLayout(new FillLayout());
 		tasksTree = new TaskChooserTree(taskTreeGroup, null);
@@ -147,146 +163,184 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements 
 			}
 		});
 		Task lastValue = (Task) getValue();
-		if (lastValue!=null) {
+		if (lastValue != null) {
 			viewer.setSelection(new StructuredSelection(lastValue));
 		}
 
-		// Zone de sélection des taches précédemment sélectionnées
+		// Zone de sï¿½lection des taches prï¿½cï¿½demment sï¿½lectionnï¿½es
 		if (showHistoryPanel) {
 			gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 			Group lastSelectionsGroup = new Group(parentComposite, SWT.NONE);
-			lastSelectionsGroup.setText(Strings.getString("TaskChooserTreeWithHistoryDialog.labels.PREVIOUS_SELECTION")); //$NON-NLS-1$
+			lastSelectionsGroup
+					.setText(Strings
+							.getString("TaskChooserTreeWithHistoryDialog.labels.PREVIOUS_SELECTION")); //$NON-NLS-1$
 			lastSelectionsGroup.setLayoutData(gridData);
 			lastSelectionsGroup.setLayout(new FillLayout());
-			// Récupération de l'hitorique avec tri inversé (le premier arrivé est affiché en dernier)
-			Task[] history = (Task[]) previouslySelectedTasks.toArray(new Task[previouslySelectedTasks.size()]);
+			// Rï¿½cupï¿½ration de l'hitorique avec tri inversï¿½ (le premier arrivï¿½
+			// est affichï¿½ en dernier)
+			Task[] history = (Task[]) previouslySelectedTasks
+					.toArray(new Task[previouslySelectedTasks.size()]);
 			Task[] _history = new Task[history.length];
-			for (int i=0; i<history.length; i++)
-				_history[history.length-i-1] = history[i];
-			previouslySelectedTasksTable = new TaskChooserTable(lastSelectionsGroup, null, _history);
-			final Table table = previouslySelectedTasksTable.getTableViewer().getTable();
+			for (int i = 0; i < history.length; i++)
+				_history[history.length - i - 1] = history[i];
+			previouslySelectedTasksTable = new TaskChooserTable(
+					lastSelectionsGroup, null, _history);
+			final Table table = previouslySelectedTasksTable.getTableViewer()
+					.getTable();
 			table.addMouseListener(new MouseAdapter() {
 				public void mouseDoubleClick(MouseEvent e) {
 					mouseDown(e);
-					StructuredSelection selection = (StructuredSelection) previouslySelectedTasksTable.getTableViewer().getSelection();
-					if (selection.getFirstElement()!=null)
+					StructuredSelection selection = (StructuredSelection) previouslySelectedTasksTable
+							.getTableViewer().getSelection();
+					if (selection.getFirstElement() != null)
 						okPressed();
 				}
+
 				public void mouseDown(MouseEvent e) {
-					StructuredSelection selection = (StructuredSelection) previouslySelectedTasksTable.getTableViewer().getSelection();
-					if (selection!=null) {
+					StructuredSelection selection = (StructuredSelection) previouslySelectedTasksTable
+							.getTableViewer().getSelection();
+					if (selection != null) {
 						Task selectedTask = (Task) selection.getFirstElement();
-						if (selectedTask!=null)
+						if (selectedTask != null)
 							selectTaskInTree(selectedTask);
 					}
 				}
 			});
 		}
-		
+
 		// Retour du composant parent
 		return parentComposite;
 	}
 
 	/**
-	 * Sélectionne la tache spécifiée dans l'arbre des taches.
-	 * @param selectedTask la tache à sélectionner.
+	 * Sï¿½lectionne la tache spï¿½cifiï¿½e dans l'arbre des taches.
+	 * 
+	 * @param selectedTask
+	 *            la tache ï¿½ sï¿½lectionner.
 	 */
 	private void selectTaskInTree(Task selectedTask) {
 		TreeViewer treeViewer = tasksTree.getTreeViewer();
 		treeViewer.setSelection(new StructuredSelection(selectedTask));
 		treeViewer.getTree().setFocus();
 	}
-	
+
 	/**
-	 * @param validator le nouveau valideur.
+	 * @param validator
+	 *            le nouveau valideur.
 	 */
 	public void setValidator(ITaskChooserValidator validator) {
 		this.validator = validator;
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.TasksUI.TaskListener#taskAdded(jfb.tools.activitymgr.core.beans.Task)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.TasksUI.TaskListener#taskAdded(jfb.tools.activitymgr
+	 * .core.beans.Task)
 	 */
 	public void taskAdded(Task task) {
-		// Quand une tache est ajoutée, elle ne peut pas être présente dans l'historique
-		// des taches => donc rien à faire
+		// Quand une tache est ajoutï¿½e, elle ne peut pas ï¿½tre prï¿½sente dans
+		// l'historique
+		// des taches => donc rien ï¿½ faire
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.TasksUI.TaskListener#taskRemoved(jfb.tools.activitymgr.core.beans.Task)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see jfb.tools.activitymgr.ui.TasksUI.TaskListener#taskRemoved(jfb.tools.
+	 * activitymgr.core.beans.Task)
 	 */
 	public void taskRemoved(final Task removedTask) {
 		new SafeRunner() {
 			protected Object runUnsafe() throws Exception {
-				// Parcours des taches présentes dans le tableau
+				// Parcours des taches prï¿½sentes dans le tableau
 				int itemIdxToRemove = -1;
-				for (int i=0; i<previouslySelectedTasks.size(); i++) {
+				for (int i = 0; i < previouslySelectedTasks.size(); i++) {
 					Task currentTask = (Task) previouslySelectedTasks.get(i);
-					// Cas ou la tache supprimée est dans le tableau
-					// dans ce cas, on sauvegarde le N° pour effectuer
+					// Cas ou la tache supprimï¿½e est dans le tableau
+					// dans ce cas, on sauvegarde le Nï¿½ pour effectuer
 					// la suppression par la suite
-					if (currentTask.getId()==removedTask.getId()) {
+					if (currentTask.getId() == removedTask.getId()) {
 						itemIdxToRemove = i;
 					}
-					// Autre cas : la tache supprimée est la soeur d'une des taches parent
-					// de la tache en cours ; c'est le cas si le chemin de la tache en cours
-					// commence par le chemin de la tache qui a été supprimée
-					else if (currentTask.getPath().startsWith(removedTask.getPath())) {
+					// Autre cas : la tache supprimï¿½e est la soeur d'une des
+					// taches parent
+					// de la tache en cours ; c'est le cas si le chemin de la
+					// tache en cours
+					// commence par le chemin de la tache qui a ï¿½tï¿½ supprimï¿½e
+					else if (currentTask.getPath().startsWith(
+							removedTask.getPath())) {
 						String removedTaskFullpath = removedTask.getFullPath();
-						String removedTaskSisterFullPath = currentTask.getFullPath().substring(0, removedTaskFullpath.length());
-						// La tache n'est impactée que si sa tache parent se trouvant être la soeur de
-						// celle qui a été supprimée possède un numéro supérieur à celui de la 
-						// tache supprimée
-						if (removedTaskSisterFullPath.compareTo(removedTaskFullpath)>0) {
-							// Dans ce cas il faut mettre à jour le chemin de la tache
+						String removedTaskSisterFullPath = currentTask
+								.getFullPath().substring(0,
+										removedTaskFullpath.length());
+						// La tache n'est impactï¿½e que si sa tache parent se
+						// trouvant ï¿½tre la soeur de
+						// celle qui a ï¿½tï¿½ supprimï¿½e possï¿½de un numï¿½ro supï¿½rieur
+						// ï¿½ celui de la
+						// tache supprimï¿½e
+						if (removedTaskSisterFullPath
+								.compareTo(removedTaskFullpath) > 0) {
+							// Dans ce cas il faut mettre ï¿½ jour le chemin de la
+							// tache
 							currentTask = ModelMgr.getTask(currentTask.getId());
 							previouslySelectedTasks.set(i, currentTask);
 						}
 					}
 				}
-				// Si on a trouvé l'item supprimé, on le supprime 
-				if (itemIdxToRemove>=0)
+				// Si on a trouvï¿½ l'item supprimï¿½, on le supprime
+				if (itemIdxToRemove >= 0)
 					previouslySelectedTasks.remove(itemIdxToRemove);
 				return null;
 			}
 		}.run(getParentShell());
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.TasksUI.TaskListener#taskUpdated(jfb.tools.activitymgr.core.beans.Task)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see jfb.tools.activitymgr.ui.TasksUI.TaskListener#taskUpdated(jfb.tools.
+	 * activitymgr.core.beans.Task)
 	 */
 	public void taskUpdated(Task updatedTask) {
 		boolean found = false;
-		for (int i=0; !found && i<previouslySelectedTasks.size(); i++) {
+		for (int i = 0; !found && i < previouslySelectedTasks.size(); i++) {
 			Task currentTask = (Task) previouslySelectedTasks.get(i);
-			found = currentTask.getId()==updatedTask.getId();
-			if (found) 
+			found = currentTask.getId() == updatedTask.getId();
+			if (found)
 				previouslySelectedTasks.set(i, updatedTask);
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.TasksUI.ITaskListener#taskMoved(java.lang.String, jfb.tools.activitymgr.core.beans.Task)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.TasksUI.ITaskListener#taskMoved(java.lang.String
+	 * , jfb.tools.activitymgr.core.beans.Task)
 	 */
 	public void taskMoved(final String oldTaskFullpath, final Task movedTask) {
 		new SafeRunner() {
 			protected Object runUnsafe() throws Exception {
-				// Déduction de l'ancien chemin de la tache à partir de l'ancien
+				// Dï¿½duction de l'ancien chemin de la tache ï¿½ partir de l'ancien
 				// chemin complet
-				String oldTaskPath = oldTaskFullpath.substring(0, oldTaskFullpath.length()-2);
-				for (int i=0; i<previouslySelectedTasks.size(); i++) {
+				String oldTaskPath = oldTaskFullpath.substring(0,
+						oldTaskFullpath.length() - 2);
+				for (int i = 0; i < previouslySelectedTasks.size(); i++) {
 					Task currentTask = (Task) previouslySelectedTasks.get(i);
-					// Cas ou la tache modifiée est dans la liste
-					if (currentTask.getId()==movedTask.getId()) {
+					// Cas ou la tache modifiï¿½e est dans la liste
+					if (currentTask.getId() == movedTask.getId()) {
 						previouslySelectedTasks.set(i, movedTask);
 					}
-					// Autre cas : la tache a déplacée est une tache
+					// Autre cas : la tache a dï¿½placï¿½e est une tache
 					// parent de la tache en cours
 					else if (currentTask.getPath().startsWith(oldTaskFullpath)) {
 						currentTask = ModelMgr.getTask(currentTask.getId());
 						previouslySelectedTasks.set(i, currentTask);
 					}
-					// Autre cas : la tache déplacée est la soeur d'une des taches parent
+					// Autre cas : la tache dï¿½placï¿½e est la soeur d'une des
+					// taches parent
 					// de la tache en cours
 					else if (currentTask.getPath().startsWith(oldTaskPath)) {
 						currentTask = ModelMgr.getTask(currentTask.getId());
@@ -295,21 +349,27 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements 
 				}
 				return null;
 			}
-			
+
 		}.run(getParentShell());
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.DatabaseUI.IDbStatusListener#databaseClosed()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.DatabaseUI.IDbStatusListener#databaseClosed()
 	 */
 	public void databaseClosed() {
 		previouslySelectedTasks.clear();
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.DatabaseUI.IDbStatusListener#databaseOpened()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.DatabaseUI.IDbStatusListener#databaseOpened()
 	 */
 	public void databaseOpened() {
 	}
-	
+
 }

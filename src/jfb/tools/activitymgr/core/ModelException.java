@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -29,10 +29,9 @@ package jfb.tools.activitymgr.core;
 
 import jfb.tools.activitymgr.AbstractApplicationException;
 
-
 /**
- * Exception levée en cas de violation des contraintes d'intégrité
- * du modèle de données.
+ * Exception levï¿½e en cas de violation des contraintes d'intï¿½gritï¿½ du modï¿½le de
+ * donnï¿½es.
  */
 public class ModelException extends AbstractApplicationException {
 
@@ -40,8 +39,10 @@ public class ModelException extends AbstractApplicationException {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Constructeur par défaut.
-	 * @param message message d'erreur.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param message
+	 *            message d'erreur.
 	 */
 	public ModelException(String message) {
 		super(message);

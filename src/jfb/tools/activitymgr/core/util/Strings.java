@@ -22,20 +22,23 @@ public class Strings {
 			return key;
 		}
 	}
-	
+
 	// TODO Javadoc
 	public static String getString(String key, Object parameter) {
 		return getString(key, new Object[] { parameter });
 	}
 
 	// TODO Javadoc
-	public static String getString(String key, Object parameter1, Object parameter2) {
+	public static String getString(String key, Object parameter1,
+			Object parameter2) {
 		return getString(key, new Object[] { parameter1, parameter2 });
 	}
 
 	// TODO Javadoc
-	public static String getString(String key, Object parameter1, Object parameter2, Object parameter3) {
-		return getString(key, new Object[] { parameter1, parameter2, parameter3 });
+	public static String getString(String key, Object parameter1,
+			Object parameter2, Object parameter3) {
+		return getString(key,
+				new Object[] { parameter1, parameter2, parameter3 });
 	}
 
 	// TODO Javadoc

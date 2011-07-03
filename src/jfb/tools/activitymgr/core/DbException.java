@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -29,10 +29,8 @@ package jfb.tools.activitymgr.core;
 
 import jfb.tools.activitymgr.AbstractTechnicalException;
 
-
 /**
- * Exception levée lors d'un incident technique d'accès à la 
- * base de données.
+ * Exception levï¿½e lors d'un incident technique d'accï¿½s ï¿½ la base de donnï¿½es.
  */
 public class DbException extends AbstractTechnicalException {
 
@@ -40,9 +38,12 @@ public class DbException extends AbstractTechnicalException {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Constructeur par défaut.
-	 * @param message message d'erreur.
-	 * @param cause cause de la levée d'exception.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param message
+	 *            message d'erreur.
+	 * @param cause
+	 *            cause de la levï¿½e d'exception.
 	 */
 	public DbException(String message, Throwable cause) {
 		super(message, cause);

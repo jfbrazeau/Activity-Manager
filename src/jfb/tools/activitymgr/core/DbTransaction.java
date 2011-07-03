@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -37,37 +37,43 @@ import org.apache.log4j.Logger;
  * Contexte de transaction.
  */
 public class DbTransaction {
-	
+
 	/** Logger */
 	private static Logger log = Logger.getLogger(DbTransaction.class);
 
 	/** Connexion SQL */
 	private Connection con;
-	
+
 	/**
-	 * Constructeur par défaut.
-	 * @param con connexion à la base de données.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param con
+	 *            connexion ï¿½ la base de donnï¿½es.
 	 */
 	protected DbTransaction(Connection con) {
 		this.con = con;
 	}
-	
+
 	/**
-	 * @return la connexion à la base de données.
+	 * @return la connexion ï¿½ la base de donnï¿½es.
 	 */
 	public Connection getConnection() {
 		return con;
 	}
 
 	/**
-	 * Prépare une requête SQL.
-	 * @param sql requête SQL.
-	 * @return la requête initialisée.
-	 * @throws SQLException en cas d'erreur lié à la BDD.
+	 * Prï¿½pare une requï¿½te SQL.
+	 * 
+	 * @param sql
+	 *            requï¿½te SQL.
+	 * @return la requï¿½te initialisï¿½e.
+	 * @throws SQLException
+	 *             en cas d'erreur liï¿½ ï¿½ la BDD.
 	 */
-	protected PreparedStatement prepareStatement(String sql) throws SQLException {
+	protected PreparedStatement prepareStatement(String sql)
+			throws SQLException {
 		log.debug(sql);
 		return con.prepareStatement(sql);
 	}
-	
+
 }

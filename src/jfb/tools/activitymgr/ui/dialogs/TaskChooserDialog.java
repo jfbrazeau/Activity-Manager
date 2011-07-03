@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -47,45 +47,55 @@ public class TaskChooserDialog extends AbstractDialog {
 	/** Logger */
 	private static Logger log = Logger.getLogger(TaskChooserDialog.class);
 
-	/** Tableau contenant les dernières taches sélectionnées */
+	/** Tableau contenant les derniï¿½res taches sï¿½lectionnï¿½es */
 	private TaskChooserTable tasksTable;
-	
-	/** Liste des taches à afficher */
+
+	/** Liste des taches ï¿½ afficher */
 	private Task[] tasks;
-	
+
 	/**
-	 * Constructeur par défaut.
-	 * @param parentShell shell parent.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param parentShell
+	 *            shell parent.
 	 */
 	public TaskChooserDialog(Shell parentShell) {
-		super(parentShell, Strings.getString("TaskChooserDialog.texts.TITLE"), null, null); //$NON-NLS-1$
+		super(parentShell,
+				Strings.getString("TaskChooserDialog.texts.TITLE"), null, null); //$NON-NLS-1$
 		setShellStyle(SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see jfb.tools.activitymgr.ui.util.AbstractDialog#validateUserEntry()
 	 */
 	protected Object validateUserEntry() throws DialogException {
 		log.debug("validateUserEntry"); //$NON-NLS-1$
-		Task selectedTask = (Task) ((IStructuredSelection)tasksTable.getTableViewer().getSelection()).getFirstElement();
+		Task selectedTask = (Task) ((IStructuredSelection) tasksTable
+				.getTableViewer().getSelection()).getFirstElement();
 		// Validation du choix de la tache
 		return selectedTask;
 	}
-	
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.util.AbstractDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.util.AbstractDialog#createDialogArea(org.eclipse
+	 * .swt.widgets.Composite)
 	 */
 	protected Control createDialogArea(Composite parent) {
 		Composite parentComposite = (Composite) super.createDialogArea(parent);
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		// Ajout de la liste des taches
-		// Ajout du titre de sélection des taches précédemment sélectionnées
+		// Ajout du titre de sï¿½lection des taches prï¿½cï¿½demment sï¿½lectionnï¿½es
 		Label label = new Label(parentComposite, SWT.NONE);
 		gridData = new GridData(SWT.FILL, SWT.FILL, false, false);
 		gridData.horizontalSpan = 2;
 		label.setLayoutData(gridData);
 		label.setText(Strings.getString("TaskChooserDialog.labels.FOUND_TASKS")); //$NON-NLS-1$
-		// Ajout de la liste des sélections précédentes
+		// Ajout de la liste des sï¿½lections prï¿½cï¿½dentes
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData.horizontalSpan = 2;
 		gridData.heightHint = 300;
@@ -102,8 +112,10 @@ public class TaskChooserDialog extends AbstractDialog {
 	}
 
 	/**
-	 * Définit la liste des taches qui doivent être affichées dans le dialogue.
-	 * @param tasks la liste des taches.
+	 * Dï¿½finit la liste des taches qui doivent ï¿½tre affichï¿½es dans le dialogue.
+	 * 
+	 * @param tasks
+	 *            la liste des taches.
 	 */
 	public void setTasks(Task[] tasks) {
 		this.tasks = tasks;

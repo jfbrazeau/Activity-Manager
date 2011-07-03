@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -28,25 +28,25 @@
 package jfb.tools.activitymgr.core.beans;
 
 /**
- * Sommes associées à une tache et ses sous-taches.
+ * Sommes associï¿½es ï¿½ une tache et ses sous-taches.
  */
 public class TaskSums {
 
 	/** Somme des budgets */
 	private long budgetSum;
-	
-	/** Somme des consommés initiaux */
+
+	/** Somme des consommï¿½s initiaux */
 	private long initiallyConsumedSum;
-	
-	/** Somme des reste à faire */
+
+	/** Somme des reste ï¿½ faire */
 	private long todoSum;
-	
-	/** Somme des consommés */
+
+	/** Somme des consommï¿½s */
 	private long consumedSum;
 
 	/** Nombre de contributions */
 	private long contributionsNb;
-	
+
 	/**
 	 * @return la somme des bugets.
 	 */
@@ -55,53 +55,61 @@ public class TaskSums {
 	}
 
 	/**
-	 * Définit la somme des budgets.
-	 * @param budgetSum la nouvelle somme.
+	 * Dï¿½finit la somme des budgets.
+	 * 
+	 * @param budgetSum
+	 *            la nouvelle somme.
 	 */
 	public void setBudgetSum(long budgetSum) {
 		this.budgetSum = budgetSum;
 	}
 
 	/**
-	 * @return la somme des consommés initiaux.
+	 * @return la somme des consommï¿½s initiaux.
 	 */
 	public long getInitiallyConsumedSum() {
 		return initiallyConsumedSum;
 	}
 
 	/**
-	 * Définit la somme des consommés initiaux.
-	 * @param initiallyConsumedSum la nouvelle somme.
+	 * Dï¿½finit la somme des consommï¿½s initiaux.
+	 * 
+	 * @param initiallyConsumedSum
+	 *            la nouvelle somme.
 	 */
 	public void setInitiallyConsumedSum(long initiallyConsumedSum) {
 		this.initiallyConsumedSum = initiallyConsumedSum;
 	}
 
 	/**
-	 * @return la somme des reste à faire.
+	 * @return la somme des reste ï¿½ faire.
 	 */
 	public long getTodoSum() {
 		return todoSum;
 	}
 
 	/**
-	 * Définit la somme des reste à faire.
-	 * @param todoSum la nouvelle somme.
+	 * Dï¿½finit la somme des reste ï¿½ faire.
+	 * 
+	 * @param todoSum
+	 *            la nouvelle somme.
 	 */
 	public void setTodoSum(long todoSum) {
 		this.todoSum = todoSum;
 	}
 
 	/**
-	 * @return la somme des consommés.
+	 * @return la somme des consommï¿½s.
 	 */
 	public long getConsumedSum() {
 		return consumedSum;
 	}
 
 	/**
-	 * Définit la somme des consommés.
-	 * @param consumed la nouvelle somme.
+	 * Dï¿½finit la somme des consommï¿½s.
+	 * 
+	 * @param consumed
+	 *            la nouvelle somme.
 	 */
 	public void setConsumedSum(long consumed) {
 		this.consumedSum = consumed;
@@ -109,6 +117,7 @@ public class TaskSums {
 
 	/**
 	 * Retourne le nombre de contributions.
+	 * 
 	 * @return le nombre de contributions.
 	 */
 	public long getContributionsNb() {
@@ -116,8 +125,10 @@ public class TaskSums {
 	}
 
 	/**
-	 * Définit le nombre de contributions.
-	 * @param contributionsNb le nombre de contributions.
+	 * Dï¿½finit le nombre de contributions.
+	 * 
+	 * @param contributionsNb
+	 *            le nombre de contributions.
 	 */
 	public void setContributionsNb(long contributionsNb) {
 		this.contributionsNb = contributionsNb;

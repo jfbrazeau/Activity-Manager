@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -32,7 +32,7 @@ import jfb.tools.activitymgr.core.util.StringHelper;
 import org.apache.log4j.Logger;
 
 /**
- * Classe offrant des service de conversion de données au format texte.
+ * Classe offrant des service de conversion de donnï¿½es au format texte.
  */
 public class FormatHelper {
 
@@ -40,15 +40,15 @@ public class FormatHelper {
 	private static Logger log = Logger.getLogger(FormatHelper.class);
 
 	/**
-	 * Convertit une durée en centièmes en chaîne de caractère.
-	 * @param duration la durée en centièmes.
-	 * @return la durée convertie.
+	 * Convertit une durï¿½e en centiï¿½mes en chaï¿½ne de caractï¿½re.
+	 * 
+	 * @param duration
+	 *            la durï¿½e en centiï¿½mes.
+	 * @return la durï¿½e convertie.
 	 */
 	public String formatDuration(double duration) {
 		log.debug("formatDuration(" + duration + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-		return StringHelper
-			.hundredthToEntry((long)duration)
-				.replace('.', ',');
+		return StringHelper.hundredthToEntry((long) duration).replace('.', ',');
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -29,6 +29,7 @@ package jfb.tools.activitymgr.ui.util;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -39,36 +40,49 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 
 /**
- * Classe de base implémentant une partie des méthodes qui doivent être
- * implémentées pour gérer des tableaux.
+ * Classe de base implï¿½mentant une partie des mï¿½thodes qui doivent ï¿½tre
+ * implï¿½mentï¿½es pour gï¿½rer des tableaux.
  */
-public abstract class AbstractTableMgr implements ITableLabelProvider, IStructuredContentProvider {
+public abstract class AbstractTableMgr implements ITableLabelProvider,
+		IStructuredContentProvider {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(AbstractTableMgr.class);
 
 	/** Noeud racine */
-	protected static Object ROOT_NODE = "ROOT_NODE";  //$NON-NLS-1$
-	
+	protected static Object ROOT_NODE = "ROOT_NODE"; //$NON-NLS-1$
+
 	/** Liste des ILabelProviderListener */
-	private ArrayList labelProviderListeners = new ArrayList();
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
+	private List<ILabelProviderListener> labelProviderListeners = new ArrayList<ILabelProviderListener>();
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface
+	 * .viewers.Viewer, java.lang.Object, java.lang.Object)
 	 */
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 		log.debug("ITreeContentProvider.inputChanged(" + viewer + ", " + oldInput + ", " + newInput + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java.lang.Object, int)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java.lang
+	 * .Object, int)
 	 */
 	public Image getColumnImage(Object element, int columnIndex) {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.IBaseLabelProvider#addListener(org.eclipse.jface.viewers.ILabelProviderListener)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.IBaseLabelProvider#addListener(org.eclipse.
+	 * jface.viewers.ILabelProviderListener)
 	 */
 	public void addListener(ILabelProviderListener listener) {
 		log.debug("ContentProvider.addListener(" + listener + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -76,35 +90,47 @@ public abstract class AbstractTableMgr implements ITableLabelProvider, IStructur
 			labelProviderListeners.add(listener);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.jface.viewers.IBaseLabelProvider#dispose()
 	 */
 	public void dispose() {
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.IBaseLabelProvider#isLabelProperty(java.lang.Object, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.IBaseLabelProvider#isLabelProperty(java.lang
+	 * .Object, java.lang.String)
 	 */
 	public boolean isLabelProperty(Object element, String property) {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.IBaseLabelProvider#removeListener(org.eclipse.jface.viewers.ILabelProviderListener)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.IBaseLabelProvider#removeListener(org.eclipse
+	 * .jface.viewers.ILabelProviderListener)
 	 */
 	public void removeListener(ILabelProviderListener listener) {
 		log.debug("ContentProvider.addListener(" + listener + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		labelProviderListeners.remove(listener);
 	}
-	
+
 	/**
 	 * Notifie les listeners du changement de valeur d'un label.
-	 * @param e l'évènement.
+	 * 
+	 * @param e
+	 *            l'ï¿½vï¿½nement.
 	 */
 	protected void notifyLabelProviderListener(LabelProviderChangedEvent e) {
-		Iterator it = labelProviderListeners.iterator();
+		Iterator<ILabelProviderListener> it = labelProviderListeners.iterator();
 		while (it.hasNext()) {
-			ILabelProviderListener listener = (ILabelProviderListener) it.next();
+			ILabelProviderListener listener = it.next();
 			log.debug("notifying listener(" + listener + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 			listener.labelProviderChanged(e);
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -44,29 +44,40 @@ import org.eclipse.swt.widgets.Shell;
 public class ContributionsViewerDialog extends AbstractDialog {
 
 	/** Logger */
-	private static Logger log = Logger.getLogger(ContributionsViewerDialog.class);
-	
-	/** Table contenant les données */
+	private static Logger log = Logger
+			.getLogger(ContributionsViewerDialog.class);
+
+	/** Table contenant les donnï¿½es */
 	private ContributionsViewerTable contributionsTable;
 
-	/** Filtre de recherche (stocké dans cet objet en attendant l'invocation du createDialogArea) */
+	/**
+	 * Filtre de recherche (stockï¿½ dans cet objet en attendant l'invocation du
+	 * createDialogArea)
+	 */
 	private Task task;
 	private Collaborator contributor;
 	private Integer day;
 	private Integer month;
 	private Integer year;
-	
+
 	/**
-	 * Constructeur par défaut.
-	 * @param parentShell shell parent.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param parentShell
+	 *            shell parent.
 	 */
 	public ContributionsViewerDialog(Shell parentShell) {
-		super(parentShell, Strings.getString("ContributionsViewerDialog.texts.TITLE"), null, null); //$NON-NLS-1$
+		super(parentShell, Strings
+				.getString("ContributionsViewerDialog.texts.TITLE"), null, null); //$NON-NLS-1$
 		setShellStyle(SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.util.AbstractDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.util.AbstractDialog#createDialogArea(org.eclipse
+	 * .swt.widgets.Composite)
 	 */
 	protected Control createDialogArea(Composite parent) {
 		log.debug("createDialogArea"); //$NON-NLS-1$
@@ -76,8 +87,10 @@ public class ContributionsViewerDialog extends AbstractDialog {
 		contributionsTable.setFilter(task, contributor, year, month, day);
 		return c;
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see jfb.tools.activitymgr.ui.util.AbstractDialog#validateUserEntry()
 	 */
 	protected Object validateUserEntry() throws DialogException {
@@ -87,18 +100,25 @@ public class ContributionsViewerDialog extends AbstractDialog {
 
 	/**
 	 * Initialise le filtre de recherche des contributions.
-	 * @param task la tache.
-	 * @param contributor le collaborateur.
-	 * @param year l'année.
-	 * @param month le mois.
-	 * @param day le jour.
+	 * 
+	 * @param task
+	 *            la tache.
+	 * @param contributor
+	 *            le collaborateur.
+	 * @param year
+	 *            l'annï¿½e.
+	 * @param month
+	 *            le mois.
+	 * @param day
+	 *            le jour.
 	 */
-	public void setFilter(Task task, Collaborator contributor, Integer year, Integer month, Integer day) {
+	public void setFilter(Task task, Collaborator contributor, Integer year,
+			Integer month, Integer day) {
 		this.task = task;
 		this.contributor = contributor;
 		this.year = year;
 		this.month = month;
 		this.day = day;
 	}
-	
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -32,14 +32,17 @@ import jfb.tools.activitymgr.core.beans.Task;
 /**
  * Interface permettant d'adapter le comportement du dialogue de choix d'une
  * tache et en particulier, selon le contexte, de choisir si une tache peut ou
- * non être choisie par l'utilisateur. 
+ * non ï¿½tre choisie par l'utilisateur.
  */
 public interface ITaskChooserValidator {
-	
+
 	/**
 	 * Valide le choix d'une tache.
-	 * @param selectedTask la tache choisie.
-	 * @throws DialogException levé en cas d'invalidation de la tache choisie.
+	 * 
+	 * @param selectedTask
+	 *            la tache choisie.
+	 * @throws DialogException
+	 *             levï¿½ en cas d'invalidation de la tache choisie.
 	 */
 	public void validateChoosenTask(Task selectedTask) throws DialogException;
 

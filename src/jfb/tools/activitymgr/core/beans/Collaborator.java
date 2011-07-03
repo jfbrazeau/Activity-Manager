@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -40,32 +40,34 @@ public class Collaborator extends SimpleIdentityBean {
 
 	/** Index de l'attribut 'lastName' du collaborateur */
 	public static final int LAST_NAME_FIELD_IDX = 3;
-	
+
 	/** Index de l'attribut 'isActive' du collaborateur */
 	public static final int IS_ACTIVE_FIELD_IDX = 4;
-	
+
 	/** Identifiant du collaborateur */
 	private String login;
 
 	/** Nom */
 	private String firstName;
-	
-	/** Prénom */
+
+	/** Prï¿½nom */
 	private String lastName;
-	
-	/** Booléen indiquant si le collaborateur est actif ou non */
+
+	/** Boolï¿½en indiquant si le collaborateur est actif ou non */
 	private boolean isActive = true;
-	
+
 	/**
-	 * @return le prénom du collaborateur.
+	 * @return le prï¿½nom du collaborateur.
 	 */
 	public String getFirstName() {
 		return firstName;
 	}
 
 	/**
-	 * Définit le prénom du collaborateur.
-	 * @param firstName le nouveau prénom.
+	 * Dï¿½finit le prï¿½nom du collaborateur.
+	 * 
+	 * @param firstName
+	 *            le nouveau prï¿½nom.
 	 */
 	public void setFirstName(String firstName) {
 		this.firstName = firstName;
@@ -79,8 +81,10 @@ public class Collaborator extends SimpleIdentityBean {
 	}
 
 	/**
-	 * Définit le nom du collaborateur.
-	 * @param lastName le nouveau nom.
+	 * Dï¿½finit le nom du collaborateur.
+	 * 
+	 * @param lastName
+	 *            le nouveau nom.
 	 */
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
@@ -94,24 +98,29 @@ public class Collaborator extends SimpleIdentityBean {
 	}
 
 	/**
-	 * Définit l'identifiant du collaborateur.
-	 * @param login le nouvel identifiant.
+	 * Dï¿½finit l'identifiant du collaborateur.
+	 * 
+	 * @param login
+	 *            le nouvel identifiant.
 	 */
 	public void setLogin(String login) {
 		this.login = login;
 	}
 
 	/**
-	 * Retourne un booléen indiquant si le collaborateur est actif ou non.
-	 * @return un booléen indiquant si le collaborateur est actif ou non.
+	 * Retourne un boolï¿½en indiquant si le collaborateur est actif ou non.
+	 * 
+	 * @return un boolï¿½en indiquant si le collaborateur est actif ou non.
 	 */
 	public boolean getIsActive() {
 		return isActive;
 	}
 
 	/**
-	 * Définit si le collaborateur est actif ou non.
-	 * @param isActive un booléen indiquant si le collaborateur est actif ou non.
+	 * Dï¿½finit si le collaborateur est actif ou non.
+	 * 
+	 * @param isActive
+	 *            un boolï¿½en indiquant si le collaborateur est actif ou non.
 	 */
 	public void setIsActive(boolean isActive) {
 		this.isActive = isActive;

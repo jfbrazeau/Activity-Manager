@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -28,8 +28,8 @@
 package jfb.tools.activitymgr.core.beans;
 
 /**
- * Classe mère des bean persistants dont la clé primaire est un identifiant
- * de type long.
+ * Classe mï¿½re des bean persistants dont la clï¿½ primaire est un identifiant de
+ * type long.
  */
 public abstract class SimpleIdentityBean {
 
@@ -47,19 +47,23 @@ public abstract class SimpleIdentityBean {
 	}
 
 	/**
-	 * Définit l'identifiant de l'objet.
-	 * @param id le nouvel identifiant.
+	 * Dï¿½finit l'identifiant de l'objet.
+	 * 
+	 * @param id
+	 *            le nouvel identifiant.
 	 */
 	public void setId(long id) {
 		this.id = id;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	public boolean equals(Object obj) {
 		boolean equals = false;
-		if (obj!=null && obj.getClass().equals(this.getClass())) {
+		if (obj != null && obj.getClass().equals(this.getClass())) {
 			SimpleIdentityBean activityBean = (SimpleIdentityBean) obj;
 			equals = (activityBean.getId() == id);
 		}

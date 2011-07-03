@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -28,6 +28,7 @@
 package jfb.tools.activitymgr.ui.util;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import jfb.tools.activitymgr.core.util.Strings;
 
@@ -48,18 +49,20 @@ public class TableOrTreeColumnsMgr {
 	private static Logger log = Logger.getLogger(TableOrTreeColumnsMgr.class);
 
 	/** Liste des colonnes */
-	private ArrayList columns = new ArrayList();
+	private List<Column> columns = new ArrayList<Column>();
 
 	/**
 	 * Configure les colonnes de l'arbre.
-	 * @param treeViewer le viewer de l'arbre.
+	 * 
+	 * @param treeViewer
+	 *            le viewer de l'arbre.
 	 */
 	public void configureTree(TreeViewer treeViewer) {
 		log.debug("configureTree"); //$NON-NLS-1$
 		treeViewer.setColumnProperties(getColumnCodes());
 		Tree tree = treeViewer.getTree();
 		Column[] columns = getColumns();
-		for (int i=0; i<columns.length; i++) {
+		for (int i = 0; i < columns.length; i++) {
 			Column column = columns[i];
 			TreeColumn treeColumn = new TreeColumn(tree, column.alignment);
 			treeColumn.setText(column.name);
@@ -69,56 +72,67 @@ public class TableOrTreeColumnsMgr {
 
 	/**
 	 * Configure les colonnes d'un tableau.
-	 * @param tableViewer le viewer du tableau.
+	 * 
+	 * @param tableViewer
+	 *            le viewer du tableau.
 	 */
 	public void configureTable(TableViewer tableViewer) {
 		log.debug("configureTable"); //$NON-NLS-1$
 		tableViewer.setColumnProperties(getColumnCodes());
 		Table table = tableViewer.getTable();
 		Column[] columns = getColumns();
-		for (int i=0; i<columns.length; i++) {
+		for (int i = 0; i < columns.length; i++) {
 			Column column = columns[i];
 			TableColumn tableColumn = new TableColumn(table, column.alignment);
 			tableColumn.setText(column.name);
 			tableColumn.setWidth(column.width);
 		}
 	}
-	
+
 	/**
 	 * Ajoute une colonne.
-	 * @param columnCode le code de colonne.
-	 * @param columnName le nom de la colonne.
-	 * @param columnWidth la largeur de la colonne.
-	 * @param columnAlignment l'alignement à appliquer à la colonne.
+	 * 
+	 * @param columnCode
+	 *            le code de colonne.
+	 * @param columnName
+	 *            le nom de la colonne.
+	 * @param columnWidth
+	 *            la largeur de la colonne.
+	 * @param columnAlignment
+	 *            l'alignement ï¿½ appliquer ï¿½ la colonne.
 	 */
-	public void addColumn(String columnCode, String columnName, int columnWidth, int columnAlignment) {
+	public void addColumn(String columnCode, String columnName,
+			int columnWidth, int columnAlignment) {
 		Column newColumn = new Column();
-		if (columnName==null)
-			throw new NullPointerException(Strings.getString("TableOrTreeColumnsMgr.errors.COLUMN_NAME_REQUIRED")); //$NON-NLS-1$
+		if (columnName == null)
+			throw new NullPointerException(
+					Strings.getString("TableOrTreeColumnsMgr.errors.COLUMN_NAME_REQUIRED")); //$NON-NLS-1$
 		newColumn.code = columnCode;
 		newColumn.name = columnName;
 		newColumn.width = columnWidth;
 		newColumn.alignment = columnAlignment;
 		columns.add(newColumn);
 	}
-	
+
 	/**
-	 * @return le code associé à la colonne dont le N° est spécifié.
-	 * @param columnIndex numéro de la colonne.
+	 * @return le code associï¿½ ï¿½ la colonne dont le Nï¿½ est spï¿½cifiï¿½.
+	 * @param columnIndex
+	 *            numï¿½ro de la colonne.
 	 */
 	public String getColumnCode(int columnIndex) {
 		String code = ((Column) columns.get(columnIndex)).code;
 		log.debug("getColumnCode(" + columnIndex + ")=" + code); //$NON-NLS-1$ //$NON-NLS-2$
 		return code;
 	}
-	
+
 	/**
-	 * @return le numéro associé à la colonne dont le code est spécifié.
-	 * @param columnCode code de la colonne.
+	 * @return le numï¿½ro associï¿½ ï¿½ la colonne dont le code est spï¿½cifiï¿½.
+	 * @param columnCode
+	 *            code de la colonne.
 	 */
 	public int getColumnIndex(String columnCode) {
 		int index = -1;
-		for (int i=0; i<columns.size() && index<0; i++) {
+		for (int i = 0; i < columns.size() && index < 0; i++) {
 			Column column = (Column) columns.get(i);
 			if (column.code.equals(columnCode))
 				index = i;
@@ -133,7 +147,7 @@ public class TableOrTreeColumnsMgr {
 	private String[] getColumnCodes() {
 		int n = columns.size();
 		String[] columnNames = new String[n];
-		for (int i=0; i<n; i++)
+		for (int i = 0; i < n; i++)
 			columnNames[i] = getColumnCode(i);
 		return columnNames;
 	}
@@ -156,4 +170,3 @@ class Column {
 	int width;
 	int alignment;
 }
-

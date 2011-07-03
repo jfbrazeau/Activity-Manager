@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -28,12 +28,13 @@
 package jfb.tools.activitymgr.report;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
 /**
- * Classe offrant des services de calcul de sommes
- * pour la génération de rapports avec Velocity.
+ * Classe offrant des services de calcul de sommes pour la gï¿½nï¿½ration de
+ * rapports avec Velocity.
  */
 public class SumHelper {
 
@@ -41,12 +42,15 @@ public class SumHelper {
 	private static Logger log = Logger.getLogger(SumHelper.class);
 
 	/** Table de stockage des cumuls */
-	private HashMap sumMap = new HashMap();
-	
+	private Map<String, Double> sumMap = new HashMap<String, Double>();
+
 	/**
-	 * Définit la valeur d'une somme nommée.
-	 * @param sumName le nom de la somme.
-	 * @param value la valeur de la somme.
+	 * Dï¿½finit la valeur d'une somme nommï¿½e.
+	 * 
+	 * @param sumName
+	 *            le nom de la somme.
+	 * @param value
+	 *            la valeur de la somme.
 	 */
 	public void set(String sumName, double value) {
 		log.debug("sh.set(" + sumName + ", " + value + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -54,24 +58,29 @@ public class SumHelper {
 	}
 
 	/**
-	 * Retourne la valeur d'une somme nommée.
-	 * @param sumName le nom de la somme.
+	 * Retourne la valeur d'une somme nommï¿½e.
+	 * 
+	 * @param sumName
+	 *            le nom de la somme.
 	 * @return la valeur de la somme.
 	 */
 	public double get(String sumName) {
 		log.debug("sh.get(" + sumName + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		Double sum = (Double) sumMap.get(sumName);
 		double _sum = 0;
-		if (sum!=null) {
+		if (sum != null) {
 			_sum = sum.doubleValue();
 		}
 		return _sum;
 	}
-	
+
 	/**
-	 * Ajoute une valeur à une somme nommée.
-	 * @param sumName le nom de la somme.
-	 * @param value la valeur à ajouter.
+	 * Ajoute une valeur ï¿½ une somme nommï¿½e.
+	 * 
+	 * @param sumName
+	 *            le nom de la somme.
+	 * @param value
+	 *            la valeur ï¿½ ajouter.
 	 */
 	public void add(String sumName, double value) {
 		log.debug("sh.add(" + sumName + ", " + value + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -80,9 +89,12 @@ public class SumHelper {
 	}
 
 	/**
-	 * Soustrait une valeur à une somme nommée.
-	 * @param sumName le nom de la somme.
-	 * @param value la valeur à soustraire.
+	 * Soustrait une valeur ï¿½ une somme nommï¿½e.
+	 * 
+	 * @param sumName
+	 *            le nom de la somme.
+	 * @param value
+	 *            la valeur ï¿½ soustraire.
 	 */
 	public void sub(String sumName, double value) {
 		add(sumName, -value);

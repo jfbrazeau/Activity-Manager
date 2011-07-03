@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -35,21 +35,27 @@ import org.eclipse.swt.graphics.ImageData;
 public interface ImagesDatas {
 
 	/** Logo de l'application */
-	public static final ImageData APPLICATION_LOGO = new ImageData(ImagesDatas.class.getResourceAsStream("logo-385x100.png")); //$NON-NLS-1$
-	
+	public static final ImageData APPLICATION_LOGO = new ImageData(
+			ImagesDatas.class.getResourceAsStream("logo-385x100.png")); //$NON-NLS-1$
+
 	/** Icone de l'application */
-	public static final ImageData APPLICATION_ICON = new ImageData(ImagesDatas.class.getResourceAsStream("logo-16x16.ico")); //$NON-NLS-1$
-	
-	/** Icone case cochée */
-	public static final ImageData CHECKED_ICON = new ImageData(ImagesDatas.class.getResourceAsStream("checkedIcon.gif")); //$NON-NLS-1$
+	public static final ImageData APPLICATION_ICON = new ImageData(
+			ImagesDatas.class.getResourceAsStream("logo-16x16.ico")); //$NON-NLS-1$
 
-	/** Icone case décochée */
-	public static final ImageData UNCHECKED_ICON = new ImageData(ImagesDatas.class.getResourceAsStream("uncheckedIcon.gif")); //$NON-NLS-1$
+	/** Icone case cochï¿½e */
+	public static final ImageData CHECKED_ICON = new ImageData(
+			ImagesDatas.class.getResourceAsStream("checkedIcon.gif")); //$NON-NLS-1$
 
-	/** Icone item sélectionné */
-	public static final ImageData SELECTED_ITEM_ICON = new ImageData(ImagesDatas.class.getResourceAsStream("selectedItemIcon.gif")); //$NON-NLS-1$
+	/** Icone case dï¿½cochï¿½e */
+	public static final ImageData UNCHECKED_ICON = new ImageData(
+			ImagesDatas.class.getResourceAsStream("uncheckedIcon.gif")); //$NON-NLS-1$
 
-	/** Icone item non sélectionné */
-	public static final ImageData UNSELECTED_ITEM_ICON = new ImageData(ImagesDatas.class.getResourceAsStream("unselectedItemIcon.gif")); //$NON-NLS-1$
+	/** Icone item sï¿½lectionnï¿½ */
+	public static final ImageData SELECTED_ITEM_ICON = new ImageData(
+			ImagesDatas.class.getResourceAsStream("selectedItemIcon.gif")); //$NON-NLS-1$
+
+	/** Icone item non sï¿½lectionnï¿½ */
+	public static final ImageData UNSELECTED_ITEM_ICON = new ImageData(
+			ImagesDatas.class.getResourceAsStream("unselectedItemIcon.gif")); //$NON-NLS-1$
 
 }

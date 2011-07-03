@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -30,13 +30,15 @@ package jfb.tools.activitymgr.ui.util;
 import jfb.tools.activitymgr.core.beans.Collaborator;
 
 /**
- * Interface d'écoute de sélection de taches.
+ * Interface d'ï¿½coute de sï¿½lection de taches.
  */
 public interface ICollaboratorSelectionListener {
 
 	/**
-	 * Notifie de la sélection d'un collaborateur.
-	 * @param selectedCollaborator le collaborateur sélectionnée.
+	 * Notifie de la sï¿½lection d'un collaborateur.
+	 * 
+	 * @param selectedCollaborator
+	 *            le collaborateur sï¿½lectionnï¿½e.
 	 */
 	public void collaboratorSelected(Collaborator selectedCollaborator);
 

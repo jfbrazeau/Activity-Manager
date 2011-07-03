@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -40,7 +40,7 @@ import jfb.tools.activitymgr.core.util.Strings;
  */
 public class CfgMgr {
 
-	/** Constantes associées au paramétrage */
+	/** Constantes associï¿½es au paramï¿½trage */
 	public static final String DATABASE_TYPE = "database.type"; //$NON-NLS-1$
 	public static final String JDBC_DRIVER = "jdbc.driver"; //$NON-NLS-1$
 	public static final String DATABASE_HOST = "database.host"; //$NON-NLS-1$
@@ -50,35 +50,42 @@ public class CfgMgr {
 	public static final String JDBC_URL = "jdbc.url"; //$NON-NLS-1$
 	public static final String JDBC_USER = "jdbc.user"; //$NON-NLS-1$
 	public static final String JDBC_PASSWORD = "jdbc.password"; //$NON-NLS-1$
-	
+
 	/** Nom du fichier de configuration */
 	private static final String CFG_FILE = "cfg/activitymgr.properties"; //$NON-NLS-1$
 
 	/** Configuration */
 	private static Properties props = new Properties();
-	
+
 	/**
-	 * Retourne la valeur associée à un paramètre.
-	 * @param key le code de paramètre.
-	 * @return la valeur du paramètre.
+	 * Retourne la valeur associï¿½e ï¿½ un paramï¿½tre.
+	 * 
+	 * @param key
+	 *            le code de paramï¿½tre.
+	 * @return la valeur du paramï¿½tre.
 	 */
 	public static String get(String key) {
 		return props.getProperty(key);
 	}
 
 	/**
-	 * Définit la valeur d'un paramètre.
-	 * @param key le code de paramètre.
-	 * @param value la nouvelle valeur du paramètre.
+	 * Dï¿½finit la valeur d'un paramï¿½tre.
+	 * 
+	 * @param key
+	 *            le code de paramï¿½tre.
+	 * @param value
+	 *            la nouvelle valeur du paramï¿½tre.
 	 */
 	public static void set(String key, String value) {
 		props.setProperty(key, value);
 	}
-	
+
 	/**
-	 * Sauve le paramétrage.
-	 * @throws IOException levé en cas d'incident I/O lors de l'accès en 
-	 * 		écriture sur le fichier de configuration.
+	 * Sauve le paramï¿½trage.
+	 * 
+	 * @throws IOException
+	 *             levï¿½ en cas d'incident I/O lors de l'accï¿½s en ï¿½criture sur le
+	 *             fichier de configuration.
 	 */
 	public static void save() throws IOException {
 		FileOutputStream out = new FileOutputStream(CFG_FILE);
@@ -88,8 +95,10 @@ public class CfgMgr {
 
 	/**
 	 * Charge la configuration.
-	 * @throws IOException levé en cas d'incident I/O lors de l'accès en 
-	 * 		lecture sur le fichier de configuration.
+	 * 
+	 * @throws IOException
+	 *             levï¿½ en cas d'incident I/O lors de l'accï¿½s en lecture sur le
+	 *             fichier de configuration.
 	 */
 	public static void load() throws IOException {
 		props.clear();
@@ -102,8 +111,10 @@ public class CfgMgr {
 	}
 
 	/**
-	 * Initie la configuration à partir d'un dioctionnaire spécifique.
-	 * @param props le dictionnaire de propriétés.
+	 * Initie la configuration ï¿½ partir d'un dioctionnaire spï¿½cifique.
+	 * 
+	 * @param props
+	 *            le dictionnaire de propriï¿½tï¿½s.
 	 */
 	public static void init(Properties props) {
 		CfgMgr.props = props;

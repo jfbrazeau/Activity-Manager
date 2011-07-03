@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -45,41 +45,50 @@ public class TasksChooserDialog extends AbstractDialog implements MouseListener 
 	/** Logger */
 	private static Logger log = Logger.getLogger(TasksChooserDialog.class);
 
-	/** Arbre contenant la liste des tâches */
+	/** Arbre contenant la liste des tï¿½ches */
 	private TasksChooserTree tasksTree;
 
 	/** Valideur */
 	private ITaskChooserValidator validator;
-	
+
 	/**
-	 * Constructeur par défaut.
-	 * @param parentShell shell parent.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param parentShell
+	 *            shell parent.
 	 */
 	public TasksChooserDialog(Shell parentShell) {
 		super(parentShell, "Choose a task", null, null);
 		setShellStyle(SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see jfb.tools.activitymgr.ui.util.AbstractDialog#validateUserEntry()
 	 */
 	protected Object validateUserEntry() throws DialogException {
 		log.debug("validateUserEntry");
-		TreeItem[] selection = tasksTree.getTreeViewer().getTree().getSelection();
+		TreeItem[] selection = tasksTree.getTreeViewer().getTree()
+				.getSelection();
 		Task selectedTask = null;
-		if (selection.length>0)
+		if (selection.length > 0)
 			selectedTask = (Task) selection[0].getData();
 		log.debug("Selected task = " + selectedTask);
-		if (selectedTask==null)
+		if (selectedTask == null)
 			throw new DialogException("Please choose a task", null);
-		if (validator!=null)
+		if (validator != null)
 			validator.validateChoosenTask(selectedTask);
 		// Validation du choix de la tache
 		return selectedTask;
 	}
-	
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.util.AbstractDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.util.AbstractDialog#createDialogArea(org.eclipse
+	 * .swt.widgets.Composite)
 	 */
 	protected Control createDialogArea(Composite parent) {
 		Composite c = (Composite) super.createDialogArea(parent);
@@ -87,38 +96,48 @@ public class TasksChooserDialog extends AbstractDialog implements MouseListener 
 		TreeViewer viewer = tasksTree.getTreeViewer();
 		viewer.getTree().addMouseListener(this);
 		Task lastValue = (Task) getValue();
-		if (lastValue!=null) {
+		if (lastValue != null) {
 			viewer.setSelection(new StructuredSelection(lastValue));
 		}
 		return c;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.MouseListener#mouseDoubleClick(org.eclipse.swt.events.MouseEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.swt.events.MouseListener#mouseDoubleClick(org.eclipse.swt
+	 * .events.MouseEvent)
 	 */
 	public void mouseDoubleClick(MouseEvent e) {
 		okPressed();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.MouseListener#mouseDown(org.eclipse.swt.events.MouseEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.swt.events.MouseListener#mouseDown(org.eclipse.swt.events
+	 * .MouseEvent)
 	 */
 	public void mouseDown(MouseEvent e) {
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.MouseListener#mouseUp(org.eclipse.swt.events.MouseEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.swt.events.MouseListener#mouseUp(org.eclipse.swt.events.
+	 * MouseEvent)
 	 */
 	public void mouseUp(MouseEvent e) {
 	}
 
 	/**
-	 * @param validator le nouveau valideur.
+	 * @param validator
+	 *            le nouveau valideur.
 	 */
 	public void setValidator(ITaskChooserValidator validator) {
 		this.validator = validator;
 	}
 
-
-	
 }

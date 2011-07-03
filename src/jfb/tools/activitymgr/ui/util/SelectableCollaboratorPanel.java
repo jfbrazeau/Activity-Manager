@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -30,6 +30,7 @@ package jfb.tools.activitymgr.ui.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Collaborator;
@@ -55,46 +56,52 @@ import org.eclipse.swt.widgets.TableItem;
 /**
  * IHM de gestion des collaborateurs.
  */
-public class SelectableCollaboratorPanel extends AbstractTableMgr implements IDbStatusListener, ICollaboratorListener {
+public class SelectableCollaboratorPanel extends AbstractTableMgr implements
+		IDbStatusListener, ICollaboratorListener {
 
 	/** Logger */
-	private static Logger log = Logger.getLogger(SelectableCollaboratorPanel.class);
+	private static Logger log = Logger
+			.getLogger(SelectableCollaboratorPanel.class);
 
-	/** Constantes associées aux colonnes */
+	/** Constantes associï¿½es aux colonnes */
 	public static final int FIRST_NAME_COLUMN_IDX = 0;
-	public static final int LAST_NAME_COLUMN_IDX =  1;
+	public static final int LAST_NAME_COLUMN_IDX = 1;
 	private static TableOrTreeColumnsMgr tableColsMgr;
-	
+
 	/** Viewer */
 	private TableViewer tableViewer;
 
 	/** Composant parent */
 	private Composite parent;
 
-	/** Index de la colonne utilisé pour trier les collaborateurs */
+	/** Index de la colonne utilisï¿½ pour trier les collaborateurs */
 	private int sortColumnIndex = LAST_NAME_COLUMN_IDX;
-	
-	/** Icone utilisé pour marquer le collaborateur sélectionné */
+
+	/** Icone utilisï¿½ pour marquer le collaborateur sï¿½lectionnï¿½ */
 	private Image selectedItemIcon;
-	
-	/** Icone utilisé pour les collaborateurs non sélectionnés */
+
+	/** Icone utilisï¿½ pour les collaborateurs non sï¿½lectionnï¿½s */
 	private Image unselectedItemIcon;
-	
+
 	/** Liste des listeners */
-	private ArrayList listeners = new ArrayList();
-	
-	/** Collaborateur sélectionné */
+	private List<ICollaboratorSelectionListener> listeners = new ArrayList<ICollaboratorSelectionListener>();
+
+	/** Collaborateur sï¿½lectionnï¿½ */
 	private Collaborator selectedCollaborator;
-	
+
 	/**
-	 * Constructeur par défaut.
-	 * @param parentComposite composant parent.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param parentComposite
+	 *            composant parent.
 	 */
-	public SelectableCollaboratorPanel(Composite parentComposite, Object layoutData) {
+	public SelectableCollaboratorPanel(Composite parentComposite,
+			Object layoutData) {
 		parent = parentComposite;
 
 		// Table
-		final Table table = new Table(parent, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER | SWT.HIDE_SELECTION);
+		final Table table = new Table(parent, SWT.MULTI | SWT.FULL_SELECTION
+				| SWT.BORDER | SWT.HIDE_SELECTION);
 		table.setLayoutData(layoutData);
 		table.setLinesVisible(true);
 		table.setHeaderVisible(true);
@@ -102,31 +109,39 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements IDb
 		table.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
+
 			public void widgetSelected(SelectionEvent e) {
-				Iterator it = listeners.iterator();
+				Iterator<ICollaboratorSelectionListener> it = listeners
+						.iterator();
 				while (it.hasNext()) {
 					Collaborator lastSelectedCollaborator = selectedCollaborator;
-					StructuredSelection selection = (StructuredSelection) tableViewer.getSelection();
-					if (selection!=null && !selection.isEmpty())
-						selectedCollaborator = (Collaborator) selection.getFirstElement();
-					ICollaboratorSelectionListener listener = (ICollaboratorSelectionListener) it.next();
+					StructuredSelection selection = (StructuredSelection) tableViewer
+							.getSelection();
+					if (selection != null && !selection.isEmpty())
+						selectedCollaborator = (Collaborator) selection
+								.getFirstElement();
+					ICollaboratorSelectionListener listener = it.next();
 					listener.collaboratorSelected(selectedCollaborator);
 					tableViewer.refresh(selectedCollaborator);
-					if (lastSelectedCollaborator!=null)
+					if (lastSelectedCollaborator != null)
 						tableViewer.refresh(lastSelectedCollaborator);
 				}
 			}
 		});
 
-		// Création du viewer
+		// Crï¿½ation du viewer
 		tableViewer = new TableViewer(table);
 		tableViewer.setContentProvider(this);
 		tableViewer.setLabelProvider(this);
 
 		// Configuration des colonnes
 		tableColsMgr = new TableOrTreeColumnsMgr();
-		tableColsMgr.addColumn("FIRST_NAME", Strings.getString("SelectableCollaboratorPanel.columns.FIRST_NAME"), 100, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
-		tableColsMgr.addColumn("LAST_NAME", Strings.getString("SelectableCollaboratorPanel.columns.LAST_NAME"), 100, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr
+				.addColumn(
+						"FIRST_NAME", Strings.getString("SelectableCollaboratorPanel.columns.FIRST_NAME"), 100, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr
+				.addColumn(
+						"LAST_NAME", Strings.getString("SelectableCollaboratorPanel.columns.LAST_NAME"), 100, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
 		tableColsMgr.configureTable(tableViewer);
 
 		// Ajout du listener de gestion du tri des colonnes
@@ -139,97 +154,118 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements IDb
 				int dir = table.getSortDirection();
 				if (previousSortColumn == newSortColumn) {
 					dir = dir == SWT.UP ? SWT.DOWN : SWT.UP;
-				}
-				else {
+				} else {
 					table.setSortColumn(newSortColumn);
 					dir = SWT.UP;
 				}
 				table.setSortDirection(dir);
-				sortColumnIndex = Arrays.asList(table.getColumns()).indexOf(newSortColumn);
-				// Rafraichissement des données
+				sortColumnIndex = Arrays.asList(table.getColumns()).indexOf(
+						newSortColumn);
+				// Rafraichissement des donnï¿½es
 				tableViewer.refresh();
 			}
 		};
-		table.getColumns()[FIRST_NAME_COLUMN_IDX].addListener(SWT.Selection, sortListener);
-		table.getColumns()[LAST_NAME_COLUMN_IDX].addListener(SWT.Selection, sortListener);
+		table.getColumns()[FIRST_NAME_COLUMN_IDX].addListener(SWT.Selection,
+				sortListener);
+		table.getColumns()[LAST_NAME_COLUMN_IDX].addListener(SWT.Selection,
+				sortListener);
 		table.setSortColumn(table.getColumns()[sortColumnIndex]);
 		table.setSortDirection(SWT.UP);
-		
+
 		// Chargement des icones
-		selectedItemIcon = new Image(parentComposite.getDisplay(), ImagesDatas.SELECTED_ITEM_ICON);
-		unselectedItemIcon = new Image(parentComposite.getDisplay(), ImagesDatas.UNSELECTED_ITEM_ICON);
+		selectedItemIcon = new Image(parentComposite.getDisplay(),
+				ImagesDatas.SELECTED_ITEM_ICON);
+		unselectedItemIcon = new Image(parentComposite.getDisplay(),
+				ImagesDatas.UNSELECTED_ITEM_ICON);
 
 	}
 
 	/**
-	 * Retourne le nombre de collaborateurs présentés dans le tableau.
-	 * @return le nombre de collaborateurs présentés dans le tableau.
+	 * Retourne le nombre de collaborateurs prï¿½sentï¿½s dans le tableau.
+	 * 
+	 * @return le nombre de collaborateurs prï¿½sentï¿½s dans le tableau.
 	 */
 	public int getCollaboratorsCount() {
 		return tableViewer.getTable().getItemCount();
 	}
-	
+
 	/**
-	 * Définit le collaborateur sélectionné.
-	 * @param idx index du collaborateur sélectionné.
+	 * Dï¿½finit le collaborateur sï¿½lectionnï¿½.
+	 * 
+	 * @param idx
+	 *            index du collaborateur sï¿½lectionnï¿½.
 	 */
 	public void setSelectedIndex(int idx) {
 		Collaborator c = (Collaborator) tableViewer.getElementAt(idx);
 		setSelectedCollaborator(c);
 	}
-	
+
 	/**
-	 * Définit le collaborateur sélectionné.
-	 * @param collaborator le collaborateur.
+	 * Dï¿½finit le collaborateur sï¿½lectionnï¿½.
+	 * 
+	 * @param collaborator
+	 *            le collaborateur.
 	 */
 	public void setSelectedCollaborator(Collaborator collaborator) {
 		Collaborator lastSelectedCollaborator = selectedCollaborator;
 		selectedCollaborator = collaborator;
-		if (collaborator!=null) {
-			tableViewer.setSelection(new StructuredSelection(selectedCollaborator));
+		if (collaborator != null) {
+			tableViewer.setSelection(new StructuredSelection(
+					selectedCollaborator));
 			tableViewer.refresh(selectedCollaborator);
 		}
-		if (lastSelectedCollaborator!=null)
+		if (lastSelectedCollaborator != null)
 			tableViewer.refresh(lastSelectedCollaborator);
 	}
-	
+
 	/**
-	 * Retourne le collaborateur sélectionné.
-	 * @return le collaborateur sélectionné.
+	 * Retourne le collaborateur sï¿½lectionnï¿½.
+	 * 
+	 * @return le collaborateur sï¿½lectionnï¿½.
 	 */
 	public Collaborator getSelectedCollaborator() {
 		return selectedCollaborator;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java
+	 * .lang.Object)
 	 */
 	public Object[] getElements(Object inputElement) {
-		// Chargement des données
+		// Chargement des donnï¿½es
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				// Recherche des collaborateurs 
+				// Recherche des collaborateurs
 				int orderByFieldIndex = -1;
 				switch (sortColumnIndex) {
 				case FIRST_NAME_COLUMN_IDX:
 					orderByFieldIndex = Collaborator.FIRST_NAME_FIELD_IDX;
 					break;
 				case LAST_NAME_COLUMN_IDX:
-				default :
+				default:
 					orderByFieldIndex = Collaborator.LAST_NAME_FIELD_IDX;
 					break;
 				}
-				// Récupération
-				return ModelMgr.getActiveCollaborators(orderByFieldIndex, tableViewer.getTable().getSortDirection()==SWT.UP);
+				// Rï¿½cupï¿½ration
+				return ModelMgr.getActiveCollaborators(orderByFieldIndex,
+						tableViewer.getTable().getSortDirection() == SWT.UP);
 			}
 		};
-		// Exécution
+		// Exï¿½cution
 		Object result = (Object) safeRunner.run(parent.getShell());
-		return (Collaborator[]) (result!=null ? result : new Collaborator[] {});
+		return (Collaborator[]) (result != null ? result
+				: new Collaborator[] {});
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang
+	 * .Object, int)
 	 */
 	public String getColumnText(final Object element, final int columnIndex) {
 		log.debug("ITableLabelProvider.getColumnText(" + element + ", " + columnIndex + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -238,103 +274,130 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements IDb
 				Collaborator collaborator = (Collaborator) element;
 				String text = null;
 				switch (columnIndex) {
-					case (FIRST_NAME_COLUMN_IDX) :
-						text = collaborator.getFirstName();
-						break;
-					case (LAST_NAME_COLUMN_IDX) :
-						text = collaborator.getLastName();
-						break;
-					default : throw new Error(Strings.getString("SelectableCollaboratorPanel.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
+				case (FIRST_NAME_COLUMN_IDX):
+					text = collaborator.getFirstName();
+					break;
+				case (LAST_NAME_COLUMN_IDX):
+					text = collaborator.getLastName();
+					break;
+				default:
+					throw new Error(
+							Strings.getString("SelectableCollaboratorPanel.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
 				return text;
 			}
 		};
-		// Exécution
+		// Exï¿½cution
 		return (String) safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
 	public Image getColumnImage(Object element, int columnIndex) {
 		Image image = null;
-		if (columnIndex==0) {
+		if (columnIndex == 0) {
 			Collaborator collaborator = (Collaborator) element;
-			image = collaborator.equals(selectedCollaborator) ? selectedItemIcon : unselectedItemIcon;
+			image = collaborator.equals(selectedCollaborator) ? selectedItemIcon
+					: unselectedItemIcon;
 		}
 		return image;
 	}
-	
+
 	/**
 	 * Initialise l'IHM.
 	 */
 	public void initialize() {
-		// Création d'une racine fictive
+		// Crï¿½ation d'une racine fictive
 		tableViewer.setInput(ROOT_NODE);
 	}
-	
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseOpened()
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseOpened()
 	 */
 	public void databaseOpened() {
 		initialize();
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseClosed()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseClosed()
 	 */
 	public void databaseClosed() {
 		Table table = tableViewer.getTable();
 		TableItem[] items = table.getItems();
-		for (int i=0; i<items.length; i++) {
+		for (int i = 0; i < items.length; i++) {
 			items[i].dispose();
 		}
 		selectedCollaborator = null;
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.CollaboratorsUI.ICollaboratorListener#collaboratorAdded(jfb.tools.activitymgr.core.beans.Collaborator)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see jfb.tools.activitymgr.ui.CollaboratorsUI.ICollaboratorListener#
+	 * collaboratorAdded(jfb.tools.activitymgr.core.beans.Collaborator)
 	 */
 	public void collaboratorAdded(Collaborator collaborator) {
 		tableViewer.refresh();
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.CollaboratorsUI.ICollaboratorListener#collaboratorRemoved(jfb.tools.activitymgr.core.beans.Collaborator)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see jfb.tools.activitymgr.ui.CollaboratorsUI.ICollaboratorListener#
+	 * collaboratorRemoved(jfb.tools.activitymgr.core.beans.Collaborator)
 	 */
 	public void collaboratorRemoved(Collaborator collaborator) {
-		// Si le collaborateur supprimé est celui qui est actuellement sélectionné => on supprime la sélection
+		// Si le collaborateur supprimï¿½ est celui qui est actuellement
+		// sï¿½lectionnï¿½ => on supprime la sï¿½lection
 		if (collaborator.equals(selectedCollaborator))
 			selectedCollaborator = null;
 		tableViewer.refresh();
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.CollaboratorsUI.ICollaboratorListener#collaboratorUpdated(jfb.tools.activitymgr.core.beans.Collaborator)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see jfb.tools.activitymgr.ui.CollaboratorsUI.ICollaboratorListener#
+	 * collaboratorUpdated(jfb.tools.activitymgr.core.beans.Collaborator)
 	 */
 	public void collaboratorUpdated(Collaborator collaborator) {
 		tableViewer.refresh(collaborator);
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.CollaboratorsUI.ICollaboratorListener#collaboratorActivationStatusChanged(jfb.tools.activitymgr.core.beans.Collaborator)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see jfb.tools.activitymgr.ui.CollaboratorsUI.ICollaboratorListener#
+	 * collaboratorActivationStatusChanged
+	 * (jfb.tools.activitymgr.core.beans.Collaborator)
 	 */
 	public void collaboratorActivationStatusChanged(Collaborator collaborator) {
-		// C'est soit comme une suppression ou comme un ajout 
-		if (collaborator.getIsActive()) 
+		// C'est soit comme une suppression ou comme un ajout
+		if (collaborator.getIsActive())
 			collaboratorAdded(collaborator);
 		else
 			collaboratorRemoved(collaborator);
 	}
-	
+
 	/**
-	 * Ajoute un listener de sélection.
-	 * @param listener le nouveau listener.
+	 * Ajoute un listener de sï¿½lection.
+	 * 
+	 * @param listener
+	 *            le nouveau listener.
 	 */
 	public void addSelectionListener(ICollaboratorSelectionListener listener) {
 		listeners.add(listener);
 	}
 
 	/**
-	 * Supprime un listener de sélection.
-	 * @param listener le listener.
+	 * Supprime un listener de sï¿½lection.
+	 * 
+	 * @param listener
+	 *            le listener.
 	 */
 	public void removeSelectionListener(SelectionListener listener) {
 		listeners.remove(listener);

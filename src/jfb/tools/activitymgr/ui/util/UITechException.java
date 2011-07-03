@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -30,7 +30,7 @@ package jfb.tools.activitymgr.ui.util;
 import jfb.tools.activitymgr.AbstractTechnicalException;
 
 /**
- * Exception levée en cas d'incident technique dans l'IHM.
+ * Exception levï¿½e en cas d'incident technique dans l'IHM.
  */
 public class UITechException extends AbstractTechnicalException {
 
@@ -39,7 +39,9 @@ public class UITechException extends AbstractTechnicalException {
 
 	/**
 	 * Constructeur avec un message.
-	 * @param message le message d'erreur.
+	 * 
+	 * @param message
+	 *            le message d'erreur.
 	 */
 	public UITechException(String message) {
 		super(message);
@@ -47,8 +49,11 @@ public class UITechException extends AbstractTechnicalException {
 
 	/**
 	 * Constructeur avec un message et une cause.
-	 * @param message le message.
-	 * @param cause la cause.
+	 * 
+	 * @param message
+	 *            le message.
+	 * @param cause
+	 *            la cause.
 	 */
 	public UITechException(String message, Throwable cause) {
 		super(message, cause);

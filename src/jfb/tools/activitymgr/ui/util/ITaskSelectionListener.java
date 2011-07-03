@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -30,13 +30,15 @@ package jfb.tools.activitymgr.ui.util;
 import jfb.tools.activitymgr.core.beans.Task;
 
 /**
- * Interface d'écoute de sélection de taches.
+ * Interface d'ï¿½coute de sï¿½lection de taches.
  */
 public interface ITaskSelectionListener {
 
 	/**
-	 * Notifie de la sélection d'une tache.
-	 * @param selectedTask la tache sélectionnée.
+	 * Notifie de la sï¿½lection d'une tache.
+	 * 
+	 * @param selectedTask
+	 *            la tache sï¿½lectionnï¿½e.
 	 */
 	public void taskSelected(Task selectedTask);
 

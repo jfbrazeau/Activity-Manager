@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -30,6 +30,7 @@ package jfb.tools.activitymgr.ui;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import jfb.tools.activitymgr.core.DbException;
 import jfb.tools.activitymgr.core.ModelMgr;
@@ -73,50 +74,61 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 
 /**
- * IHM de gestion des durées.
+ * IHM de gestion des durï¿½es.
  */
-public class DurationsUI extends AbstractTableMgr implements IDbStatusListener, ICellModifier, SelectionListener, MenuListener {
+public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
+		ICellModifier, SelectionListener, MenuListener {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(DurationsUI.class);
 
-	/** Constantes associées aux colonnes */
-	public static final int IS_ACTIVE_COLUMN_IDX =  0;
+	/** Constantes associï¿½es aux colonnes */
+	public static final int IS_ACTIVE_COLUMN_IDX = 0;
 	public static final int DURATION_COLUMN_IDX = 1;
 	private static TableOrTreeColumnsMgr tableColsMgr;
 
 	/**
-	 * Interface utilisée pour permettre l'écoute de la suppression ou de
-	 * l'ajout de durées.
+	 * Interface utilisï¿½e pour permettre l'ï¿½coute de la suppression ou de
+	 * l'ajout de durï¿½es.
 	 */
 	public static interface IDurationListener {
-		
+
 		/**
-		 * Indique qu'une durée a été ajoutée au référentiel.
-		 * @param duration la durée ajoutée.
+		 * Indique qu'une durï¿½e a ï¿½tï¿½ ajoutï¿½e au rï¿½fï¿½rentiel.
+		 * 
+		 * @param duration
+		 *            la durï¿½e ajoutï¿½e.
 		 */
 		public void durationAdded(Duration duration);
-		
+
 		/**
-		 * Indique qu'une durée a été supprimée du référentiel.
-		 * @param duration la durée supprimée.
+		 * Indique qu'une durï¿½e a ï¿½tï¿½ supprimï¿½e du rï¿½fï¿½rentiel.
+		 * 
+		 * @param duration
+		 *            la durï¿½e supprimï¿½e.
 		 */
 		public void durationRemoved(Duration duration);
 
 		/**
-		 * Indique qu'une durée a été modifiée dans le référentiel.
-		 * @param oldDuration la durée modifiée.
-		 * @param newDuration la nouvelle durée.
+		 * Indique qu'une durï¿½e a ï¿½tï¿½ modifiï¿½e dans le rï¿½fï¿½rentiel.
+		 * 
+		 * @param oldDuration
+		 *            la durï¿½e modifiï¿½e.
+		 * @param newDuration
+		 *            la nouvelle durï¿½e.
 		 */
 		public void durationUpdated(Duration oldDuration, Duration newDuration);
 
 		/**
-		 * Indique que l'état d'activation d'une durée a été désactivée dans le référentiel.
-		 * @param duration la durée modifiée.
+		 * Indique que l'ï¿½tat d'activation d'une durï¿½e a ï¿½tï¿½ dï¿½sactivï¿½e dans le
+		 * rï¿½fï¿½rentiel.
+		 * 
+		 * @param duration
+		 *            la durï¿½e modifiï¿½e.
 		 */
 		public void durationActivationStatusChanged(Duration duration);
 	}
-	
+
 	/** Viewer */
 	private TableViewer tableViewer;
 
@@ -124,22 +136,24 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener, 
 	private MenuItem newItem;
 	private MenuItem removeItem;
 	private MenuItem exportItem;
-	
+
 	/** Composant parent */
 	private Composite parent;
 
 	/** Listeners */
-	private ArrayList listeners = new ArrayList();
+	private List<IDurationListener> listeners = new ArrayList<IDurationListener>();
 
-	/** Icone utilisé pour marquer les durées actifs */
+	/** Icone utilisï¿½ pour marquer les durï¿½es actifs */
 	private Image checkedIcon;
-	
-	/** Icone utilisé pour les durées non actifs */
+
+	/** Icone utilisï¿½ pour les durï¿½es non actifs */
 	private Image uncheckedIcon;
-	
+
 	/**
 	 * Constructeur permettant de placer l'IHM dans un onglet.
-	 * @param tabItem item parent.
+	 * 
+	 * @param tabItem
+	 *            item parent.
 	 */
 	public DurationsUI(TabItem tabItem) {
 		this(tabItem.getParent());
@@ -147,16 +161,19 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener, 
 	}
 
 	/**
-	 * Constructeur par défaut.
-	 * @param parentComposite composant parent.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param parentComposite
+	 *            composant parent.
 	 */
 	public DurationsUI(Composite parentComposite) {
-		// Création du composite parent
+		// Crï¿½ation du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayout(new GridLayout(1, false));
 
 		// Table
-		final Table table = new Table(parent, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER | SWT.HIDE_SELECTION);
+		final Table table = new Table(parent, SWT.MULTI | SWT.FULL_SELECTION
+				| SWT.BORDER | SWT.HIDE_SELECTION);
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData.heightHint = 75;
 		table.setLayoutData(gridData);
@@ -165,7 +182,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener, 
 		table.setEnabled(true);
 		table.setToolTipText(Strings.getString("DurationsUI.table.TOOL_TIP")); //$NON-NLS-1$
 
-		// Création du viewer
+		// Crï¿½ation du viewer
 		tableViewer = new TableViewer(table);
 		tableViewer.setCellModifier(this);
 		tableViewer.setContentProvider(this);
@@ -174,10 +191,12 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener, 
 		// Configuration des colonnes
 		tableColsMgr = new TableOrTreeColumnsMgr();
 		tableColsMgr.addColumn("IS_ACTIVE", "!", 20, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
-		tableColsMgr.addColumn("DURATION", Strings.getString("DurationsUI.columns.DURATION"), 100, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr
+				.addColumn(
+						"DURATION", Strings.getString("DurationsUI.columns.DURATION"), 100, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
 		tableColsMgr.configureTable(tableViewer);
 
-		// Configuration des éditeurs de cellules
+		// Configuration des ï¿½diteurs de cellules
 		CellEditor[] editors = new CellEditor[9];
 		editors[IS_ACTIVE_COLUMN_IDX] = new CheckboxCellEditor(table);
 		editors[DURATION_COLUMN_IDX] = new TextCellEditor(table);
@@ -196,36 +215,48 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener, 
 		exportItem.setText(Strings.getString("DurationsUI.menuitems.EXPORT")); //$NON-NLS-1$
 		exportItem.addSelectionListener(this);
 		table.setMenu(menu);
-		
+
 		// Chargement des icones
-		checkedIcon = new Image(parentComposite.getDisplay(), ImagesDatas.CHECKED_ICON);
-		uncheckedIcon = new Image(parentComposite.getDisplay(), ImagesDatas.UNCHECKED_ICON);
+		checkedIcon = new Image(parentComposite.getDisplay(),
+				ImagesDatas.CHECKED_ICON);
+		uncheckedIcon = new Image(parentComposite.getDisplay(),
+				ImagesDatas.UNCHECKED_ICON);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java
+	 * .lang.Object)
 	 */
 	public Object[] getElements(Object inputElement) {
-		// Chargement des données
+		// Chargement des donnï¿½es
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				return ModelMgr.getDurations();
 			}
 		};
-		// Exécution
+		// Exï¿½cution
 		return (Object[]) safeRunner.run(parent.getShell());
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ICellModifier#canModify(java.lang.Object, java.lang.String)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.viewers.ICellModifier#canModify(java.lang.Object,
+	 * java.lang.String)
 	 */
 	public boolean canModify(Object element, String property) {
 		log.debug("ICellModifier.canModify(" + element + ", " + property + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ICellModifier#getValue(java.lang.Object, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.viewers.ICellModifier#getValue(java.lang.Object,
+	 * java.lang.String)
 	 */
 	public Object getValue(final Object element, final String property) {
 		log.debug("ICellModifier.getValue(" + element + ", " + property + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -235,23 +266,30 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener, 
 				int columnIndex = tableColsMgr.getColumnIndex(property);
 				Object value = null;
 				switch (columnIndex) {
-					case IS_ACTIVE_COLUMN_IDX :
-						value = duration.getIsActive() ? Boolean.TRUE : Boolean.FALSE;
-						break;
-					case (DURATION_COLUMN_IDX) :
-						value = String.valueOf(new BigDecimal(duration.getId()).movePointLeft(2));
-						break;
-					default : throw new Error(Strings.getString("DurationsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
+				case IS_ACTIVE_COLUMN_IDX:
+					value = duration.getIsActive() ? Boolean.TRUE
+							: Boolean.FALSE;
+					break;
+				case (DURATION_COLUMN_IDX):
+					value = String.valueOf(new BigDecimal(duration.getId())
+							.movePointLeft(2));
+					break;
+				default:
+					throw new Error(
+							Strings.getString("DurationsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
 				return value;
 			}
 		};
-		// Exécution
+		// Exï¿½cution
 		return safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ICellModifier#modify(java.lang.Object, java.lang.String, java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.viewers.ICellModifier#modify(java.lang.Object,
+	 * java.lang.String, java.lang.Object)
 	 */
 	public void modify(final Object element, String property, final Object value) {
 		log.debug("ICellModifier.modify(" + element + ", " + property + ", " + value + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
@@ -261,37 +299,42 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener, 
 		final int columnIndex = tableColsMgr.getColumnIndex(property);
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				// Création d'un clone dans le cas ou il s'agît 
-				// d'une modification de la valeur de la durée
+				// Crï¿½ation d'un clone dans le cas ou il s'agï¿½t
+				// d'une modification de la valeur de la durï¿½e
 				Duration oldDuration = new Duration();
 				oldDuration.setId(duration.getId());
 				oldDuration.setIsActive(duration.getIsActive());
-				// Booléens indiquant quelles notifications doivent être émises
+				// Boolï¿½ens indiquant quelles notifications doivent ï¿½tre ï¿½mises
 				boolean mustNotifyUpdateEvent = false;
 				boolean mustNotifyActivationStatusChangeEvent = false;
 				switch (columnIndex) {
-					case (IS_ACTIVE_COLUMN_IDX) :
-						Boolean isActive = (Boolean) value;
-						duration.setIsActive(isActive.booleanValue());
-						ModelMgr.updateDuration(duration);
-						mustNotifyActivationStatusChangeEvent = true;
-						break;
-					case (DURATION_COLUMN_IDX) :
-						// Mise à jour en base
-						Duration newDuration = new Duration();
-						newDuration.setId(StringHelper.entryToHundredth((String) value));
-						newDuration.setIsActive(duration.getIsActive());
-						newDuration = ModelMgr.updateDuration(oldDuration, newDuration);
-						// Mise à jour dans le modèle
-						duration.setId(newDuration.getId());
-						mustNotifyUpdateEvent = true;
-						// Tri des données
-						sortDurations();
-						break;
-					default : throw new UITechException(Strings.getString("DurationsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
+				case (IS_ACTIVE_COLUMN_IDX):
+					Boolean isActive = (Boolean) value;
+					duration.setIsActive(isActive.booleanValue());
+					ModelMgr.updateDuration(duration);
+					mustNotifyActivationStatusChangeEvent = true;
+					break;
+				case (DURATION_COLUMN_IDX):
+					// Mise ï¿½ jour en base
+					Duration newDuration = new Duration();
+					newDuration.setId(StringHelper
+							.entryToHundredth((String) value));
+					newDuration.setIsActive(duration.getIsActive());
+					newDuration = ModelMgr.updateDuration(oldDuration,
+							newDuration);
+					// Mise ï¿½ jour dans le modï¿½le
+					duration.setId(newDuration.getId());
+					mustNotifyUpdateEvent = true;
+					// Tri des donnï¿½es
+					sortDurations();
+					break;
+				default:
+					throw new UITechException(
+							Strings.getString("DurationsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
 				// Notification des listeners
-				notifyLabelProviderListener(new LabelProviderChangedEvent(labelProvider, duration));
+				notifyLabelProviderListener(new LabelProviderChangedEvent(
+						labelProvider, duration));
 				if (mustNotifyUpdateEvent)
 					notifyDurationUpdated(oldDuration, duration);
 				if (mustNotifyActivationStatusChangeEvent)
@@ -299,12 +342,16 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener, 
 				return null;
 			}
 		};
-		// Exécution
+		// Exï¿½cution
 		safeRunner.run(parent.getShell());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang
+	 * .Object, int)
 	 */
 	public String getColumnText(final Object element, final int columnIndex) {
 		log.debug("ITableLabelProvider.getColumnText(" + element + ", " + columnIndex + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -313,23 +360,30 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener, 
 				Duration duration = (Duration) element;
 				String text = null;
 				switch (columnIndex) {
-					case IS_ACTIVE_COLUMN_IDX :
-						text = ""; // colonne indiquant si la durée est active ou non //$NON-NLS-1$
-						break;
-					case (DURATION_COLUMN_IDX) :
-						text = String.valueOf(new BigDecimal(duration.getId()).movePointLeft(2));
-						break;
-					default : throw new Error(Strings.getString("DurationsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
+				case IS_ACTIVE_COLUMN_IDX:
+					text = ""; // colonne indiquant si la durï¿½e est active ou non //$NON-NLS-1$
+					break;
+				case (DURATION_COLUMN_IDX):
+					text = String.valueOf(new BigDecimal(duration.getId())
+							.movePointLeft(2));
+					break;
+				default:
+					throw new Error(
+							Strings.getString("DurationsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
 				return text;
 			}
 		};
-		// Exécution
+		// Exï¿½cution
 		return (String) safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.util.AbstractTableMgr#getColumnImage(java.lang.Object, int)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.util.AbstractTableMgr#getColumnImage(java.lang
+	 * .Object, int)
 	 */
 	public Image getColumnImage(final Object element, final int columnIndex) {
 		log.debug("ITableLabelProvider.getColumnImage(" + element + ", " + columnIndex + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -338,74 +392,86 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener, 
 				Duration duration = (Duration) element;
 				Image image = null;
 				switch (columnIndex) {
-					case (IS_ACTIVE_COLUMN_IDX) :
-						image = duration.getIsActive() ? checkedIcon : uncheckedIcon;
-						break;
-					case (DURATION_COLUMN_IDX) :
-						image = null;
-						break;
-					default : throw new Error(Strings.getString("DurationsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
+				case (IS_ACTIVE_COLUMN_IDX):
+					image = duration.getIsActive() ? checkedIcon
+							: uncheckedIcon;
+					break;
+				case (DURATION_COLUMN_IDX):
+					image = null;
+					break;
+				default:
+					throw new Error(
+							Strings.getString("DurationsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
 				return image;
 			}
 		};
-		// Exécution
+		// Exï¿½cution
 		return (Image) safeRunner.run(parent.getShell());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt
+	 * .events.SelectionEvent)
 	 */
 	public void widgetSelected(final SelectionEvent e) {
 		log.debug("SelectionListener.widgetSelected(" + e + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		final Object source = e.getSource();
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				//TableItem[] selection = tableViewer.getTable().getSelection();
-				// Cas d'une création
+				// TableItem[] selection =
+				// tableViewer.getTable().getSelection();
+				// Cas d'une crï¿½ation
 				if (newItem.equals(source)) {
 					InputDialog dialog = new InputDialog(
-						parent.getShell(), 
-						Strings.getString("DurationsUI.titles.INPUT_DIALOG"),  //$NON-NLS-1$
-						Strings.getString("DurationsUI.questions.NEW_DURATION"),  //$NON-NLS-1$
-						"0",  //$NON-NLS-1$
-						new IInputValidator() {
-							public String isValid(String newText) {
-								String errorMsg = null;
-								Duration duration = new Duration();
-								try { 
-									// Parsing de la saisie et contrôle du format
-									duration.setId(StringHelper.entryToHundredth(newText));
-									// Vérification de la non existence de la durée
-									if (ModelMgr.durationExists(duration))
-										errorMsg = Strings.getString("DurationsUI.errors.DURATION_ALREADY_EXIST"); //$NON-NLS-1$
+							parent.getShell(),
+							Strings.getString("DurationsUI.titles.INPUT_DIALOG"), //$NON-NLS-1$
+							Strings.getString("DurationsUI.questions.NEW_DURATION"), //$NON-NLS-1$
+							"0", //$NON-NLS-1$
+							new IInputValidator() {
+								public String isValid(String newText) {
+									String errorMsg = null;
+									Duration duration = new Duration();
+									try {
+										// Parsing de la saisie et contrï¿½le du
+										// format
+										duration.setId(StringHelper
+												.entryToHundredth(newText));
+										// Vï¿½rification de la non existence de
+										// la durï¿½e
+										if (ModelMgr.durationExists(duration))
+											errorMsg = Strings
+													.getString("DurationsUI.errors.DURATION_ALREADY_EXIST"); //$NON-NLS-1$
+									} catch (StringFormatException e) {
+										errorMsg = e.getMessage();
+									} catch (DbException e) {
+										errorMsg = Strings
+												.getString("DurationsUI.errors.DATABASE_CONNECTION_FAILURE_WHILE_DURATION_EXISTENCE_CHECK"); //$NON-NLS-1$
+									}
+									// Retour du rï¿½sultat
+									return errorMsg;
 								}
-								catch (StringFormatException e) {
-									errorMsg = e.getMessage();
-								}
-								catch (DbException e) {
-									errorMsg = Strings.getString("DurationsUI.errors.DATABASE_CONNECTION_FAILURE_WHILE_DURATION_EXISTENCE_CHECK"); //$NON-NLS-1$
-								}
-								// Retour du résultat
-								return errorMsg;
-							}
-						});
+							});
 					// Ouverture du dialogue
-					if (dialog.open()==Dialog.OK) {
+					if (dialog.open() == Dialog.OK) {
 						Duration newDuration = new Duration();
-						newDuration.setId(StringHelper.entryToHundredth(dialog.getValue()));
+						newDuration.setId(StringHelper.entryToHundredth(dialog
+								.getValue()));
 						ModelMgr.createDuration(newDuration);
 						newLine(newDuration);
 						// Notification des listeners
 						notifyDurationAdded(newDuration);
-						// Tri des données
+						// Tri des donnï¿½es
 						sortDurations();
 					}
 				}
 				// Cas d'une suppression
 				else if (removeItem.equals(source)) {
 					TableItem[] items = tableViewer.getTable().getSelection();
-					for (int i=0; i<items.length; i++) {
+					for (int i = 0; i < items.length; i++) {
 						TableItem item = items[i];
 						Duration duration = (Duration) item.getData();
 						ModelMgr.removeDuration(duration);
@@ -421,42 +487,56 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener, 
 				return null;
 			}
 		};
-		// Exécution
+		// Exï¿½cution
 		safeRunner.run(parent.getShell());
 	}
 
 	/**
 	 * Ajoute une ligne dans le tableau.
-	 * @param duration la durée associée à la nouvelle ligne.
+	 * 
+	 * @param duration
+	 *            la durï¿½e associï¿½e ï¿½ la nouvelle ligne.
 	 */
 	private void newLine(Duration duration) {
 		// Ajout dans l'arbre
 		tableViewer.add(duration);
 		tableViewer.setSelection(new StructuredSelection(duration), true);
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse
+	 * .swt.events.SelectionEvent)
 	 */
 	public void widgetDefaultSelected(SelectionEvent e) {
 		widgetSelected(e);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.MenuListener#menuShown(org.eclipse.swt.events.MenuEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.swt.events.MenuListener#menuShown(org.eclipse.swt.events.
+	 * MenuEvent)
 	 */
 	public void menuShown(MenuEvent e) {
 		log.debug("menuShown(" + e + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		TableItem[] selection = tableViewer.getTable().getSelection();
-		boolean emptySelection = selection.length==0;
-		boolean singleSelection = selection.length==1;
+		boolean emptySelection = selection.length == 0;
+		boolean singleSelection = selection.length == 1;
 		newItem.setEnabled(emptySelection || singleSelection);
 		removeItem.setEnabled(!emptySelection);
 		exportItem.setEnabled(true);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.MenuListener#menuHidden(org.eclipse.swt.events.MenuEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.swt.events.MenuListener#menuHidden(org.eclipse.swt.events
+	 * .MenuEvent)
 	 */
 	public void menuHidden(MenuEvent e) {
 		// Do nothing...
@@ -464,7 +544,9 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener, 
 
 	/**
 	 * Ajoute un listener.
-	 * @param listener le nouveau listener.
+	 * 
+	 * @param listener
+	 *            le nouveau listener.
 	 */
 	public void addDurationListener(IDurationListener listener) {
 		listeners.add(listener);
@@ -472,89 +554,107 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener, 
 
 	/**
 	 * Ajoute un listener.
-	 * @param listener le nouveau listener.
+	 * 
+	 * @param listener
+	 *            le nouveau listener.
 	 */
 	public void removeDurationListener(IDurationListener listener) {
 		listeners.remove(listener);
 	}
 
 	/**
-	 * Notifie les listeners qu'une durée a été ajoutée.
-	 * @param newDuration la durée ajoutée.
+	 * Notifie les listeners qu'une durï¿½e a ï¿½tï¿½ ajoutï¿½e.
+	 * 
+	 * @param newDuration
+	 *            la durï¿½e ajoutï¿½e.
 	 */
 	private void notifyDurationAdded(Duration newDuration) {
-		Iterator it = listeners.iterator();
+		Iterator<IDurationListener> it = listeners.iterator();
 		while (it.hasNext()) {
-			IDurationListener listener = (IDurationListener) it.next();
+			IDurationListener listener = it.next();
 			listener.durationAdded(newDuration);
 		}
 	}
 
 	/**
-	 * Notifie les listeners qu'une durée a été supprimée.
-	 * @param duration la durée supprimée.
+	 * Notifie les listeners qu'une durï¿½e a ï¿½tï¿½ supprimï¿½e.
+	 * 
+	 * @param duration
+	 *            la durï¿½e supprimï¿½e.
 	 */
 	private void notifyDurationRemoved(Duration duration) {
-		Iterator it = listeners.iterator();
+		Iterator<IDurationListener> it = listeners.iterator();
 		while (it.hasNext()) {
-			IDurationListener listener = (IDurationListener) it.next();
+			IDurationListener listener = it.next();
 			listener.durationRemoved(duration);
 		}
 	}
 
 	/**
-	 * Notifie les listeners qu'un collaborateur a été modifié.
-	 * @param oldDuration la durée modifiée.
-	 * @param newDuration la nouvelle durée.
+	 * Notifie les listeners qu'un collaborateur a ï¿½tï¿½ modifiï¿½.
+	 * 
+	 * @param oldDuration
+	 *            la durï¿½e modifiï¿½e.
+	 * @param newDuration
+	 *            la nouvelle durï¿½e.
 	 */
-	private void notifyDurationUpdated(Duration oldDuration, Duration newDuration) {
-		Iterator it = listeners.iterator();
+	private void notifyDurationUpdated(Duration oldDuration,
+			Duration newDuration) {
+		Iterator<IDurationListener> it = listeners.iterator();
 		while (it.hasNext()) {
-			IDurationListener listener = (IDurationListener) it.next();
+			IDurationListener listener = it.next();
 			listener.durationUpdated(oldDuration, newDuration);
 		}
 	}
 
 	/**
-	 * Notifie les listeners que l'état d'activation d'une durée a été modifiée.
-	 * @param duration la durée modifiée.
+	 * Notifie les listeners que l'ï¿½tat d'activation d'une durï¿½e a ï¿½tï¿½ modifiï¿½e.
+	 * 
+	 * @param duration
+	 *            la durï¿½e modifiï¿½e.
 	 */
 	private void notifyDurationActivationStatusChanged(Duration duration) {
-		Iterator it = listeners.iterator();
+		Iterator<IDurationListener> it = listeners.iterator();
 		while (it.hasNext()) {
-			IDurationListener listener = (IDurationListener) it.next();
+			IDurationListener listener = it.next();
 			listener.durationActivationStatusChanged(duration);
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseOpened()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseOpened()
 	 */
 	public void databaseOpened() {
 		initUI();
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseClosed()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseClosed()
 	 */
 	public void databaseClosed() {
 		Table table = tableViewer.getTable();
 		TableItem[] items = table.getItems();
-		for (int i=0; i<items.length; i++) {
+		for (int i = 0; i < items.length; i++) {
 			items[i].dispose();
 		}
 	}
 
 	/**
-	 * Trie les durées.
+	 * Trie les durï¿½es.
 	 */
 	private void sortDurations() {
-		// Réinitialisation des donées
+		// Rï¿½initialisation des donï¿½es
 		initUI();
 	}
 
 	/**
-	 * Initialise l'IHM avec les données en base.
+	 * Initialise l'IHM avec les donnï¿½es en base.
 	 */
 	private void initUI() {
 		// Initialisation de la table

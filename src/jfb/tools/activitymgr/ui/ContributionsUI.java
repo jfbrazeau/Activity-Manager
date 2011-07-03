@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
+import java.util.List;
 
 import jfb.tools.activitymgr.core.DbException;
 import jfb.tools.activitymgr.core.ModelException;
@@ -101,43 +102,51 @@ import org.eclipse.swt.widgets.Widget;
 /**
  * IHM de gestion des contributions.
  */
-public class ContributionsUI 
-	extends AbstractTableMgr 
-	implements IDbStatusListener, ICellModifier, SelectionListener, MenuListener, ITaskListener, ICollaboratorListener, ICollaboratorSelectionListener, IDurationListener, ITableFontProvider {
+public class ContributionsUI extends AbstractTableMgr implements
+		IDbStatusListener, ICellModifier, SelectionListener, MenuListener,
+		ITaskListener, ICollaboratorListener, ICollaboratorSelectionListener,
+		IDurationListener, ITableFontProvider {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(ContributionsUI.class);
 
-	/** Constantes associées aux colonnes de la table de saisie des contributions */
+	/**
+	 * Constantes associï¿½es aux colonnes de la table de saisie des contributions
+	 */
 	public static final int TASK_PATH_COLUMN_IDX = 0;
-	public static final int TASK_NAME_COLUMN_IDX =      1;
-	public static final int MONDAY_COLUMN_IDX =    2;
-	public static final int TUESDAY_COLUMN_IDX =   3;
+	public static final int TASK_NAME_COLUMN_IDX = 1;
+	public static final int MONDAY_COLUMN_IDX = 2;
+	public static final int TUESDAY_COLUMN_IDX = 3;
 	public static final int WEDNESDAY_COLUMN_IDX = 4;
-	public static final int THURSDAY_COLUMN_IDX =  5;
-	public static final int FRIDAY_COLUMN_IDX =    6;
-	public static final int SATURDAY_COLUMN_IDX =  7;
-	public static final int SUNDAY_COLUMN_IDX =    8;
+	public static final int THURSDAY_COLUMN_IDX = 5;
+	public static final int FRIDAY_COLUMN_IDX = 6;
+	public static final int SATURDAY_COLUMN_IDX = 7;
+	public static final int SUNDAY_COLUMN_IDX = 8;
 	private static TableOrTreeColumnsMgr tableColsMgr;
 
 	/** Initiales des jours de la semaine */
 	private static final String[] weekDaysInitials = new String[] {
-		"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+			"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
 	};
 
-	/** Objet utilisé dans le tableau pour marquer la ligne contenant les totaux des contributions */
+	/**
+	 * Objet utilisï¿½ dans le tableau pour marquer la ligne contenant les totaux
+	 * des contributions
+	 */
 	private static class WeekContributionsSum {
-		
+
 		/** Instance singleton */
 		private static WeekContributionsSum singleton = new WeekContributionsSum();
 
 		/**
-		 * Constructeur privé (singleton).
+		 * Constructeur privï¿½ (singleton).
 		 */
-		private WeekContributionsSum() {}
-		
+		private WeekContributionsSum() {
+		}
+
 		/**
 		 * Retourne l'instance singleton de la classe.
+		 * 
 		 * @return l'instance singleton de la classe.
 		 */
 		public static WeekContributionsSum getInstance() {
@@ -145,35 +154,41 @@ public class ContributionsUI
 		}
 
 	}
-	
+
 	/**
-	 * Interface utilisée pour permettre l'écoute de la suppression ou de
-	 * l'ajout de durées.
+	 * Interface utilisï¿½e pour permettre l'ï¿½coute de la suppression ou de
+	 * l'ajout de durï¿½es.
 	 */
 	public static interface IContributionListener {
-		
+
 		/**
-		 * Indique qu'une contribution a été ajoutée au référentiel.
-		 * @param contribution la contribution ajoutée.
+		 * Indique qu'une contribution a ï¿½tï¿½ ajoutï¿½e au rï¿½fï¿½rentiel.
+		 * 
+		 * @param contribution
+		 *            la contribution ajoutï¿½e.
 		 */
 		public void contributionAdded(Contribution contribution);
-		
+
 		/**
-		 * Indique que des contributions ont été supprimées du référentiel.
-		 * @param contributions les contributions supprimées.
+		 * Indique que des contributions ont ï¿½tï¿½ supprimï¿½es du rï¿½fï¿½rentiel.
+		 * 
+		 * @param contributions
+		 *            les contributions supprimï¿½es.
 		 */
 		public void contributionsRemoved(Contribution[] contributions);
 
 		/**
-		 * Indique que des contributions ont été modifiée dans le référentiel.
-		 * @param contributions les contributions modifiées.
+		 * Indique que des contributions ont ï¿½tï¿½ modifiï¿½e dans le rï¿½fï¿½rentiel.
+		 * 
+		 * @param contributions
+		 *            les contributions modifiï¿½es.
 		 */
 		public void contributionsUpdated(Contribution[] contributions);
 
 	}
 
 	/** Listeners */
-	private ArrayList listeners = new ArrayList();
+	private List<IContributionListener> listeners = new ArrayList<IContributionListener>();
 
 	/** Viewer */
 	private TableViewer tableViewer;
@@ -183,7 +198,7 @@ public class ContributionsUI
 	private MenuItem removeItem;
 	private MenuItem pasteItem;
 	private MenuItem exportItem;
-	
+
 	/** Boutons d'action */
 	private Button previousYearButton;
 	private Button previousMonthButton;
@@ -195,36 +210,38 @@ public class ContributionsUI
 	/** Composant parent */
 	private Composite parent;
 
-	/** Liste des durées */
+	/** Liste des durï¿½es */
 	private Duration[] durations;
-	
-	/** Table présentant la liste des collaborateurs */
+
+	/** Table prï¿½sentant la liste des collaborateurs */
 	public SelectableCollaboratorPanel selectableCollaboratorPanel;
 
-	/** Date associé au Lundi de la semaine */
+	/** Date associï¿½ au Lundi de la semaine */
 	private Calendar currentMonday;
 
 	/** Label contenant les dates de la semaine */
 	private Label weekLabel;
-	
+
 	/** Popup permettant de choisir une tache */
 	private TaskChooserTreeWithHistoryDialog taskChooserDialog;
 
-	/** Editeur de durées */
+	/** Editeur de durï¿½es */
 	private ComboBoxCellEditor durationCellEditor;
-	
+
 	/** Presse papier */
 	private Clipboard clipboard;
-	
-	/** Police de caractère utilisée pour les contribution */
+
+	/** Police de caractï¿½re utilisï¿½e pour les contribution */
 	private Font normalFont;
-	
-	/** Police de caractère utilisée pour la ligne des totaux */
+
+	/** Police de caractï¿½re utilisï¿½e pour la ligne des totaux */
 	private Font italicFont;
-	
+
 	/**
 	 * Constructeur permettant de placer l'IHM dans un onglet.
-	 * @param tabItem item parent.
+	 * 
+	 * @param tabItem
+	 *            item parent.
 	 */
 	public ContributionsUI(TabItem tabItem) {
 		this(tabItem.getParent());
@@ -232,17 +249,20 @@ public class ContributionsUI
 	}
 
 	/**
-	 * Constructeur par défaut.
-	 * @param parentComposite composant parent.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param parentComposite
+	 *            composant parent.
 	 */
 	public ContributionsUI(Composite parentComposite) {
-		// Création du composite parent
+		// Crï¿½ation du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayout(new GridLayout(2, false));
 
 		// Liste des collaborateurs
 		Label collaboratorsLabel = new Label(parent, SWT.NONE);
-		collaboratorsLabel.setText(Strings.getString("ContributionsUI.labels.SELECT_A_COLLABORATOR")); //$NON-NLS-1$
+		collaboratorsLabel.setText(Strings
+				.getString("ContributionsUI.labels.SELECT_A_COLLABORATOR")); //$NON-NLS-1$
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, false, false);
 		gridData.verticalAlignment = SWT.CENTER;
 		collaboratorsLabel.setLayoutData(gridData);
@@ -259,11 +279,13 @@ public class ContributionsUI
 		gridData = new GridData(SWT.FILL, SWT.FILL, false, true);
 		gridData.widthHint = 190;
 		gridData.verticalSpan = 2;
-		selectableCollaboratorPanel = new SelectableCollaboratorPanel(parent, gridData);
+		selectableCollaboratorPanel = new SelectableCollaboratorPanel(parent,
+				gridData);
 		selectableCollaboratorPanel.addSelectionListener(this);
 
 		// Table
-		final Table table = new Table(parent, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER | SWT.HIDE_SELECTION);
+		final Table table = new Table(parent, SWT.MULTI | SWT.FULL_SELECTION
+				| SWT.BORDER | SWT.HIDE_SELECTION);
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData.heightHint = 75;
 		table.setLayoutData(gridData);
@@ -271,71 +293,89 @@ public class ContributionsUI
 		table.setHeaderVisible(true);
 		table.setEnabled(true);
 
-		// Création du viewer
+		// Crï¿½ation du viewer
 		tableViewer = new TableViewer(table);
 		tableViewer.setCellModifier(this);
 		tableViewer.setContentProvider(this);
 		tableViewer.setLabelProvider(this);
 
-		// Création des polices de caractère
+		// Crï¿½ation des polices de caractï¿½re
 		FontData tableFont = table.getFont().getFontData()[0];
 		normalFont = table.getFont();
-		italicFont = new Font(table.getDisplay(), tableFont.getName(), tableFont.getHeight(), SWT.ITALIC);
+		italicFont = new Font(table.getDisplay(), tableFont.getName(),
+				tableFont.getHeight(), SWT.ITALIC);
 
 		// Configuration des colonnes
 		tableColsMgr = new TableOrTreeColumnsMgr();
-		tableColsMgr.addColumn("TASK_PATH", Strings.getString("ContributionsUI.columns.TASK_PATH"), 200, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
-		tableColsMgr.addColumn("TASK NAME", Strings.getString("ContributionsUI.columns.TASK_NAME"), 100, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
-		tableColsMgr.addColumn("MONDAY", Strings.getString("ContributionsUI.columns.MONDAY"), 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
-		tableColsMgr.addColumn("TUESDAY", Strings.getString("ContributionsUI.columns.TUESDAY"), 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
-		tableColsMgr.addColumn("WEDNESDAY", Strings.getString("ContributionsUI.columns.WEDNESDAY"), 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
-		tableColsMgr.addColumn("THURSDAY", Strings.getString("ContributionsUI.columns.THURSDAY"), 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
-		tableColsMgr.addColumn("FRIDAY", Strings.getString("ContributionsUI.columns.FRIDAY"), 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
-		tableColsMgr.addColumn("SATURDAY", Strings.getString("ContributionsUI.columns.SATURDAY"), 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
-		tableColsMgr.addColumn("SUNDAY", Strings.getString("ContributionsUI.columns.SUNDAY"), 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr
+				.addColumn(
+						"TASK_PATH", Strings.getString("ContributionsUI.columns.TASK_PATH"), 200, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr
+				.addColumn(
+						"TASK NAME", Strings.getString("ContributionsUI.columns.TASK_NAME"), 100, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr
+				.addColumn(
+						"MONDAY", Strings.getString("ContributionsUI.columns.MONDAY"), 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr
+				.addColumn(
+						"TUESDAY", Strings.getString("ContributionsUI.columns.TUESDAY"), 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr
+				.addColumn(
+						"WEDNESDAY", Strings.getString("ContributionsUI.columns.WEDNESDAY"), 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr
+				.addColumn(
+						"THURSDAY", Strings.getString("ContributionsUI.columns.THURSDAY"), 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr
+				.addColumn(
+						"FRIDAY", Strings.getString("ContributionsUI.columns.FRIDAY"), 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr
+				.addColumn(
+						"SATURDAY", Strings.getString("ContributionsUI.columns.SATURDAY"), 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
+		tableColsMgr
+				.addColumn(
+						"SUNDAY", Strings.getString("ContributionsUI.columns.SUNDAY"), 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
 		tableColsMgr.configureTable(tableViewer);
 
-		// Configuration des éditeurs de cellules
+		// Configuration des ï¿½diteurs de cellules
 		CellEditor[] editors = new CellEditor[9];
-		durationCellEditor = new ComboBoxCellEditor(table, new String[] {}, SWT.READ_ONLY) {
+		durationCellEditor = new ComboBoxCellEditor(table, new String[] {},
+				SWT.READ_ONLY) {
 			protected Control createControl(Composite parent) {
 				CCombo ccombo = (CCombo) super.createControl(parent);
 				ccombo.setVisibleItemCount(10);
 				return ccombo;
 			}
 		};
-		
+
 		editors[TASK_PATH_COLUMN_IDX] = null; // Read-only column
 		editors[TASK_NAME_COLUMN_IDX] = new DialogCellEditor(table) {
 			protected Object openDialogBox(Control cellEditorWindow) {
 				Object result = null;
-				// Positionnement de la valeur par défaut
-				WeekContributions w =
-					(WeekContributions)
-						((IStructuredSelection)tableViewer.getSelection())
-							.getFirstElement();
-				// Préparation du dialogue
+				// Positionnement de la valeur par dï¿½faut
+				WeekContributions w = (WeekContributions) ((IStructuredSelection) tableViewer
+						.getSelection()).getFirstElement();
+				// Prï¿½paration du dialogue
 				taskChooserDialog.setValidator(buildTaskChooserValidator());
 				taskChooserDialog.setValue(w.getTask());
-				if (taskChooserDialog.open()==Dialog.OK) {
+				if (taskChooserDialog.open() == Dialog.OK) {
 					result = taskChooserDialog.getValue();
 				}
 				return result;
 			}
-		    protected void updateContents(Object value) {
-		        Label defaultLabel = getDefaultLabel();
-		    	if (defaultLabel == null)
-		            return;
-		        String text = ""; //$NON-NLS-1$
-	        	if (value instanceof Task) {
-		        	Task task = (Task) value;
-		        	text = task.getName();
-	        	}
-	        	else if (value != null) {
-		            text = value.toString();
-	        	}
-		        defaultLabel.setText(text);
-		    }
+
+			protected void updateContents(Object value) {
+				Label defaultLabel = getDefaultLabel();
+				if (defaultLabel == null)
+					return;
+				String text = ""; //$NON-NLS-1$
+				if (value instanceof Task) {
+					Task task = (Task) value;
+					text = task.getName();
+				} else if (value != null) {
+					text = value.toString();
+				}
+				defaultLabel.setText(text);
+			}
 		};
 		editors[MONDAY_COLUMN_IDX] = durationCellEditor;
 		editors[TUESDAY_COLUMN_IDX] = durationCellEditor;
@@ -345,34 +385,38 @@ public class ContributionsUI
 		editors[SATURDAY_COLUMN_IDX] = durationCellEditor;
 		editors[SUNDAY_COLUMN_IDX] = durationCellEditor;
 		tableViewer.setCellEditors(editors);
-		
+
 		// Configuration du menu popup
 		final Menu menu = new Menu(table);
 		menu.addMenuListener(this);
 		newItem = new MenuItem(menu, SWT.CASCADE);
-		newItem.setText(Strings.getString("ContributionsUI.menuitems.NEW_CONTRIBUTION")); //$NON-NLS-1$
+		newItem.setText(Strings
+				.getString("ContributionsUI.menuitems.NEW_CONTRIBUTION")); //$NON-NLS-1$
 		newItem.addSelectionListener(this);
 		pasteItem = new MenuItem(menu, SWT.CASCADE);
 		pasteItem.setText(Strings.getString("ContributionsUI.menuitems.PASTE")); //$NON-NLS-1$
 		pasteItem.addSelectionListener(this);
 		removeItem = new MenuItem(menu, SWT.CASCADE);
-		removeItem.setText(Strings.getString("ContributionsUI.menuitems.REMOVE")); //$NON-NLS-1$
+		removeItem.setText(Strings
+				.getString("ContributionsUI.menuitems.REMOVE")); //$NON-NLS-1$
 		removeItem.addSelectionListener(this);
 		exportItem = new MenuItem(menu, SWT.CASCADE);
-		exportItem.setText(Strings.getString("ContributionsUI.menuitems.EXPORT")); //$NON-NLS-1$
+		exportItem.setText(Strings
+				.getString("ContributionsUI.menuitems.EXPORT")); //$NON-NLS-1$
 		exportItem.addSelectionListener(this);
 		table.setMenu(menu);
-		
-		// Ajout de KeyListeners pour faciliter le 'coller' d'une tache en provenance
+
+		// Ajout de KeyListeners pour faciliter le 'coller' d'une tache en
+		// provenance
 		// de l'onglet de gestion des tache
-		// (Rq: les accélérateurs sont ignorés dans les menus contextuels)
+		// (Rq: les accï¿½lï¿½rateurs sont ignorï¿½s dans les menus contextuels)
 		KeyListener keyListener = new KeyAdapter() {
 			public void keyReleased(KeyEvent e) {
 				Widget simulatedWidget = null;
-				if ((e.keyCode=='v') && (e.stateMask==SWT.CTRL))
+				if ((e.keyCode == 'v') && (e.stateMask == SWT.CTRL))
 					simulatedWidget = pasteItem;
 				// else if ...
-				if (simulatedWidget!=null) {
+				if (simulatedWidget != null) {
 					Event event = new Event();
 					event.widget = simulatedWidget;
 					SelectionEvent se = new SelectionEvent(event);
@@ -390,156 +434,192 @@ public class ContributionsUI
 		layout.marginWidth = 0;
 		navigationButtonsPanel.setLayout(layout);
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
-		//gridData.horizontalSpan = 2;
+		// gridData.horizontalSpan = 2;
 		navigationButtonsPanel.setLayoutData(gridData);
-		
-		// Panneau contenant les boutons 'Précédent'
-		Composite previousButtonsPanel = new Composite(navigationButtonsPanel, SWT.NONE);
+
+		// Panneau contenant les boutons 'Prï¿½cï¿½dent'
+		Composite previousButtonsPanel = new Composite(navigationButtonsPanel,
+				SWT.NONE);
 		previousButtonsPanel.setLayout(new FillLayout());
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
 		gridData.horizontalAlignment = SWT.LEFT;
 		previousButtonsPanel.setLayoutData(gridData);
 		previousYearButton = new Button(previousButtonsPanel, SWT.NONE);
-		previousYearButton.setText(Strings.getString("ContributionsUI.buttons.PREVIOUS_YEAR")); //$NON-NLS-1$
-		previousYearButton.setToolTipText(Strings.getString("ContributionsUI.buttons.PREVIOUS_YEAR_TOOLTIP")); //$NON-NLS-1$
+		previousYearButton.setText(Strings
+				.getString("ContributionsUI.buttons.PREVIOUS_YEAR")); //$NON-NLS-1$
+		previousYearButton.setToolTipText(Strings
+				.getString("ContributionsUI.buttons.PREVIOUS_YEAR_TOOLTIP")); //$NON-NLS-1$
 		previousYearButton.addSelectionListener(this);
 		previousMonthButton = new Button(previousButtonsPanel, SWT.NONE);
-		previousMonthButton.setText(Strings.getString("ContributionsUI.buttons.PREVIOUS_MONTH")); //$NON-NLS-1$
-		previousMonthButton.setToolTipText(Strings.getString("ContributionsUI.buttons.PREVIOUS_MONTH_TOOLTIP")); //$NON-NLS-1$
+		previousMonthButton.setText(Strings
+				.getString("ContributionsUI.buttons.PREVIOUS_MONTH")); //$NON-NLS-1$
+		previousMonthButton.setToolTipText(Strings
+				.getString("ContributionsUI.buttons.PREVIOUS_MONTH_TOOLTIP")); //$NON-NLS-1$
 		previousMonthButton.addSelectionListener(this);
 		previousWeekButton = new Button(previousButtonsPanel, SWT.NONE);
-		previousWeekButton.setText(Strings.getString("ContributionsUI.buttons.PREVIOUS_WEEK")); //$NON-NLS-1$
-		previousWeekButton.setToolTipText(Strings.getString("ContributionsUI.buttons.PREVIOUS_WEEK_TOOLTIP")); //$NON-NLS-1$
+		previousWeekButton.setText(Strings
+				.getString("ContributionsUI.buttons.PREVIOUS_WEEK")); //$NON-NLS-1$
+		previousWeekButton.setToolTipText(Strings
+				.getString("ContributionsUI.buttons.PREVIOUS_WEEK_TOOLTIP")); //$NON-NLS-1$
 		previousWeekButton.addSelectionListener(this);
-		
+
 		// Panneau contenant les boutons 'Prochains'
-		Composite nextButtonsPanel = new Composite(navigationButtonsPanel, SWT.NONE);
+		Composite nextButtonsPanel = new Composite(navigationButtonsPanel,
+				SWT.NONE);
 		nextButtonsPanel.setLayout(new FillLayout());
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
 		gridData.horizontalAlignment = SWT.RIGHT;
 		nextButtonsPanel.setLayoutData(gridData);
 		nextWeekButton = new Button(nextButtonsPanel, SWT.NONE);
-		nextWeekButton.setText(Strings.getString("ContributionsUI.buttons.NEXT_WEEK")); //$NON-NLS-1$
-		nextWeekButton.setToolTipText(Strings.getString("ContributionsUI.buttons.NEXT_WEEK_TOOLTIP")); //$NON-NLS-1$
+		nextWeekButton.setText(Strings
+				.getString("ContributionsUI.buttons.NEXT_WEEK")); //$NON-NLS-1$
+		nextWeekButton.setToolTipText(Strings
+				.getString("ContributionsUI.buttons.NEXT_WEEK_TOOLTIP")); //$NON-NLS-1$
 		nextWeekButton.addSelectionListener(this);
 		nextMonthButton = new Button(nextButtonsPanel, SWT.NONE);
-		nextMonthButton.setText(Strings.getString("ContributionsUI.buttons.NEXT_MONTH")); //$NON-NLS-1$
-		nextMonthButton.setToolTipText(Strings.getString("ContributionsUI.buttons.NEXT_MONTH_TOOLTIP")); //$NON-NLS-1$
+		nextMonthButton.setText(Strings
+				.getString("ContributionsUI.buttons.NEXT_MONTH")); //$NON-NLS-1$
+		nextMonthButton.setToolTipText(Strings
+				.getString("ContributionsUI.buttons.NEXT_MONTH_TOOLTIP")); //$NON-NLS-1$
 		nextMonthButton.addSelectionListener(this);
 		nextYearButton = new Button(nextButtonsPanel, SWT.NONE);
-		nextYearButton.setText(Strings.getString("ContributionsUI.buttons.NEXT_YEAR")); //$NON-NLS-1$
-		nextYearButton.setToolTipText(Strings.getString("ContributionsUI.buttons.NEXT_YEAR_TOOLTIP")); //$NON-NLS-1$
+		nextYearButton.setText(Strings
+				.getString("ContributionsUI.buttons.NEXT_YEAR")); //$NON-NLS-1$
+		nextYearButton.setToolTipText(Strings
+				.getString("ContributionsUI.buttons.NEXT_YEAR_TOOLTIP")); //$NON-NLS-1$
 		nextYearButton.addSelectionListener(this);
-		
+
 		// Initialisation du popup de choix des taches
-		taskChooserDialog = new TaskChooserTreeWithHistoryDialog(parent.getShell());
-		
-		// Recherche du 1° Lundi précédent la date courante
+		taskChooserDialog = new TaskChooserTreeWithHistoryDialog(
+				parent.getShell());
+
+		// Recherche du 1ï¿½ Lundi prï¿½cï¿½dent la date courante
 		currentMonday = getMondayBefore(new GregorianCalendar());
 		log.debug("Date courante : " + currentMonday); //$NON-NLS-1$
 
-		// Création du presse papier
+		// Crï¿½ation du presse papier
 		clipboard = new Clipboard(parentComposite.getDisplay());
 	}
 
 	/**
-	 * Retourne le premier lundi précédent la date spécifiée.
-	 * @param date la date.
-	 * @return le premier lundi précédent la date spécifiée.
+	 * Retourne le premier lundi prï¿½cï¿½dent la date spï¿½cifiï¿½e.
+	 * 
+	 * @param date
+	 *            la date.
+	 * @return le premier lundi prï¿½cï¿½dent la date spï¿½cifiï¿½e.
 	 */
 	private static Calendar getMondayBefore(Calendar date) {
 		Calendar dateCursor = (Calendar) date.clone();
-		while (dateCursor.get(Calendar.DAY_OF_WEEK)!=Calendar.MONDAY) 
+		while (dateCursor.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY)
 			dateCursor.add(Calendar.DATE, -1);
 		return dateCursor;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java.lang.Object)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java
+	 * .lang.Object)
 	 */
 	public Object[] getElements(Object inputElement) {
-		// Chargement des données
+		// Chargement des donnï¿½es
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				// Mise à jour des dates de la semaine :
+				// Mise ï¿½ jour des dates de la semaine :
 				SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy"); //$NON-NLS-1$
 				Calendar sunday = (Calendar) currentMonday.clone();
 				sunday.add(Calendar.DATE, 6);
-				weekLabel.setText(Strings.getString("ContributionsUI.labels.WEEK", sdf.format(currentMonday.getTime()), sdf.format(sunday.getTime()))); //$NON-NLS-1$ //$NON-NLS-2$
-				
-				// Mise à jour du nom des colonnes
-				TableColumn[] tableColumns = tableViewer.getTable().getColumns();
+				weekLabel
+						.setText(Strings
+								.getString(
+										"ContributionsUI.labels.WEEK", sdf.format(currentMonday.getTime()), sdf.format(sunday.getTime()))); //$NON-NLS-1$ //$NON-NLS-2$
+
+				// Mise ï¿½ jour du nom des colonnes
+				TableColumn[] tableColumns = tableViewer.getTable()
+						.getColumns();
 				Calendar date = (Calendar) currentMonday.clone();
-				for (int i=2; i<tableColumns.length; i++) {
+				for (int i = 2; i < tableColumns.length; i++) {
 					TableColumn tableColumn = tableColumns[i];
-					tableColumn.setText(weekDaysInitials[i-2] + date.get(Calendar.DAY_OF_MONTH));
+					tableColumn.setText(weekDaysInitials[i - 2]
+							+ date.get(Calendar.DAY_OF_MONTH));
 					date.add(Calendar.DATE, 1);
 				}
 
-				Collaborator selectedCollaborator = selectableCollaboratorPanel.getSelectedCollaborator();
-				ArrayList list = new ArrayList();
-				if (selectedCollaborator!=null) {
-					// Recherche des taches déclarées pour cet utilisateur 
+				Collaborator selectedCollaborator = selectableCollaboratorPanel
+						.getSelectedCollaborator();
+				List<Object> list = new ArrayList<Object>();
+				if (selectedCollaborator != null) {
+					// Recherche des taches dï¿½clarï¿½es pour cet utilisateur
 					// pour la semaine courante
 					Calendar fromDate = (Calendar) currentMonday.clone();
 					fromDate.add(Calendar.DATE, -7);
 					Calendar toDate = (Calendar) currentMonday.clone();
 					toDate.add(Calendar.DATE, 6);
-					if (selectedCollaborator!=null) {
-						Task[] tasks = ModelMgr.getTasks(selectedCollaborator, fromDate, toDate);
-						// Ajout des tâches dans le tableau
-						for (int i=0; i<tasks.length; i++) {
+					if (selectedCollaborator != null) {
+						Task[] tasks = ModelMgr.getTasks(selectedCollaborator,
+								fromDate, toDate);
+						// Ajout des tï¿½ches dans le tableau
+						for (int i = 0; i < tasks.length; i++) {
 							Task task = tasks[i];
 							list.add(getWeekContributions(task));
 						}
 					}
 				}
-				// Ajout d'un élément nul pour la ligne des totaux
+				// Ajout d'un ï¿½lï¿½ment nul pour la ligne des totaux
 				list.add(WeekContributionsSum.getInstance());
-				// Retour du résultat
+				// Retour du rï¿½sultat
 				return list.toArray();
 			}
 		};
-		// Exécution
+		// Exï¿½cution
 		Object result = (Object) safeRunner.run(parent.getShell());
-		return (Object[]) (result!=null ? result : new WeekContributions[] {});
+		return (Object[]) (result != null ? result : new WeekContributions[] {});
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ICellModifier#canModify(java.lang.Object, java.lang.String)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.viewers.ICellModifier#canModify(java.lang.Object,
+	 * java.lang.String)
 	 */
 	public boolean canModify(Object element, String property) {
 		log.debug("ICellModifier.canModify(" + element + ", " + property + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		boolean canModify = false;
 		// Cas de la ligne des totaux
-		if (element==WeekContributionsSum.getInstance()) {
+		if (element == WeekContributionsSum.getInstance()) {
 			canModify = false;
 		}
 		// Cas des autres lignes
 		else {
 			int propertyIdx = tableColsMgr.getColumnIndex(property);
 			switch (propertyIdx) {
-				case (TASK_PATH_COLUMN_IDX) :
-					canModify = false;
-					break;
-				case (TASK_NAME_COLUMN_IDX) :
-				case (MONDAY_COLUMN_IDX) :
-				case (TUESDAY_COLUMN_IDX) :
-				case (WEDNESDAY_COLUMN_IDX) :
-				case (THURSDAY_COLUMN_IDX) :
-				case (FRIDAY_COLUMN_IDX) :
-				case (SATURDAY_COLUMN_IDX) :
-				case (SUNDAY_COLUMN_IDX) :
-					canModify = true;
-					break;
-				default : throw new Error(Strings.getString("ContributionsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
+			case (TASK_PATH_COLUMN_IDX):
+				canModify = false;
+				break;
+			case (TASK_NAME_COLUMN_IDX):
+			case (MONDAY_COLUMN_IDX):
+			case (TUESDAY_COLUMN_IDX):
+			case (WEDNESDAY_COLUMN_IDX):
+			case (THURSDAY_COLUMN_IDX):
+			case (FRIDAY_COLUMN_IDX):
+			case (SATURDAY_COLUMN_IDX):
+			case (SUNDAY_COLUMN_IDX):
+				canModify = true;
+				break;
+			default:
+				throw new Error(
+						Strings.getString("ContributionsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 			}
 		}
 		return canModify;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ICellModifier#getValue(java.lang.Object, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.viewers.ICellModifier#getValue(java.lang.Object,
+	 * java.lang.String)
 	 */
 	public Object getValue(Object element, String property) {
 		log.debug("ICellModifier.getValue(" + element + ", " + property + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -547,144 +627,180 @@ public class ContributionsUI
 		Object value = null;
 		int columnIndex = tableColsMgr.getColumnIndex(property);
 		switch (columnIndex) {
-			case (TASK_PATH_COLUMN_IDX) :
-				throw new Error(Strings.getString("ContributionsUI.errors.TASK_PATH_CANNOT_BE_MODIFIED")); //$NON-NLS-1$
-			case (TASK_NAME_COLUMN_IDX) :
-				value = weekContributions.getTask();
-				break;
-			case (MONDAY_COLUMN_IDX) :
-			case (TUESDAY_COLUMN_IDX) :
-			case (WEDNESDAY_COLUMN_IDX) :
-			case (THURSDAY_COLUMN_IDX) :
-			case (FRIDAY_COLUMN_IDX) :
-			case (SATURDAY_COLUMN_IDX) :
-			case (SUNDAY_COLUMN_IDX) :
-				Contribution contribution = weekContributions.getContribution(columnIndex-2);
-				value = contribution!=null ? getDurationIndex(contribution.getDurationId()) : null;
-				// Par défaut on prend la première sélection
-				if (value==null)
-					value = new Integer(0);
-				break;
-			default : throw new Error(Strings.getString("ContributionsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
+		case (TASK_PATH_COLUMN_IDX):
+			throw new Error(
+					Strings.getString("ContributionsUI.errors.TASK_PATH_CANNOT_BE_MODIFIED")); //$NON-NLS-1$
+		case (TASK_NAME_COLUMN_IDX):
+			value = weekContributions.getTask();
+			break;
+		case (MONDAY_COLUMN_IDX):
+		case (TUESDAY_COLUMN_IDX):
+		case (WEDNESDAY_COLUMN_IDX):
+		case (THURSDAY_COLUMN_IDX):
+		case (FRIDAY_COLUMN_IDX):
+		case (SATURDAY_COLUMN_IDX):
+		case (SUNDAY_COLUMN_IDX):
+			Contribution contribution = weekContributions
+					.getContribution(columnIndex - 2);
+			value = contribution != null ? getDurationIndex(contribution
+					.getDurationId()) : null;
+			// Par dï¿½faut on prend la premiï¿½re sï¿½lection
+			if (value == null)
+				value = new Integer(0);
+			break;
+		default:
+			throw new Error(
+					Strings.getString("ContributionsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 		}
 		return value;
 	}
 
 	/**
-	 * @return le numéro de la durée sélectionnée.
-	 * @param duration le durée considérée.
+	 * @return le numï¿½ro de la durï¿½e sï¿½lectionnï¿½e.
+	 * @param duration
+	 *            le durï¿½e considï¿½rï¿½e.
 	 */
 	private Integer getDurationIndex(long durationId) {
 		Integer result = null;
-		for (int i=0; i<durations.length && result == null; i++) {
-			if (durations[i].getId()==durationId)
-				result = new Integer(i+1); // +1 car l'index 0 correspond à la valeur "vide"
+		for (int i = 0; i < durations.length && result == null; i++) {
+			if (durations[i].getId() == durationId)
+				result = new Integer(i + 1); // +1 car l'index 0 correspond ï¿½ la
+												// valeur "vide"
 		}
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ICellModifier#modify(java.lang.Object, java.lang.String, java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.viewers.ICellModifier#modify(java.lang.Object,
+	 * java.lang.String, java.lang.Object)
 	 */
 	public void modify(final Object element, String property, final Object value) {
 		log.debug("ICellModifier.modify(" + element + ", " + property + ", " + value + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		TableItem item = (TableItem) element;
-		final WeekContributions weekContributions = (WeekContributions) item.getData();
+		final WeekContributions weekContributions = (WeekContributions) item
+				.getData();
 		final IBaseLabelProvider labelProvider = this;
 		final int columnIndex = tableColsMgr.getColumnIndex(property);
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				switch (columnIndex) {
-					case (TASK_PATH_COLUMN_IDX) :
-						throw new Error(Strings.getString("ContributionsUI.errors.TASK_PATH_CANNOT_BE_MODIFIED")); //$NON-NLS-1$
-					case (TASK_NAME_COLUMN_IDX) :
-						Task task = (Task) value;
-						weekContributions.setTask(task);
-						ArrayList nonNullContributions = new ArrayList();
-						// Récupération des contributions
-						Contribution[] contributions = weekContributions.getContributions();
-						// Suppression des contributions nulles
-						for (int i=0; i<contributions.length; i++) {
-							Contribution contribution = contributions[i];
-							if (contribution!=null)
-								nonNullContributions.add(contribution);
-						}
-						// Mise à jour des contributions
-						contributions = (Contribution[]) nonNullContributions.toArray(new Contribution[nonNullContributions.size()]);
-						ModelMgr.changeContributionTask(contributions, task);
+				case (TASK_PATH_COLUMN_IDX):
+					throw new Error(
+							Strings.getString("ContributionsUI.errors.TASK_PATH_CANNOT_BE_MODIFIED")); //$NON-NLS-1$
+				case (TASK_NAME_COLUMN_IDX):
+					Task task = (Task) value;
+					weekContributions.setTask(task);
+					List<Contribution> nonNullContributions = new ArrayList<Contribution>();
+					// Rï¿½cupï¿½ration des contributions
+					Contribution[] contributions = weekContributions
+							.getContributions();
+					// Suppression des contributions nulles
+					for (int i = 0; i < contributions.length; i++) {
+						Contribution contribution = contributions[i];
+						if (contribution != null)
+							nonNullContributions.add(contribution);
+					}
+					// Mise ï¿½ jour des contributions
+					contributions = (Contribution[]) nonNullContributions
+							.toArray(new Contribution[nonNullContributions
+									.size()]);
+					ModelMgr.changeContributionTask(contributions, task);
+					// Notification des listeners
+					notifyLabelProviderListener(new LabelProviderChangedEvent(
+							labelProvider, weekContributions));
+					notifyContributionsUpdated(contributions);
+					break;
+				case (MONDAY_COLUMN_IDX):
+				case (TUESDAY_COLUMN_IDX):
+				case (WEDNESDAY_COLUMN_IDX):
+				case (THURSDAY_COLUMN_IDX):
+				case (FRIDAY_COLUMN_IDX):
+				case (SATURDAY_COLUMN_IDX):
+				case (SUNDAY_COLUMN_IDX):
+					Integer selectedIndex = (Integer) value;
+					Contribution contribution = weekContributions
+							.getContribution(columnIndex - 2);
+					// Cas d'une suppression (choix de la valeu Nï¿½ 0 de la
+					// liste)
+					if (selectedIndex.intValue() == 0) {
+						// Suppression effective en base si la contribution
+						// existait
+						if (contribution != null)
+							ModelMgr.removeContribution(contribution, true);
+						weekContributions
+								.setContribution(columnIndex - 2, null);
 						// Notification des listeners
-						notifyLabelProviderListener(new LabelProviderChangedEvent(labelProvider, weekContributions));
-						notifyContributionsUpdated(contributions);
-						break;
-					case (MONDAY_COLUMN_IDX) :
-					case (TUESDAY_COLUMN_IDX) :
-					case (WEDNESDAY_COLUMN_IDX) :
-					case (THURSDAY_COLUMN_IDX) :
-					case (FRIDAY_COLUMN_IDX) :
-					case (SATURDAY_COLUMN_IDX) :
-					case (SUNDAY_COLUMN_IDX) :
-						Integer selectedIndex = (Integer) value;
-						Contribution contribution = weekContributions.getContribution(columnIndex-2);
-						// Cas d'une suppression (choix de la valeu N° 0 de la liste)
-						if (selectedIndex.intValue()==0) {
-							// Suppression effective en base si la contribution existait
-							if (contribution!=null)
-								ModelMgr.removeContribution(contribution, true);
-							weekContributions.setContribution(columnIndex-2, null);
+						notifyContributionsRemoved(new Contribution[] { contribution });
+					}
+					// Sinon crï¿½ation ou modification
+					else {
+						boolean create = (contribution == null);
+						// Cas d'une crï¿½ation
+						if (create) {
+							Collaborator selectedCollaboprator = selectableCollaboratorPanel
+									.getSelectedCollaborator();
+							contribution = new Contribution();
+							contribution.setContributorId(selectedCollaboprator
+									.getId());
+							contribution.setTaskId(weekContributions.getTask()
+									.getId());
+							Calendar date = (Calendar) currentMonday.clone();
+							date.add(Calendar.DATE, columnIndex
+									- MONDAY_COLUMN_IDX);
+							contribution.setDate(date);
+							weekContributions.setContribution(columnIndex - 2,
+									contribution);
+						}
+						// Mise ï¿½ jour des champs
+						Duration duration = durations[selectedIndex.intValue() - 1];
+						contribution.setDurationId(duration.getId());
+						if (create) {
+							ModelMgr.createContribution(contribution, true);
 							// Notification des listeners
-							notifyContributionsRemoved(new Contribution[] { contribution });
+							notifyContributionAdded(contribution);
+						} else {
+							ModelMgr.updateContribution(contribution, true);
+							// Notification des listeners
+							notifyContributionsUpdated(new Contribution[] { contribution });
 						}
-						// Sinon création ou modification
-						else {
-							boolean create = (contribution==null);
-							// Cas d'une création
-							if (create) {
-								Collaborator selectedCollaboprator = selectableCollaboratorPanel.getSelectedCollaborator();
-								contribution = new Contribution();
-								contribution.setContributorId(selectedCollaboprator.getId());
-								contribution.setTaskId(weekContributions.getTask().getId());
-								Calendar date = (Calendar) currentMonday.clone();
-								date.add(Calendar.DATE, columnIndex - MONDAY_COLUMN_IDX);
-								contribution.setDate(date);
-								weekContributions.setContribution(columnIndex-2, contribution);
-							}
-							// Mise à jour des champs
-							Duration duration = durations[selectedIndex.intValue() - 1];
-							contribution.setDurationId(duration.getId());
-							if (create) {
-								ModelMgr.createContribution(contribution, true);
-								// Notification des listeners
-								notifyContributionAdded(contribution);
-							}
-							else {
-								ModelMgr.updateContribution(contribution, true);
-								// Notification des listeners
-								notifyContributionsUpdated(new Contribution[] { contribution });
-							}
-						}
-						// Notification des listeners
-						notifyLabelProviderListener(new LabelProviderChangedEvent(labelProvider, weekContributions));
-						// Mise à jour des totaux
-						tableViewer.refresh(WeekContributionsSum.getInstance());
-						break;
-					default : throw new Error(Strings.getString("ContributionsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
+					}
+					// Notification des listeners
+					notifyLabelProviderListener(new LabelProviderChangedEvent(
+							labelProvider, weekContributions));
+					// Mise ï¿½ jour des totaux
+					tableViewer.refresh(WeekContributionsSum.getInstance());
+					break;
+				default:
+					throw new Error(
+							Strings.getString("ContributionsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
 				return null;
 			}
 		};
-		// Exécution
+		// Exï¿½cution
 		safeRunner.run(parent.getShell());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ITableFontProvider#getFont(java.lang.Object, int)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.ITableFontProvider#getFont(java.lang.Object,
+	 * int)
 	 */
 	public Font getFont(Object element, int columnIndex) {
-		return element==WeekContributionsSum.getInstance() ? italicFont : normalFont;
+		return element == WeekContributionsSum.getInstance() ? italicFont
+				: normalFont;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang
+	 * .Object, int)
 	 */
 	public String getColumnText(final Object element, final int columnIndex) {
 		log.debug("ITableLabelProvider.getColumnText(" + element + ", " + columnIndex + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -692,68 +808,80 @@ public class ContributionsUI
 			public Object runUnsafe() throws Exception {
 				String text = null;
 				// Cas de la ligne des totaux
-				if (element==WeekContributionsSum.getInstance()) {
+				if (element == WeekContributionsSum.getInstance()) {
 					switch (columnIndex) {
-						case (TASK_PATH_COLUMN_IDX) :
-							text = ""; //$NON-NLS-1$
-							break;
-						case (TASK_NAME_COLUMN_IDX) :
-							text = Strings.getString("ContributionsUI.labels.TOTAL"); //$NON-NLS-1$
-							break;
-						case (MONDAY_COLUMN_IDX) :
-						case (TUESDAY_COLUMN_IDX) :
-						case (WEDNESDAY_COLUMN_IDX) :
-						case (THURSDAY_COLUMN_IDX) :
-						case (FRIDAY_COLUMN_IDX) :
-						case (SATURDAY_COLUMN_IDX) :
-						case (SUNDAY_COLUMN_IDX) :
-							Calendar cal = (Calendar) currentMonday.clone();
-							cal.add(Calendar.DATE, columnIndex-MONDAY_COLUMN_IDX);
-							long sum = ModelMgr.getContributionsSum(
-									null, 
-									selectableCollaboratorPanel.getSelectedCollaborator(), 
-									new Integer(cal.get(Calendar.YEAR)), 
-									new Integer(cal.get(Calendar.MONTH)+1), 
-									new Integer(cal.get(Calendar.DAY_OF_MONTH)));
-							text = StringHelper.hundredthToEntry(sum);
-							break;
-						default : throw new Error(Strings.getString("ContributionsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
+					case (TASK_PATH_COLUMN_IDX):
+						text = ""; //$NON-NLS-1$
+						break;
+					case (TASK_NAME_COLUMN_IDX):
+						text = Strings
+								.getString("ContributionsUI.labels.TOTAL"); //$NON-NLS-1$
+						break;
+					case (MONDAY_COLUMN_IDX):
+					case (TUESDAY_COLUMN_IDX):
+					case (WEDNESDAY_COLUMN_IDX):
+					case (THURSDAY_COLUMN_IDX):
+					case (FRIDAY_COLUMN_IDX):
+					case (SATURDAY_COLUMN_IDX):
+					case (SUNDAY_COLUMN_IDX):
+						Calendar cal = (Calendar) currentMonday.clone();
+						cal.add(Calendar.DATE, columnIndex - MONDAY_COLUMN_IDX);
+						long sum = ModelMgr.getContributionsSum(null,
+								selectableCollaboratorPanel
+										.getSelectedCollaborator(),
+								new Integer(cal.get(Calendar.YEAR)),
+								new Integer(cal.get(Calendar.MONTH) + 1),
+								new Integer(cal.get(Calendar.DAY_OF_MONTH)));
+						text = StringHelper.hundredthToEntry(sum);
+						break;
+					default:
+						throw new Error(
+								Strings.getString("ContributionsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 					}
 				}
 				// Cas des autres lignes
 				else {
 					WeekContributions weekContributions = (WeekContributions) element;
 					switch (columnIndex) {
-						case (TASK_PATH_COLUMN_IDX) :
-							// Construction du chemin de la tache
-							Task task = weekContributions.getTask();
-							text = ModelMgr.getTaskCodePath(task);
-							break;
-						case (TASK_NAME_COLUMN_IDX) :
-							text = weekContributions.getTask().getName();
-							break;
-						case (MONDAY_COLUMN_IDX) :
-						case (TUESDAY_COLUMN_IDX) :
-						case (WEDNESDAY_COLUMN_IDX) :
-						case (THURSDAY_COLUMN_IDX) :
-						case (FRIDAY_COLUMN_IDX) :
-						case (SATURDAY_COLUMN_IDX) :
-						case (SUNDAY_COLUMN_IDX) :
-							Contribution contribution = weekContributions.getContribution(columnIndex-2);
-							text = contribution!=null ? StringHelper.hundredthToEntry(contribution.getDurationId()) : ""; //$NON-NLS-1$
-							break;
-						default : throw new Error(Strings.getString("ContributionsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
+					case (TASK_PATH_COLUMN_IDX):
+						// Construction du chemin de la tache
+						Task task = weekContributions.getTask();
+						text = ModelMgr.getTaskCodePath(task);
+						break;
+					case (TASK_NAME_COLUMN_IDX):
+						text = weekContributions.getTask().getName();
+						break;
+					case (MONDAY_COLUMN_IDX):
+					case (TUESDAY_COLUMN_IDX):
+					case (WEDNESDAY_COLUMN_IDX):
+					case (THURSDAY_COLUMN_IDX):
+					case (FRIDAY_COLUMN_IDX):
+					case (SATURDAY_COLUMN_IDX):
+					case (SUNDAY_COLUMN_IDX):
+						Contribution contribution = weekContributions
+								.getContribution(columnIndex - 2);
+						text = contribution != null ? StringHelper
+								.hundredthToEntry(contribution.getDurationId())
+								: ""; //$NON-NLS-1$
+						break;
+					default:
+						throw new Error(
+								Strings.getString("ContributionsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 					}
 				}
 				return text;
 			}
 		};
-		// Exécution
+		// Exï¿½cution
 		return (String) safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt
+	 * .events.SelectionEvent)
 	 */
 	public void widgetSelected(final SelectionEvent e) {
 		log.debug("SelectionListener.widgetSelected(" + e + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -761,13 +889,13 @@ public class ContributionsUI
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				TableItem[] selection = tableViewer.getTable().getSelection();
-				// Cas d'une création
+				// Cas d'une crï¿½ation
 				if (newItem.equals(source)) {
-					// Préparation du dialogue
+					// Prï¿½paration du dialogue
 					taskChooserDialog.setValidator(buildTaskChooserValidator());
 					// Affichage du popup
 					Task task = null;
-					if (taskChooserDialog.open()==Dialog.OK) {
+					if (taskChooserDialog.open() == Dialog.OK) {
 						task = (Task) taskChooserDialog.getValue();
 						log.debug("Selected task=" + task); //$NON-NLS-1$
 						addNewLineOrSelectTaskLine(task);
@@ -775,54 +903,58 @@ public class ContributionsUI
 				}
 				// Cas d'une demande de 'collage' du contenu du presse papier
 				else if (pasteItem.equals(source)) {
-					String taskCodePath = (String) clipboard.getContents(TextTransfer.getInstance());
+					String taskCodePath = (String) clipboard
+							.getContents(TextTransfer.getInstance());
 					Task task = ModelMgr.getTaskByCodePath(taskCodePath);
 					ITaskChooserValidator validator = buildTaskChooserValidator();
-					// Validation de la conformité de la tache pour ajout dans l'IHM
+					// Validation de la conformitï¿½ de la tache pour ajout dans
+					// l'IHM
 					validator.validateChoosenTask(task);
-					// Sélection de la ligne ou ajout d'une nouvelle ligne
+					// Sï¿½lection de la ligne ou ajout d'une nouvelle ligne
 					addNewLineOrSelectTaskLine(task);
 				}
 				// Cas d'une suppression
 				else if (removeItem.equals(source)) {
 					TableItem selectedItem = selection[0];
-					WeekContributions wc = (WeekContributions) selectedItem.getData();
-					// Récupération des contributions
+					WeekContributions wc = (WeekContributions) selectedItem
+							.getData();
+					// Rï¿½cupï¿½ration des contributions
 					Contribution[] contributions = wc.getContributions();
 					// Suppression des contributions nulles
-					ArrayList list = new ArrayList();
-					for (int i=0; i<contributions.length; i++) {
+					List<Contribution> list = new ArrayList<Contribution>();
+					for (int i = 0; i < contributions.length; i++) {
 						Contribution contribution = contributions[i];
-						if (contribution!=null)
+						if (contribution != null)
 							list.add(contribution);
 					}
-					if (list.size()>0) {
+					if (list.size() > 0) {
 						// Suppression des contributions non nulles
-						contributions = (Contribution[]) list.toArray(new Contribution[list.size()]);
+						contributions = (Contribution[]) list
+								.toArray(new Contribution[list.size()]);
 						ModelMgr.removeContributions(contributions);
 						// Notification des listeners
-						notifyContributionsRemoved(contributions);		
+						notifyContributionsRemoved(contributions);
 					}
-					// Mise à jour de l'IHM
+					// Mise ï¿½ jour de l'IHM
 					tableViewer.remove(wc);
 				}
 				// Cas d'une demande d'export vers un fichier EXCEL
 				else if (exportItem.equals(source)) {
 					SWTHelper.exportToWorkBook(tableViewer.getTable());
 				}
-				// Cas d'un changement d'une année en arrière
+				// Cas d'un changement d'une annï¿½e en arriï¿½re
 				else if (previousYearButton.equals(source)) {
 					currentMonday.add(Calendar.YEAR, -1);
 					currentMonday = getMondayBefore(currentMonday);
 					tableViewer.refresh();
 				}
-				// Cas d'un changement d'un mois en arrière
+				// Cas d'un changement d'un mois en arriï¿½re
 				else if (previousMonthButton.equals(source)) {
 					currentMonday.add(Calendar.MONTH, -1);
 					currentMonday = getMondayBefore(currentMonday);
 					tableViewer.refresh();
 				}
-				// Cas d'un changement de semaine en arrière
+				// Cas d'un changement de semaine en arriï¿½re
 				else if (previousWeekButton.equals(source)) {
 					currentMonday.add(Calendar.DATE, -7);
 					tableViewer.refresh();
@@ -838,7 +970,7 @@ public class ContributionsUI
 					currentMonday = getMondayBefore(currentMonday);
 					tableViewer.refresh();
 				}
-				// Cas d'un changement d'une année en avant
+				// Cas d'un changement d'une annï¿½e en avant
 				else if (nextYearButton.equals(source)) {
 					currentMonday.add(Calendar.YEAR, 1);
 					currentMonday = getMondayBefore(currentMonday);
@@ -847,33 +979,41 @@ public class ContributionsUI
 				return null;
 			}
 		};
-		// Exécution
+		// Exï¿½cution
 		safeRunner.run(parent.getShell());
 	}
 
 	/**
-	 * Prépare le dialogue de choix d'une tâche.
+	 * Prï¿½pare le dialogue de choix d'une tï¿½che.
 	 */
 	private ITaskChooserValidator buildTaskChooserValidator() {
-		// Création du valideur
+		// Crï¿½ation du valideur
 		ITaskChooserValidator taskChooserValidator = new ITaskChooserValidator() {
-			public void validateChoosenTask(Task selectedTask) throws DialogException {
-				if (selectedTask.getSubTasksCount()>0)
-					throw new DialogException(Strings.getString("ContributionsUI.errors.PARENT_TASK_SELECTED"), null); //$NON-NLS-1$
+			public void validateChoosenTask(Task selectedTask)
+					throws DialogException {
+				if (selectedTask.getSubTasksCount() > 0)
+					throw new DialogException(
+							Strings.getString("ContributionsUI.errors.PARENT_TASK_SELECTED"), null); //$NON-NLS-1$
 			}
 		};
-		// Retour du résultat
+		// Retour du rï¿½sultat
 		return taskChooserValidator;
 	}
-	
+
 	/**
-	 * Ajoute une ligne dans le tableau ou sélectionne celle déjà existante pour la tache.
-	 * @param task la tache associée à l'ajout ou la sélection.
-	 * @throws DbException levée en cas d'incident technique d'accès à la BDD.
-	 * @throws ModelException levée en cas d'incident fonctionnel.
+	 * Ajoute une ligne dans le tableau ou sï¿½lectionne celle dï¿½jï¿½ existante pour
+	 * la tache.
+	 * 
+	 * @param task
+	 *            la tache associï¿½e ï¿½ l'ajout ou la sï¿½lection.
+	 * @throws DbException
+	 *             levï¿½e en cas d'incident technique d'accï¿½s ï¿½ la BDD.
+	 * @throws ModelException
+	 *             levï¿½e en cas d'incident fonctionnel.
 	 */
-	private void addNewLineOrSelectTaskLine(Task task) throws DbException, ModelException {
-		// La tache est elle déjà associée à une semaine de contributions
+	private void addNewLineOrSelectTaskLine(Task task) throws DbException,
+			ModelException {
+		// La tache est elle dï¿½jï¿½ associï¿½e ï¿½ une semaine de contributions
 		WeekContributions weekContributions = null;
 		TableItem[] items = tableViewer.getTable().getItems();
 		for (int i = 0; i < items.length; i++) {
@@ -885,70 +1025,96 @@ public class ContributionsUI
 			}
 		}
 		// Si ce n'est pas le cas c'est une nouvelle ligne
-		if (weekContributions==null) {
+		if (weekContributions == null) {
 			weekContributions = getWeekContributions(task);
 			int itemCount = tableViewer.getTable().getItemCount();
 			// Ajout dans l'arbre
-			tableViewer.insert(weekContributions, itemCount-1);
+			tableViewer.insert(weekContributions, itemCount - 1);
 		}
-		// Sélection
-		tableViewer.setSelection(new StructuredSelection(weekContributions), true);
+		// Sï¿½lection
+		tableViewer.setSelection(new StructuredSelection(weekContributions),
+				true);
 		tableViewer.getTable().setFocus();
 	}
-	
+
 	/**
 	 * Construit la liste des contributions d'une semaine.
-	 * @param task la tache considérée.
+	 * 
+	 * @param task
+	 *            la tache considï¿½rï¿½e.
 	 * @return la liste des contributions d'une semaine.
-	 * @throws DbException levée en cas d'incident technique d'accès à la BDD.
-	 * @throws ModelException levée en cas d'incident fonctionnel.
+	 * @throws DbException
+	 *             levï¿½e en cas d'incident technique d'accï¿½s ï¿½ la BDD.
+	 * @throws ModelException
+	 *             levï¿½e en cas d'incident fonctionnel.
 	 */
-	private WeekContributions getWeekContributions(Task task) throws DbException, ModelException {
-		// Création de la ligne de semaine
+	private WeekContributions getWeekContributions(Task task)
+			throws DbException, ModelException {
+		// Crï¿½ation de la ligne de semaine
 		WeekContributions weekContributions = new WeekContributions();
 		weekContributions.setTask(task);
 		// Parcours des jours
 		Calendar fromDate = (Calendar) currentMonday.clone();
 		Calendar toDate = (Calendar) currentMonday.clone();
 		toDate.add(Calendar.DATE, 6);
-		// Récupération des contributions
-		Collaborator selectedCollaboprator = selectableCollaboratorPanel.getSelectedCollaborator();
-		weekContributions.setContributions(ModelMgr.getDaysContributions(selectedCollaboprator, task, fromDate, toDate));
+		// Rï¿½cupï¿½ration des contributions
+		Collaborator selectedCollaboprator = selectableCollaboratorPanel
+				.getSelectedCollaborator();
+		weekContributions.setContributions(ModelMgr.getDaysContributions(
+				selectedCollaboprator, task, fromDate, toDate));
 		return weekContributions;
-		
+
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse
+	 * .swt.events.SelectionEvent)
 	 */
 	public void widgetDefaultSelected(SelectionEvent e) {
 		widgetSelected(e);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.MenuListener#menuShown(org.eclipse.swt.events.MenuEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.swt.events.MenuListener#menuShown(org.eclipse.swt.events.
+	 * MenuEvent)
 	 */
 	public void menuShown(MenuEvent e) {
 		log.debug("menuShown(" + e + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-		boolean collaboratorSelected = (selectableCollaboratorPanel.getSelectedCollaborator()!=null);
+		boolean collaboratorSelected = (selectableCollaboratorPanel
+				.getSelectedCollaborator() != null);
 		TableItem[] selection = tableViewer.getTable().getSelection();
-		boolean emptySelection = selection.length==0;
-		boolean singleSelection = selection.length==1;
-		newItem.setEnabled(collaboratorSelected && (emptySelection || singleSelection));
-		pasteItem.setEnabled(collaboratorSelected && clipboard.getContents(TextTransfer.getInstance())!=null);
+		boolean emptySelection = selection.length == 0;
+		boolean singleSelection = selection.length == 1;
+		newItem.setEnabled(collaboratorSelected
+				&& (emptySelection || singleSelection));
+		pasteItem.setEnabled(collaboratorSelected
+				&& clipboard.getContents(TextTransfer.getInstance()) != null);
 		removeItem.setEnabled(collaboratorSelected && singleSelection);
 		exportItem.setEnabled(collaboratorSelected && true);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.MenuListener#menuHidden(org.eclipse.swt.events.MenuEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.swt.events.MenuListener#menuHidden(org.eclipse.swt.events
+	 * .MenuEvent)
 	 */
 	public void menuHidden(MenuEvent e) {
 		// Do nothing...
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseClosed()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseClosed()
 	 */
 	public void databaseClosed() {
 		// Suppression des items de collaborateurs
@@ -956,267 +1122,344 @@ public class ContributionsUI
 		// Suppression des items de contributions
 		Table table = tableViewer.getTable();
 		TableItem[] items = table.getItems();
-		for (int i=0; i<items.length; i++) {
+		for (int i = 0; i < items.length; i++) {
 			items[i].dispose();
 		}
 	}
-	
+
 	/**
-	 * Initialise l'IHM avec les données en base.
+	 * Initialise l'IHM avec les donnï¿½es en base.
 	 */
 	private void initialize() {
-		// Chargement du référentiel de durées
+		// Chargement du rï¿½fï¿½rentiel de durï¿½es
 		loadDurations();
 
-		// Chargement des collaborateurs et suppression de l'ancienne sélection
+		// Chargement des collaborateurs et suppression de l'ancienne sï¿½lection
 		// si elle existe
 		selectableCollaboratorPanel.initialize();
 
 		// Choix du collaborateur
-		if (selectableCollaboratorPanel.getCollaboratorsCount()>0) {
+		if (selectableCollaboratorPanel.getCollaboratorsCount() > 0) {
 			selectableCollaboratorPanel.setSelectedIndex(0);
 		}
 
 		// Initialisation de la table
 		tableViewer.setInput(ROOT_NODE);
-		
+
 	}
 
 	/**
-	 * Charge le référentiel de durées.
+	 * Charge le rï¿½fï¿½rentiel de durï¿½es.
 	 */
 	private void loadDurations() {
-		// Chargement de la liste des durées et des utilisateurs
+		// Chargement de la liste des durï¿½es et des utilisateurs
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				// Chargement du référentiel de durées
+				// Chargement du rï¿½fï¿½rentiel de durï¿½es
 				durations = ModelMgr.getActiveDurations();
 				String[] durationsStr = new String[durations.length + 1];
 				durationsStr[0] = ""; //$NON-NLS-1$
-				for (int i=0; i<durations.length; i++)
-					durationsStr[i+1] = StringHelper.hundredthToEntry(durations[i].getId());
+				for (int i = 0; i < durations.length; i++)
+					durationsStr[i + 1] = StringHelper
+							.hundredthToEntry(durations[i].getId());
 				durationCellEditor.setItems(durationsStr);
 				return null;
 			}
 		};
-		// Exécution
+		// Exï¿½cution
 		safeRunner.run(parent.getShell());
 	}
-	
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.util.ICollaboratorSelectionListener#collaboratorSelected(jfb.tools.activitymgr.core.beans.Collaborator)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see jfb.tools.activitymgr.ui.util.ICollaboratorSelectionListener#
+	 * collaboratorSelected(jfb.tools.activitymgr.core.beans.Collaborator)
 	 */
 	public void collaboratorSelected(Collaborator selectedCollaborator) {
 		tableViewer.refresh();
 	}
-	
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.CollaboratorsUI.CollaboratorListener#collaboratorAdded(jfb.tools.activitymgr.core.beans.Collaborator)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see jfb.tools.activitymgr.ui.CollaboratorsUI.CollaboratorListener#
+	 * collaboratorAdded(jfb.tools.activitymgr.core.beans.Collaborator)
 	 */
 	public void collaboratorAdded(Collaborator collaborator) {
 		selectableCollaboratorPanel.collaboratorAdded(collaborator);
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.CollaboratorsUI.CollaboratorListener#collaboratorRemoved(jfb.tools.activitymgr.core.beans.Collaborator)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see jfb.tools.activitymgr.ui.CollaboratorsUI.CollaboratorListener#
+	 * collaboratorRemoved(jfb.tools.activitymgr.core.beans.Collaborator)
 	 */
 	public void collaboratorRemoved(Collaborator collaborator) {
 		selectableCollaboratorPanel.collaboratorRemoved(collaborator);
-		// Dans le cas ou le collaborateur supprimé est celui qui était sélectionné...
-		if (selectableCollaboratorPanel.getSelectedCollaborator()== null) {
-			// ... on essaye d'en sélectionner un autre (si il y a d'autres collaborateurs)...
-			if (selectableCollaboratorPanel.getCollaboratorsCount()>0)
+		// Dans le cas ou le collaborateur supprimï¿½ est celui qui ï¿½tait
+		// sï¿½lectionnï¿½...
+		if (selectableCollaboratorPanel.getSelectedCollaborator() == null) {
+			// ... on essaye d'en sï¿½lectionner un autre (si il y a d'autres
+			// collaborateurs)...
+			if (selectableCollaboratorPanel.getCollaboratorsCount() > 0)
 				selectableCollaboratorPanel.setSelectedIndex(0);
-			// ... et on rafraichit les contributions affichées
+			// ... et on rafraichit les contributions affichï¿½es
 			tableViewer.refresh();
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.CollaboratorsUI.CollaboratorListener#collaboratorUpdated(jfb.tools.activitymgr.core.beans.Collaborator)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see jfb.tools.activitymgr.ui.CollaboratorsUI.CollaboratorListener#
+	 * collaboratorUpdated(jfb.tools.activitymgr.core.beans.Collaborator)
 	 */
 	public void collaboratorUpdated(Collaborator collaborator) {
 		selectableCollaboratorPanel.collaboratorUpdated(collaborator);
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.CollaboratorsUI.ICollaboratorListener#collaboratorActivationStatusChanged(jfb.tools.activitymgr.core.beans.Collaborator)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see jfb.tools.activitymgr.ui.CollaboratorsUI.ICollaboratorListener#
+	 * collaboratorActivationStatusChanged
+	 * (jfb.tools.activitymgr.core.beans.Collaborator)
 	 */
 	public void collaboratorActivationStatusChanged(Collaborator collaborator) {
-		selectableCollaboratorPanel.collaboratorActivationStatusChanged(collaborator);
-		// Dans le cas ou le collaborateur supprimé est celui qui était sélectionné...
-		if (selectableCollaboratorPanel.getSelectedCollaborator()== null) {
-			// ... on essaye d'en sélectionner un autre (si il y a d'autres collaborateurs)...
-			if (selectableCollaboratorPanel.getCollaboratorsCount()>0)
+		selectableCollaboratorPanel
+				.collaboratorActivationStatusChanged(collaborator);
+		// Dans le cas ou le collaborateur supprimï¿½ est celui qui ï¿½tait
+		// sï¿½lectionnï¿½...
+		if (selectableCollaboratorPanel.getSelectedCollaborator() == null) {
+			// ... on essaye d'en sï¿½lectionner un autre (si il y a d'autres
+			// collaborateurs)...
+			if (selectableCollaboratorPanel.getCollaboratorsCount() > 0)
 				selectableCollaboratorPanel.setSelectedIndex(0);
-			// ... et on rafraichit les contributions affichées
+			// ... et on rafraichit les contributions affichï¿½es
 			tableViewer.refresh();
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseOpened()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseOpened()
 	 */
 	public void databaseOpened() {
-		// Annulation de la sélection d'un collaborateur si une sélection 
-		// est en cours (peut arriver si la base a été réinstallée)
+		// Annulation de la sï¿½lection d'un collaborateur si une sï¿½lection
+		// est en cours (peut arriver si la base a ï¿½tï¿½ rï¿½installï¿½e)
 		selectableCollaboratorPanel.setSelectedCollaborator(null);
 		initialize();
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.DurationsUI.IDurationListener#durationAdded(jfb.tools.activitymgr.core.beans.Duration)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.DurationsUI.IDurationListener#durationAdded(
+	 * jfb.tools.activitymgr.core.beans.Duration)
 	 */
 	public void durationAdded(Duration duration) {
 		loadDurations();
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.DurationsUI.DurationListener#durationRemoved(jfb.tools.activitymgr.core.beans.Duration)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.DurationsUI.DurationListener#durationRemoved
+	 * (jfb.tools.activitymgr.core.beans.Duration)
 	 */
 	public void durationRemoved(Duration duration) {
 		loadDurations();
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.DurationsUI.DurationListener#durationUpdated(jfb.tools.activitymgr.core.beans.Duration, jfb.tools.activitymgr.core.beans.Duration)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.DurationsUI.DurationListener#durationUpdated
+	 * (jfb.tools.activitymgr.core.beans.Duration,
+	 * jfb.tools.activitymgr.core.beans.Duration)
 	 */
 	public void durationUpdated(Duration oldDuration, Duration newDuration) {
 		loadDurations();
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.DurationsUI.IDurationListener#durationActivationStatusChanged(jfb.tools.activitymgr.core.beans.Duration)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see jfb.tools.activitymgr.ui.DurationsUI.IDurationListener#
+	 * durationActivationStatusChanged
+	 * (jfb.tools.activitymgr.core.beans.Duration)
 	 */
 	public void durationActivationStatusChanged(Duration duration) {
 		loadDurations();
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.TasksUI.TaskListener#taskAdded(jfb.tools.activitymgr.core.beans.Task)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.TasksUI.TaskListener#taskAdded(jfb.tools.activitymgr
+	 * .core.beans.Task)
 	 */
 	public void taskAdded(Task task) {
 		// Transfert de la notification au popup de choix de tache
 		taskChooserDialog.taskAdded(task);
-		// Rien à faire par contre du côté de l'IHM de saisie des contributions car une nouvelle
-		// tâche ne pouvait forcément pas être déjà affichée
+		// Rien ï¿½ faire par contre du cï¿½tï¿½ de l'IHM de saisie des contributions
+		// car une nouvelle
+		// tï¿½che ne pouvait forcï¿½ment pas ï¿½tre dï¿½jï¿½ affichï¿½e
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.TasksUI.TaskListener#taskRemoved(jfb.tools.activitymgr.core.beans.Task)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see jfb.tools.activitymgr.ui.TasksUI.TaskListener#taskRemoved(jfb.tools.
+	 * activitymgr.core.beans.Task)
 	 */
 	public void taskRemoved(final Task removedTask) {
 		new SafeRunner() {
 			protected Object runUnsafe() throws Exception {
 				// Transfert de la notification au popup de choix de tache
 				taskChooserDialog.taskRemoved(removedTask);
-				// Parcours des taches présentes dans le tableau
+				// Parcours des taches prï¿½sentes dans le tableau
 				int itemCount = tableViewer.getTable().getItemCount();
 				int itemIdxToRemove = -1;
-				for (int i=0; i<itemCount; i++) {
-					Object data  = tableViewer.getElementAt(i);
+				for (int i = 0; i < itemCount; i++) {
+					Object data = tableViewer.getElementAt(i);
 					if (data != WeekContributionsSum.getInstance()) {
 						WeekContributions weekContribution = (WeekContributions) data;
 						Task currentTask = weekContribution.getTask();
-						// Cas ou la tache supprimée est dans le tableau
-						// dans ce cas, on sauvegarde le N° pour effectuer
+						// Cas ou la tache supprimï¿½e est dans le tableau
+						// dans ce cas, on sauvegarde le Nï¿½ pour effectuer
 						// la suppression par la suite
-						if (currentTask.getId()==removedTask.getId()) {
+						if (currentTask.getId() == removedTask.getId()) {
 							itemIdxToRemove = i;
 						}
-						// Autre cas : la tache supprimée est la soeur d'une des taches parent
-						// de la tache en cours ; c'est le cas si le chemin de la tache en cours
-						// commence par le chemin de la tache qui a été supprimée
-						else if (currentTask.getPath().startsWith(removedTask.getPath())) {
-							String removedTaskFullpath = removedTask.getFullPath();
-							String removedTaskSisterFullPath = currentTask.getFullPath().substring(0, removedTaskFullpath.length());
-							// La tache n'est impactée que si sa tache parent se trouvant être la soeur de
-							// celle qui a été supprimée possède un numéro supérieur à celui de la 
-							// tache supprimée
-							if (removedTaskSisterFullPath.compareTo(removedTaskFullpath)>0) {
-								// Dans ce cas il faut mettre à jour le chemin de la tache
-								currentTask = ModelMgr.getTask(currentTask.getId());
+						// Autre cas : la tache supprimï¿½e est la soeur d'une des
+						// taches parent
+						// de la tache en cours ; c'est le cas si le chemin de
+						// la tache en cours
+						// commence par le chemin de la tache qui a ï¿½tï¿½
+						// supprimï¿½e
+						else if (currentTask.getPath().startsWith(
+								removedTask.getPath())) {
+							String removedTaskFullpath = removedTask
+									.getFullPath();
+							String removedTaskSisterFullPath = currentTask
+									.getFullPath().substring(0,
+											removedTaskFullpath.length());
+							// La tache n'est impactï¿½e que si sa tache parent se
+							// trouvant ï¿½tre la soeur de
+							// celle qui a ï¿½tï¿½ supprimï¿½e possï¿½de un numï¿½ro
+							// supï¿½rieur ï¿½ celui de la
+							// tache supprimï¿½e
+							if (removedTaskSisterFullPath
+									.compareTo(removedTaskFullpath) > 0) {
+								// Dans ce cas il faut mettre ï¿½ jour le chemin
+								// de la tache
+								currentTask = ModelMgr.getTask(currentTask
+										.getId());
 								weekContribution.setTask(currentTask);
 								tableViewer.refresh(weekContribution);
 							}
 						}
 					}
 				}
-				// Si on a trouvé l'item supprimé, on le supprime 
-				if (itemIdxToRemove>=0)
-					tableViewer.remove(tableViewer.getElementAt(itemIdxToRemove));
+				// Si on a trouvï¿½ l'item supprimï¿½, on le supprime
+				if (itemIdxToRemove >= 0)
+					tableViewer.remove(tableViewer
+							.getElementAt(itemIdxToRemove));
 				return null;
 			}
-			
+
 		}.run(parent.getShell());
 	}
 
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.TasksUI.TaskListener#taskUpdated(jfb.tools.activitymgr.core.beans.Task)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see jfb.tools.activitymgr.ui.TasksUI.TaskListener#taskUpdated(jfb.tools.
+	 * activitymgr.core.beans.Task)
 	 */
 	public void taskUpdated(final Task updatedTask) {
 		// Transfert de la notification au popup de choix de tache
 		taskChooserDialog.taskUpdated(updatedTask);
-		// Parcours des taches présentes dans le tableau
+		// Parcours des taches prï¿½sentes dans le tableau
 		int itemCount = tableViewer.getTable().getItemCount();
-		for (int i=0; i<itemCount; i++) {
-			Object data  = tableViewer.getElementAt(i);
+		for (int i = 0; i < itemCount; i++) {
+			Object data = tableViewer.getElementAt(i);
 			if (data != WeekContributionsSum.getInstance()) {
 				WeekContributions weekContribution = (WeekContributions) data;
 				Task currentTask = weekContribution.getTask();
-				// Cas ou la tache modifiée est dans le tableau
-				if (currentTask.getId()==updatedTask.getId()) {
+				// Cas ou la tache modifiï¿½e est dans le tableau
+				if (currentTask.getId() == updatedTask.getId()) {
 					weekContribution.setTask(updatedTask);
 					tableViewer.refresh(weekContribution);
 				}
-				// Autre cas : la tache a modifiée est une tache
+				// Autre cas : la tache a modifiï¿½e est une tache
 				// parent de la tache en cours
-				else if (currentTask.getPath().startsWith(updatedTask.getFullPath())) {
-					// Il faut faire un refresh pour que le chemin de code de la tache
-					// soit mis à jour
+				else if (currentTask.getPath().startsWith(
+						updatedTask.getFullPath())) {
+					// Il faut faire un refresh pour que le chemin de code de la
+					// tache
+					// soit mis ï¿½ jour
 					tableViewer.refresh(weekContribution);
 				}
 			}
 		}
 	}
-	
-	/* (non-Javadoc)
-	 * @see jfb.tools.activitymgr.ui.TasksUI.ITaskListener#taskMoved(java.lang.String, jfb.tools.activitymgr.core.beans.Task)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * jfb.tools.activitymgr.ui.TasksUI.ITaskListener#taskMoved(java.lang.String
+	 * , jfb.tools.activitymgr.core.beans.Task)
 	 */
 	public void taskMoved(final String oldTaskFullpath, final Task movedTask) {
 		new SafeRunner() {
 			protected Object runUnsafe() throws Exception {
 				// Transfert de la notification au popup de choix de tache
 				taskChooserDialog.taskMoved(oldTaskFullpath, movedTask);
-				// Déduction de l'ancien chemin de la tache à partir de l'ancien
+				// Dï¿½duction de l'ancien chemin de la tache ï¿½ partir de l'ancien
 				// chemin complet
-				String oldTaskPath = oldTaskFullpath.substring(0, oldTaskFullpath.length()-2);
-				// Parcours des taches présentes dans le tableau
+				String oldTaskPath = oldTaskFullpath.substring(0,
+						oldTaskFullpath.length() - 2);
+				// Parcours des taches prï¿½sentes dans le tableau
 				int itemCount = tableViewer.getTable().getItemCount();
-				for (int i=0; i<itemCount; i++) {
-					Object data  = tableViewer.getElementAt(i);
+				for (int i = 0; i < itemCount; i++) {
+					Object data = tableViewer.getElementAt(i);
 					if (data != WeekContributionsSum.getInstance()) {
 						WeekContributions weekContribution = (WeekContributions) data;
 						Task currentTask = weekContribution.getTask();
-						// Cas ou la tache modifiée est dans le tableau
-						if (currentTask.getId()==movedTask.getId()) {
+						// Cas ou la tache modifiï¿½e est dans le tableau
+						if (currentTask.getId() == movedTask.getId()) {
 							currentTask = ModelMgr.getTask(currentTask.getId());
 							weekContribution.setTask(currentTask);
 							tableViewer.refresh(weekContribution);
 						}
-						// Autre cas : la tache a déplacée est une tache
+						// Autre cas : la tache a dï¿½placï¿½e est une tache
 						// parent de la tache en cours
-						else if (currentTask.getPath().startsWith(oldTaskFullpath)) {
-							// Il faut faire un refresh pour que le chemin de code de la tache
-							// soit mis à jour
+						else if (currentTask.getPath().startsWith(
+								oldTaskFullpath)) {
+							// Il faut faire un refresh pour que le chemin de
+							// code de la tache
+							// soit mis ï¿½ jour
 							currentTask = ModelMgr.getTask(currentTask.getId());
 							weekContribution.setTask(currentTask);
 							tableViewer.refresh(weekContribution);
 						}
-						// Autre cas : la tache déplacée est la soeur d'une des taches parent
+						// Autre cas : la tache dï¿½placï¿½e est la soeur d'une des
+						// taches parent
 						// de la tache en cours
 						else if (currentTask.getPath().startsWith(oldTaskPath)) {
-							// Dans ce cas il faut mettre à jour le chemin de la tache
+							// Dans ce cas il faut mettre ï¿½ jour le chemin de la
+							// tache
 							currentTask = ModelMgr.getTask(currentTask.getId());
 							weekContribution.setTask(currentTask);
 							tableViewer.refresh(weekContribution);
@@ -1225,13 +1468,15 @@ public class ContributionsUI
 				}
 				return null;
 			}
-			
+
 		}.run(parent.getShell());
 	}
 
 	/**
 	 * Ajoute un listener.
-	 * @param listener le nouveau listener.
+	 * 
+	 * @param listener
+	 *            le nouveau listener.
 	 */
 	public void addContributionListener(IContributionListener listener) {
 		listeners.add(listener);
@@ -1239,44 +1484,52 @@ public class ContributionsUI
 
 	/**
 	 * Ajoute un listener.
-	 * @param listener le nouveau listener.
+	 * 
+	 * @param listener
+	 *            le nouveau listener.
 	 */
 	public void removeContributionListener(IContributionListener listener) {
 		listeners.remove(listener);
 	}
 
 	/**
-	 * Notifie les listeners qu'une contribution a été ajoutée.
-	 * @param newContribution la contribution ajoutée.
+	 * Notifie les listeners qu'une contribution a ï¿½tï¿½ ajoutï¿½e.
+	 * 
+	 * @param newContribution
+	 *            la contribution ajoutï¿½e.
 	 */
 	private void notifyContributionAdded(Contribution newContribution) {
-		Iterator it = listeners.iterator();
+		Iterator<IContributionListener> it = listeners.iterator();
 		while (it.hasNext()) {
-			IContributionListener listener = (IContributionListener) it.next();
+			IContributionListener listener = it.next();
 			listener.contributionAdded(newContribution);
 		}
 	}
 
 	/**
-	 * Notifie les listeners que des contributions ont été supprimées.
-	 * @param contributions les contributions supprimées.
+	 * Notifie les listeners que des contributions ont ï¿½tï¿½ supprimï¿½es.
+	 * 
+	 * @param contributions
+	 *            les contributions supprimï¿½es.
 	 */
 	private void notifyContributionsRemoved(Contribution[] contributions) {
-		Iterator it = listeners.iterator();
+		Iterator<IContributionListener> it = listeners.iterator();
 		while (it.hasNext()) {
-			IContributionListener listener = (IContributionListener) it.next();
+			IContributionListener listener = it.next();
 			listener.contributionsRemoved(contributions);
 		}
 	}
 
 	/**
-	 * Notifie les listeners que des contributions ont été modifiées.
-	 * @param contributions les contributions modifiées.
+	 * Notifie les listeners que des contributions ont ï¿½tï¿½ modifiï¿½es.
+	 * 
+	 * @param contributions
+	 *            les contributions modifiï¿½es.
 	 */
 	private void notifyContributionsUpdated(Contribution[] contributions) {
-		Iterator it = listeners.iterator();
+		Iterator<IContributionListener> it = listeners.iterator();
 		while (it.hasNext()) {
-			IContributionListener listener = (IContributionListener) it.next();
+			IContributionListener listener = it.next();
 			listener.contributionsUpdated(contributions);
 		}
 	}

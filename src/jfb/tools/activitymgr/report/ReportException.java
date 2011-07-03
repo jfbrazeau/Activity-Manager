@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -30,7 +30,7 @@ package jfb.tools.activitymgr.report;
 import jfb.tools.activitymgr.AbstractTechnicalException;
 
 /**
- * Exception levée dans le cadre de la génération de rapports.
+ * Exception levï¿½e dans le cadre de la gï¿½nï¿½ration de rapports.
  */
 public class ReportException extends AbstractTechnicalException {
 
@@ -38,9 +38,12 @@ public class ReportException extends AbstractTechnicalException {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Constructeur par défaut.
-	 * @param message message d'erreur.
-	 * @param cause exception à l'origine de la levée d'exception.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param message
+	 *            message d'erreur.
+	 * @param cause
+	 *            exception ï¿½ l'origine de la levï¿½e d'exception.
 	 */
 	public ReportException(String message, Throwable cause) {
 		super(message, cause);

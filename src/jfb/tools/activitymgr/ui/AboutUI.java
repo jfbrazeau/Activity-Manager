@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -54,7 +54,7 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.TabItem;
 
 /**
- * IHM contenant des informations générales sur le projet.
+ * IHM contenant des informations gï¿½nï¿½rales sur le projet.
  */
 public class AboutUI implements SelectionListener {
 
@@ -66,7 +66,9 @@ public class AboutUI implements SelectionListener {
 
 	/**
 	 * Constructeur permettant de placer l'IHM dans un onglet.
-	 * @param tabItem item parent.
+	 * 
+	 * @param tabItem
+	 *            item parent.
 	 */
 	public AboutUI(TabItem tabItem) {
 		this(tabItem.getParent());
@@ -74,26 +76,30 @@ public class AboutUI implements SelectionListener {
 	}
 
 	/**
-	 * Constructeur par défaut.
-	 * @param parentComposite composant parent.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param parentComposite
+	 *            composant parent.
 	 */
 	public AboutUI(Composite parentComposite) {
 		GridData data = null;
-		// Création du composite parent
+		// Crï¿½ation du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayout(new GridLayout(1, false));
-		
-		// Création du composite centré
+
+		// Crï¿½ation du composite centrï¿½
 		Composite centeredPanel = new Composite(parent, SWT.NONE);
-		centeredPanel.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, true));
+		centeredPanel.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true,
+				true));
 		centeredPanel.setLayout(new GridLayout(1, false));
 		log.debug("About UI initialized"); //$NON-NLS-1$
-		
+
 		// Logo
 		Label logo = new Label(centeredPanel, SWT.NONE);
 		logo.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false));
-		logo.setImage(new Image(parentComposite.getDisplay(), ImagesDatas.APPLICATION_LOGO));
-		
+		logo.setImage(new Image(parentComposite.getDisplay(),
+				ImagesDatas.APPLICATION_LOGO));
+
 		// Contact
 		Link contactText = new Link(centeredPanel, SWT.NONE);
 		contactText.setText(Strings.getString("AboutUI.labels.BUG_REPORT")); //$NON-NLS-1$
@@ -101,45 +107,56 @@ public class AboutUI implements SelectionListener {
 
 		// Documentation
 		Link documentationText = new Link(centeredPanel, SWT.NONE);
-		documentationText.setText(Strings.getString("AboutUI.labels.FOR_MORE_INFORMATION")); //$NON-NLS-1$
+		documentationText.setText(Strings
+				.getString("AboutUI.labels.FOR_MORE_INFORMATION")); //$NON-NLS-1$
 		documentationText.addSelectionListener(this);
 
 		// Apache license
 		Link apacheText = new Link(centeredPanel, SWT.NONE);
-		apacheText.setText(Strings.getString("AboutUI.labels.THIS_PRODUCT_INCLUDES_APACHE_SOFTWARE")); //$NON-NLS-1$
+		apacheText
+				.setText(Strings
+						.getString("AboutUI.labels.THIS_PRODUCT_INCLUDES_APACHE_SOFTWARE")); //$NON-NLS-1$
 		apacheText.addSelectionListener(this);
 
 		// Third parties licenses
 		Link thirdPartiesText = new Link(centeredPanel, SWT.NONE);
-		thirdPartiesText.setText(Strings.getString("AboutUI.labels.THIS_PRODUCT_INCLUDES_ECLIPSE_SOFTWARE")); //$NON-NLS-1$
+		thirdPartiesText
+				.setText(Strings
+						.getString("AboutUI.labels.THIS_PRODUCT_INCLUDES_ECLIPSE_SOFTWARE")); //$NON-NLS-1$
 		thirdPartiesText.addSelectionListener(this);
 
 		// Ajout de la license
 		Label label = new Label(centeredPanel, SWT.NONE);
 		label.setText(Strings.getString("AboutUI.labels.BSD_LICENCE")); //$NON-NLS-1$
-		List list = new List(centeredPanel, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
-                | SWT.MULTI);
-        data = new GridData(SWT.NONE, SWT.FILL, false, true);
-        list.setLayoutData(data);
-		
-        // Ajout de la license
-        try {
-        	InputStream in = AboutUI.class.getResourceAsStream("LICENSE.txt"); //$NON-NLS-1$
-	        LineNumberReader lin = new LineNumberReader(new InputStreamReader(in));
-	        String line = null;
-	        while ((line = lin.readLine())!=null) {
-	        	list.add(line);
-	        }
-        }
-        catch (IOException e) {
-        	log.error("Unexpected I/O error while printing stack trace.", e); //$NON-NLS-1$
-        	list.add(Strings.getString("AboutUI.infos.IO_ERROR_WHILE_PRINTING_STACKTRACE")); //$NON-NLS-1$
-        	list.add(Strings.getString("AboutUI.infos.SEE_LOGS_FOR_MORE_DETAILS")); //$NON-NLS-1$
-        }
+		List list = new List(centeredPanel, SWT.BORDER | SWT.H_SCROLL
+				| SWT.V_SCROLL | SWT.MULTI);
+		data = new GridData(SWT.NONE, SWT.FILL, false, true);
+		list.setLayoutData(data);
+
+		// Ajout de la license
+		try {
+			InputStream in = AboutUI.class.getResourceAsStream("LICENSE.txt"); //$NON-NLS-1$
+			LineNumberReader lin = new LineNumberReader(new InputStreamReader(
+					in));
+			String line = null;
+			while ((line = lin.readLine()) != null) {
+				list.add(line);
+			}
+		} catch (IOException e) {
+			log.error("Unexpected I/O error while printing stack trace.", e); //$NON-NLS-1$
+			list.add(Strings
+					.getString("AboutUI.infos.IO_ERROR_WHILE_PRINTING_STACKTRACE")); //$NON-NLS-1$
+			list.add(Strings
+					.getString("AboutUI.infos.SEE_LOGS_FOR_MORE_DETAILS")); //$NON-NLS-1$
+		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt
+	 * .events.SelectionEvent)
 	 */
 	public void widgetSelected(SelectionEvent e) {
 		String osName = System.getProperty("os.name"); //$NON-NLS-1$
@@ -147,35 +164,42 @@ public class AboutUI implements SelectionListener {
 		if (!link.startsWith("http://")) //$NON-NLS-1$
 			link = "mailto:" + link; //$NON-NLS-1$
 		final String url = link;
-		boolean windows = osName!=null && osName.toLowerCase().indexOf("windows")>=0; //$NON-NLS-1$
+		boolean windows = osName != null
+				&& osName.toLowerCase().indexOf("windows") >= 0; //$NON-NLS-1$
 		boolean copyURLToClipboard = true;
 		// Sous windows lancement du brower ou du client de mail
 		if (windows) {
 			SafeRunner runner = new SafeRunner() {
 				protected Object runUnsafe() throws Exception {
-					Process proc = Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url); //$NON-NLS-1$
+					Process proc = Runtime.getRuntime().exec(
+							"rundll32 url.dll,FileProtocolHandler " + url); //$NON-NLS-1$
 					return proc;
 				}
 			};
-			// Si le lancement échoue, on effectuera le copier/coller
-			if (runner.run(parent.getShell())!=null)
+			// Si le lancement ï¿½choue, on effectuera le copier/coller
+			if (runner.run(parent.getShell()) != null)
 				copyURLToClipboard = false;
 		}
-		// Sur les autres plateformes que linux, dépot dans le clipboard
+		// Sur les autres plateformes que linux, dï¿½pot dans le clipboard
 		if (copyURLToClipboard) {
 			Clipboard clipBoard = new Clipboard(parent.getDisplay());
 			clipBoard.setContents(new Object[] { e.text },
-		              new Transfer[] { TextTransfer.getInstance() });
+					new Transfer[] { TextTransfer.getInstance() });
 			clipBoard.dispose();
-			MessageDialog.openInformation(
-					parent.getShell(), 
-					Strings.getString("AboutUI.titles.INFORMATION"),  //$NON-NLS-1$
-					Strings.getString("AboutUI.errors.COULDNT_OPEN_MAIL_OR_BROWSER_APP", e.text)); //$NON-NLS-1$ //$NON-NLS-2$
+			MessageDialog
+					.openInformation(parent.getShell(),
+							Strings.getString("AboutUI.titles.INFORMATION"), //$NON-NLS-1$
+							Strings.getString(
+									"AboutUI.errors.COULDNT_OPEN_MAIL_OR_BROWSER_APP", e.text)); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse
+	 * .swt.events.SelectionEvent)
 	 */
 	public void widgetDefaultSelected(SelectionEvent e) {
 		widgetSelected(e);

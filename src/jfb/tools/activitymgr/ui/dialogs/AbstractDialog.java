@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -40,8 +40,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 /**
- * Dialogue père des dialogues asociés à la page de
- * configuration.
+ * Dialogue pï¿½re des dialogues asociï¿½s ï¿½ la page de configuration.
  */
 public abstract class AbstractDialog extends Dialog {
 
@@ -50,24 +49,30 @@ public abstract class AbstractDialog extends Dialog {
 
 	/** Titre du dialogue */
 	private String title;
-	
+
 	/** Icone du dialogue */
 	private Image icon;
-	
+
 	/** Valeur initiale */
 	private Object initialValue;
-	
-	/** Valeur validée */
+
+	/** Valeur validï¿½e */
 	private Object value;
 
 	/**
-	 * Constructeur par défaut.
-	 * @param parentShell le shell parent.
-	 * @param title titre du dialogue.
-	 * @param icon icone du dialogue.
-	 * @param initialValue valeur initiale du dialogue.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param parentShell
+	 *            le shell parent.
+	 * @param title
+	 *            titre du dialogue.
+	 * @param icon
+	 *            icone du dialogue.
+	 * @param initialValue
+	 *            valeur initiale du dialogue.
 	 */
-	protected AbstractDialog(Shell parentShell, String title, Image icon, Object initialValue) {
+	protected AbstractDialog(Shell parentShell, String title, Image icon,
+			Object initialValue) {
 		super(parentShell);
 		this.title = title;
 		this.initialValue = initialValue;
@@ -76,6 +81,7 @@ public abstract class AbstractDialog extends Dialog {
 
 	/**
 	 * Retourne la valeur saisie au travers du dialogue.
+	 * 
 	 * @return la valeur saisie au travers du dialogue.
 	 */
 	public Object getValue() {
@@ -83,22 +89,27 @@ public abstract class AbstractDialog extends Dialog {
 	}
 
 	/**
-	 * Définit la valeur sélectionnée par le dialogue.
-	 * @param value la nouvelle valeur.
+	 * Dï¿½finit la valeur sï¿½lectionnï¿½e par le dialogue.
+	 * 
+	 * @param value
+	 *            la nouvelle valeur.
 	 */
 	public void setValue(Object value) {
 		this.value = value;
 	}
-	
+
 	/**
 	 * Retourne la valeur initiale du dialogue.
+	 * 
 	 * @return la valeur initiale du dialogue.
 	 */
 	public Object getInitialValue() {
 		return initialValue;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.jface.dialogs.Dialog#okPressed()
 	 */
 	protected void okPressed() {
@@ -106,8 +117,7 @@ public abstract class AbstractDialog extends Dialog {
 			log.debug("Ok pressed"); //$NON-NLS-1$
 			value = validateUserEntry();
 			super.okPressed();
-		}
-		catch (DialogException e) {
+		} catch (DialogException e) {
 			Control control = e.getControl();
 			if (control instanceof Text) {
 				Text text = (Text) control;
@@ -115,11 +125,14 @@ public abstract class AbstractDialog extends Dialog {
 				text.selectAll();
 			}
 			// Affichage du message d'erreur
-			MessageDialog.openWarning(getShell(), Strings.getString("AbstractDialog.dialog.TITLE"), e.getMessage()); //$NON-NLS-1$
+			MessageDialog.openWarning(getShell(), Strings
+					.getString("AbstractDialog.dialog.TITLE"), e.getMessage()); //$NON-NLS-1$
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.jface.dialogs.Dialog#cancelPressed()
 	 */
 	protected void cancelPressed() {
@@ -129,22 +142,30 @@ public abstract class AbstractDialog extends Dialog {
 
 	/**
 	 * Valide la saisie de l'utilisateur.
+	 * 
 	 * @return la nouvelle valeur du dialogue.
-	 * @throws DialogException levé en cas de détection d'anomalie
-	 *     dans la saisie de l'utilisateur.
+	 * @throws DialogException
+	 *             levï¿½ en cas de dï¿½tection d'anomalie dans la saisie de
+	 *             l'utilisateur.
 	 */
 	protected abstract Object validateUserEntry() throws DialogException;
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets
+	 * .Composite)
 	 */
 	protected Control createDialogArea(Composite parent) {
 		Composite c = (Composite) super.createDialogArea(parent);
 		Shell shell = c.getShell();
-		if (title!=null) shell.setText(title);
-		if (icon!=null) shell.setImage(icon);
-		
-		// Mise à jour du Layout
+		if (title != null)
+			shell.setText(title);
+		if (icon != null)
+			shell.setImage(icon);
+
+		// Mise ï¿½ jour du Layout
 		GridLayout defaultLayout = (GridLayout) c.getLayout();
 		GridLayout layout = new GridLayout(2, false);
 		layout.marginHeight = defaultLayout.marginHeight;
@@ -153,8 +174,8 @@ public abstract class AbstractDialog extends Dialog {
 		layout.horizontalSpacing = defaultLayout.horizontalSpacing;
 		c.setLayout(layout);
 
-		// Retour du résultat
+		// Retour du rï¿½sultat
 		return c;
 	}
-	
+
 }

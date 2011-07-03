@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -30,7 +30,7 @@ package jfb.tools.activitymgr.core.beans;
 import jfb.tools.activitymgr.core.util.StringHelper;
 
 /**
- * Tâche.
+ * Tï¿½che.
  */
 public class Task extends SimpleIdentityBean {
 
@@ -42,25 +42,25 @@ public class Task extends SimpleIdentityBean {
 
 	/** Chemin de la tache */
 	private String path;
-	
-	/** Numéro de la tâche */
+
+	/** Numï¿½ro de la tï¿½che */
 	private byte number;
 
 	/** Nombre de taches filles */
 	private int subTasksCount;
-	
+
 	/** Budget */
 	private long budget;
-	
+
 	/** Consommation initiale */
 	private long initiallyConsumed;
-	
-	/** Reste à faire */
+
+	/** Reste ï¿½ faire */
 	private long todo;
 
 	/** Commentaire sur la tache */
 	private String comment;
-	
+
 	/**
 	 * @return le code de la tache.
 	 */
@@ -69,28 +69,28 @@ public class Task extends SimpleIdentityBean {
 	}
 
 	/**
-	 * @return le budget alloué à la tache.
+	 * @return le budget allouï¿½ ï¿½ la tache.
 	 */
 	public long getBudget() {
 		return budget;
 	}
 
 	/**
-	 * @return le consommé initial de la tache.
+	 * @return le consommï¿½ initial de la tache.
 	 */
 	public long getInitiallyConsumed() {
 		return initiallyConsumed;
 	}
 
 	/**
-	 * @return le nom de la tâche.
+	 * @return le nom de la tï¿½che.
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/**
-	 * @return le numéro de la tache.
+	 * @return le numï¿½ro de la tache.
 	 */
 	public byte getNumber() {
 		return number;
@@ -104,121 +104,143 @@ public class Task extends SimpleIdentityBean {
 	}
 
 	/**
-	 * @return le nombre de tâches filles.
+	 * @return le nombre de tï¿½ches filles.
 	 */
 	public int getSubTasksCount() {
 		return subTasksCount;
 	}
 
 	/**
-	 * @return le reste à faire associé à la tâche.
+	 * @return le reste ï¿½ faire associï¿½ ï¿½ la tï¿½che.
 	 */
 	public long getTodo() {
 		return todo;
 	}
 
 	/**
-	 * Définit le code de la tâche.
-	 * @param code le nouveau code.
+	 * Dï¿½finit le code de la tï¿½che.
+	 * 
+	 * @param code
+	 *            le nouveau code.
 	 */
 	public void setCode(String code) {
 		this.code = code;
 	}
 
 	/**
-	 * Définit le budget alloué à la tache
-	 * @param budget le nouveau budget.
+	 * Dï¿½finit le budget allouï¿½ ï¿½ la tache
+	 * 
+	 * @param budget
+	 *            le nouveau budget.
 	 */
 	public void setBudget(long budget) {
 		this.budget = budget;
 	}
 
 	/**
-	 * Définit le consommé initial de la tache.
-	 * @param initiallyConsumed le nouveau consommé initial.
+	 * Dï¿½finit le consommï¿½ initial de la tache.
+	 * 
+	 * @param initiallyConsumed
+	 *            le nouveau consommï¿½ initial.
 	 */
 	public void setInitiallyConsumed(long initiallyConsumed) {
 		this.initiallyConsumed = initiallyConsumed;
 	}
 
 	/**
-	 * Définit le nom de la tache.
-	 * @param name le nouveau nom.
+	 * Dï¿½finit le nom de la tache.
+	 * 
+	 * @param name
+	 *            le nouveau nom.
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
 	/**
-	 * Définit le numéro de la tache.
-	 * @param number le nouveau numéro.
+	 * Dï¿½finit le numï¿½ro de la tache.
+	 * 
+	 * @param number
+	 *            le nouveau numï¿½ro.
 	 */
 	public void setNumber(byte number) {
 		this.number = number;
 	}
 
 	/**
-	 * Définit le chemin de la tache.
-	 * @param path le nouveau chemin.
+	 * Dï¿½finit le chemin de la tache.
+	 * 
+	 * @param path
+	 *            le nouveau chemin.
 	 */
 	public void setPath(String path) {
 		this.path = path;
 	}
 
 	/**
-	 * Définiti le nombre de taches filles.
-	 * @param subTasksCount le nouveau nombre de taches filles.
+	 * Dï¿½finiti le nombre de taches filles.
+	 * 
+	 * @param subTasksCount
+	 *            le nouveau nombre de taches filles.
 	 */
 	public void setSubTasksCount(int subTasksCount) {
 		this.subTasksCount = subTasksCount;
 	}
 
 	/**
-	 * Définit le reste à faire associé à la tache.
-	 * @param todo le nouveau reste à faire.
+	 * Dï¿½finit le reste ï¿½ faire associï¿½ ï¿½ la tache.
+	 * 
+	 * @param todo
+	 *            le nouveau reste ï¿½ faire.
 	 */
 	public void setTodo(long todo) {
 		this.todo = todo;
 	}
 
 	/**
-	 * Construit le chemin complet de la tâche.
-	 * @return le chemin complet de la tâche.
+	 * Construit le chemin complet de la tï¿½che.
+	 * 
+	 * @return le chemin complet de la tï¿½che.
 	 */
 	public String getFullPath() {
-		StringBuffer result = new StringBuffer(path!=null ? path : ""); //$NON-NLS-1$
+		StringBuffer result = new StringBuffer(path != null ? path : ""); //$NON-NLS-1$
 		result.append(StringHelper.toHex(number));
 		return result.toString();
 	}
 
 	/**
-	 * Retourne le commentaire associé à la tache.
-	 * @return le commentaire associé à la tache.
+	 * Retourne le commentaire associï¿½ ï¿½ la tache.
+	 * 
+	 * @return le commentaire associï¿½ ï¿½ la tache.
 	 */
 	public String getComment() {
 		return comment;
 	}
 
 	/**
-	 * Définit le commentaire de la tache.
-	 * @param comment le nouveau commentaire.
+	 * Dï¿½finit le commentaire de la tache.
+	 * 
+	 * @param comment
+	 *            le nouveau commentaire.
 	 */
 	public void setComment(String comment) {
 		this.comment = comment;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
 		return new StringBuffer("Task(") //$NON-NLS-1$
-			.append(getId()).append(", ") //$NON-NLS-1$
-			.append(code).append(", ") //$NON-NLS-1$
-			.append(name).append(",") //$NON-NLS-1$
-			.append(path).append(",") //$NON-NLS-1$
-			.append(number).append(",") //$NON-NLS-1$
-			.append(getFullPath()).append(")") //$NON-NLS-1$
-			.toString();
+				.append(getId()).append(", ") //$NON-NLS-1$
+				.append(code).append(", ") //$NON-NLS-1$
+				.append(name).append(",") //$NON-NLS-1$
+				.append(path).append(",") //$NON-NLS-1$
+				.append(number).append(",") //$NON-NLS-1$
+				.append(getFullPath()).append(")") //$NON-NLS-1$
+				.toString();
 	}
 
 }

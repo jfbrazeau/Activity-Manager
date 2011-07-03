@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -30,8 +30,8 @@ package jfb.tools.activitymgr.report;
 import org.apache.log4j.Logger;
 
 /**
- * Classe offrant des services de comparaison et de tests
- * pour la génération de rapports avec Velocity.
+ * Classe offrant des services de comparaison et de tests pour la gï¿½nï¿½ration de
+ * rapports avec Velocity.
  */
 public class TestHelper {
 
@@ -39,10 +39,13 @@ public class TestHelper {
 	private static Logger log = Logger.getLogger(TestHelper.class);
 
 	/**
-	 * Teste si la valeur1 est supérieure stricte à la valeur2.
-	 * @param val1 valeur 1.
-	 * @param val2 valeur 2.
-	 * @return un booléen indiquant si val1 &gt; val2.
+	 * Teste si la valeur1 est supï¿½rieure stricte ï¿½ la valeur2.
+	 * 
+	 * @param val1
+	 *            valeur 1.
+	 * @param val2
+	 *            valeur 2.
+	 * @return un boolï¿½en indiquant si val1 &gt; val2.
 	 */
 	public boolean gt(double val1, double val2) {
 		log.debug("gt(" + val1 + ", " + val2 + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -50,10 +53,13 @@ public class TestHelper {
 	}
 
 	/**
-	 * Teste si la valeur1 est égale à la valeur2.
-	 * @param val1 valeur 1.
-	 * @param val2 valeur 2.
-	 * @return un booléen indiquant si val1 == val2.
+	 * Teste si la valeur1 est ï¿½gale ï¿½ la valeur2.
+	 * 
+	 * @param val1
+	 *            valeur 1.
+	 * @param val2
+	 *            valeur 2.
+	 * @return un boolï¿½en indiquant si val1 == val2.
 	 */
 	public boolean eq(double val1, double val2) {
 		log.debug("gt(" + val1 + ", " + val2 + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$

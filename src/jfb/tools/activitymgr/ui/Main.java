@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -51,13 +51,13 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 
 /**
- * Classe principale de l'application des gestion des l'activité.
+ * Classe principale de l'application des gestion des l'activitï¿½.
  */
 public class Main {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(Main.class);
-	
+
 	/** Onglets */
 	private static TabItem databaseTab;
 	private static TabItem durationsTab;
@@ -84,7 +84,8 @@ public class Main {
 			Shell splash = new Shell(display, SWT.ON_TOP);
 			splash.setLayout(new FillLayout());
 			Label splashLabel = new Label(splash, SWT.NONE);
-			Image splashImage = new Image(splash.getDisplay(), ImagesDatas.APPLICATION_LOGO);
+			Image splashImage = new Image(splash.getDisplay(),
+					ImagesDatas.APPLICATION_LOGO);
 			splashLabel.setImage(splashImage);
 			splash.pack();
 			Rectangle splashRect = splash.getBounds();
@@ -93,8 +94,8 @@ public class Main {
 			int y = (displayRect.height - splashRect.height) / 2;
 			splash.setLocation(x, y);
 			splash.open();
-			
-			// Ouverture de la fenêtre
+
+			// Ouverture de la fenï¿½tre
 			final Shell shell = new Shell(display);
 			shell.setSize(910, 550);
 			shell.setText(Strings.getString("Main.texts.TITLE")); //$NON-NLS-1$
@@ -110,38 +111,42 @@ public class Main {
 					}.run(shell);
 				}
 			});
-			
-			// Création du groupe d'onglets
+
+			// Crï¿½ation du groupe d'onglets
 			final TabFolder tabFolder = new TabFolder(shell, SWT.TOP);
 			tabFolder.setLayout(new FillLayout(SWT.VERTICAL));
-			tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+			tabFolder
+					.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-			// Création de l'onglet de paramétrage de l'accès à la base de données
+			// Crï¿½ation de l'onglet de paramï¿½trage de l'accï¿½s ï¿½ la base de
+			// donnï¿½es
 			databaseTab = new TabItem(tabFolder, SWT.NONE);
 			databaseTab.setText(Strings.getString("Main.tabs.DATABASE")); //$NON-NLS-1$
 			databaseUI = new DatabaseUI(databaseTab);
-			
-			// Création de l'onglet de gestion des durées
+
+			// Crï¿½ation de l'onglet de gestion des durï¿½es
 			durationsTab = new TabItem(tabFolder, SWT.NONE);
 			durationsTab.setText(Strings.getString("Main.tabs.DURATIONS")); //$NON-NLS-1$
 			durationsUI = new DurationsUI(durationsTab);
 
-			// Création de l'onglet de gestion des collaborateurs
+			// Crï¿½ation de l'onglet de gestion des collaborateurs
 			collaboratorsTab = new TabItem(tabFolder, SWT.NONE);
-			collaboratorsTab.setText(Strings.getString("Main.tabs.COLLABORATORS")); //$NON-NLS-1$
+			collaboratorsTab.setText(Strings
+					.getString("Main.tabs.COLLABORATORS")); //$NON-NLS-1$
 			collaboratorsUI = new CollaboratorsUI(collaboratorsTab);
 
-			// Création de l'onglet de gestion des taches
+			// Crï¿½ation de l'onglet de gestion des taches
 			tasksTab = new TabItem(tabFolder, SWT.NONE);
 			tasksTab.setText(Strings.getString("Main.tabs.TASKS")); //$NON-NLS-1$
 			tasksUI = new TasksUI(tasksTab);
 
-			// Création de l'onglet de gestion des contributions
+			// Crï¿½ation de l'onglet de gestion des contributions
 			contributionsTab = new TabItem(tabFolder, SWT.NONE);
-			contributionsTab.setText(Strings.getString("Main.tabs.CONTRIBUTIONS")); //$NON-NLS-1$
+			contributionsTab.setText(Strings
+					.getString("Main.tabs.CONTRIBUTIONS")); //$NON-NLS-1$
 			contributionsUI = new ContributionsUI(contributionsTab);
 
-			// Création de l'onglet contenant les informations générales
+			// Crï¿½ation de l'onglet contenant les informations gï¿½nï¿½rales
 			aboutTab = new TabItem(tabFolder, SWT.NONE);
 			aboutTab.setText(Strings.getString("Main.tabs.ABOUT")); //$NON-NLS-1$
 			new AboutUI(aboutTab);
@@ -155,26 +160,30 @@ public class Main {
 			collaboratorsUI.addCollaboratorListener(contributionsUI);
 			tasksUI.addTaskListener(contributionsUI);
 			contributionsUI.addContributionListener(tasksUI);
-			
+
 			// Barre de statut
 			final Label statusBar = new Label(shell, SWT.NONE);
-			statusBar.setLayoutData(new GridData(SWT.RIGHT, SWT.NONE, false, false));
+			statusBar.setLayoutData(new GridData(SWT.RIGHT, SWT.NONE, false,
+					false));
 			statusBar.setAlignment(SWT.RIGHT);
 			statusBar.setText(Strings.getString("Main.status.NOT_CONNECTED")); //$NON-NLS-1$
 			databaseUI.addDbStatusListener(new IDbStatusListener() {
 				public void databaseOpened() {
-					statusBar.setText(Strings.getString("Main.status.CONNECTED")); //$NON-NLS-1$
+					statusBar.setText(Strings
+							.getString("Main.status.CONNECTED")); //$NON-NLS-1$
 				}
+
 				public void databaseClosed() {
-					statusBar.setText(Strings.getString("Main.status.NOT_CONNECTED")); //$NON-NLS-1$
+					statusBar.setText(Strings
+							.getString("Main.status.NOT_CONNECTED")); //$NON-NLS-1$
 				}
 			});
 
-			// Ouverture de la fenêtre
+			// Ouverture de la fenï¿½tre
 			shell.open();
 			shell.setEnabled(false);
 
-			// Initialisation des attributs de connexion par défaut
+			// Initialisation des attributs de connexion par dï¿½faut
 			databaseUI.initUI();
 
 			// Fermeture du splash
@@ -184,13 +193,12 @@ public class Main {
 			shell.setEnabled(true);
 			log.info("Application started"); //$NON-NLS-1$
 
-			// Exécution jusqu'à l'arrêt
+			// Exï¿½cution jusqu'ï¿½ l'arrï¿½t
 			while (!shell.isDisposed()) {
 				if (!display.readAndDispatch())
 					display.sleep();
 			}
-		}
-		catch (Throwable t) {
+		} catch (Throwable t) {
 			t.printStackTrace();
 		}
 	}

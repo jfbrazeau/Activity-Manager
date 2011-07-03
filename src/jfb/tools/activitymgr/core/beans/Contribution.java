@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -31,26 +31,26 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 /**
- * Contribution d'un collaborateur à une tache.
+ * Contribution d'un collaborateur ï¿½ une tache.
  */
 public class Contribution {
 
-	/** Année */
+	/** Annï¿½e */
 	private int year;
-	
+
 	/** Mois */
 	private int month;
-	
+
 	/** Jour */
 	private int day;
-	
+
 	/** Identifiant du collaborateur */
 	private long contributorId;
-	
+
 	/** Identifiant de la tache */
 	private long taskId;
-	
-	/** Durée */
+
+	/** Durï¿½e */
 	private long durationId;
 
 	/**
@@ -59,25 +59,29 @@ public class Contribution {
 	public long getContributorId() {
 		return contributorId;
 	}
-	
+
 	/**
-	 * Définit l'identifiant du collaborateur.
-	 * @param contributorId le nouvel identifiant.
+	 * Dï¿½finit l'identifiant du collaborateur.
+	 * 
+	 * @param contributorId
+	 *            le nouvel identifiant.
 	 */
 	public void setContributorId(long contributorId) {
 		this.contributorId = contributorId;
 	}
 
 	/**
-	 * @return la durée.
+	 * @return la durï¿½e.
 	 */
 	public long getDurationId() {
 		return durationId;
 	}
 
 	/**
-	 * Définit la durée.
-	 * @param duration la nouvelle durée.
+	 * Dï¿½finit la durï¿½e.
+	 * 
+	 * @param duration
+	 *            la nouvelle durï¿½e.
 	 */
 	public void setDurationId(long duration) {
 		this.durationId = duration;
@@ -91,8 +95,10 @@ public class Contribution {
 	}
 
 	/**
-	 * Définit l'identifiant de la tache.
-	 * @param taskId le nouvel identifiant.
+	 * Dï¿½finit l'identifiant de la tache.
+	 * 
+	 * @param taskId
+	 *            le nouvel identifiant.
 	 */
 	public void setTaskId(long taskId) {
 		this.taskId = taskId;
@@ -106,8 +112,10 @@ public class Contribution {
 	}
 
 	/**
-	 * Définit le jour de la contribution.
-	 * @param day le nouveau jour.
+	 * Dï¿½finit le jour de la contribution.
+	 * 
+	 * @param day
+	 *            le nouveau jour.
 	 */
 	public void setDay(int day) {
 		this.day = day;
@@ -121,31 +129,37 @@ public class Contribution {
 	}
 
 	/**
-	 * Définit le mois de la contribution.
-	 * @param month le nouveau mois.
+	 * Dï¿½finit le mois de la contribution.
+	 * 
+	 * @param month
+	 *            le nouveau mois.
 	 */
 	public void setMonth(int month) {
 		this.month = month;
 	}
 
 	/**
-	 * @return l'année de la contribution.
+	 * @return l'annï¿½e de la contribution.
 	 */
 	public int getYear() {
 		return year;
 	}
 
 	/**
-	 * Définit l'année de la contribution.
-	 * @param year la nouvelle année.
+	 * Dï¿½finit l'annï¿½e de la contribution.
+	 * 
+	 * @param year
+	 *            la nouvelle annï¿½e.
 	 */
 	public void setYear(int year) {
 		this.year = year;
 	}
 
 	/**
-	 * Définit la date associée à la contribution.
-	 * @param date la nouvelle date.
+	 * Dï¿½finit la date associï¿½e ï¿½ la contribution.
+	 * 
+	 * @param date
+	 *            la nouvelle date.
 	 */
 	public void setDate(Calendar date) {
 		setYear(date.get(Calendar.YEAR));
@@ -154,19 +168,21 @@ public class Contribution {
 	}
 
 	/**
-	 * @return la date associée à la contribution.
+	 * @return la date associï¿½e ï¿½ la contribution.
 	 */
 	public Calendar getDate() {
-		GregorianCalendar cal = new GregorianCalendar(year, month-1, day);
+		GregorianCalendar cal = new GregorianCalendar(year, month - 1, day);
 		return cal;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	public boolean equals(Object obj) {
 		boolean equals = false;
-		if (obj!=null && obj instanceof Contribution) {
+		if (obj != null && obj instanceof Contribution) {
 			Contribution other = (Contribution) obj;
 			equals = (other.year == year);
 			equals &= (other.month == month);

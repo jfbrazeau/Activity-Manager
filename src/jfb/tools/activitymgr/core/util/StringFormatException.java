@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -30,8 +30,7 @@ package jfb.tools.activitymgr.core.util;
 import jfb.tools.activitymgr.AbstractApplicationException;
 
 /**
- * Exception utilisée pour les problèmes de conversion de chaînes de 
- * caactère.
+ * Exception utilisï¿½e pour les problï¿½mes de conversion de chaï¿½nes de caactï¿½re.
  */
 public class StringFormatException extends AbstractApplicationException {
 
@@ -39,8 +38,10 @@ public class StringFormatException extends AbstractApplicationException {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Constructeur par défaut.
-	 * @param message message d'erreur.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param message
+	 *            message d'erreur.
 	 */
 	public StringFormatException(String message) {
 		super(message);
@@ -48,8 +49,11 @@ public class StringFormatException extends AbstractApplicationException {
 
 	/**
 	 * Constructeur avec une exception source.
-	 * @param message message d'erreur.
-	 * @param cause cause de la levée d'exception.
+	 * 
+	 * @param message
+	 *            message d'erreur.
+	 * @param cause
+	 *            cause de la levï¿½e d'exception.
 	 */
 	public StringFormatException(String message, Throwable cause) {
 		super(message, cause);

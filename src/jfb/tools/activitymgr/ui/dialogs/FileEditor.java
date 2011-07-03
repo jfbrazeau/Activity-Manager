@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -35,23 +35,26 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
 /**
- * Control utilisé pour gérer les entrées de type fichier.
+ * Control utilisï¿½ pour gï¿½rer les entrï¿½es de type fichier.
  */
 public class FileEditor {
 
 	/** Champ texte */
 	private Text fileText;
-	
+
 	/** Bouton de commande */
 	private Button browseButton;
-	
+
 	/**
-	 * Constructeur par défaut.
-	 * @param parent composant parent.
-	 * @param title le titre de l'éditeur.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param parent
+	 *            composant parent.
+	 * @param title
+	 *            le titre de l'ï¿½diteur.
 	 */
 	public FileEditor(Composite parent, String title) {
-		// Création du paneau
+		// Crï¿½ation du paneau
 		Composite panel = new Composite(parent, SWT.NONE);
 		GridData gridData = new GridData(SWT.LEFT, SWT.TOP, true, false);
 		panel.setLayoutData(gridData);
@@ -66,5 +69,4 @@ public class FileEditor {
 		browseButton.setText("..."); //$NON-NLS-1$
 	}
 
-	
 }

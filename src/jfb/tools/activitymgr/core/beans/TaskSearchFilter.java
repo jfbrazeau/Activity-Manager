@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -28,16 +28,16 @@
 package jfb.tools.activitymgr.core.beans;
 
 /**
- * Filtre de recherche de tâche.
+ * Filtre de recherche de tï¿½che.
  */
 public class TaskSearchFilter {
 
 	/** Index du champ 'nom' de tache */
-	public static final int TASK_NAME_FIELD_IDX = 0; 
+	public static final int TASK_NAME_FIELD_IDX = 0;
 	/** Index du champ 'code' de tache */
 	public static final int TASK_CODE_FIELD_IDX = 1;
 
-	/** Index du critere de recherche 'est égal à' */
+	/** Index du critere de recherche 'est ï¿½gal ï¿½' */
 	public static final int IS_EQUAL_TO_CRITERIA_IDX = 0;
 	/** Index du critere de recherche 'commence par' */
 	public static final int STARTS_WITH_CRITERIA_IDX = 1;
@@ -46,58 +46,68 @@ public class TaskSearchFilter {
 	/** Index du critere de recherche 'contient' */
 	public static final int CONTAINS_CRITERIA_IDX = 3;
 
-	/** Champ de la tache utilisé pour effectuer la recherche */
+	/** Champ de la tache utilisï¿½ pour effectuer la recherche */
 	private int fieldIndex;
-	
-	/** Type de critère utilisé pour la recherche */
+
+	/** Type de critï¿½re utilisï¿½ pour la recherche */
 	private int criteriaIndex;
 
-	/** Valeur du champ utilisé pour la recherche */
+	/** Valeur du champ utilisï¿½ pour la recherche */
 	private String fieldValue;
 
 	/**
-	 * Retourne l'index du type de critère utilisé pour la recherche.
-	 * @return l'index du type de critère utilisé pour la recherche.
+	 * Retourne l'index du type de critï¿½re utilisï¿½ pour la recherche.
+	 * 
+	 * @return l'index du type de critï¿½re utilisï¿½ pour la recherche.
 	 */
 	public int getCriteriaIndex() {
 		return criteriaIndex;
 	}
 
 	/**
-	 * Définit l'index du type de critère utilisé pour la recherche.
-	 * @param criteriaIndex l'index du type de critère utilisé pour la recherche.
+	 * Dï¿½finit l'index du type de critï¿½re utilisï¿½ pour la recherche.
+	 * 
+	 * @param criteriaIndex
+	 *            l'index du type de critï¿½re utilisï¿½ pour la recherche.
 	 */
 	public void setCriteriaIndex(int criteriaIndex) {
 		this.criteriaIndex = criteriaIndex;
 	}
 
 	/**
-	 * Retourne l'index du champ de la tache utilisé pour effectuer la recherche
-	 * @return l'index du champ de la tache utilisé pour effectuer la recherche
+	 * Retourne l'index du champ de la tache utilisï¿½ pour effectuer la recherche
+	 * 
+	 * @return l'index du champ de la tache utilisï¿½ pour effectuer la recherche
 	 */
 	public int getFieldIndex() {
 		return fieldIndex;
 	}
 
 	/**
-	 * Définit l'index du champ de la tache utilisé pour effectuer la recherche
-	 * @param fieldIndex l'index du champ de la tache utilisé pour effectuer la recherche
+	 * Dï¿½finit l'index du champ de la tache utilisï¿½ pour effectuer la recherche
+	 * 
+	 * @param fieldIndex
+	 *            l'index du champ de la tache utilisï¿½ pour effectuer la
+	 *            recherche
 	 */
 	public void setFieldIndex(int fieldIndex) {
 		this.fieldIndex = fieldIndex;
 	}
 
 	/**
-	 * Retourne la valeur du champ utilisé pour la recherche.
-	 * @return la valeur du champ utilisé pour la recherche.
+	 * Retourne la valeur du champ utilisï¿½ pour la recherche.
+	 * 
+	 * @return la valeur du champ utilisï¿½ pour la recherche.
 	 */
 	public String getFieldValue() {
 		return fieldValue;
 	}
 
 	/**
-	 * Définit la valeur du champ utilisé pour la recherche.
-	 * @param fieldValue la valeur du champ utilisé pour la recherche.
+	 * Dï¿½finit la valeur du champ utilisï¿½ pour la recherche.
+	 * 
+	 * @param fieldValue
+	 *            la valeur du champ utilisï¿½ pour la recherche.
 	 */
 	public void setFieldValue(String fieldValue) {
 		this.fieldValue = fieldValue;

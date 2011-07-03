@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -40,78 +40,81 @@ import jfb.tools.activitymgr.core.util.Strings;
 import org.apache.log4j.Logger;
 
 /**
- * Classe offrant des services d'accès aux propriétés de configuration
- * pour la génération de rapports avec Velocity.
+ * Classe offrant des services d'accï¿½s aux propriï¿½tï¿½s de configuration pour la
+ * gï¿½nï¿½ration de rapports avec Velocity.
  * 
  * <p>
- * Pour Velocity, une variable de type <code>${a.b}</code> peut vouloir
- * dire au choix :
+ * Pour Velocity, une variable de type <code>${a.b}</code> peut vouloir dire au
+ * choix :
  * <ul>
- * 	<li>l'attibut b de l'instance a (ou a est un bean Java)</li>
- *  <li>la propriété b de l'instance a (ou a est une Map)</li>
+ * <li>l'attibut b de l'instance a (ou a est un bean Java)</li>
+ * <li>la propriï¿½tï¿½ b de l'instance a (ou a est une Map)</li>
  * </ul>
  * </p>
  * 
  * <p>
- * On exploite la deuxième possibilité pour rendre '<i>visible</i>' une
- * propriété définie dans le fichier de configuration des rapports dans
- * un template velocity. Une instance de <code>PropertiesHelper</code> 
- * est enregistrée dans le contexte velocity sous le nom <code>props</code>.
- * Comme cette classe implémente l'interface <code>java.util.Map</code>,
- * Velocity invoque la méthode <code>get(String)</code> en lui passant en 
- * argument la chaine aussitot placée après <code>props.</code>.
- * La fin de la propriété est marquée par l'invocation de la méthode
- * <code>get()</code>.
+ * On exploite la deuxiï¿½me possibilitï¿½ pour rendre '<i>visible</i>' une
+ * propriï¿½tï¿½ dï¿½finie dans le fichier de configuration des rapports dans un
+ * template velocity. Une instance de <code>PropertiesHelper</code> est
+ * enregistrï¿½e dans le contexte velocity sous le nom <code>props</code>. Comme
+ * cette classe implï¿½mente l'interface <code>java.util.Map</code>, Velocity
+ * invoque la mï¿½thode <code>get(String)</code> en lui passant en argument la
+ * chaine aussitot placï¿½e aprï¿½s <code>props.</code>. La fin de la propriï¿½tï¿½ est
+ * marquï¿½e par l'invocation de la mï¿½thode <code>get()</code>.
  * </p>
  * 
  * <p>
- * Il est supposé que les propriétés contenues dans le fichier de configuration
- * et accédées depuis les templates Velocity sont préfixées par :<br>
- * <code>reports.&lt;reportId&gt;</code> ou <code>reportId</code> désigne
+ * Il est supposï¿½ que les propriï¿½tï¿½s contenues dans le fichier de configuration
+ * et accï¿½dï¿½es depuis les templates Velocity sont prï¿½fixï¿½es par :<br>
+ * <code>reports.&lt;reportId&gt;</code> ou <code>reportId</code> dï¿½signe
  * l'identifiant du rapport.
  * </p>
  * 
  * <p>
- * Exemple : <code>${props.startYear.get()}</code> pour le rapport dont 
- * l'identifiant est <code>myReport</code> va référencer la propriété 
- * <code>reports.myReport.startYear</code> dans le fichier de configuration.
- * Si cette propriété n'est pas définie, le moteur regarde ensuite
- * tour à tour les propriétés <code>reports.startYear</code> et 
- * <code>startYear</code>. Si toutes ces propriétés sont indéfinies, une 
- * exception est levée.
+ * Exemple : <code>${props.startYear.get()}</code> pour le rapport dont
+ * l'identifiant est <code>myReport</code> va rï¿½fï¿½rencer la propriï¿½tï¿½
+ * <code>reports.myReport.startYear</code> dans le fichier de configuration. Si
+ * cette propriï¿½tï¿½ n'est pas dï¿½finie, le moteur regarde ensuite tour ï¿½ tour les
+ * propriï¿½tï¿½s <code>reports.startYear</code> et <code>startYear</code>. Si
+ * toutes ces propriï¿½tï¿½s sont indï¿½finies, une exception est levï¿½e.
  * </p>
  * 
  * <p>
- * Dans le cas ou le nom de la propriété est composée 
- * (ex : <code>start.year</code>), la méthode <code>get</code> retourne 
- * l'instance de <code>PropertiesHelper</code> et la première partie du nom de
- * la propriété est déposée sur la pile. Lors de l'invocation suivante, les
- * différentes parties du nom de la propriété sont réassemblées pour former
- * le nom de la propriété dans son ensemble.
+ * Dans le cas ou le nom de la propriï¿½tï¿½ est composï¿½e (ex :
+ * <code>start.year</code>), la mï¿½thode <code>get</code> retourne l'instance de
+ * <code>PropertiesHelper</code> et la premiï¿½re partie du nom de la propriï¿½tï¿½
+ * est dï¿½posï¿½e sur la pile. Lors de l'invocation suivante, les diffï¿½rentes
+ * parties du nom de la propriï¿½tï¿½ sont rï¿½assemblï¿½es pour former le nom de la
+ * propriï¿½tï¿½ dans son ensemble.
  * </p>
  * 
- * <p>Pour cette raison, cette classe n'est pas thread safe.</p>
+ * <p>
+ * Pour cette raison, cette classe n'est pas thread safe.
+ * </p>
  * 
  * @see jfb.tools.activitymgr.report.ReportMgr
  */
-public class PropertiesHelper implements Map {
-	
+public class PropertiesHelper implements Map<Object, Object> {
+
 	/** Logger */
 	private static Logger log = Logger.getLogger(PropertiesHelper.class);
 
-	/** Dictionnaire de propriétés */
+	/** Dictionnaire de propriï¿½tï¿½s */
 	private Properties props;
 
 	/** Identifiant courant de rapport */
 	private String currentReportId;
-	
-	/** Pile utilisée pour extraire les propriétés */
-	private Stack stack = new Stack();
-	
+
+	/** Pile utilisï¿½e pour extraire les propriï¿½tï¿½s */
+	private Stack<String> stack = new Stack<String>();
+
 	/**
-	 * Constructeur par défaut.
-	 * @param reportId identifiant du rapport courant.
-	 * @param props dictionnaire par défaut.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param reportId
+	 *            identifiant du rapport courant.
+	 * @param props
+	 *            dictionnaire par dï¿½faut.
 	 */
 	public PropertiesHelper(String reportId, Properties props) {
 		this.currentReportId = reportId;
@@ -119,229 +122,269 @@ public class PropertiesHelper implements Map {
 	}
 
 	/**
-	 * Retourne la valeur de la propriété dont la clé est constitué
-	 * des chaînes empilées dans la pile.
-	 * @return la valeur de la propriété.
-	 * @throws ReportException levé dans le cas où la clé n'existe pas.
+	 * Retourne la valeur de la propriï¿½tï¿½ dont la clï¿½ est constituï¿½ des chaï¿½nes
+	 * empilï¿½es dans la pile.
+	 * 
+	 * @return la valeur de la propriï¿½tï¿½.
+	 * @throws ReportException
+	 *             levï¿½ dans le cas oï¿½ la clï¿½ n'existe pas.
 	 */
 	public String get() throws ReportException {
-		// Construction de la fin de la clé
+		// Construction de la fin de la clï¿½
 		StringBuffer buf = new StringBuffer();
-		for (int i=0; i<stack.size(); i++) {
-			if (i>0)
+		for (int i = 0; i < stack.size(); i++) {
+			if (i > 0)
 				buf.append('.');
 			buf.append(stack.get(i));
 		}
 		log.debug("get(" + buf.toString() + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		// Purge de la pile
 		stack.clear();
-		// Lecture de la 1° clé par défaut
+		// Lecture de la 1ï¿½ clï¿½ par dï¿½faut
 		String propKey0 = new StringBuffer("reports.") //$NON-NLS-1$
-			.append(currentReportId)
-			.append('.')
-			.append(buf.toString())
-			.toString();
+				.append(currentReportId).append('.').append(buf.toString())
+				.toString();
 		log.debug("PropertyKey=" + propKey0); //$NON-NLS-1$
 		String propValue = props.getProperty(propKey0);
-		// Lecture de la 2° clé par défaut si la 1° n'a rien donné
-		if (propValue==null) {
+		// Lecture de la 2ï¿½ clï¿½ par dï¿½faut si la 1ï¿½ n'a rien donnï¿½
+		if (propValue == null) {
 			String propKey1 = new StringBuffer("reports.") //$NON-NLS-1$
-				.append(buf.toString())
-				.toString();
+					.append(buf.toString()).toString();
 			log.debug("PropertyKey=" + propKey1); //$NON-NLS-1$
 			propValue = props.getProperty(propKey1);
-			// Lecture de la 3° clé par défaut si la 1° et la 2°
-			// n'ont rien donné
-			if (propValue==null) {
+			// Lecture de la 3ï¿½ clï¿½ par dï¿½faut si la 1ï¿½ et la 2ï¿½
+			// n'ont rien donnï¿½
+			if (propValue == null) {
 				String propKey2 = buf.toString();
 				log.debug("PropertyKey=" + propKey2); //$NON-NLS-1$
 				propValue = props.getProperty(propKey2);
-				if (propValue==null)
-					throw new ReportException(Strings.getString("PropertiesHelper.errors.PARAMETER_NOT_SPECIFIED", new Object[] { buf.toString(), propKey0, propKey1, propKey2 }), null); //$NON-NLS-1$
+				if (propValue == null)
+					throw new ReportException(
+							Strings.getString(
+									"PropertiesHelper.errors.PARAMETER_NOT_SPECIFIED", new Object[] { buf.toString(), propKey0, propKey1, propKey2 }), null); //$NON-NLS-1$
 			}
 		}
-		// Retour du résultat
+		// Retour du rï¿½sultat
 		String value = substitueVariables(propValue);
 		log.debug("PropertyValue=" + value); //$NON-NLS-1$
 		return value;
 	}
-	
+
 	/**
-	 * Retourne la valeur de la propriété dont le postfix est spécifié.
-	 * @param postPropertyKey le postfix de clé de propriété.
-	 * @return la valeur de la propriété.
-	 * @throws ReportException levé en cas de non conformité de la valeur 
-	 *    de la chaîne.
+	 * Retourne la valeur de la propriï¿½tï¿½ dont le postfix est spï¿½cifiï¿½.
+	 * 
+	 * @param postPropertyKey
+	 *            le postfix de clï¿½ de propriï¿½tï¿½.
+	 * @return la valeur de la propriï¿½tï¿½.
+	 * @throws ReportException
+	 *             levï¿½ en cas de non conformitï¿½ de la valeur de la chaï¿½ne.
 	 */
 	public String getProperty(String postPropertyKey) throws ReportException {
 		String propKey0 = new StringBuffer("reports.") //$NON-NLS-1$
-			.append(currentReportId)
-			.append('.')
-			.append(postPropertyKey)
-			.toString();
+				.append(currentReportId).append('.').append(postPropertyKey)
+				.toString();
 		log.debug("PropertyKey=" + propKey0); //$NON-NLS-1$
 		String propValue = props.getProperty(propKey0);
-		if (propValue!=null)
+		if (propValue != null)
 			propValue = substitueVariables(propValue);
 		log.debug("PropertyValue=" + propValue); //$NON-NLS-1$
 		return propValue;
 	}
-	
- 	/**
-	 * Substitue les chaînes de type ${xxx.xxx.xxx} par leur valeur
-	 * trouvées dans les propriétés système.
-	 * @param s la chaîne de caractère à parcourir.
-	 * @return le résultat.
-	 * @throws ReportException levé en cas de non conformité de la chaîne.
+
+	/**
+	 * Substitue les chaï¿½nes de type ${xxx.xxx.xxx} par leur valeur trouvï¿½es
+	 * dans les propriï¿½tï¿½s systï¿½me.
+	 * 
+	 * @param s
+	 *            la chaï¿½ne de caractï¿½re ï¿½ parcourir.
+	 * @return le rï¿½sultat.
+	 * @throws ReportException
+	 *             levï¿½ en cas de non conformitï¿½ de la chaï¿½ne.
 	 */
-	private String substitueVariables(String s)
-		throws ReportException {
-		return substitueVariables(new Stack(), s);
+	private String substitueVariables(String s) throws ReportException {
+		return substitueVariables(new Stack<String>(), s);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.util.Map#get(java.lang.Object)
 	 */
 	public Object get(Object key) {
 		log.debug("Append '" + key + "' to property stack"); //$NON-NLS-1$ //$NON-NLS-2$
-		stack.push(key);
+		stack.push((String) key);
 		return this;
 	}
 
 	/**
-	 * Remplace les occurences de variables de type <code>${xxx}</code> par
-	 * leur valeur lorsqu'elle existe dans le dictionnaire.
-	 * @param stack pile permettant de détecter les références circulaires.
-	 * @param s la chaîne contenant les variables.
-	 * @return la chaîne substituée.
-	 * @throws ReportException levé en cas de détection de références 
-	 *     circulaires.
+	 * Remplace les occurences de variables de type <code>${xxx}</code> par leur
+	 * valeur lorsqu'elle existe dans le dictionnaire.
+	 * 
+	 * @param stack
+	 *            pile permettant de dï¿½tecter les rï¿½fï¿½rences circulaires.
+	 * @param s
+	 *            la chaï¿½ne contenant les variables.
+	 * @return la chaï¿½ne substituï¿½e.
+	 * @throws ReportException
+	 *             levï¿½ en cas de dï¿½tection de rï¿½fï¿½rences circulaires.
 	 */
-	private String substitueVariables(
-			Stack stack, 
-			String s) throws ReportException {
+	private String substitueVariables(Stack<String> stack, String s)
+			throws ReportException {
 		String result = null;
-		if (s!=null) {
-			// Préparation de l'expression régulière
+		if (s != null) {
+			// Prï¿½paration de l'expression rï¿½guliï¿½re
 			Pattern pattern = Pattern.compile("\\$\\{[a-zA-Z0-9.'_-]+\\}"); //$NON-NLS-1$
 			Matcher matcher = pattern.matcher(s);
-			// Préparation du buffer accueillant la chaine substituée
+			// Prï¿½paration du buffer accueillant la chaine substituï¿½e
 			StringBuffer buf = new StringBuffer();
 			int idx = 0;
 			// Parcours des valeurs obtenues
 			while (matcher.find()) {
-				// Récupération de la chaine ${xxx.xxx.xxx}
+				// Rï¿½cupï¿½ration de la chaine ${xxx.xxx.xxx}
 				String matched = matcher.group();
-				// Ajout du bout de chaine précédent la valeur trouvée
-				buf.append(s.substring(idx, (idx=s.indexOf(matched, idx))));
+				// Ajout du bout de chaine prï¿½cï¿½dent la valeur trouvï¿½e
+				buf.append(s.substring(idx, (idx = s.indexOf(matched, idx))));
 				// Extraction du nom de la variable
-				String name = matched.substring(2, matched.length()-1);
-				// Si cette variable est dans la pile => référence cyclique
+				String name = matched.substring(2, matched.length() - 1);
+				// Si cette variable est dans la pile => rï¿½fï¿½rence cyclique
 				if (stack.contains(name))
-					throw new ReportException(Strings.getString("PropertiesHelper.errors.CIRCULAR_REFERENCE", name), null); //$NON-NLS-1$ //$NON-NLS-2$
-				// Récupération de sa valeur, et ajout au buffer
+					throw new ReportException(
+							Strings.getString(
+									"PropertiesHelper.errors.CIRCULAR_REFERENCE", name), null); //$NON-NLS-1$ //$NON-NLS-2$
+				// Rï¿½cupï¿½ration de sa valeur, et ajout au buffer
 				String value = props.getProperty(name);
-				if (value==null)
+				if (value == null)
 					value = System.getProperty(name);
 				// Si la valeur est non nulle, on effectue le traitement
-				// récursivement
-				if (value!=null) {
+				// rï¿½cursivement
+				if (value != null) {
 					stack.push(name);
 					value = substitueVariables(stack, value);
 					stack.pop();
 				}
-				//if (value==null)
-				//	throw new ReportException("Missing property " +
-				//			"variable '${" + name + "}'", null);
-				log.debug("Var(" + name + ")='" + value  +"'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				// Concaténation...
-				buf.append(value!=null ? value : matched);
-				// Incrémentation de l'index
+				// if (value==null)
+				// throw new ReportException("Missing property " +
+				// "variable '${" + name + "}'", null);
+				log.debug("Var(" + name + ")='" + value + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				// Concatï¿½nation...
+				buf.append(value != null ? value : matched);
+				// Incrï¿½mentation de l'index
 				idx += matched.length();
 			}
 			// Ajout de la fin de la chaine
 			buf.append(s.substring(idx));
 			result = buf.toString();
 		}
-		// Retour du résultat
+		// Retour du rï¿½sultat
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.util.Map#size()
 	 */
 	public int size() {
-		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
+		throw new Error(
+				Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.util.Map#clear()
 	 */
 	public void clear() {
-		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
+		throw new Error(
+				Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.util.Map#isEmpty()
 	 */
 	public boolean isEmpty() {
-		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
+		throw new Error(
+				Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.util.Map#containsKey(java.lang.Object)
 	 */
 	public boolean containsKey(Object key) {
-		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
+		throw new Error(
+				Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.util.Map#containsValue(java.lang.Object)
 	 */
 	public boolean containsValue(Object value) {
-		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
+		throw new Error(
+				Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.util.Map#values()
 	 */
-	public Collection values() {
-		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
+	public Collection<Object> values() {
+		throw new Error(
+				Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.util.Map#putAll(java.util.Map)
 	 */
-	public void putAll(Map t) {
-		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
+	public void putAll(Map<?, ?> t) {
+		throw new Error(
+				Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
-
-	/* (non-Javadoc)
+	
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.util.Map#entrySet()
 	 */
-	public Set entrySet() {
-		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
+	public Set<Entry<Object, Object>> entrySet() {
+		throw new Error(
+				Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.util.Map#keySet()
 	 */
-	public Set keySet() {
-		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
+	public Set<Object> keySet() {
+		throw new Error(
+				Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.util.Map#remove(java.lang.Object)
 	 */
 	public Object remove(Object key) {
-		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
+		throw new Error(
+				Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Map#put(java.lang.Object, java.lang.Object)
 	 */
 	public Object put(Object key, Object value) {
-		throw new Error(Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
+		throw new Error(
+				Strings.getString("PropertiesHelper.errors.NOT_IMPLEMENTED")); //$NON-NLS-1$
 	}
 
 }

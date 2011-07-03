@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2010, Jean-Franï¿½ois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -43,33 +43,37 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 
-public class TasksChooserTree extends AbstractTableMgr implements ITreeContentProvider {
+public class TasksChooserTree extends AbstractTableMgr implements
+		ITreeContentProvider {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(TasksChooserTree.class);
 
-	/** Constantes associées aux colonnes */
+	/** Constantes associï¿½es aux colonnes */
 	public static final int NAME_COLUMN_IDX = 0;
 	public static final int CODE_COLUMN_IDX = 1;
 	private static TableOrTreeColumnsMgr treeColsMgr;
-	
+
 	/** Viewer */
 	private TreeViewer treeViewer;
 
 	/** Composant parent */
 	private Composite parent;
-	
+
 	/**
-	 * Constructeur par défaut.
-	 * @param parentComposite composant parent.
+	 * Constructeur par dï¿½faut.
+	 * 
+	 * @param parentComposite
+	 *            composant parent.
 	 */
 	public TasksChooserTree(Composite parentComposite) {
-		// Création du composite parent
+		// Crï¿½ation du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayout(new GridLayout(1, false));
-		
+
 		// Arbre tableau
-		final Tree tree = new Tree(parent, SWT.FULL_SELECTION | SWT.BORDER | SWT.HIDE_SELECTION);
+		final Tree tree = new Tree(parent, SWT.FULL_SELECTION | SWT.BORDER
+				| SWT.HIDE_SELECTION);
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData.heightHint = 300;
 		tree.setLayoutData(gridData);
@@ -77,30 +81,41 @@ public class TasksChooserTree extends AbstractTableMgr implements ITreeContentPr
 		tree.setHeaderVisible(true);
 		tree.setEnabled(true);
 
-		// Création du viewer
+		// Crï¿½ation du viewer
 		treeViewer = new TreeViewer(tree);
 		treeViewer.setContentProvider(this);
 		treeViewer.setLabelProvider(this);
 
 		// Configuration des colonnes
 		treeColsMgr = new TableOrTreeColumnsMgr();
-		treeColsMgr.addColumn("NAME", Strings.getString("TasksChooserTree.columns.TASK_NAME"), 200, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
-		treeColsMgr.addColumn("CODE", Strings.getString("TasksChooserTree.columns.TASK_CODE"), 70, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		treeColsMgr
+				.addColumn(
+						"NAME", Strings.getString("TasksChooserTree.columns.TASK_NAME"), 200, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
+		treeColsMgr
+				.addColumn(
+						"CODE", Strings.getString("TasksChooserTree.columns.TASK_CODE"), 70, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
 		treeColsMgr.configureTree(treeViewer);
 
-		// Création d'une racine fictive
+		// Crï¿½ation d'une racine fictive
 		treeViewer.setInput(ROOT_NODE);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java
+	 * .lang.Object)
 	 */
 	public Object[] getElements(Object inputElement) {
 		return getChildren(null);
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ICellModifier#getValue(java.lang.Object, java.lang.String)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.viewers.ICellModifier#getValue(java.lang.Object,
+	 * java.lang.String)
 	 */
 	public Object getValue(Object element, String property) {
 		log.debug("ICellModifier.getValue(" + element + ", " + property + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -108,28 +123,38 @@ public class TasksChooserTree extends AbstractTableMgr implements ITreeContentPr
 		String value = null;
 		int propertyIdx = treeColsMgr.getColumnIndex(property);
 		switch (propertyIdx) {
-			case (NAME_COLUMN_IDX) :
-				value = task.getName();
-				break;
-			case (CODE_COLUMN_IDX) :
-				value = task.getCode();
-				break;
-			default : throw new Error(Strings.getString("TasksChooserTree.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
+		case (NAME_COLUMN_IDX):
+			value = task.getName();
+			break;
+		case (CODE_COLUMN_IDX):
+			value = task.getCode();
+			break;
+		default:
+			throw new Error(
+					Strings.getString("TasksChooserTree.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 		}
 		return value;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ITreeContentProvider#hasChildren(java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.ITreeContentProvider#hasChildren(java.lang.
+	 * Object)
 	 */
 	public boolean hasChildren(Object element) {
 		log.debug("ITreeContentProvider.getChildren(" + element + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		final Task task = (Task) element;
-		return task.getSubTasksCount()>0;
+		return task.getSubTasksCount() > 0;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ITreeContentProvider#getChildren(java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.ITreeContentProvider#getChildren(java.lang.
+	 * Object)
 	 */
 	public Object[] getChildren(Object parentElement) {
 		log.debug("ITreeContentProvider.getChildren(" + parentElement + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -139,12 +164,17 @@ public class TasksChooserTree extends AbstractTableMgr implements ITreeContentPr
 				return ModelMgr.getSubtasks(parentTask);
 			}
 		};
-		Object[] result = (Object[]) safeRunner.run(parent.getShell(), new Object[] {});
+		Object[] result = (Object[]) safeRunner.run(parent.getShell(),
+				new Object[] {});
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ITreeContentProvider#getParent(java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.ITreeContentProvider#getParent(java.lang.Object
+	 * )
 	 */
 	public Object getParent(Object element) {
 		log.debug("ITreeContentProvider.getParent(" + element + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -152,36 +182,43 @@ public class TasksChooserTree extends AbstractTableMgr implements ITreeContentPr
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				Task parentTask = ModelMgr.getParentTask(task);
-				return parentTask==null ? treeViewer.getInput() : parentTask;
+				return parentTask == null ? treeViewer.getInput() : parentTask;
 			}
 		};
-		// Exécution du traitement
+		// Exï¿½cution du traitement
 		Object result = (Object) safeRunner.run(parent.getShell());
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang
+	 * .Object, int)
 	 */
 	public String getColumnText(Object element, int columnIndex) {
 		log.debug("ITableLabelProvider.getColumnText(" + element + ", " + columnIndex + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		Task task = (Task) element;
 		String text = null;
 		switch (columnIndex) {
-			case NAME_COLUMN_IDX :
-				text = task.getName();
-				break;
-			case CODE_COLUMN_IDX :
-				text = task.getCode();
-				break;
-			default : throw new Error(Strings.getString("TasksChooserTree.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
+		case NAME_COLUMN_IDX:
+			text = task.getName();
+			break;
+		case CODE_COLUMN_IDX:
+			text = task.getCode();
+			break;
+		default:
+			throw new Error(
+					Strings.getString("TasksChooserTree.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 		}
 		return text;
 	}
 
 	/**
-	 * Retourne le viewer associé à l'arbre.
-	 * @return le viewer associé à l'arbre.
+	 * Retourne le viewer associï¿½ ï¿½ l'arbre.
+	 * 
+	 * @return le viewer associï¿½ ï¿½ l'arbre.
 	 */
 	public TreeViewer getTreeViewer() {
 		return treeViewer;
