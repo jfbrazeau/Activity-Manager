@@ -117,7 +117,7 @@ public class DbMgr {
 		} catch (SQLException e) {
 			log.info("SQL Exception", e); //$NON-NLS-1$
 			throw new DbException(
-					Strings.getString("DbMgr.errors.SQL_CONNECTION_OPEN"), e); //$NON-NLS-1$
+					Strings.getString("DbMgr.errors.SQL_CONNECTION_OPEN", e.getMessage()), e); //$NON-NLS-1$
 		}
 	}
 
