@@ -382,7 +382,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("insert into collaborator (clb_login, clb_first_name, clb_last_name, clb_is_active) values (?, ?, ?, ?)"); //$NON-NLS-1$
+					.prepareStatement("insert into COLLABORATOR (clb_login, clb_first_name, clb_last_name, clb_is_active) values (?, ?, ?, ?)"); //$NON-NLS-1$
 			pStmt.setString(1, newCollaborator.getLogin());
 			pStmt.setString(2, newCollaborator.getFirstName());
 			pStmt.setString(3, newCollaborator.getLastName());
@@ -431,7 +431,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("insert into contribution (ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration) values (?, ?, ?, ?, ?, ?)"); //$NON-NLS-1$
+					.prepareStatement("insert into CONTRIBUTION (ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration) values (?, ?, ?, ?, ?, ?)"); //$NON-NLS-1$
 			pStmt.setInt(1, newContribution.getYear());
 			pStmt.setInt(2, newContribution.getMonth());
 			pStmt.setInt(3, newContribution.getDay());
@@ -476,7 +476,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("insert into duration (dur_id, dur_is_active) values (?, ?)"); //$NON-NLS-1$
+					.prepareStatement("insert into DURATION (dur_id, dur_is_active) values (?, ?)"); //$NON-NLS-1$
 			pStmt.setLong(1, newDuration.getId());
 			pStmt.setBoolean(2, newDuration.getIsActive());
 			pStmt.executeUpdate();
@@ -532,7 +532,7 @@ public class DbMgr {
 
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("insert into task (tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo, tsk_comment) values (?, ?, ?, ?, ?, ?, ?, ?)"); //$NON-NLS-1$
+					.prepareStatement("insert into TASK (tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo, tsk_comment) values (?, ?, ?, ?, ?, ?, ?, ?)"); //$NON-NLS-1$
 			pStmt.setString(1, newTask.getPath());
 			pStmt.setByte(2, newTask.getNumber());
 			pStmt.setString(3, newTask.getCode());
@@ -585,7 +585,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("select count(*) from contribution where ctb_duration=?"); //$NON-NLS-1$
+					.prepareStatement("select count(*) from CONTRIBUTION where ctb_duration=?"); //$NON-NLS-1$
 			pStmt.setLong(1, duration.getId());
 
 			// Ex�cution de la requ�te
@@ -650,7 +650,7 @@ public class DbMgr {
 		ResultSet rs = null;
 		try {
 			pStmt = tx
-					.prepareStatement("select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from collaborator where clb_id=?"); //$NON-NLS-1$
+					.prepareStatement("select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from COLLABORATOR where clb_id=?"); //$NON-NLS-1$
 			pStmt.setLong(1, collaboratorId);
 
 			// Ex�cution de la requ�te
@@ -717,7 +717,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from collaborator where clb_login=?"); //$NON-NLS-1$
+					.prepareStatement("select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from COLLABORATOR where clb_login=?"); //$NON-NLS-1$
 			pStmt.setString(1, login);
 
 			// Ex�cution de la requ�te
@@ -770,7 +770,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			StringBuffer request = new StringBuffer(
-					"select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from collaborator "); //$NON-NLS-1$
+					"select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from COLLABORATOR "); //$NON-NLS-1$
 			if (onlyActiveCollaborators)
 				request.append("where clb_is_active=?"); //$NON-NLS-1$
 			request.append("order by "); //$NON-NLS-1$
@@ -858,7 +858,7 @@ public class DbMgr {
 			// 1� cas : les deux dates sont diff�rentes
 			if (!fromDateStr.equals(toDateStr)) {
 				pStmt = tx
-						.prepareStatement("select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from contribution where ctb_contributor=? and ctb_task=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) between ? and ?"); //$NON-NLS-1$
+						.prepareStatement("select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from CONTRIBUTION where ctb_contributor=? and ctb_task=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) between ? and ?"); //$NON-NLS-1$
 				pStmt.setLong(1, contributor.getId());
 				pStmt.setLong(2, task.getId());
 				pStmt.setString(3, fromDateStr);
@@ -867,7 +867,7 @@ public class DbMgr {
 			// 2� cas : les deux dates sont �gales
 			else {
 				pStmt = tx
-						.prepareStatement("select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from contribution where ctb_contributor=? and ctb_task=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) = ?"); //$NON-NLS-1$
+						.prepareStatement("select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from CONTRIBUTION where ctb_contributor=? and ctb_task=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) = ?"); //$NON-NLS-1$
 				pStmt.setLong(1, contributor.getId());
 				pStmt.setLong(2, task.getId());
 				pStmt.setString(3, fromDateStr);
@@ -968,7 +968,7 @@ public class DbMgr {
 		ResultSet rs = null;
 		try {
 			StringBuffer baseRequest = new StringBuffer(
-					"select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from contribution, task where ctb_task=tsk_id"); //$NON-NLS-1$
+					"select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from CONTRIBUTION, TASK where ctb_task=tsk_id"); //$NON-NLS-1$
 			String orderByClause = " order by ctb_year, ctb_month, ctb_day, tsk_path, tsk_number, ctb_contributor, ctb_duration"; //$NON-NLS-1$
 			// Cas ou la tache n'est pas sp�cifi�e
 			if (task == null) {
@@ -1063,7 +1063,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			StringBuffer request = new StringBuffer(
-					"select sum(ctb_duration) from contribution");
+					"select sum(ctb_duration) from CONTRIBUTION");
 			if (task != null)
 				request.append(", task");
 			if (contributor != null)
@@ -1259,7 +1259,7 @@ public class DbMgr {
 		try {
 			StringBuffer baseRequest = new StringBuffer("select ") //$NON-NLS-1$
 					.append(aggregation).append(
-							" from contribution, task where ctb_task=tsk_id"); //$NON-NLS-1$
+							" from CONTRIBUTION, TASK where ctb_task=tsk_id"); //$NON-NLS-1$
 			// Cas ou la tache n'est pas sp�cifi�e
 			if (task == null) {
 				// Pr�paration de la requ�te
@@ -1345,7 +1345,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("select dur_id, dur_is_active from duration where dur_id=?"); //$NON-NLS-1$
+					.prepareStatement("select dur_id, dur_is_active from DURATION where dur_id=?"); //$NON-NLS-1$
 			pStmt.setLong(1, durationId);
 
 			// Ex�cution de la requ�te
@@ -1393,7 +1393,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			StringBuffer request = new StringBuffer(
-					"select dur_id, dur_is_active from duration "); //$NON-NLS-1$
+					"select dur_id, dur_is_active from DURATION "); //$NON-NLS-1$
 			if (onlyActiveCollaborators)
 				request.append("where dur_is_active=?"); //$NON-NLS-1$
 			request.append("order by dur_id asc"); //$NON-NLS-1$
@@ -1491,7 +1491,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("select tsk_id from task where tsk_path=? order by tsk_number"); //$NON-NLS-1$
+					.prepareStatement("select tsk_id from TASK where tsk_path=? order by tsk_number"); //$NON-NLS-1$
 			pStmt.setString(1, path);
 
 			// Ex�cution de la requ�te
@@ -1562,7 +1562,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			StringBuffer request = new StringBuffer(
-					"select tsk_id from task where "); //$NON-NLS-1$
+					"select tsk_id from TASK where "); //$NON-NLS-1$
 			// Ajout du nom de champ
 			switch (filter.getFieldIndex()) {
 			case TaskSearchFilter.TASK_NAME_FIELD_IDX:
@@ -1689,7 +1689,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("select tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo, tsk_comment from task where tsk_id=?"); //$NON-NLS-1$
+					.prepareStatement("select tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo, tsk_comment from TASK where tsk_id=?"); //$NON-NLS-1$
 			pStmt.setLong(1, taskId);
 
 			// Ex�cution de la requ�te
@@ -1718,7 +1718,7 @@ public class DbMgr {
 				// Recherche du nombre de sous-taches
 				String taskFullPath = task.getFullPath();
 				pStmt = tx
-						.prepareStatement("select count(*) from task where tsk_path=?"); //$NON-NLS-1$
+						.prepareStatement("select count(*) from TASK where tsk_path=?"); //$NON-NLS-1$
 				pStmt.setString(1, taskFullPath);
 
 				// Ex�cution de la requ�te
@@ -1767,7 +1767,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("select tsk_id from task where tsk_path=? and tsk_number=?"); //$NON-NLS-1$
+					.prepareStatement("select tsk_id from TASK where tsk_path=? and tsk_number=?"); //$NON-NLS-1$
 			pStmt.setString(1, taskPath);
 			pStmt.setByte(2, taskNumber);
 
@@ -1819,7 +1819,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("select tsk_id from task where tsk_path=? and tsk_code=?"); //$NON-NLS-1$
+					.prepareStatement("select tsk_id from TASK where tsk_path=? and tsk_code=?"); //$NON-NLS-1$
 			pStmt.setString(1, taskPath);
 			pStmt.setString(2, taskCode);
 
@@ -1874,7 +1874,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("select distinct ctb_task, tsk_path, tsk_number from contribution, task where ctb_task=tsk_id and ctb_contributor=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) between ? and ? order by tsk_path, tsk_number"); //$NON-NLS-1$
+					.prepareStatement("select distinct ctb_task, tsk_path, tsk_number from CONTRIBUTION, TASK where ctb_task=tsk_id and ctb_contributor=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) between ? and ? order by tsk_path, tsk_number"); //$NON-NLS-1$
 			pStmt.setLong(1, collaborator.getId());
 			pStmt.setString(2, sdf.format(fromDate.getTime()));
 			pStmt.setString(3, sdf.format(toDate.getTime()));
@@ -1950,7 +1950,7 @@ public class DbMgr {
 			else {
 				// Calcul des cumuls
 				pStmt = tx
-						.prepareStatement("select sum(tsk_budget), sum(tsk_initial_cons), sum(tsk_todo) from task where tsk_path like ?"); //$NON-NLS-1$
+						.prepareStatement("select sum(tsk_budget), sum(tsk_initial_cons), sum(tsk_todo) from TASK where tsk_path like ?"); //$NON-NLS-1$
 				pStmt.setString(1, (task == null ? "" : task.getFullPath())
 						+ "%");
 				rs = pStmt.executeQuery();
@@ -1970,7 +1970,7 @@ public class DbMgr {
 
 			// Pr�paration de la requ�te
 			StringBuffer request = new StringBuffer(
-					"select sum(ctb_duration), count(ctb_duration) from contribution, task where ctb_task=tsk_id and ");
+					"select sum(ctb_duration), count(ctb_duration) from CONTRIBUTION, TASK where ctb_task=tsk_id and ");
 			// En fonction du cas, on recherche soit sur la tache pr�cise
 			// (tsk_id=?), soit sur un arbre (tsk_path like ?)
 			request.append(taskIsLeaf ? "tsk_id=?" : "tsk_path like ?");
@@ -2024,7 +2024,7 @@ public class DbMgr {
 			 */
 			if (toDate != null) {
 				request = new StringBuffer(
-						"select sum(ctb_duration) from contribution, task where ctb_task=tsk_id and ");
+						"select sum(ctb_duration) from CONTRIBUTION, task where ctb_task=tsk_id and ");
 				request.append(taskIsLeaf ? "tsk_id=?" : "tsk_path like ?");
 				request.append(" and ( ctb_year*10000 + ( ctb_month*100 + ctb_day ) ) > ?");
 				// Calcul des consommations au del� de la date de fin sp�cifi�e
@@ -2082,7 +2082,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("delete from collaborator where clb_id=?"); //$NON-NLS-1$
+					.prepareStatement("delete from COLLABORATOR where clb_id=?"); //$NON-NLS-1$
 			pStmt.setLong(1, collaborator.getId());
 
 			// Ex�cution de la requ�te
@@ -2125,7 +2125,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("delete from contribution where ctb_year=? and ctb_month=? and ctb_day=? and ctb_contributor=? and ctb_task=?"); //$NON-NLS-1$
+					.prepareStatement("delete from CONTRIBUTION where ctb_year=? and ctb_month=? and ctb_day=? and ctb_contributor=? and ctb_task=?"); //$NON-NLS-1$
 			pStmt.setInt(1, contribution.getYear());
 			pStmt.setInt(2, contribution.getMonth());
 			pStmt.setInt(3, contribution.getDay());
@@ -2169,7 +2169,7 @@ public class DbMgr {
 		PreparedStatement pStmt = null;
 		try {
 			// Pr�paration de la requ�te
-			pStmt = tx.prepareStatement("delete from duration where dur_id=?"); //$NON-NLS-1$
+			pStmt = tx.prepareStatement("delete from DURATION where dur_id=?"); //$NON-NLS-1$
 			pStmt.setLong(1, duration.getId());
 
 			// Ex�cution de la requ�te
@@ -2216,7 +2216,7 @@ public class DbMgr {
 			}
 
 			// Pr�paration de la requ�te
-			pStmt = tx.prepareStatement("delete from task where tsk_id=?"); //$NON-NLS-1$
+			pStmt = tx.prepareStatement("delete from TASK where tsk_id=?"); //$NON-NLS-1$
 			pStmt.setLong(1, task.getId());
 
 			// Ex�cution de la requ�te
@@ -2276,7 +2276,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("update collaborator set clb_login=?, clb_first_name=?, clb_last_name=?, clb_is_active=? where clb_id=?"); //$NON-NLS-1$
+					.prepareStatement("update COLLABORATOR set clb_login=?, clb_first_name=?, clb_last_name=?, clb_is_active=? where clb_id=?"); //$NON-NLS-1$
 			pStmt.setString(1, collaborator.getLogin());
 			pStmt.setString(2, collaborator.getFirstName());
 			pStmt.setString(3, collaborator.getLastName());
@@ -2326,7 +2326,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("update contribution set ctb_duration=? where ctb_year=? and ctb_month=? and ctb_day=? and ctb_contributor=? and ctb_task=?"); //$NON-NLS-1$
+					.prepareStatement("update CONTRIBUTION set ctb_duration=? where ctb_year=? and ctb_month=? and ctb_day=? and ctb_contributor=? and ctb_task=?"); //$NON-NLS-1$
 			pStmt.setLong(1, contribution.getDurationId());
 			pStmt.setInt(2, contribution.getYear());
 			pStmt.setInt(3, contribution.getMonth());
@@ -2376,7 +2376,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("update duration set dur_is_active=? where dur_id=?"); //$NON-NLS-1$
+					.prepareStatement("update DURATION set dur_is_active=? where dur_id=?"); //$NON-NLS-1$
 			pStmt.setBoolean(1, duration.getIsActive());
 			pStmt.setLong(2, duration.getId());
 
@@ -2426,7 +2426,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("update contribution set ctb_task=? where ctb_year=? and ctb_month=? and ctb_day=? and ctb_contributor=? and ctb_task=?"); //$NON-NLS-1$
+					.prepareStatement("update CONTRIBUTION set ctb_task=? where ctb_year=? and ctb_month=? and ctb_day=? and ctb_contributor=? and ctb_task=?"); //$NON-NLS-1$
 			pStmt.setLong(1, newContributionTask.getId());
 			pStmt.setInt(2, contribution.getYear());
 			pStmt.setInt(3, contribution.getMonth());
@@ -2479,7 +2479,7 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("update task set tsk_path=?, tsk_number=?, tsk_code=?, tsk_name=?, tsk_budget=?, tsk_initial_cons=?, tsk_todo=?, tsk_comment=? where tsk_id=?"); //$NON-NLS-1$
+					.prepareStatement("update TASK set tsk_path=?, tsk_number=?, tsk_code=?, tsk_name=?, tsk_budget=?, tsk_initial_cons=?, tsk_todo=?, tsk_comment=? where tsk_id=?"); //$NON-NLS-1$
 			pStmt.setString(1, task.getPath());
 			pStmt.setByte(2, task.getNumber());
 			pStmt.setString(3, task.getCode());
@@ -2596,7 +2596,7 @@ public class DbMgr {
 		try {
 			// Recherche du max
 			pStmt = tx
-					.prepareStatement("select max(tsk_number) from task where tsk_path=?"); //$NON-NLS-1$
+					.prepareStatement("select max(tsk_number) from TASK where tsk_path=?"); //$NON-NLS-1$
 			pStmt.setString(1, path);
 			rs = pStmt.executeQuery();
 			if (!rs.next())
