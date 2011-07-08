@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -116,8 +117,8 @@ public class DbMgr {
 			ds = newDs;
 		} catch (SQLException e) {
 			log.info("SQL Exception", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString("DbMgr.errors.SQL_CONNECTION_OPEN", e.getMessage()), e); //$NON-NLS-1$
+			throw new DbException(Strings.getString(
+					"DbMgr.errors.SQL_CONNECTION_OPEN", e.getMessage()), e); //$NON-NLS-1$
 		}
 	}
 
@@ -855,22 +856,35 @@ public class DbMgr {
 			String toDateStr = sdf.format(toDate.getTime());
 
 			// Pr�paration de la requ�te
+			StringWriter request = new StringWriter();
+			request.append("select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from CONTRIBUTION where ctb_year*10000 + ( ctb_month*100 + ctb_day )");
+			if (!fromDateStr.equals(toDateStr)) {
+				request.append(" between ? and ?");
+			} else {
+				request.append(" = ?");
+			}
+			if (contributor != null) {
+				request.append(" and ctb_contributor=?");
+			}
+			if (task != null) {
+				request.append(" and ctb_task=?");
+			}
+			pStmt = tx.prepareStatement(request.toString());
+			int paramIdx = 1;
 			// 1� cas : les deux dates sont diff�rentes
 			if (!fromDateStr.equals(toDateStr)) {
-				pStmt = tx
-						.prepareStatement("select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from CONTRIBUTION where ctb_contributor=? and ctb_task=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) between ? and ?"); //$NON-NLS-1$
-				pStmt.setLong(1, contributor.getId());
-				pStmt.setLong(2, task.getId());
-				pStmt.setString(3, fromDateStr);
-				pStmt.setString(4, toDateStr);
+				pStmt.setString(paramIdx++, fromDateStr);
+				pStmt.setString(paramIdx++, toDateStr);
 			}
 			// 2� cas : les deux dates sont �gales
 			else {
-				pStmt = tx
-						.prepareStatement("select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from CONTRIBUTION where ctb_contributor=? and ctb_task=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) = ?"); //$NON-NLS-1$
-				pStmt.setLong(1, contributor.getId());
-				pStmt.setLong(2, task.getId());
-				pStmt.setString(3, fromDateStr);
+				pStmt.setString(paramIdx++, fromDateStr);
+			}
+			if (contributor != null) {
+				pStmt.setLong(paramIdx++, contributor.getId());
+			}
+			if (task != null) {
+				pStmt.setLong(paramIdx++, task.getId());
 			}
 
 			// Ex�cution de la requ�te

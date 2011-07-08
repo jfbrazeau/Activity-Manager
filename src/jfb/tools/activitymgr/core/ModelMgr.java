@@ -30,10 +30,12 @@ package jfb.tools.activitymgr.core;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -46,6 +48,8 @@ import javax.xml.parsers.SAXParserFactory;
 import jfb.tools.activitymgr.core.beans.Collaborator;
 import jfb.tools.activitymgr.core.beans.Contribution;
 import jfb.tools.activitymgr.core.beans.Duration;
+import jfb.tools.activitymgr.core.beans.IntervalContributions;
+import jfb.tools.activitymgr.core.beans.IntervalContributions.TaskContributions;
 import jfb.tools.activitymgr.core.beans.Task;
 import jfb.tools.activitymgr.core.beans.TaskSearchFilter;
 import jfb.tools.activitymgr.core.beans.TaskSums;
@@ -1488,6 +1492,7 @@ public class ModelMgr {
 	 * @return la seomme des contributions.
 	 * @throws DbException
 	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 * @deprecated
 	 */
 	public static long getContributionsSum(Task task, Collaborator contributor,
 			Calendar fromDate, Calendar toDate) throws DbException {
@@ -1513,6 +1518,7 @@ public class ModelMgr {
 					DbMgr.endTransaction(tx);
 				} catch (DbException ignored) {
 				}
+			log.info("end of getContributionsSum");
 		}
 	}
 
@@ -1539,6 +1545,7 @@ public class ModelMgr {
 	 * 
 	 * @see jfb.tools.activitymgr.core.DbMgr#getContributionsSum(DbTransaction,
 	 *      Task, Collaborator, Integer, Integer, Integer)
+	 * @deprecated
 	 */
 	public static long getContributionsSum(Task task, Collaborator contributor,
 			Integer year, Integer month, Integer day) throws ModelException,
@@ -1565,6 +1572,7 @@ public class ModelMgr {
 					DbMgr.endTransaction(tx);
 				} catch (DbException ignored) {
 				}
+			log.info("end of getContributionsSum");
 		}
 	}
 
@@ -1621,7 +1629,7 @@ public class ModelMgr {
 	 * @param contributor
 	 *            le collaborateur associ� aux contributions.
 	 * @param task
-	 *            la tache associ�e aux contributions.
+	 *            la tache associ�e aux contributions (optional).
 	 * @param fromDate
 	 *            la date de d�part.
 	 * @param toDate
@@ -1633,53 +1641,74 @@ public class ModelMgr {
 	 *             lev� dans le cas ou la date de fin sp�cifi�e est ant�rieure �
 	 *             la date de d�but sp�cifi�e.
 	 */
-	public static Contribution[] getDaysContributions(Collaborator contributor,
-			Task task, Calendar fromDate, Calendar toDate) throws DbException,
-			ModelException {
-		log.info("getDaysContributions(" + contributor + ", " + task + ", " + StringHelper.toYYYYMMDD(fromDate) + ", " + StringHelper.toYYYYMMDD(toDate) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+	public static IntervalContributions getIntervalContributions(
+			Collaborator contributor, Task task, Calendar fromDate,
+			Calendar toDate) throws DbException, ModelException {
+		log.info("getIntervalContributions(" + contributor + ", " + StringHelper.toYYYYMMDD(fromDate) + ", " + StringHelper.toYYYYMMDD(toDate) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Pr�paration du r�sultat
-			SimpleDateFormat sdf = null;
-			if (log.isDebugEnabled())
-				sdf = new SimpleDateFormat("yyyyMMdd"); //$NON-NLS-1$
 			// Control sur la date
 			if (fromDate.getTime().compareTo(toDate.getTime()) > 0)
 				throw new ModelException(
 						Strings.getString("ModelMgr.errors.FROM_DATE_MUST_BE_BEFORE_TO_DATE")); //$NON-NLS-1$
+			int daysCount = countDaysBetween(fromDate, toDate);
 			// R�cup�ration des contributions
 			Contribution[] contributionsArray = DbMgr.getContributions(tx,
 					contributor, task, fromDate, toDate);
-			// Classement des contributions
-			List<Contribution> contributions = Arrays.asList(contributionsArray);
-			List<Contribution> result = new ArrayList<Contribution>();
-			for (Calendar date = (Calendar) fromDate.clone(); date.getTime()
-					.compareTo(toDate.getTime()) <= 0; date.add(Calendar.DATE,
-					1)) {
-				if (log.isDebugEnabled())
-					log.debug(" - cal :" + sdf.format(date.getTime())); //$NON-NLS-1$
-				int n = contributions.size();
-				boolean found = false;
-				for (int i = 0; i < n && !found; i++) {
-					Contribution contribution = (Contribution) contributions
-							.get(i);
-					found = contribution.getYear() == date.get(Calendar.YEAR)
-							&& contribution.getMonth() == (date
-									.get(Calendar.MONTH) + 1)
-							&& contribution.getDay() == date
-									.get(Calendar.DAY_OF_MONTH);
-					if (found) {
-						log.debug("  Adding :" + contribution); //$NON-NLS-1$
-						result.add(contribution);
-					}
+
+			// Rangement des contributions par identifiant de tache
+			// (as the tsk parameter can be omitted => in this case, several
+			// tasks might be returned)
+			Map<Long, TaskContributions> taskContributionsCache = new HashMap<Long, IntervalContributions.TaskContributions>();
+			for (int i = 0; i < contributionsArray.length; i++) {
+				Contribution contribution = contributionsArray[i];
+				TaskContributions taskContributions = taskContributionsCache
+						.get(contribution.getTaskId());
+				// If the task contributions doesn't exist, we create it
+				if (taskContributions == null) {
+					taskContributions = new TaskContributions();
+					taskContributions.setContributions(new Contribution[daysCount]);
+					// Cache registering
+					taskContributionsCache.put(contribution.getTaskId(),
+							taskContributions);
 				}
-				if (!found) {
-					log.debug("  Adding : null"); //$NON-NLS-1$
-					result.add(null);
+				Calendar contributionDate = new GregorianCalendar(
+						contribution.getYear(), contribution.getMonth()-1,
+						contribution.getDay());
+				int idx = countDaysBetween(fromDate, contributionDate);
+				taskContributions.getContributions()[idx - 1] = contribution;
+			}
+
+			// Task retrieval and sort
+			// TODO tasks should be retrieved at one time
+			List<Task> tasks = new ArrayList<Task>();
+			for (Long taskId : taskContributionsCache.keySet()) {
+				Task theTask = DbMgr.getTask(tx, taskId);
+				tasks.add(theTask);
+			}
+			Collections.sort(tasks, new Comparator<Task>() {
+				public int compare(Task t1, Task t2) {
+					return t1.getFullPath().compareTo(t2.getFullPath());
 				}
+			});
+
+			// Result building
+			IntervalContributions result = new IntervalContributions();
+			result.setFromDate(fromDate);
+			result.setToDate(toDate);
+			TaskContributions[] taskContributionsArray = new TaskContributions[tasks
+					.size()];
+			result.setTaskContributions(taskContributionsArray);
+			for (int i = 0; i < tasks.size(); i++) {
+				Task theTask = tasks.get(i);
+				TaskContributions taskContributions = taskContributionsCache
+						.get(theTask.getId());
+				taskContributions.setTask(theTask);
+				taskContributions.setTaskCodePath(getTaskCodePath(tx, theTask));
+				taskContributionsArray[i] = taskContributions;
 			}
 
 			// Fin de la transaction
@@ -1687,15 +1716,30 @@ public class ModelMgr {
 			tx = null;
 
 			// Retour du r�sultat
-			return (Contribution[]) result.toArray(new Contribution[result
-					.size()]);
+			return result;
 		} finally {
 			if (tx != null)
 				try {
 					DbMgr.endTransaction(tx);
 				} catch (DbException ignored) {
 				}
+			log.info("end of getIntervalContributions");
 		}
+	}
+
+	/**
+	 * @param date1
+	 *            the first date.
+	 * @param date2
+	 *            the second date.
+	 * @return the days count between the two dates.
+	 */
+	private static int countDaysBetween(Calendar date1, Calendar date2) {
+		boolean date2IsGreater = date2.compareTo(date1) >= 0;
+		Calendar dateA = date2IsGreater ? date1 : date2;
+		Calendar dateB = date2IsGreater ? date2 : date1;
+		return 1 + (int) ((dateB.getTime().getTime() - dateA.getTime().getTime())
+				/ (1000 * 60 * 60 * 24));
 	}
 
 	/**
@@ -2164,7 +2208,7 @@ public class ModelMgr {
 	 */
 	public static String getTaskCodePath(Task task) throws ModelException,
 			DbException {
-		log.info("moveDownTask(" + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+		log.info("getTaskCodePath(" + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		DbTransaction tx = null;
 		try {
 			// Ouverture de la transaction

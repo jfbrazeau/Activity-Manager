@@ -29,6 +29,7 @@ package jfb.tools.activitymgr.ui;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
@@ -40,6 +41,8 @@ import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Collaborator;
 import jfb.tools.activitymgr.core.beans.Contribution;
 import jfb.tools.activitymgr.core.beans.Duration;
+import jfb.tools.activitymgr.core.beans.IntervalContributions;
+import jfb.tools.activitymgr.core.beans.IntervalContributions.TaskContributions;
 import jfb.tools.activitymgr.core.beans.Task;
 import jfb.tools.activitymgr.core.util.StringHelper;
 import jfb.tools.activitymgr.core.util.Strings;
@@ -56,7 +59,6 @@ import jfb.tools.activitymgr.ui.util.SWTHelper;
 import jfb.tools.activitymgr.ui.util.SafeRunner;
 import jfb.tools.activitymgr.ui.util.SelectableCollaboratorPanel;
 import jfb.tools.activitymgr.ui.util.TableOrTreeColumnsMgr;
-import jfb.tools.activitymgr.ui.util.WeekContributions;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
@@ -214,7 +216,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 	private Duration[] durations;
 
 	/** Table pr�sentant la liste des collaborateurs */
-	public SelectableCollaboratorPanel selectableCollaboratorPanel;
+	private SelectableCollaboratorPanel selectableCollaboratorPanel;
 
 	/** Date associ� au Lundi de la semaine */
 	private Calendar currentMonday;
@@ -294,7 +296,15 @@ public class ContributionsUI extends AbstractTableMgr implements
 		table.setEnabled(true);
 
 		// Cr�ation du viewer
-		tableViewer = new TableViewer(table);
+		tableViewer = new TableViewer(table) {
+			public void refresh() {
+				super.refresh();
+				// When the viewer is refreshed, the last line
+				// with the sums must be refreshed at last
+				refresh(WeekContributionsSum.getInstance());
+			}
+
+		};
 		tableViewer.setCellModifier(this);
 		tableViewer.setContentProvider(this);
 		tableViewer.setLabelProvider(this);
@@ -352,7 +362,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 			protected Object openDialogBox(Control cellEditorWindow) {
 				Object result = null;
 				// Positionnement de la valeur par d�faut
-				WeekContributions w = (WeekContributions) ((IStructuredSelection) tableViewer
+				TaskContributions w = (TaskContributions) ((IStructuredSelection) tableViewer
 						.getSelection()).getFirstElement();
 				// Pr�paration du dialogue
 				taskChooserDialog.setValidator(buildTaskChooserValidator());
@@ -551,22 +561,30 @@ public class ContributionsUI extends AbstractTableMgr implements
 				List<Object> list = new ArrayList<Object>();
 				if (selectedCollaborator != null) {
 					// Recherche des taches d�clar�es pour cet utilisateur
-					// pour la semaine courante
+					// pour la semaine courante (et la semaine passée pour
+					// réafficher automatiquement les taches de la semaine
+					// passée)
 					Calendar fromDate = (Calendar) currentMonday.clone();
 					fromDate.add(Calendar.DATE, -7);
 					Calendar toDate = (Calendar) currentMonday.clone();
 					toDate.add(Calendar.DATE, 6);
 					if (selectedCollaborator != null) {
-						Task[] tasks = ModelMgr.getTasks(selectedCollaborator,
-								fromDate, toDate);
-						// Ajout des t�ches dans le tableau
-						for (int i = 0; i < tasks.length; i++) {
-							Task task = tasks[i];
-							list.add(getWeekContributions(task));
+						IntervalContributions ic = ModelMgr
+								.getIntervalContributions(selectedCollaborator,
+										null, fromDate, toDate);
+						// The result contains the contributions of the previous
+						// week
+						// We truncate it before proceeding.
+						for (TaskContributions tc : ic.getTaskContributions()) {
+							Contribution[] newContribs = new Contribution[7];
+							System.arraycopy(tc.getContributions(), 6,
+									newContribs, 0, 7);
+							tc.setContributions(newContribs);
 						}
+						list.addAll(Arrays.asList(ic.getTaskContributions()));
 					}
 				}
-				// Ajout d'un �l�ment nul pour la ligne des totaux
+				// Ajout d'un �l�ment pour la ligne des totaux
 				list.add(WeekContributionsSum.getInstance());
 				// Retour du r�sultat
 				return list.toArray();
@@ -574,7 +592,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 		};
 		// Ex�cution
 		Object result = (Object) safeRunner.run(parent.getShell());
-		return (Object[]) (result != null ? result : new WeekContributions[] {});
+		return (Object[]) (result != null ? result : new TaskContributions[] {});
 	}
 
 	/*
@@ -623,7 +641,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 	 */
 	public Object getValue(Object element, String property) {
 		log.debug("ICellModifier.getValue(" + element + ", " + property + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		WeekContributions weekContributions = (WeekContributions) element;
+		TaskContributions weekContributions = (TaskContributions) element;
 		Object value = null;
 		int columnIndex = tableColsMgr.getColumnIndex(property);
 		switch (columnIndex) {
@@ -640,8 +658,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 		case (FRIDAY_COLUMN_IDX):
 		case (SATURDAY_COLUMN_IDX):
 		case (SUNDAY_COLUMN_IDX):
-			Contribution contribution = weekContributions
-					.getContribution(columnIndex - 2);
+			Contribution contribution = weekContributions.getContributions()[columnIndex - 2];
 			value = contribution != null ? getDurationIndex(contribution
 					.getDurationId()) : null;
 			// Par d�faut on prend la premi�re s�lection
@@ -679,7 +696,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 	public void modify(final Object element, String property, final Object value) {
 		log.debug("ICellModifier.modify(" + element + ", " + property + ", " + value + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		TableItem item = (TableItem) element;
-		final WeekContributions weekContributions = (WeekContributions) item
+		final TaskContributions weekContributions = (TaskContributions) item
 				.getData();
 		final IBaseLabelProvider labelProvider = this;
 		final int columnIndex = tableColsMgr.getColumnIndex(property);
@@ -721,7 +738,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 				case (SUNDAY_COLUMN_IDX):
 					Integer selectedIndex = (Integer) value;
 					Contribution contribution = weekContributions
-							.getContribution(columnIndex - 2);
+							.getContributions()[columnIndex - 2];
 					// Cas d'une suppression (choix de la valeu N� 0 de la
 					// liste)
 					if (selectedIndex.intValue() == 0) {
@@ -729,8 +746,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 						// existait
 						if (contribution != null)
 							ModelMgr.removeContribution(contribution, true);
-						weekContributions
-								.setContribution(columnIndex - 2, null);
+						weekContributions.getContributions()[columnIndex - 2] = null;
 						// Notification des listeners
 						notifyContributionsRemoved(new Contribution[] { contribution });
 					}
@@ -750,8 +766,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 							date.add(Calendar.DATE, columnIndex
 									- MONDAY_COLUMN_IDX);
 							contribution.setDate(date);
-							weekContributions.setContribution(columnIndex - 2,
-									contribution);
+							weekContributions.getContributions()[columnIndex - 2] = contribution;
 						}
 						// Mise � jour des champs
 						Duration duration = durations[selectedIndex.intValue() - 1];
@@ -824,15 +839,41 @@ public class ContributionsUI extends AbstractTableMgr implements
 					case (FRIDAY_COLUMN_IDX):
 					case (SATURDAY_COLUMN_IDX):
 					case (SUNDAY_COLUMN_IDX):
-						Calendar cal = (Calendar) currentMonday.clone();
-						cal.add(Calendar.DATE, columnIndex - MONDAY_COLUMN_IDX);
-						long sum = ModelMgr.getContributionsSum(null,
-								selectableCollaboratorPanel
-										.getSelectedCollaborator(),
-								new Integer(cal.get(Calendar.YEAR)),
-								new Integer(cal.get(Calendar.MONTH) + 1),
-								new Integer(cal.get(Calendar.DAY_OF_MONTH)));
+						int tasksCount = tableViewer.getTable().getItemCount() - 1;
+						int sum = 0;
+						for (int i = 0; i < tasksCount; i++) {
+							TaskContributions tc = (TaskContributions) tableViewer
+									.getElementAt(i);
+							// Sometimes, when a refresh is performed, the total
+							// line is refreshed before the previous ones (it 
+							// happens for an obscur reason when the table lines
+							// count doesn't change after the refresh). In that
+							// case (and only in that case), the other elements
+							// are null. That is why the refresh method has been 
+							// overrided in the tableviewer : after having performed
+							// the normal refresh, a specific refresh is performed
+							// on the last line to update the contribution sums.
+							if (tc != null) {
+								Contribution[] contributions = tc
+										.getContributions();
+								Contribution contribution = contributions[columnIndex - 2];
+								if (contribution != null) {
+									sum += contribution.getDurationId();
+								}
+							}
+						}
 						text = StringHelper.hundredthToEntry(sum);
+						// TODO Supprimer
+						// Calendar cal = (Calendar) currentMonday.clone();
+						// cal.add(Calendar.DATE, columnIndex -
+						// MONDAY_COLUMN_IDX);
+						// long sum = ModelMgr.getContributionsSum(null,
+						// selectableCollaboratorPanel
+						// .getSelectedCollaborator(),
+						// new Integer(cal.get(Calendar.YEAR)),
+						// new Integer(cal.get(Calendar.MONTH) + 1),
+						// new Integer(cal.get(Calendar.DAY_OF_MONTH)));
+						// text = StringHelper.hundredthToEntry(sum);
 						break;
 					default:
 						throw new Error(
@@ -841,12 +882,11 @@ public class ContributionsUI extends AbstractTableMgr implements
 				}
 				// Cas des autres lignes
 				else {
-					WeekContributions weekContributions = (WeekContributions) element;
+					TaskContributions weekContributions = (TaskContributions) element;
 					switch (columnIndex) {
 					case (TASK_PATH_COLUMN_IDX):
 						// Construction du chemin de la tache
-						Task task = weekContributions.getTask();
-						text = ModelMgr.getTaskCodePath(task);
+						text = weekContributions.getTaskCodePath();
 						break;
 					case (TASK_NAME_COLUMN_IDX):
 						text = weekContributions.getTask().getName();
@@ -859,7 +899,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 					case (SATURDAY_COLUMN_IDX):
 					case (SUNDAY_COLUMN_IDX):
 						Contribution contribution = weekContributions
-								.getContribution(columnIndex - 2);
+								.getContributions()[columnIndex - 2];
 						text = contribution != null ? StringHelper
 								.hundredthToEntry(contribution.getDurationId())
 								: ""; //$NON-NLS-1$
@@ -916,7 +956,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 				// Cas d'une suppression
 				else if (removeItem.equals(source)) {
 					TableItem selectedItem = selection[0];
-					WeekContributions wc = (WeekContributions) selectedItem
+					TaskContributions wc = (TaskContributions) selectedItem
 							.getData();
 					// R�cup�ration des contributions
 					Contribution[] contributions = wc.getContributions();
@@ -1014,19 +1054,20 @@ public class ContributionsUI extends AbstractTableMgr implements
 	private void addNewLineOrSelectTaskLine(Task task) throws DbException,
 			ModelException {
 		// La tache est elle d�j� associ�e � une semaine de contributions
-		WeekContributions weekContributions = null;
+		TaskContributions weekContributions = null;
 		TableItem[] items = tableViewer.getTable().getItems();
 		for (int i = 0; i < items.length; i++) {
 			Object data = items[i].getData();
-			if (data instanceof WeekContributions) {
-				Task currentTask = ((WeekContributions) data).getTask();
+			if (data instanceof TaskContributions) {
+				Task currentTask = ((TaskContributions) data).getTask();
 				if (task.equals(currentTask))
-					weekContributions = (WeekContributions) data;
+					weekContributions = (TaskContributions) data;
 			}
 		}
 		// Si ce n'est pas le cas c'est une nouvelle ligne
 		if (weekContributions == null) {
-			weekContributions = getWeekContributions(task);
+			weekContributions = new TaskContributions();
+			weekContributions.setContributions(new Contribution[7]);
 			int itemCount = tableViewer.getTable().getItemCount();
 			// Ajout dans l'arbre
 			tableViewer.insert(weekContributions, itemCount - 1);
@@ -1035,35 +1076,6 @@ public class ContributionsUI extends AbstractTableMgr implements
 		tableViewer.setSelection(new StructuredSelection(weekContributions),
 				true);
 		tableViewer.getTable().setFocus();
-	}
-
-	/**
-	 * Construit la liste des contributions d'une semaine.
-	 * 
-	 * @param task
-	 *            la tache consid�r�e.
-	 * @return la liste des contributions d'une semaine.
-	 * @throws DbException
-	 *             lev�e en cas d'incident technique d'acc�s � la BDD.
-	 * @throws ModelException
-	 *             lev�e en cas d'incident fonctionnel.
-	 */
-	private WeekContributions getWeekContributions(Task task)
-			throws DbException, ModelException {
-		// Cr�ation de la ligne de semaine
-		WeekContributions weekContributions = new WeekContributions();
-		weekContributions.setTask(task);
-		// Parcours des jours
-		Calendar fromDate = (Calendar) currentMonday.clone();
-		Calendar toDate = (Calendar) currentMonday.clone();
-		toDate.add(Calendar.DATE, 6);
-		// R�cup�ration des contributions
-		Collaborator selectedCollaboprator = selectableCollaboratorPanel
-				.getSelectedCollaborator();
-		weekContributions.setContributions(ModelMgr.getDaysContributions(
-				selectedCollaboprator, task, fromDate, toDate));
-		return weekContributions;
-
 	}
 
 	/*
@@ -1332,7 +1344,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 				for (int i = 0; i < itemCount; i++) {
 					Object data = tableViewer.getElementAt(i);
 					if (data != WeekContributionsSum.getInstance()) {
-						WeekContributions weekContribution = (WeekContributions) data;
+						TaskContributions weekContribution = (TaskContributions) data;
 						Task currentTask = weekContribution.getTask();
 						// Cas ou la tache supprim�e est dans le tableau
 						// dans ce cas, on sauvegarde le N� pour effectuer
@@ -1394,7 +1406,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 		for (int i = 0; i < itemCount; i++) {
 			Object data = tableViewer.getElementAt(i);
 			if (data != WeekContributionsSum.getInstance()) {
-				WeekContributions weekContribution = (WeekContributions) data;
+				TaskContributions weekContribution = (TaskContributions) data;
 				Task currentTask = weekContribution.getTask();
 				// Cas ou la tache modifi�e est dans le tableau
 				if (currentTask.getId() == updatedTask.getId()) {
@@ -1435,7 +1447,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 				for (int i = 0; i < itemCount; i++) {
 					Object data = tableViewer.getElementAt(i);
 					if (data != WeekContributionsSum.getInstance()) {
-						WeekContributions weekContribution = (WeekContributions) data;
+						TaskContributions weekContribution = (TaskContributions) data;
 						Task currentTask = weekContribution.getTask();
 						// Cas ou la tache modifi�e est dans le tableau
 						if (currentTask.getId() == movedTask.getId()) {

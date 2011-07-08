@@ -2,6 +2,7 @@ package jfb.tst.tools.activitymgr.core;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import jfb.tools.activitymgr.core.DbException;
 import jfb.tools.activitymgr.core.ModelException;
@@ -9,7 +10,9 @@ import jfb.tools.activitymgr.core.ModelMgr;
 import jfb.tools.activitymgr.core.beans.Collaborator;
 import jfb.tools.activitymgr.core.beans.Contribution;
 import jfb.tools.activitymgr.core.beans.Duration;
+import jfb.tools.activitymgr.core.beans.IntervalContributions;
 import jfb.tools.activitymgr.core.beans.Task;
+import jfb.tools.activitymgr.core.beans.IntervalContributions.TaskContributions;
 import jfb.tst.tools.activitymgr.AbstractModelTestCase;
 
 public class ContributionTest extends AbstractModelTestCase {
@@ -21,26 +24,27 @@ public class ContributionTest extends AbstractModelTestCase {
 	private Task task111;
 	private Task task112;
 	private Task task2;
-	
+
 	/** Collaborateurs de test */
 	private Collaborator col1;
 	private Collaborator col2;
 
-	/** Durées de test */
+	/** Durï¿½es de test */
 	private Duration duration1;
 	private Duration duration2;
-	
+
 	/** Contributions */
 	private Contribution c1;
 	private Contribution c2;
 	private Contribution c3;
-	
-	private void createSampleObjects(boolean createContributions) throws DbException, ModelException {
-		// Création des tâches de test
+
+	private void createSampleObjects(boolean createContributions)
+			throws DbException, ModelException {
+		// Crï¿½ation des tï¿½ches de test
 		rootTask = ModelMgr.createNewTask(null);
 		rootTask.setName("Root task");
 		rootTask = ModelMgr.updateTask(rootTask);
-		
+
 		task1 = new Task();
 		task1.setCode("T1");
 		task1.setName("Task 1");
@@ -75,7 +79,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		task2.setTodo(50);
 		task2 = ModelMgr.createTask(rootTask, task2);
 
-		// Rechargement des taches pour mise à jour
+		// Rechargement des taches pour mise ï¿½ jour
 		// des nombres de sous-taches
 		rootTask = ModelMgr.getTask(rootTask.getId());
 		task1 = ModelMgr.getTask(task1.getId());
@@ -83,8 +87,8 @@ public class ContributionTest extends AbstractModelTestCase {
 		task111 = ModelMgr.getTask(task111.getId());
 		task112 = ModelMgr.getTask(task112.getId());
 		task2 = ModelMgr.getTask(task2.getId());
-		
-		// Création de 2 collaborateurs
+
+		// Crï¿½ation de 2 collaborateurs
 		col1 = ModelMgr.createNewCollaborator();
 		col1.setFirstName("ColFN1");
 		col1.setLastName("ColLN1");
@@ -94,19 +98,19 @@ public class ContributionTest extends AbstractModelTestCase {
 		col2.setFirstName("ColFN2");
 		col2.setLastName("ColLN2");
 		col2 = ModelMgr.updateCollaborator(col2);
-		
-		// Récupération des durées
+
+		// Rï¿½cupï¿½ration des durï¿½es
 		duration1 = new Duration();
 		duration1.setId(100);
 		duration1 = ModelMgr.createDuration(duration1);
 		duration2 = new Duration();
 		duration2.setId(50);
 		duration2 = ModelMgr.createDuration(duration2);
-		
-		// Création de contributions
+
+		// Crï¿½ation de contributions
 		if (createContributions) {
-			Calendar date = new GregorianCalendar();
-			
+			Calendar date = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
+
 			c1 = new Contribution();
 			c1.setDate(date);
 			c1.setContributorId(col1.getId());
@@ -121,7 +125,7 @@ public class ContributionTest extends AbstractModelTestCase {
 			c2.setDurationId(duration1.getId());
 			c2.setTaskId(task112.getId());
 			ModelMgr.createContribution(c2, false);
-		
+
 			date.add(Calendar.MONTH, 1);
 			c3 = new Contribution();
 			c3.setDate(date);
@@ -132,13 +136,13 @@ public class ContributionTest extends AbstractModelTestCase {
 		}
 
 	}
-	
+
 	protected void removeSampleObjects() throws DbException, ModelException {
-		if (c1!=null)
+		if (c1 != null)
 			ModelMgr.removeContribution(c1, false);
-		if (c2!=null)
+		if (c2 != null)
 			ModelMgr.removeContribution(c2, false);
-		if (c2!=null)
+		if (c2 != null)
 			ModelMgr.removeContribution(c3, false);
 		removeRecursively(rootTask);
 		ModelMgr.removeCollaborator(col1);
@@ -146,11 +150,12 @@ public class ContributionTest extends AbstractModelTestCase {
 		ModelMgr.removeDuration(duration1);
 		ModelMgr.removeDuration(duration2);
 	}
-	
-	private static void removeRecursively(Task task) throws DbException, ModelException {
-		// Récupération des taches filles
+
+	private static void removeRecursively(Task task) throws DbException,
+			ModelException {
+		// Rï¿½cupï¿½ration des taches filles
 		Task[] subTasks = ModelMgr.getSubtasks(task);
-		for (int i=subTasks.length-1; i>=0; i--) {
+		for (int i = subTasks.length - 1; i >= 0; i--) {
 			Task subTask = subTasks[i];
 			// Suppression des taches filles
 			removeRecursively(subTask);
@@ -158,72 +163,82 @@ public class ContributionTest extends AbstractModelTestCase {
 		// Suppression de la tache
 		ModelMgr.removeTask(task);
 	}
-	
+
 	public void testCreate() throws DbException, ModelException {
-		// Création des taches de test
+		// Crï¿½ation des taches de test
 		createSampleObjects(false);
-		
+
 		int year = 2005;
 		int month = 6;
 		int day = 13;
-		Calendar cal = new GregorianCalendar(year, month-1, day);
-		
+		Calendar cal = new GregorianCalendar(year, month - 1, day);
+
 		// Test...
 		Contribution c = new Contribution();
 		c.setContributorId(col1.getId());
 		c.setDurationId(duration1.getId());
 		c.setDate(cal);
 
-		// Vérification du calendrier
+		// Vï¿½rification du calendrier
 		assertEquals(year, c.getYear());
 		assertEquals(month, c.getMonth());
 		assertEquals(day, c.getDay());
-		
-		// Création de la contribution ur une tache avec de sous taches
+
+		// Crï¿½ation de la contribution ur une tache avec de sous taches
 		try {
 			c.setTaskId(rootTask.getId());
 			c = ModelMgr.createContribution(c, false);
-			fail("A tasks that admit sub tasks must not accept a contribution");
+			fail("A tasks that admits sub tasks must not accept a contribution");
+		} catch (ModelException expected) {
 		}
-		catch (ModelException expected) {}
-		
-		// Création de la contribution sur une tache sans sous taches
+
+		// Crï¿½ation de la contribution sur une tache sans sous taches
 		c.setTaskId(task111.getId());
 		c = ModelMgr.createContribution(c, true);
-		
+
 		// Recherche de cette contribution
-		Contribution[] cs = ModelMgr.getDaysContributions(col1, task111, cal, cal);
+		IntervalContributions ic = ModelMgr.getIntervalContributions(col1,
+				task111, cal, cal);
+		assertNotNull(ic);
+		TaskContributions[] tcs = ic.getTaskContributions();
+		assertNotNull(tcs);
+		assertEquals(1, tcs.length);
+		TaskContributions tc = tcs[0];
+		assertNotNull(tc);
+		Contribution[] cs = tc.getContributions();
 		assertNotNull(cs);
 		assertEquals(1, cs.length);
 		assertEquals(cs[0], c);
-		
-		// Vérification de la mise à jour du RAF de la tache en base
+
+		// Vï¿½rification de la mise ï¿½ jour du RAF de la tache en base
 		long oldEtc = task111.getTodo();
 		task111 = ModelMgr.getTask(task111.getId());
 		assertEquals(oldEtc - c.getDurationId(), task111.getTodo());
 
 		// Suppression
 		ModelMgr.removeContribution(c, true);
-		
-		// Vérification de la mise à jour du RAF de la tache en base
+
+		// Vï¿½rification de la mise ï¿½ jour du RAF de la tache en base
 		task111 = ModelMgr.getTask(task111.getId());
 		assertEquals(oldEtc, task111.getTodo());
 
-		// Nouvelle recherche => à présent, la recherche ne doit rien ramener
-		cs = ModelMgr.getDaysContributions(col1, task111, cal, cal);
-		assertNotNull(cs);
-		assertEquals(1, cs.length);
-		assertNull(cs[0]);
+		// Nouvelle recherche => ï¿½ prï¿½sent, la recherche ne doit rien ramener
+		ic = ModelMgr.getIntervalContributions(col1,
+				task111, cal, cal);
+		assertNotNull(ic);
+		tcs = ic.getTaskContributions();
+		assertNotNull(tcs);
+		assertEquals(0, tcs.length);
 
 		// Suppression des taches de test
 		removeSampleObjects();
 	}
-	
+
 	public void testRemove() throws DbException, ModelException {
-		// Création des taches de test
+		// Crï¿½ation des taches de test
 		createSampleObjects(false);
-		
-		// Création d'une contribution
+
+		// Crï¿½ation d'une contribution
 		Calendar date = new GregorianCalendar();
 		Contribution c1 = new Contribution();
 		c1.setDate(date);
@@ -231,29 +246,28 @@ public class ContributionTest extends AbstractModelTestCase {
 		c1.setDurationId(100);
 		c1.setTaskId(task111.getId());
 		ModelMgr.createContribution(c1, false);
-		
+
 		// Suppression avec une contribution non en phase
-		// avec celle en BDD (une exception doit être levée)
+		// avec celle en BDD (une exception doit ï¿½tre levï¿½e)
 		try {
 			c1.setDurationId(25);
 			ModelMgr.removeContribution(c1, true);
-			fail("L'écart entre la durée de la contribution par rapport aux données en base aurait du provoquer la levée d'une erreur");
-		}
-		catch (ModelException e) {
-			// On ne fait rien, l'exception doit être levée (on remet
-			// tout de même la durée de la contribution à sa valeur initiale)
+			fail("L'ï¿½cart entre la durï¿½e de la contribution par rapport aux donnï¿½es en base aurait du provoquer la levï¿½e d'une erreur");
+		} catch (ModelException e) {
+			// On ne fait rien, l'exception doit ï¿½tre levï¿½e (on remet
+			// tout de mï¿½me la durï¿½e de la contribution ï¿½ sa valeur initiale)
 			c1.setDurationId(100);
 		}
-		
+
 		// Supression sans MAJ du RAF de la tache
 		ModelMgr.removeContribution(c1, false);
 		long currentTodo = task111.getTodo();
 		task111 = ModelMgr.getTask(task111.getId());
 		assertEquals(currentTodo, task111.getTodo());
-		
-		// Recréation de la contribution
+
+		// Recrï¿½ation de la contribution
 		ModelMgr.createContribution(c1, false);
-		
+
 		// Supression avec MAJ du RAF de la tache
 		ModelMgr.removeContribution(c1, true);
 		currentTodo = task111.getTodo();
@@ -263,78 +277,89 @@ public class ContributionTest extends AbstractModelTestCase {
 		// Suppression des taches de test
 		removeSampleObjects();
 	}
-	
+
 	public void testUpdate() throws DbException, ModelException {
-		// Création des taches de test
+		// Crï¿½ation des taches de test
 		createSampleObjects(true);
-		
-		// Récupération du RAF de la tache
+
+		// Rï¿½cupï¿½ration du RAF de la tache
 		task111 = ModelMgr.getTask(task111.getId());
 		long initialEtc = task111.getTodo();
-		
-		// Mise à jour de la contribution sans changement du RAF
+
+		// Mise ï¿½ jour de la contribution sans changement du RAF
 		c1.setDurationId(50);
 		ModelMgr.updateContribution(c1, false);
-		
-		// Vérification que le RAF de la tache n'a pas changé
+
+		// Vï¿½rification que le RAF de la tache n'a pas changï¿½
 		task111 = ModelMgr.getTask(task111.getId());
 		assertEquals(initialEtc, task111.getTodo());
-		
-		// Vérification de la mise à jour en base
-		Contribution[] cs = ModelMgr.getDaysContributions(col1, task111, c1.getDate(), c1.getDate());
+
+		// Vï¿½rification de la mise ï¿½ jour en base
+		IntervalContributions ic = ModelMgr.getIntervalContributions(col1,
+				task111, c1.getDate(), c1.getDate());
+		assertNotNull(ic);
+		TaskContributions[] tcs = ic.getTaskContributions();
+		assertNotNull(tcs);
+		assertEquals(1, tcs.length);
+		TaskContributions tc = tcs[0];
+		assertNotNull(tc);
+		Contribution[] cs = tc.getContributions();
 		assertNotNull(cs);
 		assertEquals(1, cs.length);
 		assertEquals(50, cs[0].getDurationId());
-	
-		// Nouvelle mise à jour de la contribution avec changement du RAF
+
+		// Nouvelle mise ï¿½ jour de la contribution avec changement du RAF
 		c1.setDurationId(100);
 		ModelMgr.updateContribution(c1, true);
 
-		// Vérification que le RAF de la tache a bien changé
-		// la différence doit être égale à la différence 
+		// Vï¿½rification que le RAF de la tache a bien changï¿½
+		// la diffï¿½rence doit ï¿½tre ï¿½gale ï¿½ la diffï¿½rence
 		task111 = ModelMgr.getTask(task111.getId());
 		assertEquals(100 - 50, initialEtc - task111.getTodo());
-		
+
 		// Suppression des taches de test
 		removeSampleObjects();
 	}
-	
-	
+
 	public void testGetContributions() throws DbException, ModelException {
-		// Création des taches de test
+		// Crï¿½ation des taches de test
 		createSampleObjects(true);
 
 		Contribution[] cs = null;
-		
-		// Test requête avec tache racine
+
+		// Test requï¿½te avec tache racine
 		cs = ModelMgr.getContributions(rootTask, null, null, null, null);
 		assertNotNull(cs);
 		assertEquals(3, cs.length);
 		assertEquals(c1, cs[0]);
 		assertEquals(c2, cs[1]);
 		assertEquals(c3, cs[2]);
-		
-		// Test requête avec une tache
+
+		// Test requï¿½te avec une tache
 		cs = ModelMgr.getContributions(task111, null, null, null, null);
 		assertNotNull(cs);
 		assertEquals(2, cs.length);
 		assertEquals(c1, cs[0]);
 		assertEquals(c3, cs[1]);
-		
-		// Test requête avec une tache et un collaborateur
+
+		// Test requï¿½te avec une tache et un collaborateur
 		cs = ModelMgr.getContributions(task111, col1, null, null, null);
 		assertNotNull(cs);
 		assertEquals(1, cs.length);
 		assertEquals(c1, cs[0]);
 
-		// Test requête avec une tache et un collaborateur et un mois
-		cs = ModelMgr.getContributions(task111, col1, new Integer(c1.getYear()), new Integer(c1.getMonth()), new Integer(c1.getDay()));
+		// Test requï¿½te avec une tache et un collaborateur et un mois
+		cs = ModelMgr.getContributions(task111, col1,
+				new Integer(c1.getYear()), new Integer(c1.getMonth()),
+				new Integer(c1.getDay()));
 		assertNotNull(cs);
 		assertEquals(1, cs.length);
 		assertEquals(c1, cs[0]);
 
-		// Test requête avec le jour et la tache racine
-		cs = ModelMgr.getContributions(rootTask, null, new Integer(c1.getYear()), new Integer(c1.getMonth()), new Integer(c1.getDay()));
+		// Test requï¿½te avec le jour et la tache racine
+		cs = ModelMgr.getContributions(rootTask, null,
+				new Integer(c1.getYear()), new Integer(c1.getMonth()),
+				new Integer(c1.getDay()));
 		assertNotNull(cs);
 		assertEquals(1, cs.length);
 		assertEquals(c1, cs[0]);
@@ -343,22 +368,21 @@ public class ContributionTest extends AbstractModelTestCase {
 		removeSampleObjects();
 	}
 
-	public void testChangeContributionsTask() throws DbException, ModelException {
-		// Création des taches de test
+	public void testChangeContributionsTask() throws DbException,
+			ModelException {
+		// Crï¿½ation des taches de test
 		createSampleObjects(true);
-		
-		// Vérification avant mise à jour
+
+		// Vï¿½rification avant mise ï¿½ jour
 		assertEquals(c1.getTaskId(), task111.getId());
 		assertEquals(c2.getTaskId(), task112.getId());
 		assertEquals(c3.getTaskId(), task111.getId());
 
 		// Changement des contributions
-		Contribution[] cs = new Contribution[] {
-				c1, c2, c3
-		};
-		ModelMgr.changeContributionTask(cs, task112);	
-		
-		// Vérification après mise à jour
+		Contribution[] cs = new Contribution[] { c1, c2, c3 };
+		ModelMgr.changeContributionTask(cs, task112);
+
+		// Vï¿½rification aprï¿½s mise ï¿½ jour
 		assertEquals(c1.getTaskId(), task112.getId());
 		assertEquals(c2.getTaskId(), task112.getId());
 		assertEquals(c3.getTaskId(), task112.getId());
