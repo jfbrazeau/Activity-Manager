@@ -16,7 +16,7 @@
 		<javadoc 
 			destdir="${htmlOutDir}/res/html/javadoc/"
 			access="protected"
-			source="1.3" 
+			source="1.5" 
 			use="true" 
 			notree="false" 
 			nonavbar="false" 
