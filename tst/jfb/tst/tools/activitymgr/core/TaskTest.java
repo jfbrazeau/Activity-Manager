@@ -26,20 +26,20 @@ public class TaskTest extends AbstractModelTestCase {
 	private Task task2;
 
 	public void testCreateRootTask() throws DbException, ModelException {
-		// Création des tâches de test
+		// Crï¿½ation des tï¿½ches de test
 		Task task = new Task();
-		// Génération d'un code inutilisé
+		// Gï¿½nï¿½ration d'un code inutilisï¿½
 		task.setCode(String.valueOf(System.currentTimeMillis()).substring(8));
 		task.setName("Root task");
 		task = ModelMgr.createTask(null, task);
 		
-		// Vérification de la génération du numéro
+		// Vï¿½rification de la gï¿½nï¿½ration du numï¿½ro
 		assertTrue(task.getNumber()>0);
 		
-		// Relecture de la tâche en base et comparaison
+		// Relecture de la tï¿½che en base et comparaison
 		long taskId = task.getId();
 		Task otherTask = ModelMgr.getTask(taskId);
-		assertEquals(task, otherTask); // Seuls les identifiants sont comparés
+		assertEquals(task, otherTask); // Seuls les identifiants sont comparï¿½s
 		assertEquals(task.getCode(), otherTask.getCode());
 		assertEquals(task.getName(), otherTask.getName());
 		assertEquals(task.getNumber(), otherTask.getNumber());
@@ -52,7 +52,7 @@ public class TaskTest extends AbstractModelTestCase {
 	}
 	
 	private void createSampleTasks() throws DbException, ModelException {
-		// Création des tâches de test
+		// Crï¿½ation des tï¿½ches de test
 		rootTask = ModelMgr.createNewTask(null);
 		rootTask.setCode("RT");
 		rootTask.setName("Root task");
@@ -92,7 +92,7 @@ public class TaskTest extends AbstractModelTestCase {
 		task2.setTodo(50);
 		task2 = ModelMgr.createTask(rootTask, task2);
 
-		// Rechargement des taches pour mise à jour
+		// Rechargement des taches pour mise ï¿½ jour
 		// des nombres de sous-taches
 		rootTask = ModelMgr.getTask(rootTask.getId());
 		task1 = ModelMgr.getTask(task1.getId());
@@ -107,8 +107,13 @@ public class TaskTest extends AbstractModelTestCase {
 	}
 	
 	private static void removeRecursively(Task task) throws DbException, ModelException {
-		// Récupération des taches filles
+		// Rï¿½cupï¿½ration des taches filles
 		Task[] subTasks = ModelMgr.getSubtasks(task);
+		System.out.println("Sub tasks : ");
+		for (int i = 0; i < subTasks.length; i++) {
+			Task subtask = subTasks[i];
+			System.out.println("  - " + i + " - " + subtask);
+		}
 		for (int i=subTasks.length-1; i>=0; i--) {
 			Task subTask = subTasks[i];
 			// Suppression des taches filles
@@ -119,17 +124,17 @@ public class TaskTest extends AbstractModelTestCase {
 	}
 	
 	public void testTaskPath() throws DbException, ModelException {
-		// Création des taches de test
+		// Crï¿½ation des taches de test
 		createSampleTasks();
 		try {
-			// Vérification des chemins
+			// Vï¿½rification des chemins
 			String expectedPath = StringHelper.toHex(rootTask.getNumber()); 
 			assertEquals(expectedPath, task1.getPath());
 			assertEquals(expectedPath, task1.getPath());
 			assertEquals(expectedPath + "01", task11.getPath());
 			assertEquals(expectedPath, task2.getPath());
 	
-			// Vérification des numéros
+			// Vï¿½rification des numï¿½ros
 			assertEquals(1, task1.getNumber());
 			assertEquals(2, task2.getNumber());
 		}
@@ -140,18 +145,18 @@ public class TaskTest extends AbstractModelTestCase {
 	}
 	
 	public void testGetParent() throws DbException, ModelException {
-		// Création des taches de test
+		// Crï¿½ation des taches de test
 		createSampleTasks();
 		try {
-			// La tache mère de 11 est 1 ?
+			// La tache mï¿½re de 11 est 1 ?
 			Task task11Parent = ModelMgr.getParentTask(task11);
 			assertEquals(task1, task11Parent);
 			
-			// La tache mère de 1 est root ?
+			// La tache mï¿½re de 1 est root ?
 			Task task1Parent = ModelMgr.getParentTask(task1);
 			assertEquals(rootTask, task1Parent);
 	
-			// La tache mère de root1 est null ?
+			// La tache mï¿½re de root1 est null ?
 			Task rootTaskParent = ModelMgr.getParentTask(rootTask);
 			assertEquals(null, rootTaskParent);
 		}
@@ -162,7 +167,7 @@ public class TaskTest extends AbstractModelTestCase {
 	}
 
 	public void testGetSubtasks() throws DbException, ModelException {
-		// Création des taches de test
+		// Crï¿½ation des taches de test
 		createSampleTasks();
 		try {
 			// La tache root a-t-elle 2 filles ?
@@ -196,7 +201,7 @@ public class TaskTest extends AbstractModelTestCase {
 	}
 
 	public void testUpdate() throws DbException, ModelException {
-		// Création des taches de test
+		// Crï¿½ation des taches de test
 		createSampleTasks();
 		try {
 			// Changement du nom de la tache
@@ -214,14 +219,14 @@ public class TaskTest extends AbstractModelTestCase {
 	}
 	
 	public void testMoveDown() throws DbException, ModelException {
-		// Création des taches de test
+		// Crï¿½ation des taches de test
 		createSampleTasks();
 		try {
-			// Vérification des numéros des taches
+			// Vï¿½rification des numï¿½ros des taches
 			assertEquals((byte) 1, task1.getNumber());
 			assertEquals((byte) 2, task2.getNumber());
 	
-			// Déplacement + vérification des nouveaux numéros
+			// Dï¿½placement + vï¿½rification des nouveaux numï¿½ros
 			ModelMgr.moveDownTask(task1);
 			
 			// Rechargement des taches
@@ -235,20 +240,23 @@ public class TaskTest extends AbstractModelTestCase {
 			assertEquals(0, task2.getSubTasksCount());
 		}
 		finally {
+			// TODO syupprimer
+			System.out.println("\n\n\n******\n\n");
+			
 			// Suppression des taches de test
 			removeSampleTasks();
 		}
 	}
 	
 	public void testMoveUp() throws DbException, ModelException {
-		// Création des taches de test
+		// Crï¿½ation des taches de test
 		createSampleTasks();
 		try {
-			// Vérification des numéros des taches
+			// Vï¿½rification des numï¿½ros des taches
 			assertEquals((byte) 1, task1.getNumber());
 			assertEquals((byte) 2, task2.getNumber());
 	
-			// Déplacement + vérification des nouveaux numéros
+			// Dï¿½placement + vï¿½rification des nouveaux numï¿½ros
 			ModelMgr.moveUpTask(task2);
 			
 			// Rechargement des taches
@@ -268,20 +276,20 @@ public class TaskTest extends AbstractModelTestCase {
 	}
 	
 	public void testMove() throws DbException, ModelException {
-		// Création des taches de test
+		// Crï¿½ation des taches de test
 		createSampleTasks();
 		try {
-			// Vérification des numéros des taches
+			// Vï¿½rification des numï¿½ros des taches
 			assertEquals(1, task1.getSubTasksCount());
 			assertEquals(task1.getPath() + "01", task11.getPath());
 			assertEquals(task11.getPath() + "01", task111.getPath());
 			assertEquals(task11.getPath() + "01", task112.getPath());
 			assertEquals((byte) 2, task112.getNumber());
 	
-			// Déplacement
+			// Dï¿½placement
 			ModelMgr.moveTask(task111, task1);
 			
-			// Rechargement des taches qui ont été mises à jour
+			// Rechargement des taches qui ont ï¿½tï¿½ mises ï¿½ jour
 			task1 = ModelMgr.getTask(task1.getId());
 			task2 = ModelMgr.getTask(task2.getId());
 			task11 = ModelMgr.getTask(task11.getId());
@@ -302,10 +310,10 @@ public class TaskTest extends AbstractModelTestCase {
 	}
 	
 	public void testTasksSum() throws DbException, ModelException {
-		// Création des taches de test
+		// Crï¿½ation des taches de test
 		createSampleTasks();
 
-		// Récupération des sommes (sans critère de date)
+		// Rï¿½cupï¿½ration des sommes (sans critï¿½re de date)
 		TaskSums taskSums = ModelMgr.getTaskSums(rootTask, null, null);
 		assertEquals(
 				task111.getBudget()
@@ -327,7 +335,7 @@ public class TaskTest extends AbstractModelTestCase {
 				0,
 				taskSums.getContributionsNb());
 
-		// Préparation de dates
+		// Prï¿½paration de dates
 		GregorianCalendar today = new GregorianCalendar();
 		GregorianCalendar yesterday = new GregorianCalendar();
 		yesterday.add(Calendar.DATE, -1);
@@ -352,12 +360,12 @@ public class TaskTest extends AbstractModelTestCase {
 		c2.setDurationId(100);
 		ModelMgr.createContribution(c2, false);
 		
-		// Calcul du consommé sur une période allant d'aujour'hui à aujourd'hui
+		// Calcul du consommï¿½ sur une pï¿½riode allant d'aujour'hui ï¿½ aujourd'hui
 		taskSums = ModelMgr.getTaskSums(rootTask, today, today);
 		assertEquals(100, taskSums.getConsumedSum());
 		assertEquals(1, taskSums.getContributionsNb());
 		
-		// Calcul du consommé & RAF sur une période allant d'hier à aujourd'hui
+		// Calcul du consommï¿½ & RAF sur une pï¿½riode allant d'hier ï¿½ aujourd'hui
 		taskSums = ModelMgr.getTaskSums(rootTask, yesterday, today);
 		assertEquals(200, taskSums.getConsumedSum());
 		assertEquals(2, taskSums.getContributionsNb());
@@ -365,7 +373,7 @@ public class TaskTest extends AbstractModelTestCase {
 				+ task112.getTodo() 
 				+ task2.getTodo(), taskSums.getTodoSum());
 		
-		// Calcul du consommé & RAF sur une période allant jusqu'à hier
+		// Calcul du consommï¿½ & RAF sur une pï¿½riode allant jusqu'ï¿½ hier
 		taskSums = ModelMgr.getTaskSums(rootTask, null, yesterday);
 		assertEquals(100, taskSums.getConsumedSum());
 		assertEquals(1, taskSums.getContributionsNb());
@@ -374,7 +382,7 @@ public class TaskTest extends AbstractModelTestCase {
 				+ task2.getTodo() 
 				+ c2.getDurationId(), taskSums.getTodoSum());
 		
-		// Calcul du consommé & RAF sur une période débutant demain
+		// Calcul du consommï¿½ & RAF sur une pï¿½riode dï¿½butant demain
 		taskSums = ModelMgr.getTaskSums(rootTask, tomorrow, null);
 		assertEquals(0, taskSums.getConsumedSum());
 		assertEquals(0, taskSums.getContributionsNb());
@@ -382,7 +390,7 @@ public class TaskTest extends AbstractModelTestCase {
 				+ task112.getTodo() 
 				+ task2.getTodo(), taskSums.getTodoSum());
 
-		// Suppression des données de test
+		// Suppression des donnï¿½es de test
 		ModelMgr.removeContribution(c1, false);
 		ModelMgr.removeContribution(c2, false);
 		ModelMgr.removeDuration(duration);
@@ -393,10 +401,10 @@ public class TaskTest extends AbstractModelTestCase {
 	}
 
 	public void testSearchTasks() throws DbException, ModelException {
-		// Création des taches de test
+		// Crï¿½ation des taches de test
 		createSampleTasks();
 		try {
-			// Recherche d'une tache avec le critère "dont le code est égal à..."
+			// Recherche d'une tache avec le critï¿½re "dont le code est ï¿½gal ï¿½..."
 			TaskSearchFilter filter = new TaskSearchFilter();
 			filter.setFieldIndex(TaskSearchFilter.TASK_CODE_FIELD_IDX);
 			filter.setCriteriaIndex(TaskSearchFilter.IS_EQUAL_TO_CRITERIA_IDX);
@@ -406,7 +414,7 @@ public class TaskTest extends AbstractModelTestCase {
 			assertEquals(1, tasks.length);
 			assertEquals("T1", tasks[0].getCode());
 			
-			// Recherche d'une tache avec le critère "dont le code commence par..."
+			// Recherche d'une tache avec le critï¿½re "dont le code commence par..."
 			filter = new TaskSearchFilter();
 			filter.setFieldIndex(TaskSearchFilter.TASK_CODE_FIELD_IDX);
 			filter.setCriteriaIndex(TaskSearchFilter.STARTS_WITH_CRITERIA_IDX);
@@ -419,7 +427,7 @@ public class TaskTest extends AbstractModelTestCase {
 			assertEquals("T111", tasks[2].getCode());
 			assertEquals("T112", tasks[3].getCode());
 
-			// Recherche d'une tache avec le critère "dont le code finit par..."
+			// Recherche d'une tache avec le critï¿½re "dont le code finit par..."
 			filter = new TaskSearchFilter();
 			filter.setFieldIndex(TaskSearchFilter.TASK_CODE_FIELD_IDX);
 			filter.setCriteriaIndex(TaskSearchFilter.ENDS_WITH_CRITERIA_IDX);
@@ -430,7 +438,7 @@ public class TaskTest extends AbstractModelTestCase {
 			assertEquals("T11", tasks[0].getCode());
 			assertEquals("T111", tasks[1].getCode());
 		
-			// Recherche d'une tache avec le critère "dont le code contient..."
+			// Recherche d'une tache avec le critï¿½re "dont le code contient..."
 			filter = new TaskSearchFilter();
 			filter.setFieldIndex(TaskSearchFilter.TASK_CODE_FIELD_IDX);
 			filter.setCriteriaIndex(TaskSearchFilter.CONTAINS_CRITERIA_IDX);
@@ -445,7 +453,7 @@ public class TaskTest extends AbstractModelTestCase {
 			assertEquals("T112", tasks[4].getCode());
 			assertEquals("T2", tasks[5].getCode());
 
-			// Recherche d'une tache avec le critère "dont le code est égal à..."
+			// Recherche d'une tache avec le critï¿½re "dont le code est ï¿½gal ï¿½..."
 			filter = new TaskSearchFilter();
 			filter.setFieldIndex(TaskSearchFilter.TASK_NAME_FIELD_IDX);
 			filter.setCriteriaIndex(TaskSearchFilter.IS_EQUAL_TO_CRITERIA_IDX);
@@ -455,7 +463,7 @@ public class TaskTest extends AbstractModelTestCase {
 			assertEquals(1, tasks.length);
 			assertEquals("Task 1", tasks[0].getName());
 
-			// Recherche d'une tache avec le critère "dont le code commence par..."
+			// Recherche d'une tache avec le critï¿½re "dont le code commence par..."
 			filter = new TaskSearchFilter();
 			filter.setFieldIndex(TaskSearchFilter.TASK_NAME_FIELD_IDX);
 			filter.setCriteriaIndex(TaskSearchFilter.STARTS_WITH_CRITERIA_IDX);
@@ -468,7 +476,7 @@ public class TaskTest extends AbstractModelTestCase {
 			assertEquals("Task 111", tasks[2].getName());
 			assertEquals("Task 112", tasks[3].getName());
 
-			// Recherche d'une tache avec le critère "dont le code finit par..."
+			// Recherche d'une tache avec le critï¿½re "dont le code finit par..."
 			filter = new TaskSearchFilter();
 			filter.setFieldIndex(TaskSearchFilter.TASK_NAME_FIELD_IDX);
 			filter.setCriteriaIndex(TaskSearchFilter.ENDS_WITH_CRITERIA_IDX);
@@ -479,7 +487,7 @@ public class TaskTest extends AbstractModelTestCase {
 			assertEquals("Task 11", tasks[0].getName());
 			assertEquals("Task 111", tasks[1].getName());
 			
-			// Recherche d'une tache avec le critère "dont le code contient..."
+			// Recherche d'une tache avec le critï¿½re "dont le code contient..."
 			filter = new TaskSearchFilter();
 			filter.setFieldIndex(TaskSearchFilter.TASK_NAME_FIELD_IDX);
 			filter.setCriteriaIndex(TaskSearchFilter.CONTAINS_CRITERIA_IDX);
@@ -502,7 +510,7 @@ public class TaskTest extends AbstractModelTestCase {
 	public void testMoveUpOrDownTask() throws DbException, ModelException {
 		createSampleTasks();
 		try {
-			// Création d'une tache avec 50 taches filles
+			// Crï¿½ation d'une tache avec 50 taches filles
 			Task parentTask = new Task();
 			parentTask.setCode("PARENT");
 			parentTask.setName("Parent task");
@@ -517,7 +525,7 @@ public class TaskTest extends AbstractModelTestCase {
 			parentTask = ModelMgr.getTask(parentTask.getId());
 			assertEquals(50, parentTask.getSubTasksCount());
 			
-			// Déplacement impossible
+			// Dï¿½placement impossible
 			Task oneTask = ModelMgr.getTaskByCodePath("/RT/PARENT/CD34");
 			assertEquals(34, oneTask.getNumber());
 			try {
@@ -528,15 +536,15 @@ public class TaskTest extends AbstractModelTestCase {
 				// Do nothing...
 			}
 			
-			// Déplacement d'une tache vers le haut
+			// Dï¿½placement d'une tache vers le haut
 			ModelMgr.moveTaskUpOrDown(oneTask, (byte) 3);
 			Task oneTaskClone = ModelMgr.getTaskByCodePath("/RT/PARENT/CD34");
 			assertEquals(oneTask.getId(), oneTaskClone.getId());
 			assertEquals(oneTask.getName(), oneTaskClone.getName());
 			assertEquals(3, oneTaskClone.getNumber());
-			// Vérification du nombre d'enfants de la tache parent 
+			// Vï¿½rification du nombre d'enfants de la tache parent 
 			assertEquals(50, ModelMgr.getTask(parentTask.getId()).getSubTasksCount());
-			// Vérification des numéros des taches
+			// Vï¿½rification des numï¿½ros des taches
 			for (int i=1; i<=50; i++) {
 				int taskNumber = ModelMgr.getTaskByCodePath("/RT/PARENT/CD" + i).getNumber();
 				if (i<3)
@@ -549,9 +557,9 @@ public class TaskTest extends AbstractModelTestCase {
 					assertEquals(i, taskNumber);
 			}
 			
-			// Déplacement inverse
+			// Dï¿½placement inverse
 			ModelMgr.moveTaskUpOrDown(oneTaskClone, (byte) 34);
-			// Vérification des numéros des taches
+			// Vï¿½rification des numï¿½ros des taches
 			for (int i=1; i<=50; i++) {
 				int taskNumber = ModelMgr.getTaskByCodePath("/RT/PARENT/CD" + i).getNumber();
 				assertEquals(i, taskNumber);
