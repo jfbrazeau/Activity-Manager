@@ -42,6 +42,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import jfb.tools.activitymgr.core.beans.Collaborator;
 import jfb.tools.activitymgr.core.beans.Contribution;
@@ -535,7 +538,7 @@ public class DbMgr {
 			pStmt = tx
 					.prepareStatement("insert into TASK (tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo, tsk_comment) values (?, ?, ?, ?, ?, ?, ?, ?)"); //$NON-NLS-1$
 			pStmt.setString(1, newTask.getPath());
-			pStmt.setByte(2, newTask.getNumber());
+			pStmt.setString(2, StringHelper.toHex(newTask.getNumber()));
 			pStmt.setString(3, newTask.getCode());
 			pStmt.setString(4, newTask.getName());
 			pStmt.setLong(5, newTask.getBudget());
@@ -1505,18 +1508,16 @@ public class DbMgr {
 		try {
 			// Pr�paration de la requ�te
 			pStmt = tx
-					.prepareStatement("select tsk_id from TASK where tsk_path=? order by tsk_number"); //$NON-NLS-1$
+					.prepareStatement("select tsk_id, tsk_number from TASK where tsk_path=? order by tsk_number"); //$NON-NLS-1$
 			pStmt.setString(1, path);
 
 			// Ex�cution de la requ�te
 			rs = pStmt.executeQuery();
 
 			// Recherche des sous-taches
-			ArrayList<Task> list = new ArrayList<Task>();
+			ArrayList<Long> list = new ArrayList<Long>();
 			while (rs.next()) {
-				long taskId = rs.getLong(1);
-				Task task = getTask(tx, taskId);
-				list.add(task);
+				list.add(rs.getLong(1));
 			}
 
 			// Fermeture du ResultSet
@@ -1524,8 +1525,12 @@ public class DbMgr {
 			pStmt = null;
 
 			// Retour du r�sultat
-			log.debug("  => found " + list.size() + " entrie(s)"); //$NON-NLS-1$ //$NON-NLS-2$
-			return (Task[]) list.toArray(new Task[list.size()]);
+			long[] taskIds = new long[list.size()];
+			for (int i = 0; i < taskIds.length; i++) {
+				taskIds[i] = list.get(i);
+			}
+			Task[] tasks = getTasks(tx, taskIds);
+			return tasks;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(Strings.getString(
@@ -1631,12 +1636,10 @@ public class DbMgr {
 			// Ex�cution de la requ�te
 			rs = pStmt.executeQuery();
 
-			// R�cup�ration du r�sultat
-			ArrayList<Task> list = new ArrayList<Task>();
+			// Recherche des sous-taches
+			ArrayList<Long> list = new ArrayList<Long>();
 			while (rs.next()) {
-				long taskId = rs.getLong(1);
-				Task task = getTask(tx, taskId);
-				list.add(task);
+				list.add(rs.getLong(1));
 			}
 
 			// Fermeture du ResultSet
@@ -1644,7 +1647,11 @@ public class DbMgr {
 			pStmt = null;
 
 			// Pr�paration du r�sultat
-			Task[] tasks = (Task[]) list.toArray(new Task[list.size()]);
+			long[] taskIds = new long[list.size()];
+			for (int i = 0; i < taskIds.length; i++) {
+				taskIds[i] = list.get(i);
+			}
+			Task[] tasks = getTasks(tx, taskIds);
 
 			// On trie les taches manuellement car le tri base de donn�es
 			// pose un probl�me dans la mesure ou la BDD consid�re le champ
@@ -1690,8 +1697,8 @@ public class DbMgr {
 	/**
 	 * @param tx
 	 *            le contexte de transaction.
-	 * @param taskId
-	 *            l'identifiant de la tache recherch�e.
+	 * @param tasksIds
+	 *            the task identifier.
 	 * @return la tache dont l'identifiant est sp�cifi�.
 	 * @throws DbException
 	 *             lev� en cas d'incident technique d'acc�s � la base.
@@ -1701,58 +1708,32 @@ public class DbMgr {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Pr�paration de la requ�te
-			pStmt = tx
-					.prepareStatement("select tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo, tsk_comment from TASK where tsk_id=?"); //$NON-NLS-1$
+			// Request preparation
+			StringWriter request = prepareSelectTaskRequest();
+			request.append(" theTask.tsk_id=?");
+			completeSelectTaskRequest(request);
+			pStmt = tx.prepareStatement(request.toString());
 			pStmt.setLong(1, taskId);
-
+			
 			// Ex�cution de la requ�te
 			rs = pStmt.executeQuery();
 
 			// Pr�paration du r�sultat
-			Task task = null;
+			Task result = null;
 			if (rs.next()) {
-				task = new Task();
-				task.setId(taskId);
-				task.setPath(rs.getString(1));
-				task.setNumber(rs.getByte(2));
-				task.setCode(rs.getString(3));
-				task.setName(rs.getString(4));
-				task.setBudget(rs.getLong(5));
-				task.setInitiallyConsumed(rs.getLong(6));
-				task.setTodo(rs.getLong(7));
-				task.setComment(rs.getString(8));
+				result = toTask(rs);
 			}
+			
 			// Fermeture du ResultSet
 			pStmt.close();
 			pStmt = null;
-
-			// Si la tache existe bien
-			if (task != null) {
-				// Recherche du nombre de sous-taches
-				String taskFullPath = task.getFullPath();
-				pStmt = tx
-						.prepareStatement("select count(*) from TASK where tsk_path=?"); //$NON-NLS-1$
-				pStmt.setString(1, taskFullPath);
-
-				// Ex�cution de la requ�te
-				rs = pStmt.executeQuery();
-				if (rs.next()) {
-					int subTasksCount = rs.getInt(1);
-					task.setSubTasksCount(subTasksCount);
-				}
-				// Fermeture du ResultSet
-				pStmt.close();
-				pStmt = null;
-			}
-
+			
 			// Retour du r�sultat
-			return task;
+			return result;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
-					Strings.getString(
-							"DbMgr.errors.TASK_SELECTION_BY_ID_FAILURE", new Long(taskId)), e); //$NON-NLS-1$ //$NON-NLS-2$
+					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_ID_FAILURE"), e); //$NON-NLS-1$ //$NON-NLS-2$
 		} finally {
 			if (pStmt != null)
 				try {
@@ -1760,6 +1741,142 @@ public class DbMgr {
 				} catch (Throwable ignored) {
 				}
 		}
+	}
+
+	/**
+	 * @param tx
+	 *            le contexte de transaction.
+	 * @param tasksIds
+	 *            the task identifiers list.
+	 * @return the tasks.
+	 * @throws DbException
+	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 */
+	protected static Task[] getTasks(DbTransaction tx, long[] tasksIds)
+			throws DbException {
+		PreparedStatement pStmt = null;
+		ResultSet rs = null;
+		Map<Long, Task> tasksMap = new HashMap<Long, Task>();
+		try {
+			if (tasksIds != null && tasksIds.length != 0) {
+				// The task id array is cut in sub arrays of maximum 250 tasks
+				List<long[]> tasksIdsSubArrays = new ArrayList<long[]>();
+				for (int i = 0; i < tasksIds.length; i += 250) {
+					long[] subArray = new long[Math.min(250, tasksIds.length
+							- i)];
+					System.arraycopy(tasksIds, i, subArray, 0, subArray.length);
+					tasksIdsSubArrays.add(subArray);
+				}
+
+				// Then a loop is performed over the sub arrays
+				for (long[] tasksIdsSubArray : tasksIdsSubArrays) {
+					// Pr�paration de la requ�te
+					StringWriter request = prepareSelectTaskRequest();
+					request.append(" theTask.tsk_id");
+					if (tasksIdsSubArray.length == 1) {
+						request.append("=?");
+					} else {
+						request.append(" in (");
+						for (int i = 0; i < tasksIdsSubArray.length; i++) {
+							request.append(i == 0 ? "?" : ", ?");
+						}
+						request.append(")");
+					}
+					completeSelectTaskRequest(request);
+					pStmt = tx.prepareStatement(request.toString());
+					for (int i = 0; i < tasksIdsSubArray.length; i++) {
+						pStmt.setLong(i + 1, tasksIdsSubArray[i]);
+					}
+
+					// Ex�cution de la requ�te
+					rs = pStmt.executeQuery();
+
+					// Pr�paration du r�sultat
+					while (rs.next()) {
+						Task task = toTask(rs);
+						tasksMap.put(task.getId(), task);
+					}
+					// Fermeture du ResultSet
+					pStmt.close();
+					pStmt = null;
+				}
+			}
+			// The result must be reordonned in order to 
+			// respect the task id array specified as an entry
+			Task[] result = new Task[tasksIds.length];
+			for (int i = 0; i < tasksIds.length; i++) {
+				long taskId = tasksIds[i];
+				result[i] = tasksMap.get(taskId);
+			}
+			// Retour du r�sultat
+			return result;
+		} catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(
+					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_ID_FAILURE"), e); //$NON-NLS-1$ //$NON-NLS-2$
+		} finally {
+			if (pStmt != null)
+				try {
+					pStmt.close();
+				} catch (Throwable ignored) {
+				}
+		}
+	}
+
+	/**
+	 * Prepares the SQL select request used to retrieve the tasks.
+	 * 
+	 * @return the SQL request.
+	 */
+	private static StringWriter prepareSelectTaskRequest() {
+		StringWriter request = new StringWriter();
+		request.append("select theTask.tsk_id, theTask.tsk_path, theTask.tsk_number, theTask.tsk_code, theTask.tsk_name, theTask.tsk_budget, theTask.tsk_initial_cons, theTask.tsk_todo, theTask.tsk_comment, count(subTask.tsk_id)"
+				+ " from TASK as theTask left join TASK as subTask on subTask.tsk_path = concat(theTask.tsk_path, theTask.tsk_number)"
+				+ " where");
+		return request;
+	}
+
+	/**
+	 * Completes the SQL select request used to retrieve the tasks.
+	 * 
+	 * @param request
+	 *            the request.
+	 */
+	private static void completeSelectTaskRequest(StringWriter request) {
+		// HSQLDB expects all the selected columns in the group by
+		// directive
+		request.append(" group by theTask.tsk_id, theTask.tsk_path, theTask.tsk_number, theTask.tsk_code, theTask.tsk_name, theTask.tsk_budget, theTask.tsk_initial_cons, theTask.tsk_todo, theTask.tsk_comment"); //$NON-NLS-1$
+	}
+
+	/**
+	 * Builds a Task from a SQL result set.
+	 * 
+	 * @param rs
+	 *            the result set.
+	 * @return the task.
+	 * @throws SQLException
+	 *             thrown if an error occurrs.
+	 */
+	private static Task toTask(ResultSet rs) throws SQLException {
+		Task task = null;
+		Long tskId = rs.getLong(1);
+		// If the task id that is returned is null,
+		// it means that the request returned nothing
+		// (the task id is 'not null' in the database)
+		if (tskId != null) {
+			task = new Task();
+			task.setId(tskId);
+			task.setPath(rs.getString(2));
+			task.setNumber(StringHelper.toByte(rs.getString(3)));
+			task.setCode(rs.getString(4));
+			task.setName(rs.getString(5));
+			task.setBudget(rs.getLong(6));
+			task.setInitiallyConsumed(rs.getLong(7));
+			task.setTodo(rs.getLong(8));
+			task.setComment(rs.getString(9));
+			task.setSubTasksCount(rs.getInt(10));
+		}
+		return task;
 	}
 
 	/**
@@ -1780,10 +1897,12 @@ public class DbMgr {
 		ResultSet rs = null;
 		try {
 			// Pr�paration de la requ�te
-			pStmt = tx
-					.prepareStatement("select tsk_id from TASK where tsk_path=? and tsk_number=?"); //$NON-NLS-1$
+			StringWriter request = prepareSelectTaskRequest();
+			request.append(" theTask.tsk_path=? and theTask.tsk_number=?");
+			completeSelectTaskRequest(request);
+			pStmt = tx.prepareStatement(request.toString());
 			pStmt.setString(1, taskPath);
-			pStmt.setByte(2, taskNumber);
+			pStmt.setString(2, StringHelper.toHex(taskNumber));
 
 			// Ex�cution de la requ�te
 			rs = pStmt.executeQuery();
@@ -1791,8 +1910,7 @@ public class DbMgr {
 			// Pr�paration du r�sultat
 			Task task = null;
 			if (rs.next()) {
-				long taskId = rs.getLong(1);
-				task = getTask(tx, taskId);
+				task = toTask(rs);
 			}
 			// Fermeture du ResultSet
 			pStmt.close();
@@ -1832,8 +1950,10 @@ public class DbMgr {
 		ResultSet rs = null;
 		try {
 			// Pr�paration de la requ�te
-			pStmt = tx
-					.prepareStatement("select tsk_id from TASK where tsk_path=? and tsk_code=?"); //$NON-NLS-1$
+			StringWriter request = prepareSelectTaskRequest();
+			request.append(" theTask.tsk_path=? and theTask.tsk_code=?"); //$NON-NLS-1$
+			completeSelectTaskRequest(request);
+			pStmt = tx.prepareStatement(request.toString());
 			pStmt.setString(1, taskPath);
 			pStmt.setString(2, taskCode);
 
@@ -1843,8 +1963,7 @@ public class DbMgr {
 			// Pr�paration du r�sultat
 			Task task = null;
 			if (rs.next()) {
-				long taskId = rs.getLong(1);
-				task = getTask(tx, taskId);
+				task = toTask(rs);
 			}
 			// Fermeture du ResultSet
 			pStmt.close();
@@ -1897,11 +2016,9 @@ public class DbMgr {
 			rs = pStmt.executeQuery();
 
 			// Recherche des sous-taches
-			ArrayList<Task> list = new ArrayList<Task>();
+			ArrayList<Long> list = new ArrayList<Long>();
 			while (rs.next()) {
-				long taskId = rs.getLong(1);
-				Task task = getTask(tx, taskId);
-				list.add(task);
+				list.add(rs.getLong(1));
 			}
 
 			// Fermeture du ResultSet
@@ -1909,8 +2026,11 @@ public class DbMgr {
 			pStmt = null;
 
 			// Retour du r�sultat
-			log.debug("  => found " + list.size() + " entrie(s)"); //$NON-NLS-1$ //$NON-NLS-2$
-			return (Task[]) list.toArray(new Task[list.size()]);
+			long[] taskIds = new long[list.size()];
+			for (int i = 0; i < taskIds.length; i++) {
+				taskIds[i] = list.get(i);
+			}
+			return getTasks(tx, taskIds);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
@@ -2495,7 +2615,7 @@ public class DbMgr {
 			pStmt = tx
 					.prepareStatement("update TASK set tsk_path=?, tsk_number=?, tsk_code=?, tsk_name=?, tsk_budget=?, tsk_initial_cons=?, tsk_todo=?, tsk_comment=? where tsk_id=?"); //$NON-NLS-1$
 			pStmt.setString(1, task.getPath());
-			pStmt.setByte(2, task.getNumber());
+			pStmt.setString(2, StringHelper.toHex(task.getNumber()));
 			pStmt.setString(3, task.getCode());
 			pStmt.setString(4, task.getName());
 			pStmt.setLong(5, task.getBudget());
@@ -2616,7 +2736,8 @@ public class DbMgr {
 			if (!rs.next())
 				throw new DbException(
 						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
-			byte max = rs.getByte(1);
+			String maxStr = rs.getString(1);
+			byte max = maxStr != null ? StringHelper.toByte(maxStr) : 0;
 			log.debug("  => max= : " + max); //$NON-NLS-1$
 
 			// Fermeture du statement

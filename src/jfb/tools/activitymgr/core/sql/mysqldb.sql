@@ -8,7 +8,7 @@ drop table if exists COLLABORATOR;
 --------------------------------------------------------------
 create table COLLABORATOR (
 	CLB_ID         integer( 3) not null auto_increment,
-	CLB_LOGIN      varchar( 8) unique not null,
+	CLB_LOGIN      varchar(10) unique not null,
 	CLB_FIRST_NAME varchar(20) not null,
 	CLB_LAST_NAME  varchar(20) not null,
  	CLB_IS_ACTIVE  integer( 1) not null,
@@ -22,7 +22,7 @@ create table COLLABORATOR (
 create table TASK (
 	TSK_ID           integer(   4) not null auto_increment,
 	TSK_PATH         varchar( 255) not null,
-	TSK_NUMBER       integer(   3) not null,
+	TSK_NUMBER       varchar(   2) not null,
 	TSK_CODE         varchar(  10) not null,
 	TSK_NAME         varchar(  50) not null,
 	TSK_BUDGET       integer(   8) not null,
@@ -40,7 +40,7 @@ create table TASK (
 ) type=innodb;
 
 --------------------------------------------------------------
--- Durées
+-- Durï¿½es
 --------------------------------------------------------------
 create table DURATION (
 	DUR_ID         integer(3) not null,
@@ -67,7 +67,7 @@ create table CONTRIBUTION (
     constraint CTB_DURATION_FK foreign key (CTB_DURATION) references DURATION (DUR_ID)
 ) type=innodb;
 
--- Référentiel des durées
+-- Rï¿½fï¿½rentiel des durï¿½es
 -- delete from DURATION;
 -- insert into DURATION (DUR_ID) values ( 25);
 -- insert into DURATION (DUR_ID) values ( 50);

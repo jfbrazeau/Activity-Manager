@@ -30,15 +30,12 @@ package jfb.tools.activitymgr.core;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -1683,13 +1680,13 @@ public class ModelMgr {
 			}
 
 			// Task retrieval and sort
-			// TODO tasks should be retrieved at one time
-			List<Task> tasks = new ArrayList<Task>();
+			long[] tasksIds = new long[taskContributionsCache.size()];
+			int idx = 0;
 			for (Long taskId : taskContributionsCache.keySet()) {
-				Task theTask = DbMgr.getTask(tx, taskId);
-				tasks.add(theTask);
+				tasksIds[idx++] = taskId;
 			}
-			Collections.sort(tasks, new Comparator<Task>() {
+			Task[] tasks = DbMgr.getTasks(tx, tasksIds);
+			Arrays.sort(tasks, new Comparator<Task>() {
 				public int compare(Task t1, Task t2) {
 					return t1.getFullPath().compareTo(t2.getFullPath());
 				}
@@ -1700,10 +1697,10 @@ public class ModelMgr {
 			result.setFromDate(fromDate);
 			result.setToDate(toDate);
 			TaskContributions[] taskContributionsArray = new TaskContributions[tasks
-					.size()];
+					.length];
 			result.setTaskContributions(taskContributionsArray);
-			for (int i = 0; i < tasks.size(); i++) {
-				Task theTask = tasks.get(i);
+			for (int i = 0; i < tasks.length; i++) {
+				Task theTask = tasks[i];
 				TaskContributions taskContributions = taskContributionsCache
 						.get(theTask.getId());
 				taskContributions.setTask(theTask);
