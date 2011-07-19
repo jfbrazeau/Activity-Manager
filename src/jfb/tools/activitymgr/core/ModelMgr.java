@@ -46,8 +46,8 @@ import jfb.tools.activitymgr.core.beans.Collaborator;
 import jfb.tools.activitymgr.core.beans.Contribution;
 import jfb.tools.activitymgr.core.beans.Duration;
 import jfb.tools.activitymgr.core.beans.IntervalContributions;
-import jfb.tools.activitymgr.core.beans.IntervalContributions.TaskContributions;
 import jfb.tools.activitymgr.core.beans.Task;
+import jfb.tools.activitymgr.core.beans.TaskContributions;
 import jfb.tools.activitymgr.core.beans.TaskSearchFilter;
 import jfb.tools.activitymgr.core.beans.TaskSums;
 import jfb.tools.activitymgr.core.util.StringHelper;
@@ -1651,7 +1651,7 @@ public class ModelMgr {
 			if (fromDate.getTime().compareTo(toDate.getTime()) > 0)
 				throw new ModelException(
 						Strings.getString("ModelMgr.errors.FROM_DATE_MUST_BE_BEFORE_TO_DATE")); //$NON-NLS-1$
-			int daysCount = countDaysBetween(fromDate, toDate);
+			int daysCount = countDaysBetween(fromDate, toDate) + 1;
 			// R�cup�ration des contributions
 			Contribution[] contributionsArray = DbMgr.getContributions(tx,
 					contributor, task, fromDate, toDate);
@@ -1659,7 +1659,7 @@ public class ModelMgr {
 			// Rangement des contributions par identifiant de tache
 			// (as the tsk parameter can be omitted => in this case, several
 			// tasks might be returned)
-			Map<Long, TaskContributions> taskContributionsCache = new HashMap<Long, IntervalContributions.TaskContributions>();
+			Map<Long, TaskContributions> taskContributionsCache = new HashMap<Long, TaskContributions>();
 			for (int i = 0; i < contributionsArray.length; i++) {
 				Contribution contribution = contributionsArray[i];
 				TaskContributions taskContributions = taskContributionsCache
@@ -1667,16 +1667,17 @@ public class ModelMgr {
 				// If the task contributions doesn't exist, we create it
 				if (taskContributions == null) {
 					taskContributions = new TaskContributions();
-					taskContributions.setContributions(new Contribution[daysCount]);
+					taskContributions
+							.setContributions(new Contribution[daysCount]);
 					// Cache registering
 					taskContributionsCache.put(contribution.getTaskId(),
 							taskContributions);
 				}
 				Calendar contributionDate = new GregorianCalendar(
-						contribution.getYear(), contribution.getMonth()-1,
+						contribution.getYear(), contribution.getMonth() - 1,
 						contribution.getDay());
 				int idx = countDaysBetween(fromDate, contributionDate);
-				taskContributions.getContributions()[idx - 1] = contribution;
+				taskContributions.getContributions()[idx] = contribution;
 			}
 
 			// Task retrieval and sort
@@ -1696,8 +1697,7 @@ public class ModelMgr {
 			IntervalContributions result = new IntervalContributions();
 			result.setFromDate(fromDate);
 			result.setToDate(toDate);
-			TaskContributions[] taskContributionsArray = new TaskContributions[tasks
-					.length];
+			TaskContributions[] taskContributionsArray = new TaskContributions[tasks.length];
 			result.setTaskContributions(taskContributionsArray);
 			for (int i = 0; i < tasks.length; i++) {
 				Task theTask = tasks[i];
@@ -1732,11 +1732,27 @@ public class ModelMgr {
 	 * @return the days count between the two dates.
 	 */
 	private static int countDaysBetween(Calendar date1, Calendar date2) {
+		date1 = removeHours(date1);
+		date2 = removeHours(date2);
 		boolean date2IsGreater = date2.compareTo(date1) >= 0;
 		Calendar dateA = date2IsGreater ? date1 : date2;
 		Calendar dateB = date2IsGreater ? date2 : date1;
-		return 1 + (int) ((dateB.getTime().getTime() - dateA.getTime().getTime())
-				/ (1000 * 60 * 60 * 24));
+		return (int) ((dateB.getTime().getTime() - dateA.getTime().getTime()) / (1000 * 60 * 60 * 24));
+	}
+
+	/**
+	 * Removes the hour from the specified date.
+	 * 
+	 * @param date
+	 *            the date.
+	 */
+	private static Calendar removeHours(Calendar date) {
+		Calendar newDate = (Calendar) date.clone();
+		newDate.set(Calendar.HOUR_OF_DAY, 0);
+		newDate.set(Calendar.MINUTE, 0);
+		newDate.set(Calendar.SECOND, 0);
+		newDate.set(Calendar.MILLISECOND, 0);
+		return newDate;
 	}
 
 	/**
@@ -1847,6 +1863,41 @@ public class ModelMgr {
 
 			// Retour du r�sultat
 			return parentTask;
+		} finally {
+			if (tx != null)
+				try {
+					DbMgr.endTransaction(tx);
+				} catch (DbException ignored) {
+				}
+		}
+	}
+
+	/**
+	 * @param parentTaskId
+	 *            l'identifiant de la tache dont on veut conna�tre les
+	 *            sous-taches.
+	 * @return la liste des taches associ�es � un chemin donn�.
+	 * @throws DbException
+	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 */
+	public static Task[] getSubtasks(Long parentTaskId) throws DbException {
+		log.info("getSubtasks(" + parentTaskId + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+		DbTransaction tx = null;
+		try {
+			// Ouverture de la transaction
+			tx = DbMgr.beginTransaction();
+
+			// R�cup�ration des sous t�ches
+			Task parentTask = parentTaskId != null ? DbMgr.getTask(tx,
+					parentTaskId) : null;
+			Task[] subTasks = DbMgr.getSubtasks(tx, parentTask);
+
+			// Fin de la transaction
+			DbMgr.endTransaction(tx);
+			tx = null;
+
+			// Retour du r�sultat
+			return subTasks;
 		} finally {
 			if (tx != null)
 				try {
