@@ -402,7 +402,6 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 			public void paintControl(PaintEvent paintevent) {
 				if (needRefresh) {
 					needRefresh = false;
-					System.out.println("Rafrachissement de l'UI");
 					treeViewer.refresh();
 				}
 
