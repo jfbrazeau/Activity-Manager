@@ -92,37 +92,6 @@ public abstract class SafeRunner {
 	 *            la valeur � retourner par d�faut.
 	 * @return le r�sultat du traitement.
 	 */
-	// TODO Supprimer ce bout de code si il n'y a pas de pb
-	// public Object run(Shell parentShell, Object defaultValue) {
-	// log.debug("ParentShell : " + parentShell);
-	// Object result = defaultValue;
-	// // Changement du curseur
-	// Cursor waitCursor =
-	// parentShell.getDisplay().getSystemCursor(SWT.CURSOR_WAIT);
-	// parentShell.setCursor(waitCursor);
-	// // Ex�cution du traitement
-	// try { result = runUnsafe(); }
-	// catch (AbstractException e) {
-	// log.info("UI Exception", e);
-	// Shell parent = Display.getCurrent().getActiveShell();
-	// new ErrorDialog(parent, "Unable to complete operation : '" +
-	// e.getMessage() + "'", e).open();
-	// }
-	// catch (Throwable t) {
-	// log.error("Unexpected error", t);
-	// Shell parent = Display.getCurrent().getActiveShell();
-	// new ErrorDialog(parent, "Unexpected error", t).open();
-	// }
-	// finally {
-	// // Retour du curseur normal
-	// Cursor normalCursor =
-	// parentShell.getDisplay().getSystemCursor(SWT.CURSOR_ARROW);
-	// parentShell.setCursor(normalCursor);
-	// }
-	// // Retour du r�sultat
-	// log.debug(" -> result='" + result + "'");
-	// return result;
-	// }
 	public Object run(final Shell parentShell, Object defaultValue) {
 		log.debug("ParentShell : " + parentShell); //$NON-NLS-1$
 		final Result result = new Result();
