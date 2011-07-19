@@ -12,7 +12,7 @@ import jfb.tools.activitymgr.core.beans.Contribution;
 import jfb.tools.activitymgr.core.beans.Duration;
 import jfb.tools.activitymgr.core.beans.IntervalContributions;
 import jfb.tools.activitymgr.core.beans.Task;
-import jfb.tools.activitymgr.core.beans.IntervalContributions.TaskContributions;
+import jfb.tools.activitymgr.core.beans.TaskContributions;
 import jfb.tst.tools.activitymgr.AbstractModelTestCase;
 
 public class ContributionTest extends AbstractModelTestCase {
