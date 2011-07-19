@@ -42,8 +42,8 @@ import jfb.tools.activitymgr.core.beans.Collaborator;
 import jfb.tools.activitymgr.core.beans.Contribution;
 import jfb.tools.activitymgr.core.beans.Duration;
 import jfb.tools.activitymgr.core.beans.IntervalContributions;
-import jfb.tools.activitymgr.core.beans.IntervalContributions.TaskContributions;
 import jfb.tools.activitymgr.core.beans.Task;
+import jfb.tools.activitymgr.core.beans.TaskContributions;
 import jfb.tools.activitymgr.core.util.StringHelper;
 import jfb.tools.activitymgr.core.util.Strings;
 import jfb.tools.activitymgr.ui.CollaboratorsUI.ICollaboratorListener;
@@ -568,21 +568,19 @@ public class ContributionsUI extends AbstractTableMgr implements
 					fromDate.add(Calendar.DATE, -7);
 					Calendar toDate = (Calendar) currentMonday.clone();
 					toDate.add(Calendar.DATE, 6);
-					if (selectedCollaborator != null) {
-						IntervalContributions ic = ModelMgr
-								.getIntervalContributions(selectedCollaborator,
-										null, fromDate, toDate);
-						// The result contains the contributions of the previous
-						// week
-						// We truncate it before proceeding.
-						for (TaskContributions tc : ic.getTaskContributions()) {
-							Contribution[] newContribs = new Contribution[7];
-							System.arraycopy(tc.getContributions(), 6,
-									newContribs, 0, 7);
-							tc.setContributions(newContribs);
-						}
-						list.addAll(Arrays.asList(ic.getTaskContributions()));
+					IntervalContributions ic = ModelMgr
+							.getIntervalContributions(selectedCollaborator,
+									null, fromDate, toDate);
+					// The result contains the contributions of the previous
+					// week
+					// We truncate it before proceeding.
+					for (TaskContributions tc : ic.getTaskContributions()) {
+						Contribution[] newContribs = new Contribution[7];
+						System.arraycopy(tc.getContributions(), 7,
+								newContribs, 0, 7);
+						tc.setContributions(newContribs);
 					}
+					list.addAll(Arrays.asList(ic.getTaskContributions()));
 				}
 				// Ajout d'un �l�ment pour la ligne des totaux
 				list.add(WeekContributionsSum.getInstance());
@@ -863,17 +861,6 @@ public class ContributionsUI extends AbstractTableMgr implements
 							}
 						}
 						text = StringHelper.hundredthToEntry(sum);
-						// TODO Supprimer
-						// Calendar cal = (Calendar) currentMonday.clone();
-						// cal.add(Calendar.DATE, columnIndex -
-						// MONDAY_COLUMN_IDX);
-						// long sum = ModelMgr.getContributionsSum(null,
-						// selectableCollaboratorPanel
-						// .getSelectedCollaborator(),
-						// new Integer(cal.get(Calendar.YEAR)),
-						// new Integer(cal.get(Calendar.MONTH) + 1),
-						// new Integer(cal.get(Calendar.DAY_OF_MONTH)));
-						// text = StringHelper.hundredthToEntry(sum);
 						break;
 					default:
 						throw new Error(
@@ -1067,6 +1054,8 @@ public class ContributionsUI extends AbstractTableMgr implements
 		// Si ce n'est pas le cas c'est une nouvelle ligne
 		if (weekContributions == null) {
 			weekContributions = new TaskContributions();
+			weekContributions.setTaskCodePath(ModelMgr.getTaskCodePath(task));
+			weekContributions.setTask(task);
 			weekContributions.setContributions(new Contribution[7]);
 			int itemCount = tableViewer.getTable().getItemCount();
 			// Ajout dans l'arbre
