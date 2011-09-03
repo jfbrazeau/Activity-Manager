@@ -89,10 +89,32 @@
 			<param name="jar.filename" 
 				value="${dist.bin.dir}/lib/activity-manager.jar"/>
 		</antcall>
-		<!-- Création du zip -->
+		
+		<!-- 
+		  Préparation du zip win32
+		  -->
+		<copy file="${dist.bin.dir}/bin/activitymgr32.bat" 
+			tofile="${dist.bin.dir}/bin/activitymgr.bat"
+			overwrite="true"/>
 		<zip basedir="${dist.bin.dir}"
 			destfile="${ant.project.name}_win32_${TODAY}.zip"
-			compress="true" excludes="bin/*.sh,lib/gtk-linux/*,lib/gtk-linux/**"/>
+			compress="true" 
+			excludes="bin/*.sh,bin/activitymgr32.bat,bin/activitymgr64.bat,lib/win64/**,lib/gtk-linux/*,lib/gtk-linux/**"/>
+
+		<!-- 
+		  Préparation du zip win64
+		  -->
+		<copy file="${dist.bin.dir}/bin/activitymgr64.bat" 
+			tofile="${dist.bin.dir}/bin/activitymgr.bat"
+			overwrite="true"/>
+		<zip basedir="${dist.bin.dir}"
+			destfile="${ant.project.name}_win64_${TODAY}.zip"
+			compress="true" 
+			excludes="bin/*.sh,bin/activitymgr32.bat,bin/activitymgr64.bat,lib/win32/**,lib/gtk-linux/*,lib/gtk-linux/**"/>
+		
+		<!--
+		  Préparation du tar
+		  -->
 		<tar
 			destfile="${ant.project.name}_gtk-linux_${TODAY}.tar.gz"
 			compression="gzip">
