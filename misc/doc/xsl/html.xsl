@@ -45,74 +45,38 @@
 												</td>
 											</tr>
 											<xsl:call-template name="buildMenuItem">
-												<xsl:with-param name="menuItemId">
-													overview
-												</xsl:with-param>
-												<xsl:with-param name="menuItemTitle">
-													Overview
-												</xsl:with-param>
+												<xsl:with-param name="menuItemId">overview</xsl:with-param>
+												<xsl:with-param name="menuItemTitle">Overview</xsl:with-param>
 											</xsl:call-template>
 											<xsl:call-template name="buildMenuItem">
-												<xsl:with-param name="menuItemId">
-													screenshots
-												</xsl:with-param>
-												<xsl:with-param name="menuItemTitle">
-													Screenshots
-												</xsl:with-param>
+												<xsl:with-param name="menuItemId">screenshots</xsl:with-param>
+												<xsl:with-param name="menuItemTitle">Screenshots</xsl:with-param>
 											</xsl:call-template>
 											<xsl:call-template name="buildMenuItem">
-												<xsl:with-param name="menuItemId">
-													installation
-												</xsl:with-param>
-												<xsl:with-param name="menuItemTitle">
-													Installation
-												</xsl:with-param>
+												<xsl:with-param name="menuItemId">installation</xsl:with-param>
+												<xsl:with-param name="menuItemTitle">Installation</xsl:with-param>
 											</xsl:call-template>
 											<xsl:call-template name="buildMenuItem">
-												<xsl:with-param name="menuItemId">
-													userGuide
-												</xsl:with-param>
-												<xsl:with-param name="menuItemTitle">
-													User guide
-												</xsl:with-param>
+												<xsl:with-param name="menuItemId">userGuide</xsl:with-param>
+												<xsl:with-param name="menuItemTitle">User guide</xsl:with-param>
 											</xsl:call-template>
 											<xsl:call-template name="buildMenuItem">
-												<xsl:with-param name="menuItemId">
-													javadoc
-												</xsl:with-param>
-												<xsl:with-param name="menuItemTitle">
-													Javadoc
-												</xsl:with-param>
-												<xsl:with-param name="menuItemHref">
-													res/html/javadoc/index.html
-												</xsl:with-param>
+												<xsl:with-param name="menuItemId">javadoc</xsl:with-param>
+												<xsl:with-param name="menuItemTitle">Javadoc</xsl:with-param>
+												<xsl:with-param name="menuItemHref">res/html/javadoc/index.html</xsl:with-param>
 											</xsl:call-template>
 											<xsl:call-template name="buildMenuItem">
-												<xsl:with-param name="menuItemId">
-													legal
-												</xsl:with-param>
-												<xsl:with-param name="menuItemTitle">
-													Legal
-												</xsl:with-param>
+												<xsl:with-param name="menuItemId">legal</xsl:with-param>
+												<xsl:with-param name="menuItemTitle">Legal</xsl:with-param>
 											</xsl:call-template>
 											<xsl:call-template name="buildMenuItem">
-												<xsl:with-param name="menuItemId">
-													releaseNotes
-												</xsl:with-param>
-												<xsl:with-param name="menuItemTitle">
-													Release notes
-												</xsl:with-param>
+												<xsl:with-param name="menuItemId">releaseNotes</xsl:with-param>
+												<xsl:with-param name="menuItemTitle">Release notes</xsl:with-param>
 											</xsl:call-template>
 											<xsl:call-template name="buildMenuItem">
-												<xsl:with-param name="menuItemId">
-													downloads
-												</xsl:with-param>
-												<xsl:with-param name="menuItemTitle">
-													Downloads
-												</xsl:with-param>
-												<xsl:with-param name="menuItemHref">
-													https://sourceforge.net/projects/activitymanager/files/
-												</xsl:with-param>
+												<xsl:with-param name="menuItemId">downloads</xsl:with-param>
+												<xsl:with-param name="menuItemTitle">Downloads</xsl:with-param>
+												<xsl:with-param name="menuItemHref">https://sourceforge.net/projects/activitymanager/files/</xsl:with-param>
 											</xsl:call-template>
 											<tr>
 												<!-- Ligne permettan de définir la taille des colonnes de manière 
@@ -129,12 +93,8 @@
 												</td>
 											</tr>
 											<xsl:call-template name="buildMenuItem">
-												<xsl:with-param name="menuItemId">
-													contact
-												</xsl:with-param>
-												<xsl:with-param name="menuItemTitle">
-													Contact
-												</xsl:with-param>
+												<xsl:with-param name="menuItemId">contact</xsl:with-param>
+												<xsl:with-param name="menuItemTitle">Contact</xsl:with-param>
 											</xsl:call-template>
 										</table>
 									</td>
