@@ -9,8 +9,6 @@ rem Construction d'un batch contenant le CLASSPATH
 cd "%BASE_DIR%\lib"
 echo set CLASSPATH=%BASE_DIR%/classes>"%CLASSPATH_TMP_BATCH%"
 for %%j in ("*.jar") do (echo set CLASSPATH=%%CLASSPATH%%;%BASE_DIR%/lib/%%j>>"%CLASSPATH_TMP_BATCH%")
-cd "external"
-for %%j in ("*.jar") do (echo set CLASSPATH=%%CLASSPATH%%;%BASE_DIR%/lib/external/%%j>>"%CLASSPATH_TMP_BATCH%")
 call "%CLASSPATH_TMP_BATCH%"
 del "%CLASSPATH_TMP_BATCH%"
 cd "%BASE_DIR%"
