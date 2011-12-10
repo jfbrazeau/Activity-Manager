@@ -12,7 +12,7 @@ for JAR in $JARS
 do
 	CLASSPATH=$CLASSPATH:$JAR
 done
-CLASSPATH=$CLASSPATH:$BASE_DIR/lib/gtk-linux/swt.jar
+CLASSPATH=$CLASSPATH:$BASE_DIR/lib/gtk-linux64/swt.jar
 export CLASSPATH
 
 java -Djava.library.path="$JAVA_LIB_PATH" jfb.tools.activitymgr.ui.Main
