@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2010, Jean-François Brazeau. All rights reserved.
+ * Copyright (c) 2004-2012, Jean-Francois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -48,7 +48,7 @@ public class ContributionsUITest {
 			// Initialisation des logs et chargement de la config
 			PropertyConfigurator.configure("cfg/log4j.properties");
 			CfgMgr.load();
-			// Initialisation de la connexion à la base de données
+			// Initialisation de la connexion ï¿½ la base de donnï¿½es
 			String jdbcDriver = CfgMgr.get(CfgMgr.JDBC_DRIVER);
 			String jdbcUrl = CfgMgr.get(CfgMgr.JDBC_URL);
 			String jdbcUser = CfgMgr.get(CfgMgr.JDBC_USER);
@@ -61,7 +61,7 @@ public class ContributionsUITest {
 				);
 			
 	
-			// Ouverture de la denêtre
+			// Ouverture de la denï¿½tre
 			Display display = new Display();
 			final Shell shell = new Shell(display);
 			shell.setSize(700, 400);
