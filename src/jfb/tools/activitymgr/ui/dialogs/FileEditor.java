@@ -35,7 +35,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
 /**
- * Control utilis� pour g�rer les entr�es de type fichier.
+ * Control utilisé pour gérer les entrées de type fichier.
  */
 public class FileEditor {
 
@@ -46,15 +46,15 @@ public class FileEditor {
 	private Button browseButton;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parent
 	 *            composant parent.
 	 * @param title
-	 *            le titre de l'�diteur.
+	 *            le titre de l'éditeur.
 	 */
 	public FileEditor(Composite parent, String title) {
-		// Cr�ation du paneau
+		// Création du paneau
 		Composite panel = new Composite(parent, SWT.NONE);
 		GridData gridData = new GridData(SWT.LEFT, SWT.TOP, true, false);
 		panel.setLayoutData(gridData);

@@ -30,7 +30,7 @@ package jfb.tools.activitymgr.core;
 import jfb.tools.activitymgr.AbstractTechnicalException;
 
 /**
- * Exception lev�e lors d'un incident technique d'acc�s � la base de donn�es.
+ * Exception levée lors d'un incident technique d'accès à la base de données.
  */
 public class DbException extends AbstractTechnicalException {
 
@@ -38,12 +38,12 @@ public class DbException extends AbstractTechnicalException {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param message
 	 *            message d'erreur.
 	 * @param cause
-	 *            cause de la lev�e d'exception.
+	 *            cause de la levée d'exception.
 	 */
 	public DbException(String message, Throwable cause) {
 		super(message, cause);

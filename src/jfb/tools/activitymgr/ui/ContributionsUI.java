@@ -113,7 +113,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 	private static Logger log = Logger.getLogger(ContributionsUI.class);
 
 	/**
-	 * Constantes associ�es aux colonnes de la table de saisie des contributions
+	 * Constantes associées aux colonnes de la table de saisie des contributions
 	 */
 	public static final int TASK_PATH_COLUMN_IDX = 0;
 	public static final int TASK_NAME_COLUMN_IDX = 1;
@@ -132,7 +132,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 	};
 
 	/**
-	 * Objet utilis� dans le tableau pour marquer la ligne contenant les totaux
+	 * Objet utilisé dans le tableau pour marquer la ligne contenant les totaux
 	 * des contributions
 	 */
 	private static class WeekContributionsSum {
@@ -141,7 +141,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 		private static WeekContributionsSum singleton = new WeekContributionsSum();
 
 		/**
-		 * Constructeur priv� (singleton).
+		 * Constructeur privé (singleton).
 		 */
 		private WeekContributionsSum() {
 		}
@@ -158,32 +158,32 @@ public class ContributionsUI extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Interface utilis�e pour permettre l'�coute de la suppression ou de
-	 * l'ajout de dur�es.
+	 * Interface utilisée pour permettre l'écoute de la suppression ou de
+	 * l'ajout de durées.
 	 */
 	public static interface IContributionListener {
 
 		/**
-		 * Indique qu'une contribution a �t� ajout�e au r�f�rentiel.
+		 * Indique qu'une contribution a été ajoutée au référentiel.
 		 * 
 		 * @param contribution
-		 *            la contribution ajout�e.
+		 *            la contribution ajoutée.
 		 */
 		public void contributionAdded(Contribution contribution);
 
 		/**
-		 * Indique que des contributions ont �t� supprim�es du r�f�rentiel.
+		 * Indique que des contributions ont été supprimées du référentiel.
 		 * 
 		 * @param contributions
-		 *            les contributions supprim�es.
+		 *            les contributions supprimées.
 		 */
 		public void contributionsRemoved(Contribution[] contributions);
 
 		/**
-		 * Indique que des contributions ont �t� modifi�e dans le r�f�rentiel.
+		 * Indique que des contributions ont été modifiée dans le référentiel.
 		 * 
 		 * @param contributions
-		 *            les contributions modifi�es.
+		 *            les contributions modifiées.
 		 */
 		public void contributionsUpdated(Contribution[] contributions);
 
@@ -212,13 +212,13 @@ public class ContributionsUI extends AbstractTableMgr implements
 	/** Composant parent */
 	private Composite parent;
 
-	/** Liste des dur�es */
+	/** Liste des durées */
 	private Duration[] durations;
 
-	/** Table pr�sentant la liste des collaborateurs */
+	/** Table présentant la liste des collaborateurs */
 	private SelectableCollaboratorPanel selectableCollaboratorPanel;
 
-	/** Date associ� au Lundi de la semaine */
+	/** Date associé au Lundi de la semaine */
 	private Calendar currentMonday;
 
 	/** Label contenant les dates de la semaine */
@@ -227,16 +227,16 @@ public class ContributionsUI extends AbstractTableMgr implements
 	/** Popup permettant de choisir une tache */
 	private TaskChooserTreeWithHistoryDialog taskChooserDialog;
 
-	/** Editeur de dur�es */
+	/** Editeur de durées */
 	private ComboBoxCellEditor durationCellEditor;
 
 	/** Presse papier */
 	private Clipboard clipboard;
 
-	/** Police de caract�re utilis�e pour les contribution */
+	/** Police de caractère utilisée pour les contribution */
 	private Font normalFont;
 
-	/** Police de caract�re utilis�e pour la ligne des totaux */
+	/** Police de caractère utilisée pour la ligne des totaux */
 	private Font italicFont;
 
 	/**
@@ -251,13 +251,13 @@ public class ContributionsUI extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parentComposite
 	 *            composant parent.
 	 */
 	public ContributionsUI(Composite parentComposite) {
-		// Cr�ation du composite parent
+		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayout(new GridLayout(2, false));
 
@@ -295,7 +295,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 		table.setHeaderVisible(true);
 		table.setEnabled(true);
 
-		// Cr�ation du viewer
+		// Création du viewer
 		tableViewer = new TableViewer(table) {
 			public void refresh() {
 				super.refresh();
@@ -309,7 +309,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 		tableViewer.setContentProvider(this);
 		tableViewer.setLabelProvider(this);
 
-		// Cr�ation des polices de caract�re
+		// Création des polices de caractère
 		FontData tableFont = table.getFont().getFontData()[0];
 		normalFont = table.getFont();
 		italicFont = new Font(table.getDisplay(), tableFont.getName(),
@@ -346,7 +346,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 						"SUNDAY", Strings.getString("ContributionsUI.columns.SUNDAY"), 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
 		tableColsMgr.configureTable(tableViewer);
 
-		// Configuration des �diteurs de cellules
+		// Configuration des éditeurs de cellules
 		CellEditor[] editors = new CellEditor[9];
 		durationCellEditor = new ComboBoxCellEditor(table, new String[] {},
 				SWT.READ_ONLY) {
@@ -361,10 +361,10 @@ public class ContributionsUI extends AbstractTableMgr implements
 		editors[TASK_NAME_COLUMN_IDX] = new DialogCellEditor(table) {
 			protected Object openDialogBox(Control cellEditorWindow) {
 				Object result = null;
-				// Positionnement de la valeur par d�faut
+				// Positionnement de la valeur par défaut
 				TaskContributions w = (TaskContributions) ((IStructuredSelection) tableViewer
 						.getSelection()).getFirstElement();
-				// Pr�paration du dialogue
+				// Préparation du dialogue
 				taskChooserDialog.setValidator(buildTaskChooserValidator());
 				taskChooserDialog.setValue(w.getTask());
 				if (taskChooserDialog.open() == Dialog.OK) {
@@ -419,7 +419,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 		// Ajout de KeyListeners pour faciliter le 'coller' d'une tache en
 		// provenance
 		// de l'onglet de gestion des tache
-		// (Rq: les acc�l�rateurs sont ignor�s dans les menus contextuels)
+		// (Rq: les accélérateurs sont ignorés dans les menus contextuels)
 		KeyListener keyListener = new KeyAdapter() {
 			public void keyReleased(KeyEvent e) {
 				Widget simulatedWidget = null;
@@ -447,7 +447,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 		// gridData.horizontalSpan = 2;
 		navigationButtonsPanel.setLayoutData(gridData);
 
-		// Panneau contenant les boutons 'Pr�c�dent'
+		// Panneau contenant les boutons 'Précédent'
 		Composite previousButtonsPanel = new Composite(navigationButtonsPanel,
 				SWT.NONE);
 		previousButtonsPanel.setLayout(new FillLayout());
@@ -503,20 +503,20 @@ public class ContributionsUI extends AbstractTableMgr implements
 		taskChooserDialog = new TaskChooserTreeWithHistoryDialog(
 				parent.getShell());
 
-		// Recherche du 1� Lundi pr�c�dent la date courante
+		// Recherche du 1er Lundi précédent la date courante
 		currentMonday = getMondayBefore(new GregorianCalendar());
 		log.debug("Date courante : " + currentMonday); //$NON-NLS-1$
 
-		// Cr�ation du presse papier
+		// Création du presse papier
 		clipboard = new Clipboard(parentComposite.getDisplay());
 	}
 
 	/**
-	 * Retourne le premier lundi pr�c�dent la date sp�cifi�e.
+	 * Retourne le premier lundi précédent la date spécifiée.
 	 * 
 	 * @param date
 	 *            la date.
-	 * @return le premier lundi pr�c�dent la date sp�cifi�e.
+	 * @return le premier lundi précédent la date spécifiée.
 	 */
 	private static Calendar getMondayBefore(Calendar date) {
 		Calendar dateCursor = (Calendar) date.clone();
@@ -533,10 +533,10 @@ public class ContributionsUI extends AbstractTableMgr implements
 	 * .lang.Object)
 	 */
 	public Object[] getElements(Object inputElement) {
-		// Chargement des donn�es
+		// Chargement des données
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				// Mise � jour des dates de la semaine :
+				// Mise à jour des dates de la semaine :
 				SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy"); //$NON-NLS-1$
 				Calendar sunday = (Calendar) currentMonday.clone();
 				sunday.add(Calendar.DATE, 6);
@@ -545,7 +545,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 								.getString(
 										"ContributionsUI.labels.WEEK", sdf.format(currentMonday.getTime()), sdf.format(sunday.getTime()))); //$NON-NLS-1$ //$NON-NLS-2$
 
-				// Mise � jour du nom des colonnes
+				// Mise à jour du nom des colonnes
 				TableColumn[] tableColumns = tableViewer.getTable()
 						.getColumns();
 				Calendar date = (Calendar) currentMonday.clone();
@@ -560,7 +560,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 						.getSelectedCollaborator();
 				List<Object> list = new ArrayList<Object>();
 				if (selectedCollaborator != null) {
-					// Recherche des taches d�clar�es pour cet utilisateur
+					// Recherche des taches déclarées pour cet utilisateur
 					// pour la semaine courante (et la semaine passée pour
 					// réafficher automatiquement les taches de la semaine
 					// passée)
@@ -582,13 +582,13 @@ public class ContributionsUI extends AbstractTableMgr implements
 					}
 					list.addAll(Arrays.asList(ic.getTaskContributions()));
 				}
-				// Ajout d'un �l�ment pour la ligne des totaux
+				// Ajout d'un élément pour la ligne des totaux
 				list.add(WeekContributionsSum.getInstance());
-				// Retour du r�sultat
+				// Retour du résultat
 				return list.toArray();
 			}
 		};
-		// Ex�cution
+		// Exécution
 		Object result = (Object) safeRunner.run(parent.getShell());
 		return (Object[]) (result != null ? result : new TaskContributions[] {});
 	}
@@ -659,7 +659,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 			Contribution contribution = weekContributions.getContributions()[columnIndex - 2];
 			value = contribution != null ? getDurationIndex(contribution
 					.getDurationId()) : null;
-			// Par d�faut on prend la premi�re s�lection
+			// Par défaut on prend la première sélection
 			if (value == null)
 				value = new Integer(0);
 			break;
@@ -671,15 +671,15 @@ public class ContributionsUI extends AbstractTableMgr implements
 	}
 
 	/**
-	 * @return le num�ro de la dur�e s�lectionn�e.
+	 * @return le numéro de la durée sélectionnée.
 	 * @param duration
-	 *            le dur�e consid�r�e.
+	 *            le durée considérée.
 	 */
 	private Integer getDurationIndex(long durationId) {
 		Integer result = null;
 		for (int i = 0; i < durations.length && result == null; i++) {
 			if (durations[i].getId() == durationId)
-				result = new Integer(i + 1); // +1 car l'index 0 correspond � la
+				result = new Integer(i + 1); // +1 car l'index 0 correspond à la
 												// valeur "vide"
 		}
 		return result;
@@ -708,7 +708,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 					Task task = (Task) value;
 					weekContributions.setTask(task);
 					List<Contribution> nonNullContributions = new ArrayList<Contribution>();
-					// R�cup�ration des contributions
+					// Récupération des contributions
 					Contribution[] contributions = weekContributions
 							.getContributions();
 					// Suppression des contributions nulles
@@ -717,7 +717,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 						if (contribution != null)
 							nonNullContributions.add(contribution);
 					}
-					// Mise � jour des contributions
+					// Mise à jour des contributions
 					contributions = (Contribution[]) nonNullContributions
 							.toArray(new Contribution[nonNullContributions
 									.size()]);
@@ -737,7 +737,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 					Integer selectedIndex = (Integer) value;
 					Contribution contribution = weekContributions
 							.getContributions()[columnIndex - 2];
-					// Cas d'une suppression (choix de la valeu N� 0 de la
+					// Cas d'une suppression (choix de la valeur N° 0 de la
 					// liste)
 					if (selectedIndex.intValue() == 0) {
 						// Suppression effective en base si la contribution
@@ -748,10 +748,10 @@ public class ContributionsUI extends AbstractTableMgr implements
 						// Notification des listeners
 						notifyContributionsRemoved(new Contribution[] { contribution });
 					}
-					// Sinon cr�ation ou modification
+					// Sinon création ou modification
 					else {
 						boolean create = (contribution == null);
-						// Cas d'une cr�ation
+						// Cas d'une création
 						if (create) {
 							Collaborator selectedCollaboprator = selectableCollaboratorPanel
 									.getSelectedCollaborator();
@@ -766,7 +766,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 							contribution.setDate(date);
 							weekContributions.getContributions()[columnIndex - 2] = contribution;
 						}
-						// Mise � jour des champs
+						// Mise à jour des champs
 						Duration duration = durations[selectedIndex.intValue() - 1];
 						contribution.setDurationId(duration.getId());
 						if (create) {
@@ -782,7 +782,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 					// Notification des listeners
 					notifyLabelProviderListener(new LabelProviderChangedEvent(
 							labelProvider, weekContributions));
-					// Mise � jour des totaux
+					// Mise à jour des totaux
 					tableViewer.refresh(WeekContributionsSum.getInstance());
 					break;
 				default:
@@ -792,7 +792,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 				return null;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		safeRunner.run(parent.getShell());
 	}
 
@@ -899,7 +899,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 				return text;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		return (String) safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
@@ -916,9 +916,9 @@ public class ContributionsUI extends AbstractTableMgr implements
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				TableItem[] selection = tableViewer.getTable().getSelection();
-				// Cas d'une cr�ation
+				// Cas d'une création
 				if (newItem.equals(source)) {
-					// Pr�paration du dialogue
+					// Préparation du dialogue
 					taskChooserDialog.setValidator(buildTaskChooserValidator());
 					// Affichage du popup
 					Task task = null;
@@ -934,10 +934,10 @@ public class ContributionsUI extends AbstractTableMgr implements
 							.getContents(TextTransfer.getInstance());
 					Task task = ModelMgr.getTaskByCodePath(taskCodePath);
 					ITaskChooserValidator validator = buildTaskChooserValidator();
-					// Validation de la conformit� de la tache pour ajout dans
+					// Validation de la conformité de la tache pour ajout dans
 					// l'IHM
 					validator.validateChoosenTask(task);
-					// S�lection de la ligne ou ajout d'une nouvelle ligne
+					// Sélection de la ligne ou ajout d'une nouvelle ligne
 					addNewLineOrSelectTaskLine(task);
 				}
 				// Cas d'une suppression
@@ -945,7 +945,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 					TableItem selectedItem = selection[0];
 					TaskContributions wc = (TaskContributions) selectedItem
 							.getData();
-					// R�cup�ration des contributions
+					// Récupération des contributions
 					Contribution[] contributions = wc.getContributions();
 					// Suppression des contributions nulles
 					List<Contribution> list = new ArrayList<Contribution>();
@@ -962,7 +962,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 						// Notification des listeners
 						notifyContributionsRemoved(contributions);
 					}
-					// Mise � jour de l'IHM
+					// Mise à jour de l'IHM
 					tableViewer.remove(wc);
 					tableViewer.refresh(WeekContributionsSum.getInstance());
 				}
@@ -970,19 +970,19 @@ public class ContributionsUI extends AbstractTableMgr implements
 				else if (exportItem.equals(source)) {
 					SWTHelper.exportToWorkBook(tableViewer.getTable());
 				}
-				// Cas d'un changement d'une ann�e en arri�re
+				// Cas d'un changement d'une année en arrière
 				else if (previousYearButton.equals(source)) {
 					currentMonday.add(Calendar.YEAR, -1);
 					currentMonday = getMondayBefore(currentMonday);
 					tableViewer.refresh();
 				}
-				// Cas d'un changement d'un mois en arri�re
+				// Cas d'un changement d'un mois en arrière
 				else if (previousMonthButton.equals(source)) {
 					currentMonday.add(Calendar.MONTH, -1);
 					currentMonday = getMondayBefore(currentMonday);
 					tableViewer.refresh();
 				}
-				// Cas d'un changement de semaine en arri�re
+				// Cas d'un changement de semaine en arrière
 				else if (previousWeekButton.equals(source)) {
 					currentMonday.add(Calendar.DATE, -7);
 					tableViewer.refresh();
@@ -998,7 +998,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 					currentMonday = getMondayBefore(currentMonday);
 					tableViewer.refresh();
 				}
-				// Cas d'un changement d'une ann�e en avant
+				// Cas d'un changement d'une année en avant
 				else if (nextYearButton.equals(source)) {
 					currentMonday.add(Calendar.YEAR, 1);
 					currentMonday = getMondayBefore(currentMonday);
@@ -1007,15 +1007,15 @@ public class ContributionsUI extends AbstractTableMgr implements
 				return null;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		safeRunner.run(parent.getShell());
 	}
 
 	/**
-	 * Pr�pare le dialogue de choix d'une t�che.
+	 * Prépare le dialogue de choix d'une tâche.
 	 */
 	private ITaskChooserValidator buildTaskChooserValidator() {
-		// Cr�ation du valideur
+		// Création du valideur
 		ITaskChooserValidator taskChooserValidator = new ITaskChooserValidator() {
 			public void validateChoosenTask(Task selectedTask)
 					throws DialogException {
@@ -1024,24 +1024,24 @@ public class ContributionsUI extends AbstractTableMgr implements
 							Strings.getString("ContributionsUI.errors.PARENT_TASK_SELECTED"), null); //$NON-NLS-1$
 			}
 		};
-		// Retour du r�sultat
+		// Retour du résultat
 		return taskChooserValidator;
 	}
 
 	/**
-	 * Ajoute une ligne dans le tableau ou s�lectionne celle d�j� existante pour
+	 * Ajoute une ligne dans le tableau ou sélectionne celle déja existante pour
 	 * la tache.
 	 * 
 	 * @param task
-	 *            la tache associ�e � l'ajout ou la s�lection.
+	 *            la tache associée à l'ajout ou la sélection.
 	 * @throws DbException
-	 *             lev�e en cas d'incident technique d'acc�s � la BDD.
+	 *             levée en cas d'incident technique d'accès à la BDD.
 	 * @throws ModelException
-	 *             lev�e en cas d'incident fonctionnel.
+	 *             levée en cas d'incident fonctionnel.
 	 */
 	private void addNewLineOrSelectTaskLine(Task task) throws DbException,
 			ModelException {
-		// La tache est elle d�j� associ�e � une semaine de contributions
+		// La tache est elle déja associée à une semaine de contributions
 		TaskContributions weekContributions = null;
 		TableItem[] items = tableViewer.getTable().getItems();
 		for (int i = 0; i < items.length; i++) {
@@ -1062,7 +1062,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 			// Ajout dans l'arbre
 			tableViewer.insert(weekContributions, itemCount - 1);
 		}
-		// S�lection
+		// Sélection
 		tableViewer.setSelection(new StructuredSelection(weekContributions),
 				true);
 		tableViewer.getTable().setFocus();
@@ -1130,13 +1130,13 @@ public class ContributionsUI extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Initialise l'IHM avec les donn�es en base.
+	 * Initialise l'IHM avec les données en base.
 	 */
 	private void initialize() {
-		// Chargement du r�f�rentiel de dur�es
+		// Chargement du référentiel de durées
 		loadDurations();
 
-		// Chargement des collaborateurs et suppression de l'ancienne s�lection
+		// Chargement des collaborateurs et suppression de l'ancienne sélection
 		// si elle existe
 		selectableCollaboratorPanel.initialize();
 
@@ -1151,13 +1151,13 @@ public class ContributionsUI extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Charge le r�f�rentiel de dur�es.
+	 * Charge le référentiel de durées.
 	 */
 	private void loadDurations() {
-		// Chargement de la liste des dur�es et des utilisateurs
+		// Chargement de la liste des durées et des utilisateurs
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				// Chargement du r�f�rentiel de dur�es
+				// Chargement du référentiel de durées
 				durations = ModelMgr.getActiveDurations();
 				String[] durationsStr = new String[durations.length + 1];
 				durationsStr[0] = ""; //$NON-NLS-1$
@@ -1168,7 +1168,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 				return null;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		safeRunner.run(parent.getShell());
 	}
 
@@ -1200,14 +1200,14 @@ public class ContributionsUI extends AbstractTableMgr implements
 	 */
 	public void collaboratorRemoved(Collaborator collaborator) {
 		selectableCollaboratorPanel.collaboratorRemoved(collaborator);
-		// Dans le cas ou le collaborateur supprim� est celui qui �tait
-		// s�lectionn�...
+		// Dans le cas ou le collaborateur supprimé est celui qui était
+		// sélectionné...
 		if (selectableCollaboratorPanel.getSelectedCollaborator() == null) {
-			// ... on essaye d'en s�lectionner un autre (si il y a d'autres
+			// ... on essaye d'en sélectionner un autre (si il y a d'autres
 			// collaborateurs)...
 			if (selectableCollaboratorPanel.getCollaboratorsCount() > 0)
 				selectableCollaboratorPanel.setSelectedIndex(0);
-			// ... et on rafraichit les contributions affich�es
+			// ... et on rafraichit les contributions affichées
 			tableViewer.refresh();
 		}
 	}
@@ -1232,14 +1232,14 @@ public class ContributionsUI extends AbstractTableMgr implements
 	public void collaboratorActivationStatusChanged(Collaborator collaborator) {
 		selectableCollaboratorPanel
 				.collaboratorActivationStatusChanged(collaborator);
-		// Dans le cas ou le collaborateur supprim� est celui qui �tait
-		// s�lectionn�...
+		// Dans le cas ou le collaborateur supprimé est celui qui était
+		// sélectionné...
 		if (selectableCollaboratorPanel.getSelectedCollaborator() == null) {
-			// ... on essaye d'en s�lectionner un autre (si il y a d'autres
+			// ... on essaye d'en sélectionner un autre (si il y a d'autres
 			// collaborateurs)...
 			if (selectableCollaboratorPanel.getCollaboratorsCount() > 0)
 				selectableCollaboratorPanel.setSelectedIndex(0);
-			// ... et on rafraichit les contributions affich�es
+			// ... et on rafraichit les contributions affichées
 			tableViewer.refresh();
 		}
 	}
@@ -1251,8 +1251,8 @@ public class ContributionsUI extends AbstractTableMgr implements
 	 * jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseOpened()
 	 */
 	public void databaseOpened() {
-		// Annulation de la s�lection d'un collaborateur si une s�lection
-		// est en cours (peut arriver si la base a �t� r�install�e)
+		// Annulation de la sélection d'un collaborateur si une sélection
+		// est en cours (peut arriver si la base a été réinstallée)
 		selectableCollaboratorPanel.setSelectedCollaborator(null);
 		initialize();
 	}
@@ -1312,9 +1312,9 @@ public class ContributionsUI extends AbstractTableMgr implements
 	public void taskAdded(Task task) {
 		// Transfert de la notification au popup de choix de tache
 		taskChooserDialog.taskAdded(task);
-		// Rien � faire par contre du c�t� de l'IHM de saisie des contributions
+		// Rien à faire par contre du côté de l'IHM de saisie des contributions
 		// car une nouvelle
-		// t�che ne pouvait forc�ment pas �tre d�j� affich�e
+		// tâche ne pouvait forcément pas être déja affichée
 	}
 
 	/*
@@ -1328,7 +1328,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 			protected Object runUnsafe() throws Exception {
 				// Transfert de la notification au popup de choix de tache
 				taskChooserDialog.taskRemoved(removedTask);
-				// Parcours des taches pr�sentes dans le tableau
+				// Parcours des taches présentes dans le tableau
 				int itemCount = tableViewer.getTable().getItemCount();
 				int itemIdxToRemove = -1;
 				for (int i = 0; i < itemCount; i++) {
@@ -1336,18 +1336,18 @@ public class ContributionsUI extends AbstractTableMgr implements
 					if (data != WeekContributionsSum.getInstance()) {
 						TaskContributions weekContribution = (TaskContributions) data;
 						Task currentTask = weekContribution.getTask();
-						// Cas ou la tache supprim�e est dans le tableau
-						// dans ce cas, on sauvegarde le N� pour effectuer
+						// Cas ou la tache supprimée est dans le tableau
+						// dans ce cas, on sauvegarde le N° pour effectuer
 						// la suppression par la suite
 						if (currentTask.getId() == removedTask.getId()) {
 							itemIdxToRemove = i;
 						}
-						// Autre cas : la tache supprim�e est la soeur d'une des
+						// Autre cas : la tache supprimée est la soeur d'une des
 						// taches parent
 						// de la tache en cours ; c'est le cas si le chemin de
 						// la tache en cours
-						// commence par le chemin de la tache qui a �t�
-						// supprim�e
+						// commence par le chemin de la tache qui a été
+						// supprimée
 						else if (currentTask.getPath().startsWith(
 								removedTask.getPath())) {
 							String removedTaskFullpath = removedTask
@@ -1355,14 +1355,14 @@ public class ContributionsUI extends AbstractTableMgr implements
 							String removedTaskSisterFullPath = currentTask
 									.getFullPath().substring(0,
 											removedTaskFullpath.length());
-							// La tache n'est impact�e que si sa tache parent se
-							// trouvant �tre la soeur de
-							// celle qui a �t� supprim�e poss�de un num�ro
-							// sup�rieur � celui de la
-							// tache supprim�e
+							// La tache n'est impactée que si sa tache parent se
+							// trouvant être la soeur de
+							// celle qui a été supprimée possède un numéro
+							// supérieur à celui de la
+							// tache supprimée
 							if (removedTaskSisterFullPath
 									.compareTo(removedTaskFullpath) > 0) {
-								// Dans ce cas il faut mettre � jour le chemin
+								// Dans ce cas il faut mettre à jour le chemin
 								// de la tache
 								currentTask = ModelMgr.getTask(currentTask
 										.getId());
@@ -1372,7 +1372,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 						}
 					}
 				}
-				// Si on a trouv� l'item supprim�, on le supprime
+				// Si on a trouvé l'item supprimé, on le supprime
 				if (itemIdxToRemove >= 0)
 					tableViewer.remove(tableViewer
 							.getElementAt(itemIdxToRemove));
@@ -1391,25 +1391,25 @@ public class ContributionsUI extends AbstractTableMgr implements
 	public void taskUpdated(final Task updatedTask) {
 		// Transfert de la notification au popup de choix de tache
 		taskChooserDialog.taskUpdated(updatedTask);
-		// Parcours des taches pr�sentes dans le tableau
+		// Parcours des taches présentes dans le tableau
 		int itemCount = tableViewer.getTable().getItemCount();
 		for (int i = 0; i < itemCount; i++) {
 			Object data = tableViewer.getElementAt(i);
 			if (data != WeekContributionsSum.getInstance()) {
 				TaskContributions weekContribution = (TaskContributions) data;
 				Task currentTask = weekContribution.getTask();
-				// Cas ou la tache modifi�e est dans le tableau
+				// Cas ou la tache modifiée est dans le tableau
 				if (currentTask.getId() == updatedTask.getId()) {
 					weekContribution.setTask(updatedTask);
 					tableViewer.refresh(weekContribution);
 				}
-				// Autre cas : la tache a modifi�e est une tache
+				// Autre cas : la tache a modifiée est une tache
 				// parent de la tache en cours
 				else if (currentTask.getPath().startsWith(
 						updatedTask.getFullPath())) {
 					// Il faut faire un refresh pour que le chemin de code de la
 					// tache
-					// soit mis � jour
+					// soit mis à jour
 					tableViewer.refresh(weekContribution);
 				}
 			}
@@ -1428,39 +1428,39 @@ public class ContributionsUI extends AbstractTableMgr implements
 			protected Object runUnsafe() throws Exception {
 				// Transfert de la notification au popup de choix de tache
 				taskChooserDialog.taskMoved(oldTaskFullpath, movedTask);
-				// D�duction de l'ancien chemin de la tache � partir de l'ancien
+				// Déduction de l'ancien chemin de la tache à partir de l'ancien
 				// chemin complet
 				String oldTaskPath = oldTaskFullpath.substring(0,
 						oldTaskFullpath.length() - 2);
-				// Parcours des taches pr�sentes dans le tableau
+				// Parcours des taches présentes dans le tableau
 				int itemCount = tableViewer.getTable().getItemCount();
 				for (int i = 0; i < itemCount; i++) {
 					Object data = tableViewer.getElementAt(i);
 					if (data != WeekContributionsSum.getInstance()) {
 						TaskContributions weekContribution = (TaskContributions) data;
 						Task currentTask = weekContribution.getTask();
-						// Cas ou la tache modifi�e est dans le tableau
+						// Cas ou la tache modifiée est dans le tableau
 						if (currentTask.getId() == movedTask.getId()) {
 							currentTask = ModelMgr.getTask(currentTask.getId());
 							weekContribution.setTask(currentTask);
 							tableViewer.refresh(weekContribution);
 						}
-						// Autre cas : la tache a d�plac�e est une tache
+						// Autre cas : la tache a déplacée est une tache
 						// parent de la tache en cours
 						else if (currentTask.getPath().startsWith(
 								oldTaskFullpath)) {
 							// Il faut faire un refresh pour que le chemin de
 							// code de la tache
-							// soit mis � jour
+							// soit mis à jour
 							currentTask = ModelMgr.getTask(currentTask.getId());
 							weekContribution.setTask(currentTask);
 							tableViewer.refresh(weekContribution);
 						}
-						// Autre cas : la tache d�plac�e est la soeur d'une des
+						// Autre cas : la tache déplacée est la soeur d'une des
 						// taches parent
 						// de la tache en cours
 						else if (currentTask.getPath().startsWith(oldTaskPath)) {
-							// Dans ce cas il faut mettre � jour le chemin de la
+							// Dans ce cas il faut mettre à jour le chemin de la
 							// tache
 							currentTask = ModelMgr.getTask(currentTask.getId());
 							weekContribution.setTask(currentTask);
@@ -1495,10 +1495,10 @@ public class ContributionsUI extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Notifie les listeners qu'une contribution a �t� ajout�e.
+	 * Notifie les listeners qu'une contribution a été ajoutée.
 	 * 
 	 * @param newContribution
-	 *            la contribution ajout�e.
+	 *            la contribution ajoutée.
 	 */
 	private void notifyContributionAdded(Contribution newContribution) {
 		Iterator<IContributionListener> it = listeners.iterator();
@@ -1509,10 +1509,10 @@ public class ContributionsUI extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Notifie les listeners que des contributions ont �t� supprim�es.
+	 * Notifie les listeners que des contributions ont été supprimées.
 	 * 
 	 * @param contributions
-	 *            les contributions supprim�es.
+	 *            les contributions supprimées.
 	 */
 	private void notifyContributionsRemoved(Contribution[] contributions) {
 		Iterator<IContributionListener> it = listeners.iterator();
@@ -1523,10 +1523,10 @@ public class ContributionsUI extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Notifie les listeners que des contributions ont �t� modifi�es.
+	 * Notifie les listeners que des contributions ont été modifiées.
 	 * 
 	 * @param contributions
-	 *            les contributions modifi�es.
+	 *            les contributions modifiées.
 	 */
 	private void notifyContributionsUpdated(Contribution[] contributions) {
 		Iterator<IContributionListener> it = listeners.iterator();

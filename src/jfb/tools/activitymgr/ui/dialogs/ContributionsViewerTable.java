@@ -72,7 +72,7 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	private Integer month;
 	private Integer year;
 
-	/** Constantes associ�es aux colonnes */
+	/** Constantes associées aux colonnes */
 	public static final int DATE_COLUMN_IDX = 0;
 	public static final int COLLABORATOR_COLUMN_IDX = 1;
 	public static final int TASK_CODE_PATH_COLUMN_IDX = 2;
@@ -102,16 +102,16 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	private Map<Long, Collaborator> collaboratorsCache = new HashMap<Long, Collaborator>();
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parentComposite
 	 *            composant parent.
 	 * @param layoutData
-	 *            donn�es associ�es au layout.
+	 *            données associées au layout.
 	 */
 	public ContributionsViewerTable(Composite parentComposite, Object layoutData) {
 		log.debug("new ContributionsViewerTable()"); //$NON-NLS-1$
-		// Cr�ation du composite parent
+		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayoutData(layoutData);
 		parent.setLayout(new GridLayout(1, false));
@@ -126,7 +126,7 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 		table.setHeaderVisible(true);
 		table.setEnabled(true);
 
-		// Cr�ation du viewer
+		// Création du viewer
 		tableViewer = new TableViewer(table);
 		tableViewer.setContentProvider(this);
 		tableViewer.setLabelProvider(this);
@@ -168,7 +168,7 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	 * @param contributor
 	 *            le collaborateur.
 	 * @param year
-	 *            l'ann�e.
+	 *            l'année.
 	 * @param month
 	 *            le mois.
 	 * @param day
@@ -182,7 +182,7 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 		this.year = year;
 		this.month = month;
 		this.day = day;
-		// Cr�ation d'une racine fictive
+		// Création d'une racine fictive
 		tableViewer.setInput(ROOT_NODE);
 	}
 
@@ -194,7 +194,7 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	 * .lang.Object)
 	 */
 	public Object[] getElements(Object inputElement) {
-		// Chargement des donn�es
+		// Chargement des données
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				// Recherche des collaborateurs
@@ -202,7 +202,7 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 						month, day);
 			}
 		};
-		// Ex�cution
+		// Exécution
 		Object result = (Object) safeRunner.run(parent.getShell());
 		return (Contribution[]) (result != null ? result
 				: new Contribution[] {});
@@ -246,21 +246,21 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 				return text;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		return (String) safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
 	/**
-	 * Retourne le chemin de la tache associ�e � l'identifiant sp�cifi�.
+	 * Retourne le chemin de la tache associée à l'identifiant spécifié.
 	 * 
 	 * @param taskId
 	 *            l'identifiant de la tache.
 	 * @return le chemin.
 	 * @throws ModelException
-	 *             lev� en cas de viloation du mod�le.
+	 *             levé en cas de viloation du modèle.
 	 * @throws DbException
-	 *             lev� en cas d'incident associ� � l'acc�s � la base de
-	 *             donn�es.
+	 *             levé en cas d'incident associé à l'accès à la base de
+	 *             données.
 	 */
 	private String getCachedTaskCodePath(long taskId) throws ModelException,
 			DbException {
@@ -276,14 +276,14 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Retourne la tache associ�e � l'identifiant sp�cifi�.
+	 * Retourne la tache associée à l'identifiant spécifié.
 	 * 
 	 * @param taskId
 	 *            l'identifiant de la tache.
 	 * @return la tache.
 	 * @throws DbException
-	 *             lev� en cas d'incident associ� � l'acc�s � la base de
-	 *             donn�es.
+	 *             levé en cas d'incident associé à l'accès à la base de
+	 *             données.
 	 */
 	private Task getCachedTask(long taskId) throws DbException {
 		Long _taskId = new Long(taskId);
@@ -297,14 +297,14 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Retourne le collaborateur associ�e � l'identifiant sp�cifi�.
+	 * Retourne le collaborateur associée à l'identifiant spécifié.
 	 * 
 	 * @param collaboratorId
 	 *            l'identifiant du collaborateur.
 	 * @return le collaborateur.
 	 * @throws DbException
-	 *             lev� en cas d'incident associ� � l'acc�s � la base de
-	 *             donn�es.
+	 *             levé en cas d'incident associé à l'accès à la base de
+	 *             données.
 	 */
 	private Collaborator getCachedCollaborator(long collaboratorId)
 			throws DbException {
@@ -367,7 +367,7 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 				return null;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		safeRunner.run(parent.getShell());
 	}
 

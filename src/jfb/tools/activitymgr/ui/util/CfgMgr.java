@@ -40,7 +40,7 @@ import jfb.tools.activitymgr.core.util.Strings;
  */
 public class CfgMgr {
 
-	/** Constantes associ�es au param�trage */
+	/** Constantes associées au paramétrage */
 	public static final String DATABASE_TYPE = "database.type"; //$NON-NLS-1$
 	public static final String JDBC_DRIVER = "jdbc.driver"; //$NON-NLS-1$
 	public static final String DATABASE_HOST = "database.host"; //$NON-NLS-1$
@@ -58,33 +58,33 @@ public class CfgMgr {
 	private static Properties props = new Properties();
 
 	/**
-	 * Retourne la valeur associ�e � un param�tre.
+	 * Retourne la valeur associée à un paramétre.
 	 * 
 	 * @param key
-	 *            le code de param�tre.
-	 * @return la valeur du param�tre.
+	 *            le code de paramétre.
+	 * @return la valeur du paramétre.
 	 */
 	public static String get(String key) {
 		return props.getProperty(key);
 	}
 
 	/**
-	 * D�finit la valeur d'un param�tre.
+	 * Définit la valeur d'un paramétre.
 	 * 
 	 * @param key
-	 *            le code de param�tre.
+	 *            le code de paramétre.
 	 * @param value
-	 *            la nouvelle valeur du param�tre.
+	 *            la nouvelle valeur du paramétre.
 	 */
 	public static void set(String key, String value) {
 		props.setProperty(key, value);
 	}
 
 	/**
-	 * Sauve le param�trage.
+	 * Sauve le paramétrage.
 	 * 
 	 * @throws IOException
-	 *             lev� en cas d'incident I/O lors de l'acc�s en �criture sur le
+	 *             levé en cas d'incident I/O lors de l'accès en écriture sur le
 	 *             fichier de configuration.
 	 */
 	public static void save() throws IOException {
@@ -97,7 +97,7 @@ public class CfgMgr {
 	 * Charge la configuration.
 	 * 
 	 * @throws IOException
-	 *             lev� en cas d'incident I/O lors de l'acc�s en lecture sur le
+	 *             levé en cas d'incident I/O lors de l'accès en lecture sur le
 	 *             fichier de configuration.
 	 */
 	public static void load() throws IOException {
@@ -111,10 +111,10 @@ public class CfgMgr {
 	}
 
 	/**
-	 * Initie la configuration � partir d'un dioctionnaire sp�cifique.
+	 * Initie la configuration à partir d'un dioctionnaire spécifique.
 	 * 
 	 * @param props
-	 *            le dictionnaire de propri�t�s.
+	 *            le dictionnaire de propriétés.
 	 */
 	public static void init(Properties props) {
 		CfgMgr.props = props;

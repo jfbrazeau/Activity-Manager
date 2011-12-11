@@ -28,27 +28,27 @@
 package jfb.tools.activitymgr.core.beans;
 
 /**
- * Dur�e.
+ * Durée.
  */
 public class Duration extends SimpleIdentityBean {
 
-	/** Bool�en indiquant si la dur�e est active ou non */
+	/** Booléen indiquant si la durée est active ou non */
 	private boolean isActive = true;
 
 	/**
-	 * Retourne un bool�en indiquant si la dur�e est active ou non.
+	 * Retourne un booléen indiquant si la durée est active ou non.
 	 * 
-	 * @return un bool�en indiquant si la dur�e est active ou non.
+	 * @return un booléen indiquant si la durée est active ou non.
 	 */
 	public boolean getIsActive() {
 		return isActive;
 	}
 
 	/**
-	 * D�finit si la dur�e est active ou non.
+	 * Définit si la durée est active ou non.
 	 * 
 	 * @param isActive
-	 *            un bool�en indiquant si la dur�e est active ou non.
+	 *            un booléen indiquant si la durée est active ou non.
 	 */
 	public void setIsActive(boolean isActive) {
 		this.isActive = isActive;

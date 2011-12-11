@@ -33,7 +33,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 /**
- * Classe offrant des services de calcul de sommes pour la g�n�ration de
+ * Classe offrant des services de calcul de sommes pour la génération de
  * rapports avec Velocity.
  */
 public class SumHelper {
@@ -45,7 +45,7 @@ public class SumHelper {
 	private Map<String, Double> sumMap = new HashMap<String, Double>();
 
 	/**
-	 * D�finit la valeur d'une somme nomm�e.
+	 * Définit la valeur d'une somme nommée.
 	 * 
 	 * @param sumName
 	 *            le nom de la somme.
@@ -58,7 +58,7 @@ public class SumHelper {
 	}
 
 	/**
-	 * Retourne la valeur d'une somme nomm�e.
+	 * Retourne la valeur d'une somme nommée.
 	 * 
 	 * @param sumName
 	 *            le nom de la somme.
@@ -75,12 +75,12 @@ public class SumHelper {
 	}
 
 	/**
-	 * Ajoute une valeur � une somme nomm�e.
+	 * Ajoute une valeur à une somme nommée.
 	 * 
 	 * @param sumName
 	 *            le nom de la somme.
 	 * @param value
-	 *            la valeur � ajouter.
+	 *            la valeur à ajouter.
 	 */
 	public void add(String sumName, double value) {
 		log.debug("sh.add(" + sumName + ", " + value + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -89,12 +89,12 @@ public class SumHelper {
 	}
 
 	/**
-	 * Soustrait une valeur � une somme nomm�e.
+	 * Soustrait une valeur à une somme nommée.
 	 * 
 	 * @param sumName
 	 *            le nom de la somme.
 	 * @param value
-	 *            la valeur � soustraire.
+	 *            la valeur à soustraire.
 	 */
 	public void sub(String sumName, double value) {
 		add(sumName, -value);

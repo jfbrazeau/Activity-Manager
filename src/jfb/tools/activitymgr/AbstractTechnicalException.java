@@ -28,7 +28,7 @@
 package jfb.tools.activitymgr;
 
 /**
- * Exception m�re des exceptions techniques.
+ * Exception mère des exceptions techniques.
  */
 public abstract class AbstractTechnicalException extends AbstractException {
 

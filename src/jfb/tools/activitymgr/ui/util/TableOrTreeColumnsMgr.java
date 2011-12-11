@@ -99,7 +99,7 @@ public class TableOrTreeColumnsMgr {
 	 * @param columnWidth
 	 *            la largeur de la colonne.
 	 * @param columnAlignment
-	 *            l'alignement � appliquer � la colonne.
+	 *            l'alignement à appliquer à la colonne.
 	 */
 	public void addColumn(String columnCode, String columnName,
 			int columnWidth, int columnAlignment) {
@@ -115,9 +115,9 @@ public class TableOrTreeColumnsMgr {
 	}
 
 	/**
-	 * @return le code associ� � la colonne dont le N� est sp�cifi�.
+	 * @return le code associé à la colonne dont le N° est spécifié.
 	 * @param columnIndex
-	 *            num�ro de la colonne.
+	 *            numéro de la colonne.
 	 */
 	public String getColumnCode(int columnIndex) {
 		String code = ((Column) columns.get(columnIndex)).code;
@@ -126,7 +126,7 @@ public class TableOrTreeColumnsMgr {
 	}
 
 	/**
-	 * @return le num�ro associ� � la colonne dont le code est sp�cifi�.
+	 * @return le numéro associé à la colonne dont le code est spécifié.
 	 * @param columnCode
 	 *            code de la colonne.
 	 */

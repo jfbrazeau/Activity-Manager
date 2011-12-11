@@ -54,7 +54,7 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.TabItem;
 
 /**
- * IHM contenant des informations g�n�rales sur le projet.
+ * IHM contenant des informations générales sur le projet.
  */
 public class AboutUI implements SelectionListener {
 
@@ -76,18 +76,18 @@ public class AboutUI implements SelectionListener {
 	}
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parentComposite
 	 *            composant parent.
 	 */
 	public AboutUI(Composite parentComposite) {
 		GridData data = null;
-		// Cr�ation du composite parent
+		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayout(new GridLayout(1, false));
 
-		// Cr�ation du composite centr�
+		// Création du composite centré
 		Composite centeredPanel = new Composite(parent, SWT.NONE);
 		centeredPanel.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true,
 				true));
@@ -176,11 +176,11 @@ public class AboutUI implements SelectionListener {
 					return proc;
 				}
 			};
-			// Si le lancement �choue, on effectuera le copier/coller
+			// Si le lancement échoue, on effectuera le copier/coller
 			if (runner.run(parent.getShell()) != null)
 				copyURLToClipboard = false;
 		}
-		// Sur les autres plateformes que linux, d�pot dans le clipboard
+		// Sur les autres plateformes que linux, dépot dans le clipboard
 		if (copyURLToClipboard) {
 			Clipboard clipBoard = new Clipboard(parent.getDisplay());
 			clipBoard.setContents(new Object[] { e.text },

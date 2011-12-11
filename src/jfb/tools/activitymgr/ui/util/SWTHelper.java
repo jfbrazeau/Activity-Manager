@@ -50,7 +50,7 @@ import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 
 /**
- * Classe offrant des services d'aide � l'utilisation de l'API SWT.
+ * Classe offrant des services d'aide à l'utilisation de l'API SWT.
  */
 public class SWTHelper {
 
@@ -58,13 +58,13 @@ public class SWTHelper {
 	private static Logger log = Logger.getLogger(SWTHelper.class);
 
 	/**
-	 * Centre un popup par rapport � sa fen�tre parent.
+	 * Centre un popup par rapport à sa fenêtre parent.
 	 * 
 	 * @param popupShell
 	 *            le popup.
 	 */
 	public static void centerPopup(Shell popupShell) {
-		// D�finition de la positio du popup
+		// Définition de la positio du popup
 		Point parentShellLocation = popupShell.getParent().getLocation();
 		Point parentShellSize = popupShell.getParent().getSize();
 		Point popupShellSize = popupShell.getSize();
@@ -88,16 +88,16 @@ public class SWTHelper {
 	 * Exporte un arbre SWT en fichier EXCEL.
 	 * 
 	 * @param tree
-	 *            l'arbre � exporter.
+	 *            l'arbre à exporter.
 	 * @throws UITechException
-	 *             lev� en cas de pb I/O lors de la sauvegarde du fichier EXCEL.
+	 *             levé en cas de pb I/O lors de la sauvegarde du fichier EXCEL.
 	 */
 	public static void exportToWorkBook(Tree tree) throws UITechException {
 		// Demande du nom de fichier
 		FileDialog fd = new FileDialog(tree.getShell());
 		fd.setFilterExtensions(new String[] { "*.xls", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
 		String fileName = fd.open();
-		// Si le nom est sp�cifi�
+		// Si le nom est spécifié
 		if (fileName != null) {
 			try {
 				// Correction du nom du fichier si besoin
@@ -120,17 +120,17 @@ public class SWTHelper {
 	 * Convertit un arbre en classeur EXCEL.
 	 * 
 	 * @param tree
-	 *            l'arbre � convertir.
+	 *            l'arbre à convertir.
 	 * @return le classeur EXCEL.
 	 */
 	public static HSSFWorkbook toWorkBook(Tree tree) {
-		// Cr�ation du fichier EXCEL et du feuillet
+		// Création du fichier EXCEL et du feuillet
 		HSSFWorkbook wb = new HSSFWorkbook();
 		HSSFSheet sheet = wb.createSheet(Strings
 				.getString("SWTHelper.excelsheet.TAB_NAME")); //$NON-NLS-1$
 		sheet.createFreezePane(0, 1, 0, 1);
 		sheet.setColumnWidth((short) 0, (short) 10000);
-		// Cr�ation du style de l'ent�te
+		// Création du style de l'entête
 		HSSFCellStyle headerCellStyle = wb.createCellStyle();
 		headerCellStyle.setFillForegroundColor(HSSFColor.GREY_25_PERCENT.index);
 		headerCellStyle.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
@@ -139,7 +139,7 @@ public class SWTHelper {
 		headerCellStyle.setBorderLeft(headerCellStyle.getBorderBottom());
 		headerCellStyle.setBorderRight(headerCellStyle.getBorderBottom());
 		headerCellStyle.setBorderTop(headerCellStyle.getBorderBottom());
-		// Cr�ation de l'ent�te
+		// Création de l'entête
 		HSSFRow row = sheet.createRow((short) 0);
 		TreeColumn[] columns = tree.getColumns();
 		for (int i = 0; i < columns.length; i++) {
@@ -149,7 +149,7 @@ public class SWTHelper {
 			cell.setCellValue(column.getText());
 			cell.setCellStyle(headerCellStyle);
 		}
-		// Cr�ation du style des cellules
+		// Création du style des cellules
 		HSSFCellStyle bodyCellStyle = wb.createCellStyle();
 		bodyCellStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
 		bodyCellStyle.setBorderLeft(bodyCellStyle.getBorderBottom());
@@ -158,25 +158,25 @@ public class SWTHelper {
 		// Exportation des lignes du tableau
 		TreeItem[] items = tree.getItems();
 		appendToWorkbook("", sheet, bodyCellStyle, items, columns.length); //$NON-NLS-1$
-		// Retour du r�sultat
+		// Retour du résultat
 		return wb;
 	}
 
 	/**
-	 * G�n�re des lignes dans le classeur EXCEL r�cursivement pour les �l�ments
-	 * d'arbres sp�cifi�s et leurs �l�ments fils.
+	 * Génère des lignes dans le classeur EXCEL récursivement pour les éléments
+	 * d'arbres spécifiés et leurs éléments fils.
 	 * 
 	 * @param indent
-	 *            l'indentiation � appliquer (plus la profondeur dans l'arbre
-	 *            est �lev�e, plus l'indentation est longue).
+	 *            l'indentiation à appliquer (plus la profondeur dans l'arbre
+	 *            est élevée, plus l'indentation est longue).
 	 * @param sheet
 	 *            le feuillet EXCEL.
 	 * @param cellStyle
 	 *            le style de la cellule.
 	 * @param treeItems
-	 *            les �lements.
+	 *            les élements.
 	 * @param columnsNb
-	 *            le nombre de colonnes � exporter dans le feuillet.
+	 *            le nombre de colonnes à exporter dans le feuillet.
 	 */
 	private static void appendToWorkbook(String indent, HSSFSheet sheet,
 			HSSFCellStyle cellStyle, TreeItem[] treeItems, int columnsNb) {
@@ -225,16 +225,16 @@ public class SWTHelper {
 	 * Exporte un tableau SWT en fichier EXCEL.
 	 * 
 	 * @param table
-	 *            le tableau � exporter.
+	 *            le tableau à exporter.
 	 * @throws UITechException
-	 *             lev� en cas de pb I/O lors de la sauvegarde du fichier EXCEL.
+	 *             levé en cas de pb I/O lors de la sauvegarde du fichier EXCEL.
 	 */
 	public static void exportToWorkBook(Table table) throws UITechException {
 		// Demande du nom de fichier
 		FileDialog fd = new FileDialog(table.getShell());
 		fd.setFilterExtensions(new String[] { "*.xls", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
 		String fileName = fd.open();
-		// Si le nom est sp�cifi�
+		// Si le nom est spécifié
 		if (fileName != null) {
 			try {
 				// Correction du nom du fichier si besoin
@@ -257,16 +257,16 @@ public class SWTHelper {
 	 * Convertit un tableau en classeur EXCEL.
 	 * 
 	 * @param table
-	 *            le tableau � convertir.
+	 *            le tableau à convertir.
 	 * @return le classeur EXCEL.
 	 */
 	public static HSSFWorkbook toWorkBook(Table table) {
-		// Cr�ation du fichier EXCEL et du feuillet
+		// Création du fichier EXCEL et du feuillet
 		HSSFWorkbook wb = new HSSFWorkbook();
 		HSSFSheet sheet = wb.createSheet(Strings
 				.getString("SWTHelper.excelsheet.TAB_NAME")); //$NON-NLS-1$
 		sheet.createFreezePane(0, 1, 0, 1);
-		// Cr�ation du style de l'ent�te
+		// Création du style de l'entête
 		HSSFCellStyle headerCellStyle = wb.createCellStyle();
 		headerCellStyle.setFillForegroundColor(HSSFColor.GREY_25_PERCENT.index);
 		headerCellStyle.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
@@ -275,7 +275,7 @@ public class SWTHelper {
 		headerCellStyle.setBorderLeft(headerCellStyle.getBorderBottom());
 		headerCellStyle.setBorderRight(headerCellStyle.getBorderBottom());
 		headerCellStyle.setBorderTop(headerCellStyle.getBorderBottom());
-		// Cr�ation de l'ent�te
+		// Création de l'entête
 		HSSFRow row = sheet.createRow((short) 0);
 		TableColumn[] columns = table.getColumns();
 		for (int i = 0; i < columns.length; i++) {
@@ -285,7 +285,7 @@ public class SWTHelper {
 			cell.setCellValue(column.getText());
 			cell.setCellStyle(headerCellStyle);
 		}
-		// Cr�ation du style des cellules
+		// Création du style des cellules
 		HSSFCellStyle bodyCellStyle = wb.createCellStyle();
 		bodyCellStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
 		bodyCellStyle.setBorderLeft(bodyCellStyle.getBorderBottom());
@@ -294,21 +294,21 @@ public class SWTHelper {
 		// Exportation des lignes du tableau
 		TableItem[] items = table.getItems();
 		appendToWorkbook(sheet, bodyCellStyle, items, columns.length);
-		// Retour du r�sultat
+		// Retour du résultat
 		return wb;
 	}
 
 	/**
-	 * G�n�re des lignes dans le classeur EXCEL pour les �l�ments d'un tableau.
+	 * Génère des lignes dans le classeur EXCEL pour les éléments d'un tableau.
 	 * 
 	 * @param sheet
 	 *            le feuillet EXCEL.
 	 * @param cellStyle
 	 *            le style de la cellule.
 	 * @param tableItems
-	 *            les �lements.
+	 *            les élements.
 	 * @param columnsNb
-	 *            le nombre de colonnes � exporter dans le feuillet.
+	 *            le nombre de colonnes à exporter dans le feuillet.
 	 */
 	private static void appendToWorkbook(HSSFSheet sheet,
 			HSSFCellStyle cellStyle, TableItem[] tableItems, int columnsNb) {

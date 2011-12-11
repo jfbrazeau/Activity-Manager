@@ -28,9 +28,9 @@ public abstract class AbstractModelTestCase extends TestCase {
 		props.load(in);
 		in.close();
 
-		// Préfixe de config à utiliser
+		// PrÃ©fixe de config Ã  utiliser
 		String cfg = props.getProperty("dbconfig");
-		// Initialisation de la connexion à la base de données
+		// Initialisation de la connexion Ã  la base de donnÃ©es
 		String jdbcDriver = props.getProperty(cfg + "." + "driver");
 		String jdbcUrl = props.getProperty(cfg + "." + "url");
 		String jdbcUser = props.getProperty(cfg + "." + "user");

@@ -19,11 +19,11 @@ public class CollaboratorsTest extends AbstractModelTestCase {
 		collaborator.setLogin("login");
 		collaborator.setIsActive(true);
 
-		// Création
+		// CrÃ©ation
 		long clbId = ModelMgr.createCollaborator(collaborator).getId();
 		assertTrue(clbId>0);
 
-		// Récupération du collaborateur
+		// RÃ©cupÃ©ration du collaborateur
 		Collaborator _collaborator = ModelMgr.getCollaborator(clbId);
 		assertNotNull(_collaborator);
 		assertEquals(_collaborator.getFirstName(), collaborator.getFirstName());
@@ -49,18 +49,18 @@ public class CollaboratorsTest extends AbstractModelTestCase {
 		collaborator2.setFirstName("First name2");
 		collaborator2.setLastName("Last name2");
 		collaborator2.setLogin(collaborator.getLogin());
-		// Tentative de création avec le même login => doit échouer
+		// Tentative de crÃ©ation avec le mÃªme login => doit Ã©chouer
 		try {
 			collaborator2 = ModelMgr.createCollaborator(collaborator2);
 			fail("A collaborator with the same login of another collaborator must not be created");
 		}
 		catch (ModelException ignored) {}
 
-		// Création du collaborateur avec un autre login => doit marcher
+		// CrÃ©ation du collaborateur avec un autre login => doit marcher
 		collaborator2.setLogin("login1");
 		collaborator2 = ModelMgr.createCollaborator(collaborator2);
 		try {
-			// Tentative d'update avec le même login
+			// Tentative d'update avec le mÃªme login
 			collaborator2.setLogin(collaborator.getLogin());
 			collaborator2 = ModelMgr.updateCollaborator(collaborator2);
 			fail("A collaborator with the same login of another collaborator must not be updated");
@@ -80,14 +80,14 @@ public class CollaboratorsTest extends AbstractModelTestCase {
 		collaborator.setIsActive(true);
 		collaborator = ModelMgr.createCollaborator(collaborator);
 		
-		// Récupération du collaborateur actif
+		// RÃ©cupÃ©ration du collaborateur actif
 		Collaborator[] collaborators = ModelMgr.getActiveCollaborators(Collaborator.ID_FIELD_IDX, true);
 		assertNotNull(collaborators);
 		assertEquals(1, collaborators.length);
 		assertEquals(collaborator.getId(), collaborators[0].getId());
 		
-		// Mise du collaborateur en non actif puis récupération
-		// => la liste doit être vide
+		// Mise du collaborateur en non actif puis rÃ©cupÃ©ration
+		// => la liste doit Ãªtre vide
 		collaborator.setIsActive(false);
 		collaborator = ModelMgr.updateCollaborator(collaborator);
 		collaborators = ModelMgr.getActiveCollaborators(Collaborator.ID_FIELD_IDX, true);
@@ -136,7 +136,7 @@ public class CollaboratorsTest extends AbstractModelTestCase {
 		assertEquals(c1.getId(), collaborators[1].getId());
 		assertEquals(c2.getId(), collaborators[2].getId());
 
-		// Tri par prénom
+		// Tri par prÃ©nom
 		collaborators = ModelMgr.getCollaborators(Collaborator.FIRST_NAME_FIELD_IDX, true);
 		assertNotNull(collaborators);
 		assertEquals(3, collaborators.length);

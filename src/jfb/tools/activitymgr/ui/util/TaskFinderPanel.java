@@ -52,13 +52,13 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 
 /**
- * Paneau offrant la possibilit� de rechercher une tache par son nom ou son
+ * Paneau offrant la possibilité de rechercher une tache par son nom ou son
  * code.
  */
 public class TaskFinderPanel extends Composite {
 
 	/**
-	 * Liste de valeurs pour la liste de s�lection du nom de l'attribut utilis�
+	 * Liste de valeurs pour la liste de sélection du nom de l'attribut utilisé
 	 * pour la recherche
 	 */
 	public static final String TASK_NAME_SEARCH_FIELD_LABEL = Strings
@@ -67,7 +67,7 @@ public class TaskFinderPanel extends Composite {
 			.getString("TaskFinderPanel.attributes.TASK_CODE"); //  @jve:decl-index=0: //$NON-NLS-1$
 
 	/**
-	 * Liste de valeurs pour la liste de s�lection du type de crit�re utilis�
+	 * Liste de valeurs pour la liste de sélection du type de critère utilisé
 	 * pour la recherche
 	 */
 	public static final String IS_EQUAL_TO_CRITERIA_LABEL = Strings
@@ -85,23 +85,23 @@ public class TaskFinderPanel extends Composite {
 	/** Liste des noms d'attributs utilisables pour la recherche */
 	private Combo searchFieldCombo = null;
 
-	/** Liste de crit�res de recherche */
+	/** Liste de critères de recherche */
 	private Combo searchCriteriaCombo = null;
 
-	/** Valeur utilis�e pour la recherche */
+	/** Valeur utilisée pour la recherche */
 	private Text searchText = null;
 
 	/** Bouton de recherche */
 	private Button findButton = null;
 
-	/** Objet � l'�coute de la s�lectiond d'une tache */
+	/** Objet à l'écoute de la sélectiond d'une tache */
 	private List<ITaskSelectionListener> taskSelectionListeners = new ArrayList<ITaskSelectionListener>(); // @jve:decl-index=0:
 
-	/** Dialogue permettant de s�lectionner une tache parmi une liste */
+	/** Dialogue permettant de sélectionner une tache parmi une liste */
 	private TaskChooserDialog taskChooserDialog = null;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parent
 	 *            le composant parent.
@@ -111,7 +111,7 @@ public class TaskFinderPanel extends Composite {
 	}
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parent
 	 *            le composant parent.
@@ -121,7 +121,7 @@ public class TaskFinderPanel extends Composite {
 	public TaskFinderPanel(Composite parent, int style) {
 		super(parent, style);
 		initialize();
-		// Initialisation de la liste de choix du champ utilis� pour la
+		// Initialisation de la liste de choix du champ utilisé pour la
 		// recherche (nom, code)
 		searchFieldCombo.add(TASK_NAME_SEARCH_FIELD_LABEL,
 				TaskSearchFilter.TASK_NAME_FIELD_IDX);
@@ -129,7 +129,7 @@ public class TaskFinderPanel extends Composite {
 				TaskSearchFilter.TASK_CODE_FIELD_IDX);
 		searchFieldCombo.setText(TASK_NAME_SEARCH_FIELD_LABEL);
 
-		// Initialisation de la liste de choix du crit�re de recherche
+		// Initialisation de la liste de choix du critère de recherche
 		searchCriteriaCombo.add(IS_EQUAL_TO_CRITERIA_LABEL,
 				TaskSearchFilter.IS_EQUAL_TO_CRITERIA_IDX);
 		searchCriteriaCombo.add(STARTS_WITH_CRITERIA_LABEL,
@@ -142,7 +142,7 @@ public class TaskFinderPanel extends Composite {
 
 		// Ajout du KeyListener permettant de valider la saisie sur
 		// l'utilisation de
-		// la touche entr�e
+		// la touche entrée
 		KeyListener listener = new KeyAdapter() {
 			public void keyReleased(KeyEvent e) {
 				if (e.keyCode == SWT.CR)
@@ -168,20 +168,20 @@ public class TaskFinderPanel extends Composite {
 	}
 
 	/**
-	 * Lance le traitement de recherche de tache � partir du filtre sp�cifi�.
+	 * Lance le traitement de recherche de tache à partir du filtre spécifié.
 	 */
 	private void buttonPressed() {
-		// Chargement des donn�es
+		// Chargement des données
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				// Recherche en base de donn�es
+				// Recherche en base de données
 				TaskSearchFilter filter = new TaskSearchFilter();
 				filter.setFieldIndex(searchFieldCombo.getSelectionIndex());
 				filter.setCriteriaIndex(searchCriteriaCombo.getSelectionIndex());
 				filter.setFieldValue(searchText.getText());
 				Task[] tasks = ModelMgr.getTasks(filter);
 
-				// Traitement du r�sultat
+				// Traitement du résultat
 				Task selectedTask = null;
 				switch (tasks.length) {
 				case 0:
@@ -201,7 +201,7 @@ public class TaskFinderPanel extends Composite {
 					break;
 				}
 
-				// Notification de la s�lection
+				// Notification de la sélection
 				if (selectedTask != null) {
 					Iterator<ITaskSelectionListener> it = taskSelectionListeners
 							.iterator();
@@ -215,7 +215,7 @@ public class TaskFinderPanel extends Composite {
 				return null;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		safeRunner.run(getShell());
 	}
 
@@ -236,7 +236,7 @@ public class TaskFinderPanel extends Composite {
 	}
 
 	/**
-	 * Ajoute un objet � l'�coute de la s�lectiond d'une tache.
+	 * Ajoute un objet à l'écoute de la sélectiond d'une tache.
 	 * 
 	 * @param listener
 	 *            le nouveau listener.

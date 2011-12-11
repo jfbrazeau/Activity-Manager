@@ -47,7 +47,7 @@ class AllTestListener implements TestListener {
 	}
 	public void startTest(Test test) {
 		log("BEGIN TEST '" + ((TestCase)test).getName() + "'");
-		// Réinitialisation
+		// RÃ©initialisation
 		testFailed = false;
 	}
 	private void log(String s) {

@@ -49,7 +49,7 @@ public class TaskChooserTree extends AbstractTableMgr implements
 	/** Logger */
 	private static Logger log = Logger.getLogger(TaskChooserTree.class);
 
-	/** Constantes associ�es aux colonnes */
+	/** Constantes associées aux colonnes */
 	public static final int NAME_COLUMN_IDX = 0;
 	public static final int CODE_COLUMN_IDX = 1;
 	private static TableOrTreeColumnsMgr treeColsMgr;
@@ -61,15 +61,15 @@ public class TaskChooserTree extends AbstractTableMgr implements
 	private Composite parent;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parentComposite
 	 *            composant parent.
 	 * @param layoutData
-	 *            donn�es du layout.
+	 *            données du layout.
 	 */
 	public TaskChooserTree(Composite parentComposite, Object layoutData) {
-		// Cr�ation du composite parent
+		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayoutData(layoutData);
 		parent.setLayout(new GridLayout());
@@ -84,7 +84,7 @@ public class TaskChooserTree extends AbstractTableMgr implements
 		tree.setHeaderVisible(true);
 		tree.setEnabled(true);
 
-		// Cr�ation du viewer
+		// Création du viewer
 		treeViewer = new TreeViewer(tree);
 		treeViewer.setContentProvider(this);
 		treeViewer.setLabelProvider(this);
@@ -99,7 +99,7 @@ public class TaskChooserTree extends AbstractTableMgr implements
 						"CODE", Strings.getString("TaskChooserTree.columns.TASK_CODE"), 70, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
 		treeColsMgr.configureTree(treeViewer);
 
-		// Cr�ation d'une racine fictive
+		// Création d'une racine fictive
 		treeViewer.setInput(ROOT_NODE);
 	}
 
@@ -188,7 +188,7 @@ public class TaskChooserTree extends AbstractTableMgr implements
 				return parentTask == null ? treeViewer.getInput() : parentTask;
 			}
 		};
-		// Ex�cution du traitement
+		// Exécution du traitement
 		Object result = (Object) safeRunner.run(parent.getShell());
 		return result;
 	}
@@ -219,9 +219,9 @@ public class TaskChooserTree extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Retourne le viewer associ� � l'arbre.
+	 * Retourne le viewer associé à l'arbre.
 	 * 
-	 * @return le viewer associ� � l'arbre.
+	 * @return le viewer associé à l'arbre.
 	 */
 	public TreeViewer getTreeViewer() {
 		return treeViewer;

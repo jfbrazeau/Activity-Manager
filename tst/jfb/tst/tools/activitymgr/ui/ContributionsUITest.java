@@ -48,7 +48,7 @@ public class ContributionsUITest {
 			// Initialisation des logs et chargement de la config
 			PropertyConfigurator.configure("cfg/log4j.properties");
 			CfgMgr.load();
-			// Initialisation de la connexion � la base de donn�es
+			// Initialisation de la connexion à la base de données
 			String jdbcDriver = CfgMgr.get(CfgMgr.JDBC_DRIVER);
 			String jdbcUrl = CfgMgr.get(CfgMgr.JDBC_URL);
 			String jdbcUser = CfgMgr.get(CfgMgr.JDBC_USER);
@@ -61,7 +61,7 @@ public class ContributionsUITest {
 				);
 			
 	
-			// Ouverture de la den�tre
+			// Ouverture de la denêtre
 			Display display = new Display();
 			final Shell shell = new Shell(display);
 			shell.setSize(700, 400);

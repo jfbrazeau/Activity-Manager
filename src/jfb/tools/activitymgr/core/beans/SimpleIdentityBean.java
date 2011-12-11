@@ -28,7 +28,7 @@
 package jfb.tools.activitymgr.core.beans;
 
 /**
- * Classe m�re des bean persistants dont la cl� primaire est un identifiant de
+ * Classe mère des bean persistants dont la clé primaire est un identifiant de
  * type long.
  */
 public abstract class SimpleIdentityBean {
@@ -47,7 +47,7 @@ public abstract class SimpleIdentityBean {
 	}
 
 	/**
-	 * D�finit l'identifiant de l'objet.
+	 * Définit l'identifiant de l'objet.
 	 * 
 	 * @param id
 	 *            le nouvel identifiant.

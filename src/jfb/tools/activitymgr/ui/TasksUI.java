@@ -93,7 +93,7 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 
 /**
- * IHM de gestion des t�ches.
+ * IHM de gestion des tâches.
  */
 public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		ICellModifier, SelectionListener, MenuListener, ITreeContentProvider,
@@ -102,7 +102,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	/** Logger */
 	private static Logger log = Logger.getLogger(TasksUI.class);
 
-	/** Constantes associ�es aux colonnes */
+	/** Constantes associées aux colonnes */
 	public static final int NAME_COLUMN_IDX = 0;
 	public static final int CODE_COLUMN_IDX = 1;
 	public static final int INITIAL_FUND_COLUMN_IDX = 2;
@@ -114,42 +114,42 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	private static TableOrTreeColumnsMgr treeColsMgr;
 
 	/**
-	 * Interface utilis�e pour permettre l'�coute de la suppression ou de
+	 * Interface utilisée pour permettre l'écoute de la suppression ou de
 	 * l'ajout de taches.
 	 */
 	public static interface ITaskListener {
 
 		/**
-		 * Indique qu'une tache a �t� ajout�e au r�f�rentiel.
+		 * Indique qu'une tache a été ajoutée au référentiel.
 		 * 
 		 * @param task
-		 *            la tache ajout�e.
+		 *            la tache ajoutée.
 		 */
 		public void taskAdded(Task task);
 
 		/**
-		 * Indique qu'une tache a �t� supprim�e du r�f�rentiel.
+		 * Indique qu'une tache a été supprimée du référentiel.
 		 * 
 		 * @param task
-		 *            la tache supprim�e.
+		 *            la tache supprimée.
 		 */
 		public void taskRemoved(Task task);
 
 		/**
-		 * Indique qu'une tache a �t� modifi�e duans le r�f�rentiel.
+		 * Indique qu'une tache a été modifiée duans le référentiel.
 		 * 
 		 * @param task
-		 *            la tache modifi�e.
+		 *            la tache modifiée.
 		 */
 		public void taskUpdated(Task task);
 
 		/**
-		 * Indique qu'une tache a �t� d�plac�e duans le r�f�rentiel.
+		 * Indique qu'une tache a été déplacée duans le référentiel.
 		 * 
 		 * @param oldTaskFullpath
 		 *            ancien chemin de la tache.
 		 * @param task
-		 *            la tache d�plac�e.
+		 *            la tache déplacée.
 		 */
 		public void taskMoved(String oldTaskFullpath, Task task);
 	}
@@ -180,7 +180,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	/** Composant parent */
 	private Composite parent;
 
-	/** Table contenant les sommes associ�es aux taches */
+	/** Table contenant les sommes associées aux taches */
 	private Map<Task, TaskSums> tasksSums = new HashMap<Task, TaskSums>();
 
 	/** Popup permettant de choisir une tache */
@@ -192,14 +192,14 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	/** Panneau de recherche de tache */
 	private TaskFinderPanel taskFinderPanel;
 
-	/** Couleur de fond utilis�e pour les zones non modifiables */
+	/** Couleur de fond utilisée pour les zones non modifiables */
 	private Color disabledBGColor;
 
-	/** Couleur de police de caract�re utilis�e pour les zones non modifiables */
+	/** Couleur de police de caractère utilisée pour les zones non modifiables */
 	private Color disabledFGColor;
 
 	/**
-	 * Bool�en permettant de savoir si un refresh doit �tre ex�cut� lors du
+	 * Booléen permettant de savoir si un refresh doit être exécuté lors du
 	 * prochain paint
 	 */
 	private boolean needRefresh = false;
@@ -216,13 +216,13 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	}
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parentComposite
 	 *            composant parent.
 	 */
 	public TasksUI(Composite parentComposite) {
-		// Cr�ation du composite parent
+		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayout(new GridLayout(1, false));
 
@@ -247,13 +247,13 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		tree.setHeaderVisible(true);
 		tree.setEnabled(true);
 
-		// Cr�ation du viewer
+		// Création du viewer
 		treeViewer = new TreeViewer(tree);
 		treeViewer.setCellModifier(this);
 		treeViewer.setContentProvider(this);
 		treeViewer.setLabelProvider(this);
 
-		// Cr�ation des polices de caract�re
+		// Création des polices de caractère
 		disabledBGColor = tree.getDisplay().getSystemColor(
 				SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW);
 		disabledFGColor = tree.getDisplay().getSystemColor(
@@ -287,7 +287,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 						"COMMENT", Strings.getString("TasksUI.columns.TASK_COMMENT"), 200, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
 		treeColsMgr.configureTree(treeViewer);
 
-		// Configuration des �diteurs de cellules
+		// Configuration des éditeurs de cellules
 		CellEditor[] editors = new CellEditor[8];
 		editors[NAME_COLUMN_IDX] = new TextCellEditor(tree);
 		editors[CODE_COLUMN_IDX] = new TextCellEditor(tree);
@@ -319,7 +319,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		newSubtaskItem.setText(Strings
 				.getString("TasksUI.menuitems.NEW_SUBTASK")); //$NON-NLS-1$
 		newSubtaskItem.addSelectionListener(this);
-		// Sous-menu 'D�placer'
+		// Sous-menu 'Déplacer'
 		MenuItem moveToItem = new MenuItem(menu, SWT.CASCADE);
 		moveToItem.setText(Strings.getString("TasksUI.menuitems.MOVE")); //$NON-NLS-1$
 		Menu moveToMenu = new Menu(moveToItem);
@@ -372,9 +372,9 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		tree.setMenu(menu);
 
 		log.debug("UI initialization done"); //$NON-NLS-1$
-		// Ajout de KeyListeners pour faciliter le d�placement vers le bas et
+		// Ajout de KeyListeners pour faciliter le déplacement vers le bas et
 		// vers le haut des taches
-		// (Rq: les acc�l�rateurs sont ignor�s dans les menus contextuels)
+		// (Rq: les accélérateurs sont ignorés dans les menus contextuels)
 		KeyListener keyListener = new KeyAdapter() {
 			public void keyReleased(KeyEvent e) {
 				Widget simulatedWidget = null;
@@ -396,8 +396,8 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		parentComposite.addKeyListener(keyListener);
 		tree.addKeyListener(keyListener);
 
-		// Ajout d'un listener permettant de d�tecter lorsque le
-		// composant est affich� (passage d'un onglet � l'autre)
+		// Ajout d'un listener permettant de détecter lorsque le
+		// composant est affiché (passage d'un onglet à l'autre)
 		parent.addPaintListener(new PaintListener() {
 			public void paintControl(PaintEvent paintevent) {
 				if (needRefresh) {
@@ -422,27 +422,27 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	}
 
 	/**
-	 * Retourne les sommes associ�es � la tache sp�cifi�e.
+	 * Retourne les sommes associées à la tache spécifiée.
 	 * 
 	 * @param task
-	 *            la tache pour laquelle on d�sire conna�tre les cumuls.
-	 * @return les sommes associ�es � la tache.
+	 *            la tache pour laquelle on désire connaître les cumuls.
+	 * @return les sommes associées à la tache.
 	 * @throws ModelException
-	 *             lev� en cas de d�tection d'incoh�rence au niveau du mod�le.
+	 *             levé en cas de détection d'incohérence au niveau du modèle.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base de
-	 *             donn�es.
+	 *             levé en cas d'incident technique d'accès à la base de
+	 *             données.
 	 */
 	private TaskSums getTasksSums(Task task) throws ModelException, DbException {
-		// 1� lecture dans le cache
+		// 1° lecture dans le cache
 		TaskSums taskSums = (TaskSums) tasksSums.get(task);
 		if (taskSums == null) {
 			synchronized (tasksSums) {
-				// 2� lecture dans le cache (synchronis�e)
+				// 2° lecture dans le cache (synchronisé)
 				taskSums = (TaskSums) tasksSums.get(task);
 				if (taskSums == null) {
 					taskSums = ModelMgr.getTaskSums(task, null, null);
-					// D�pot dans le cache
+					// Dépot dans le cache
 					tasksSums.put(task, taskSums);
 				}
 			}
@@ -488,7 +488,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				return canModify ? Boolean.TRUE : Boolean.FALSE;
 			}
 		};
-		// Retour du r�sultat
+		// Retour du résultat
 		return ((Boolean) safeRunner.run(parent.getShell())).booleanValue();
 	}
 
@@ -545,11 +545,11 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 					throw new UITechException(
 							Strings.getString("TasksUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
-				// Retour du r�sultat
+				// Retour du résultat
 				return value;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		return safeRunner.run(parent.getShell());
 	}
 
@@ -610,36 +610,36 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 					throw new UITechException(
 							Strings.getString("TasksUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
-				// Mise � jour en base
+				// Mise à jour en base
 				ModelMgr.updateTask(task);
-				// Mise � jour des labels
+				// Mise à jour des labels
 				if (parentsMustBeRefreshed) {
-					// Mise � jour des sommes des taches parentes
+					// Mise à jour des sommes des taches parentes
 					updateBranchItemsSums(item);
 				} else {
-					// Notification de la mise � jour uniquement pour la tache
+					// Notification de la mise à jour uniquement pour la tache
 					notifyLabelProviderListener(new LabelProviderChangedEvent(
 							labelProvider, new Object[] { task }));
 				}
-				// Notification de la mise � jour de la tache pour les listeners
+				// Notification de la mise à jour de la tache pour les listeners
 				notifyTaskUpdated(task);
 				return null;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		safeRunner.run(parent.getShell());
 	}
 
 	/**
-	 * Met � jour les sommes associ�s aux taches de la branche associ�e � l'item
-	 * sp�cifi�.
+	 * Met à jour les sommes associés aux taches de la branche associée à l'item
+	 * spécifié.
 	 * 
 	 * @param item
 	 *            l'item de tableau.
 	 * @throws ModelException
-	 *             lev�e en cas d'invalidit� associ�e au mod�le.
+	 *             levée en cas d'invalidité associée au modèle.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique avec la base de donn�es.
+	 *             levé en cas d'incident technique avec la base de données.
 	 */
 	private void updateBranchItemsSums(TreeItem item) throws ModelException,
 			DbException {
@@ -653,7 +653,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 			list.add(0, taskCursor);
 			cursor = cursor.getParentItem();
 		}
-		// Notification de la mise � jour (ce qui recharge automatiquement
+		// Notification de la mise à jour (ce qui recharge automatiquement
 		// le cache des sommes de taches)
 		notifyLabelProviderListener(new LabelProviderChangedEvent(this,
 				list.toArray()));
@@ -709,7 +709,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				return parentTask == null ? treeViewer.getInput() : parentTask;
 			}
 		};
-		// Ex�cution du traitement
+		// Exécution du traitement
 		Object result = (Object) safeRunner.run(parent.getShell());
 		return result;
 	}
@@ -764,54 +764,54 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				TreeItem[] selection = treeViewer.getTree().getSelection();
-				// Cas d'une cr�ation (m�me niveau)
+				// Cas d'une création (même niveau)
 				if (newTaskItem.equals(source)) {
-					// R�cup�ration du noeud parent
+					// Récupération du noeud parent
 					TreeItem parentItem = selection.length > 0 ? selection[0]
 							.getParentItem() : null;
 					Task parentTask = parentItem == null ? null
 							: (Task) parentItem.getData();
-					// Cr�ation de la tache
+					// Création de la tache
 					Task newTask = newTask(parentTask);
 					// Notification des listeners
 					notifyTaskAdded(newTask);
 				}
-				// Cas d'une cr�ation de sous tache
+				// Cas d'une création de sous tache
 				else if (newSubtaskItem.equals(source)) {
 					Task selectedTask = (Task) selection[0].getData();
 					Task newTask = newTask(selectedTask);
 					// Notification des listeners
 					notifyTaskAdded(newTask);
 				}
-				// Cas d'une demande de d�placement vers le haut
+				// Cas d'une demande de déplacement vers le haut
 				else if (moveUpItem.equals(source)) {
 					Task selectedTask = (Task) selection[0].getData();
 					String oldTaskFullpath = selectedTask.getFullPath();
 					ModelMgr.moveUpTask(selectedTask);
-					// Mise � jour de l'IHM
+					// Mise à jour de l'IHM
 					treeViewer.refresh(selection[0].getParent().getData(),
 							false);
 					// Notification des listeners
 					notifyTaskMoved(oldTaskFullpath, selectedTask);
 				}
-				// Cas d'une demande de d�placement vers le haut
+				// Cas d'une demande de déplacement vers le haut
 				else if (moveDownItem.equals(source)) {
 					Task selectedTask = (Task) selection[0].getData();
 					String oldTaskFullpath = selectedTask.getFullPath();
 					ModelMgr.moveDownTask(selectedTask);
-					// Mise � jour de l'IHM
+					// Mise à jour de l'IHM
 					treeViewer.refresh(selection[0].getParent().getData(),
 							false);
 					// Notification des listeners
 					notifyTaskMoved(oldTaskFullpath, selectedTask);
 				}
-				// Cas d'une demande de d�placement avant ou apr�s une autre
+				// Cas d'une demande de déplacement avant ou après une autre
 				// tache
 				else if (moveBeforeAnotherTaskItem.equals(source)
 						|| moveAfterAnotherTaskItem.equals(source)) {
 					Task selectedTask = (Task) selection[0].getData();
 					final Task finalSelectedTask = selectedTask;
-					// Cr�ation du valideur
+					// Création du valideur
 					taskChooserDialog.setValidator(new ITaskChooserValidator() {
 						public void validateChoosenTask(Task choosenTask)
 								throws DialogException {
@@ -824,16 +824,16 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 					if (taskChooserDialog.open() == Dialog.OK) {
 						Task chosenTask = (Task) taskChooserDialog.getValue();
 						String oldTaskFullpath = selectedTask.getFullPath();
-						// Traitement du changement �ventuel de parent
+						// Traitement du changement éventuel de parent
 						if (!chosenTask.getPath()
 								.equals(selectedTask.getPath())) {
-							// D�placement
+							// Déplacement
 							ModelMgr.moveTask(selectedTask, chosenTask);
 							// Rafraichissement de la tache
 							selectedTask = ModelMgr.getTask(selectedTask
 									.getId());
 						}
-						// D�placement de la tache
+						// Déplacement de la tache
 						int targetNumber = chosenTask.getNumber();
 						if (moveBeforeAnotherTaskItem.equals(source)
 								&& targetNumber > selectedTask.getNumber())
@@ -844,18 +844,18 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 						ModelMgr.moveTaskUpOrDown(selectedTask, targetNumber);
 						// Notification des listeners
 						notifyTaskMoved(oldTaskFullpath, selectedTask);
-						// Mise � jour de l'IHM
+						// Mise à jour de l'IHM
 						treeViewer.refresh();
 					}
 				}
-				// Cas d'une demande de d�placement vers une autre tache
+				// Cas d'une demande de déplacement vers une autre tache
 				else if (moveToAnotherTaskItem.equals(source)) {
 					Task taskToMove = (Task) selection[0].getData();
-					// R�cup�ration du noeud parent
+					// Récupération du noeud parent
 					TreeItem parentItem = selection[0].getParentItem();
 					final Task srcParentTask = (parentItem != null) ? (Task) parentItem
 							.getData() : null;
-					// Cr�ation du valideur
+					// Création du valideur
 					taskChooserDialog.setValidator(new ITaskChooserValidator() {
 						public void validateChoosenTask(Task selectedTask)
 								throws DialogException {
@@ -868,7 +868,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 							} catch (ModelException e) {
 								throw new DialogException(e.getMessage(), null);
 							}
-							// TODO Ajouter au ITaskChooserValidator la lev�e
+							// TODO Ajouter au ITaskChooserValidator la levée
 							// d'exception techniques pour ne plus avoir ce
 							// catch
 							catch (DbException e) {
@@ -887,9 +887,9 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 						ModelMgr.moveTask(taskToMove, newParentTask);
 						// Rafraichir l'ancien et le nouveau parent ne suffit
 						// pas
-						// dans le cas ou le parent destination change de num�ro
-						// (ex : d�placement d'une tache A vers une tache B avec
-						// A et B initialement soeurs, A �tant plac� avant B)
+						// dans le cas ou le parent destination change de numéro
+						// (ex : déplacement d'une tache A vers une tache B avec
+						// A et B initialement soeurs, A étant placé avant B)
 						// treeViewer.refresh(newParentTask);
 						// treeViewer.refresh(srcParentTask);
 						treeViewer.refresh();
@@ -897,23 +897,23 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 						notifyTaskMoved(oldTaskFullpath, taskToMove);
 					}
 				}
-				// Cas d'une demande de d�placement vers la racine
+				// Cas d'une demande de déplacement vers la racine
 				else if (moveToRootItem.equals(source)) {
 					TreeItem selectedItem = selection[0];
 					Task taskToMove = (Task) selectedItem.getData();
 					String oldTaskFullpath = taskToMove.getFullPath();
-					// D�placement
+					// Déplacement
 					ModelMgr.moveTask(taskToMove, null);
 					treeViewer.refresh();
 					// Notification des listeners
 					notifyTaskMoved(oldTaskFullpath, taskToMove);
 				}
-				// Cas d'une demande de copie des taches s�lectionn�es (on met
+				// Cas d'une demande de copie des taches sélectionnées (on met
 				// dans le presse papier
 				// le chemin de la tache)
 				else if (copyItem.equals(source)) {
-					// Impl�mentation en multi s�lection => pour l'instant on ne
-					// veut g�rer qu'une seule tache � la fois
+					// Implémentation en multi sélection => pour l'instant on ne
+					// veut gérer qu'une seule tache à la fois
 					// TreeItem[] selectedItems =
 					// treeViewer.getTree().getSelection();
 					// Clipboard clipboard = new Clipboard(parent.getDisplay());
@@ -929,7 +929,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 					// clipboard.setContents(taskCodePaths, transfers);
 					// clipboard.dispose();
 
-					// Impl�mentation en s�lection simple
+					// Implémentation en sélection simple
 					if (selection != null && selection.length > 0) {
 						TreeItem selectedItem = selection[0];
 						Clipboard clipboard = new Clipboard(parent.getDisplay());
@@ -951,9 +951,9 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 					ModelMgr.removeTask(selectedTask);
 					// Suppression dans l'arbre
 					treeViewer.remove(selectedTask);
-					// Mise � jour des sommes des taches parentes
+					// Mise à jour des sommes des taches parentes
 					updateBranchItemsSums(parentItem);
-					// Mise � jour des taches soeurs
+					// Mise à jour des taches soeurs
 					if (parentTask != null)
 						treeViewer.refresh(parentTask);
 					else
@@ -984,12 +984,12 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				}
 				// Cas d'une demande de rafraichissement
 				else if (refreshItem.equals(source)) {
-					// R�cup�ration du noeud parent
+					// Récupération du noeud parent
 					TreeItem selectedItem = selection[0];
 					TreeItem parentItem = selectedItem.getParentItem();
 					Task parentTask = (parentItem != null) ? (Task) parentItem
 							.getData() : null;
-					// Mise � jour
+					// Mise à jour
 					if (parentTask != null)
 						treeViewer.refresh(parentTask);
 					else
@@ -1003,7 +1003,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				return null;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		safeRunner.run(parent.getShell());
 	}
 
@@ -1024,16 +1024,16 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 * @param parentTask
 	 *            la tache parent ou null pour une tache racine.
 	 * @throws DbException
-	 *             lev� en cas d'incident associ� � la persistence.
+	 *             levé en cas d'incident associé à la persistence.
 	 * @throws ModelException
-	 *             lev� en cas de violation du mod�le de donn�es.
-	 * @return la tache cr��e.
+	 *             levé en cas de violation du modèle de données.
+	 * @return la tache créée.
 	 */
 	private Task newTask(Task parentTask) throws DbException, ModelException {
 		log.debug("newTask(" + parentTask + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-		// Cr�ation de la nouvelle tache
+		// Création de la nouvelle tache
 		Task newTask = ModelMgr.createNewTask(parentTask);
-		// Ajout dans l'arbre et cr�ation en base
+		// Ajout dans l'arbre et création en base
 		treeViewer.add(parentTask == null ? treeViewer.getInput() : parentTask,
 				newTask);
 		treeViewer.setSelection(new StructuredSelection(newTask), true);
@@ -1088,7 +1088,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 * jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseOpened()
 	 */
 	public void databaseOpened() {
-		// Cr�ation d'une racine fictive
+		// Création d'une racine fictive
 		treeViewer.setInput(ROOT_NODE);
 	}
 
@@ -1128,10 +1128,10 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	}
 
 	/**
-	 * Notifie les listeners qu'une tache a �t� ajout�e.
+	 * Notifie les listeners qu'une tache a été ajoutée.
 	 * 
 	 * @param newTask
-	 *            la tache ajout�.
+	 *            la tache ajouté.
 	 */
 	private void notifyTaskAdded(Task newTask) {
 		Iterator<ITaskListener> it = listeners.iterator();
@@ -1144,10 +1144,10 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	}
 
 	/**
-	 * Notifie les listeners qu'une tache a �t� supprim�e.
+	 * Notifie les listeners qu'une tache a été supprimée.
 	 * 
 	 * @param task
-	 *            la tache supprim�e.
+	 *            la tache supprimée.
 	 */
 	private void notifyTaskRemoved(Task task) {
 		Iterator<ITaskListener> it = listeners.iterator();
@@ -1160,10 +1160,10 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	}
 
 	/**
-	 * Notifie les listeners qu'une tache a �t� modifi�e.
+	 * Notifie les listeners qu'une tache a été modifiée.
 	 * 
 	 * @param task
-	 *            la tache modifi�e.
+	 *            la tache modifiée.
 	 */
 	private void notifyTaskUpdated(Task task) {
 		Iterator<ITaskListener> it = listeners.iterator();
@@ -1176,10 +1176,10 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	}
 
 	/**
-	 * Notifie les listeners qu'une tache a �t� d�plac�e.
+	 * Notifie les listeners qu'une tache a été déplacée.
 	 * 
 	 * @param task
-	 *            la tache modifi�e.
+	 *            la tache modifiée.
 	 */
 	private void notifyTaskMoved(String oldTaskPath, Task task) {
 		Iterator<ITaskListener> it = listeners.iterator();
@@ -1192,30 +1192,30 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	}
 
 	/**
-	 * Indique qu'une contribution a �t� ajout�e au r�f�rentiel.
+	 * Indique qu'une contribution a été ajoutée au référentiel.
 	 * 
 	 * @param contribution
-	 *            la contribution ajout�e.
+	 *            la contribution ajoutée.
 	 */
 	public void contributionAdded(Contribution contribution) {
 		needRefresh = true;
 	}
 
 	/**
-	 * Indique que des contributions ont �t� supprim�es du r�f�rentiel.
+	 * Indique que des contributions ont été supprimées du référentiel.
 	 * 
 	 * @param contributions
-	 *            les contributions supprim�es.
+	 *            les contributions supprimées.
 	 */
 	public void contributionsRemoved(Contribution[] contributions) {
 		needRefresh = true;
 	}
 
 	/**
-	 * Indique que des contributions ont �t� modifi�e dans le r�f�rentiel.
+	 * Indique que des contributions ont été modifiée dans le référentiel.
 	 * 
 	 * @param contributions
-	 *            les contributions modifi�es.
+	 *            les contributions modifiées.
 	 */
 	public void contributionsUpdated(Contribution[] contributions) {
 		needRefresh = true;

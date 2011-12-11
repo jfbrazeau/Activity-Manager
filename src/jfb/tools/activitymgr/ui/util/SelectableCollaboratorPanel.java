@@ -63,7 +63,7 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 	private static Logger log = Logger
 			.getLogger(SelectableCollaboratorPanel.class);
 
-	/** Constantes associ�es aux colonnes */
+	/** Constantes associées aux colonnes */
 	public static final int FIRST_NAME_COLUMN_IDX = 0;
 	public static final int LAST_NAME_COLUMN_IDX = 1;
 	private static TableOrTreeColumnsMgr tableColsMgr;
@@ -74,23 +74,23 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 	/** Composant parent */
 	private Composite parent;
 
-	/** Index de la colonne utilis� pour trier les collaborateurs */
+	/** Index de la colonne utilisé pour trier les collaborateurs */
 	private int sortColumnIndex = LAST_NAME_COLUMN_IDX;
 
-	/** Icone utilis� pour marquer le collaborateur s�lectionn� */
+	/** Icone utilisé pour marquer le collaborateur sélectionné */
 	private Image selectedItemIcon;
 
-	/** Icone utilis� pour les collaborateurs non s�lectionn�s */
+	/** Icone utilisé pour les collaborateurs non sélectionnés */
 	private Image unselectedItemIcon;
 
 	/** Liste des listeners */
 	private List<ICollaboratorSelectionListener> listeners = new ArrayList<ICollaboratorSelectionListener>();
 
-	/** Collaborateur s�lectionn� */
+	/** Collaborateur sélectionné */
 	private Collaborator selectedCollaborator;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parentComposite
 	 *            composant parent.
@@ -129,7 +129,7 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 			}
 		});
 
-		// Cr�ation du viewer
+		// Création du viewer
 		tableViewer = new TableViewer(table);
 		tableViewer.setContentProvider(this);
 		tableViewer.setLabelProvider(this);
@@ -161,7 +161,7 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 				table.setSortDirection(dir);
 				sortColumnIndex = Arrays.asList(table.getColumns()).indexOf(
 						newSortColumn);
-				// Rafraichissement des donn�es
+				// Rafraichissement des données
 				tableViewer.refresh();
 			}
 		};
@@ -181,19 +181,19 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Retourne le nombre de collaborateurs pr�sent�s dans le tableau.
+	 * Retourne le nombre de collaborateurs présentés dans le tableau.
 	 * 
-	 * @return le nombre de collaborateurs pr�sent�s dans le tableau.
+	 * @return le nombre de collaborateurs présentés dans le tableau.
 	 */
 	public int getCollaboratorsCount() {
 		return tableViewer.getTable().getItemCount();
 	}
 
 	/**
-	 * D�finit le collaborateur s�lectionn�.
+	 * Définit le collaborateur sélectionné.
 	 * 
 	 * @param idx
-	 *            index du collaborateur s�lectionn�.
+	 *            index du collaborateur sélectionné.
 	 */
 	public void setSelectedIndex(int idx) {
 		Collaborator c = (Collaborator) tableViewer.getElementAt(idx);
@@ -201,7 +201,7 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 	}
 
 	/**
-	 * D�finit le collaborateur s�lectionn�.
+	 * Définit le collaborateur sélectionné.
 	 * 
 	 * @param collaborator
 	 *            le collaborateur.
@@ -219,9 +219,9 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Retourne le collaborateur s�lectionn�.
+	 * Retourne le collaborateur sélectionné.
 	 * 
-	 * @return le collaborateur s�lectionn�.
+	 * @return le collaborateur sélectionné.
 	 */
 	public Collaborator getSelectedCollaborator() {
 		return selectedCollaborator;
@@ -235,7 +235,7 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 	 * .lang.Object)
 	 */
 	public Object[] getElements(Object inputElement) {
-		// Chargement des donn�es
+		// Chargement des données
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				// Recherche des collaborateurs
@@ -249,12 +249,12 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 					orderByFieldIndex = Collaborator.LAST_NAME_FIELD_IDX;
 					break;
 				}
-				// R�cup�ration
+				// Récupération
 				return ModelMgr.getActiveCollaborators(orderByFieldIndex,
 						tableViewer.getTable().getSortDirection() == SWT.UP);
 			}
 		};
-		// Ex�cution
+		// Exécution
 		Object result = (Object) safeRunner.run(parent.getShell());
 		return (Collaborator[]) (result != null ? result
 				: new Collaborator[] {});
@@ -287,7 +287,7 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 				return text;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		return (String) safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
@@ -305,7 +305,7 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 	 * Initialise l'IHM.
 	 */
 	public void initialize() {
-		// Cr�ation d'une racine fictive
+		// Création d'une racine fictive
 		tableViewer.setInput(ROOT_NODE);
 	}
 
@@ -351,8 +351,8 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 	 * collaboratorRemoved(jfb.tools.activitymgr.core.beans.Collaborator)
 	 */
 	public void collaboratorRemoved(Collaborator collaborator) {
-		// Si le collaborateur supprim� est celui qui est actuellement
-		// s�lectionn� => on supprime la s�lection
+		// Si le collaborateur supprimé est celui qui est actuellement
+		// sélectionné => on supprime la sélection
 		if (collaborator.equals(selectedCollaborator))
 			selectedCollaborator = null;
 		tableViewer.refresh();
@@ -384,7 +384,7 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Ajoute un listener de s�lection.
+	 * Ajoute un listener de sélection.
 	 * 
 	 * @param listener
 	 *            le nouveau listener.
@@ -394,7 +394,7 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Supprime un listener de s�lection.
+	 * Supprime un listener de sélection.
 	 * 
 	 * @param listener
 	 *            le listener.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Jean-Fran�ois Brazeau. All rights reserved.
+ * Copyright (c) 2004-2012, Jean-Francois Brazeau. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
@@ -40,8 +40,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 
 /**
- * Classe de base impl�mentant une partie des m�thodes qui doivent �tre
- * impl�ment�es pour g�rer des tableaux.
+ * Classe de base implémentant une partie des méthodes qui doivent être
+ * implémentées pour gérer des tableaux.
  */
 public abstract class TableMgrBase implements ITableLabelProvider,
 		IStructuredContentProvider {
@@ -126,7 +126,7 @@ public abstract class TableMgrBase implements ITableLabelProvider,
 	 * Notifie les listeners du changement de valeur d'un label.
 	 * 
 	 * @param e
-	 *            l'�v�nement.
+	 *            l'évènement.
 	 */
 	protected void notifyLabelProviderListener(LabelProviderChangedEvent e) {
 		Iterator<ILabelProviderListener> it = labelProviderListeners.iterator();

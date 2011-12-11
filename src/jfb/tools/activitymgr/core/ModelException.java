@@ -30,8 +30,8 @@ package jfb.tools.activitymgr.core;
 import jfb.tools.activitymgr.AbstractApplicationException;
 
 /**
- * Exception lev�e en cas de violation des contraintes d'int�grit� du mod�le de
- * donn�es.
+ * Exception levée en cas de violation des contraintes d'intégrité du modèle de
+ * données.
  */
 public class ModelException extends AbstractApplicationException {
 
@@ -39,7 +39,7 @@ public class ModelException extends AbstractApplicationException {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param message
 	 *            message d'erreur.

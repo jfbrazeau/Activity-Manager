@@ -46,11 +46,11 @@ import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.log.SimpleLog4JLogSystem;
 
 /**
- * G�n�rateur de rapports.
+ * Générateur de rapports.
  * 
  * <p>
  * Consulter le fichier de configuration <code>reports.properties</code> pour
- * plus de d�tails sur la configuration des rapports.
+ * plus de détails sur la configuration des rapports.
  * </p>
  */
 public class ReportMgr {
@@ -59,10 +59,10 @@ public class ReportMgr {
 	private static Logger log = Logger.getLogger(ReportMgr.class);
 
 	/**
-	 * M�thode principale.
+	 * Méthode principale.
 	 * 
 	 * @param args
-	 *            argument de la m�thode principale.
+	 *            argument de la méthode principale.
 	 */
 	public static void main(String[] args) {
 		try {
@@ -74,7 +74,7 @@ public class ReportMgr {
 			Properties reportProps = new Properties();
 			reportProps.load(new FileInputStream("cfg/reports.properties")); //$NON-NLS-1$
 
-			// Initialisation de la connexion � la base de donn�es
+			// Initialisation de la connexion à la base de données
 			String jdbcDriver = CfgMgr.get(CfgMgr.JDBC_DRIVER);
 			String jdbcUrl = CfgMgr.get(CfgMgr.JDBC_URL);
 			String jdbcUser = CfgMgr.get(CfgMgr.JDBC_USER);
@@ -82,16 +82,16 @@ public class ReportMgr {
 			ModelMgr.initDatabaseAccess(jdbcDriver, jdbcUrl, jdbcUser,
 					jdbcPassword);
 
-			// Quels sont les identifiants des rapports � g�n�rer ?
+			// Quels sont les identifiants des rapports à générer ?
 			String reportList = reportProps.getProperty("reports.list"); //$NON-NLS-1$
 			String[] reportIds = reportList.split(","); //$NON-NLS-1$
-			// It�ration sur les rapports
+			// Itération sur les rapports
 			for (int i = 0; i < reportIds.length; i++) {
-				// R�cup�ration de l'ID du rapport et de son impl�mentation
+				// Récupération de l'ID du rapport et de son implémentation
 				String reportId = reportIds[i].trim();
 				log.info("Processing report '" + reportId + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 				if (!"".equals(reportId)) { //$NON-NLS-1$
-					// G�n�ration du fichier
+					// Génération du fichier
 					build(reportId, reportProps);
 				}
 			}
@@ -103,39 +103,39 @@ public class ReportMgr {
 	}
 
 	/**
-	 * Lance la g�n�ration d'un rapport.
+	 * Lance la génération d'un rapport.
 	 * 
 	 * @param reportId
 	 *            l'identifiant du rapport.
 	 * @param props
-	 *            le dictionnaire de proprit�t�s.
+	 *            le dictionnaire de propritétés.
 	 * @throws ReportException
-	 *             lev� en cas d'incident inattendu lors de la g�n�ration du
+	 *             levé en cas d'incident inattendu lors de la génération du
 	 *             rapport.
 	 * @throws IOException
-	 *             lev� en cas d'incident I/O en �criture sur le fichier.
+	 *             levé en cas d'incident I/O en écriture sur le fichier.
 	 */
 	public static void build(String reportId, Properties props)
 			throws ReportException, IOException {
 		PropertiesHelper propsHelper = new PropertiesHelper(reportId, props);
-		// R�cup�ration du nom du template
+		// Récupération du nom du template
 		String reportType = propsHelper.getProperty("type"); //$NON-NLS-1$
 		String reportTemplate = propsHelper.getProperty("template"); //$NON-NLS-1$
-		// Absence des 2 propri�t�s => erreur
+		// Absence des 2 propriétés => erreur
 		if (reportType == null && reportTemplate == null)
 			throw new ReportException(
 					Strings.getString(
 							"ReportMgr.errors.REQUIRED_TEMPLATE_TYPE_OR_PATH", reportId), null); //$NON-NLS-1$ //$NON-NLS-2$
-		// Si le type est sp�cifi�, utilisation du r�pertoire par d�faut
+		// Si le type est spécifié, utilisation du répertoire par défaut
 		if (reportType != null)
 			reportTemplate = "templates/" + reportType + ".vm"; //$NON-NLS-1$ //$NON-NLS-2$
-		// V�rification du type de rapport
+		// Vérification du type de rapport
 		if (!new File(reportTemplate).exists())
 			throw new ReportException(
 					Strings.getString(
 							"ReportMgr.errors.TEMPLATE_NOT_FOUND", reportTemplate), null); //$NON-NLS-1$ //$NON-NLS-2$
 
-		// R�cup�ration du nom de fichier de sortie
+		// Récupération du nom de fichier de sortie
 		String outputFileName = propsHelper.getProperty("outputFileName"); //$NON-NLS-1$
 		if (outputFileName == null)
 			throw new ReportException(
@@ -154,20 +154,20 @@ public class ReportMgr {
 
 		// Initialisation du moteur Velocity
 		VelocityEngine engine = new VelocityEngine();
-		// D�sactivation du chargement dans le CLASSPATH
+		// Désactivation du chargement dans le CLASSPATH
 		// engine.setProperty(VelocityEngine.RESOURCE_LOADER, "classpath");
 		// engine.setProperty(
 		// "classpath." + VelocityEngine.RESOURCE_LOADER + ".class",
 		// ClasspathResourceLoader.class.getName());
-		// D�finition de la politique de gestion des traces (afin que les
+		// Définition de la politique de gestion des traces (afin que les
 		// logs Velocity soient avec ceux de l'appli)
 		engine.setProperty(VelocityEngine.RUNTIME_LOG_LOGSYSTEM_CLASS,
 				SimpleLog4JLogSystem.class.getName());
 		engine.setProperty("runtime.log.logsystem.log4j.category", //$NON-NLS-1$
 				ReportMgr.class.getName());
-		// Patch pour �viter le log indiquant que le fichier
+		// Patch pour éviter le log indiquant que le fichier
 		// VM_global_library.vm
-		// n'a pas �t� trouv�
+		// n'a pas été trouvé
 		engine.setProperty(VelocityEngine.VM_LIBRARY, ""); //$NON-NLS-1$
 		try {
 			// Initialisation
@@ -181,21 +181,21 @@ public class ReportMgr {
 			throw new ReportException(
 					Strings.getString("ReportMgr.errors.UNEXPECTED_ERROR"), e); //$NON-NLS-1$
 		}
-		// Fermeture du fichier g�n�r�
+		// Fermeture du fichier généré
 		out.close();
 	}
 
 	/**
-	 * Ouvre en �criture le fichier de sortie du rapport.
+	 * Ouvre en écriture le fichier de sortie du rapport.
 	 * 
 	 * @param fileName
-	 *            le nom du fichier � ouvrir.
-	 * @return le flux d'�criture.
+	 *            le nom du fichier à ouvrir.
+	 * @return le flux d'écriture.
 	 * @throws ReportException
-	 *             lev� en cas d'incident inattendu lors de la g�n�ration du
+	 *             levé en cas d'incident inattendu lors de la génération du
 	 *             rapport.
 	 * @throws IOException
-	 *             lev� en cas d'incident I/O en �criture sur le fichier.
+	 *             levé en cas d'incident I/O en écriture sur le fichier.
 	 */
 	private static PrintWriter openOutputFile(String fileName)
 			throws ReportException, IOException {

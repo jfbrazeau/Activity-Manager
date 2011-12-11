@@ -47,11 +47,11 @@ public class ContributionsViewerDialog extends AbstractDialog {
 	private static Logger log = Logger
 			.getLogger(ContributionsViewerDialog.class);
 
-	/** Table contenant les donn�es */
+	/** Table contenant les données */
 	private ContributionsViewerTable contributionsTable;
 
 	/**
-	 * Filtre de recherche (stock� dans cet objet en attendant l'invocation du
+	 * Filtre de recherche (stocké dans cet objet en attendant l'invocation du
 	 * createDialogArea)
 	 */
 	private Task task;
@@ -61,7 +61,7 @@ public class ContributionsViewerDialog extends AbstractDialog {
 	private Integer year;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parentShell
 	 *            shell parent.
@@ -106,7 +106,7 @@ public class ContributionsViewerDialog extends AbstractDialog {
 	 * @param contributor
 	 *            le collaborateur.
 	 * @param year
-	 *            l'ann�e.
+	 *            l'année.
 	 * @param month
 	 *            le mois.
 	 * @param day

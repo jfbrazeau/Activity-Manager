@@ -80,7 +80,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 	/** Logger */
 	private static Logger log = Logger.getLogger(CollaboratorsUI.class);
 
-	/** Constantes associ�es aux colonnes */
+	/** Constantes associées aux colonnes */
 	public static final int IS_ACTIVE_COLUMN_IDX = 0;
 	public static final int IDENTIFIER_COLUMN_IDX = 1;
 	public static final int FIRST_NAME_COLUMN_IDX = 2;
@@ -88,41 +88,41 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 	private static TableOrTreeColumnsMgr tableColsMgr;
 
 	/**
-	 * Interface utilis�e pour permettre l'�coute de la suppression ou de
+	 * Interface utilisée pour permettre l'écoute de la suppression ou de
 	 * l'ajout de collaborateurs.
 	 */
 	public static interface ICollaboratorListener {
 
 		/**
-		 * Indique qu'un collaborateur a �t� ajout� au r�f�rentiel.
+		 * Indique qu'un collaborateur a été ajouté au référentiel.
 		 * 
 		 * @param collaborator
-		 *            le collaborateur ajout�.
+		 *            le collaborateur ajouté.
 		 */
 		public void collaboratorAdded(Collaborator collaborator);
 
 		/**
-		 * Indique qu'un collaborateur a �t� supprim� du r�f�rentiel.
+		 * Indique qu'un collaborateur a été supprimé du référentiel.
 		 * 
 		 * @param collaborator
-		 *            le collaborateur supprim�.
+		 *            le collaborateur supprimé.
 		 */
 		public void collaboratorRemoved(Collaborator collaborator);
 
 		/**
-		 * Indique qu'un collaborateur a �t� modifi� du r�f�rentiel.
+		 * Indique qu'un collaborateur a été modifié du référentiel.
 		 * 
 		 * @param collaborator
-		 *            le collaborateur modifi�.
+		 *            le collaborateur modifié.
 		 */
 		public void collaboratorUpdated(Collaborator collaborator);
 
 		/**
-		 * Indique que l'�tat d'activation d'un collaborateur a �t� d�sactiv�
-		 * dans le r�f�rentiel.
+		 * Indique que l'état d'activation d'un collaborateur a été désactivé
+		 * dans le référentiel.
 		 * 
 		 * @param collaborator
-		 *            le collaborateur modifi�.
+		 *            le collaborateur modifié.
 		 */
 		public void collaboratorActivationStatusChanged(
 				Collaborator collaborator);
@@ -147,13 +147,13 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 	/** Popup permettant de lister les contributions d'une tache */
 	private ContributionsViewerDialog contribsViewerDialog;
 
-	/** Index de la colonne utilis� pour trier les collaborateurs */
+	/** Index de la colonne utilisé pour trier les collaborateurs */
 	private int sortColumnIndex = LAST_NAME_COLUMN_IDX;
 
-	/** Icone utilis� pour marquer le collaborateur actifs */
+	/** Icone utilisé pour marquer le collaborateur actifs */
 	private Image checkedIcon;
 
-	/** Icone utilis� pour les collaborateurs non actifs */
+	/** Icone utilisé pour les collaborateurs non actifs */
 	private Image uncheckedIcon;
 
 	/**
@@ -168,13 +168,13 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parentComposite
 	 *            composant parent.
 	 */
 	public CollaboratorsUI(Composite parentComposite) {
-		// Cr�ation du composite parent
+		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayout(new GridLayout(1, false));
 
@@ -190,7 +190,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 		table.setToolTipText(Strings
 				.getString("CollaboratorsUI.table.TOOL_TIP")); //$NON-NLS-1$
 
-		// Cr�ation du viewer
+		// Création du viewer
 		tableViewer = new TableViewer(table);
 		tableViewer.setCellModifier(this);
 		tableViewer.setContentProvider(this);
@@ -227,7 +227,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 				table.setSortDirection(dir);
 				sortColumnIndex = Arrays.asList(table.getColumns()).indexOf(
 						newSortColumn);
-				// Rafraichissement des donn�es
+				// Rafraichissement des données
 				tableViewer.refresh();
 			}
 		};
@@ -242,7 +242,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 		table.setSortColumn(table.getColumns()[sortColumnIndex]);
 		table.setSortDirection(SWT.UP);
 
-		// Configuration des �diteurs de cellules
+		// Configuration des éditeurs de cellules
 		CellEditor[] editors = new CellEditor[9];
 		editors[IS_ACTIVE_COLUMN_IDX] = new CheckboxCellEditor(table);
 		editors[IDENTIFIER_COLUMN_IDX] = new TextCellEditor(table);
@@ -288,7 +288,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 	 * .lang.Object)
 	 */
 	public Object[] getElements(Object inputElement) {
-		// Chargement des donn�es
+		// Chargement des données
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				// Recherche des collaborateurs
@@ -308,12 +308,12 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 					orderByFieldIndex = Collaborator.LAST_NAME_FIELD_IDX;
 					break;
 				}
-				// R�cup�ration
+				// Récupération
 				return ModelMgr.getCollaborators(orderByFieldIndex, tableViewer
 						.getTable().getSortDirection() == SWT.UP);
 			}
 		};
-		// Ex�cution
+		// Exécution
 		Object result = (Object) safeRunner.run(parent.getShell());
 		return (Collaborator[]) (result != null ? result
 				: new Collaborator[] {});
@@ -364,7 +364,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 				return value;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		return safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
@@ -410,7 +410,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 					throw new UITechException(
 							Strings.getString("CollaboratorsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
-				// Mise � jour en base
+				// Mise à jour en base
 				ModelMgr.updateCollaborator(collaborator);
 				// Notification des listeners
 				notifyLabelProviderListener(new LabelProviderChangedEvent(
@@ -422,7 +422,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 				return null;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		safeRunner.run(parent.getShell());
 	}
 
@@ -441,7 +441,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 				String text = null;
 				switch (columnIndex) {
 				case (IS_ACTIVE_COLUMN_IDX):
-					text = ""; // La colonne est renseign�e par une icone //$NON-NLS-1$
+					text = ""; // La colonne est renseignée par une icone //$NON-NLS-1$
 					break;
 				case (IDENTIFIER_COLUMN_IDX):
 					text = collaborator.getLogin();
@@ -459,7 +459,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 				return text;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		return (String) safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
@@ -493,7 +493,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 				return image;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		return (Image) safeRunner.run(parent.getShell());
 	}
 
@@ -511,7 +511,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				TableItem[] selection = tableViewer.getTable().getSelection();
-				// Cas d'une cr�ation
+				// Cas d'une création
 				if (newItem.equals(source)) {
 					Collaborator newCollaborator = ModelMgr
 							.createNewCollaborator();
@@ -548,7 +548,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 				return null;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		safeRunner.run(parent.getShell());
 	}
 
@@ -556,7 +556,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 	 * Ajoute une ligne dans le tableau.
 	 * 
 	 * @param collaborator
-	 *            le collaborateur associ� � la nouvelle ligne.
+	 *            le collaborateur associé à la nouvelle ligne.
 	 */
 	private void newLine(Collaborator collaborator) {
 		// Ajout dans l'arbre
@@ -625,10 +625,10 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Notifie les listeners qu'un collaborateur a �t� ajout�.
+	 * Notifie les listeners qu'un collaborateur a été ajouté.
 	 * 
 	 * @param newCollaborator
-	 *            le collaborateur ajout�.
+	 *            le collaborateur ajouté.
 	 */
 	private void notifyCollaboratorAdded(Collaborator newCollaborator) {
 		Iterator<ICollaboratorListener> it = listeners.iterator();
@@ -639,10 +639,10 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Notifie les listeners qu'un collaborateur a �t� supprim�.
+	 * Notifie les listeners qu'un collaborateur a été supprimé.
 	 * 
 	 * @param collaborator
-	 *            le collaborateur supprim�.
+	 *            le collaborateur supprimé.
 	 */
 	private void notifyCollaboratorRemoved(Collaborator collaborator) {
 		Iterator<ICollaboratorListener> it = listeners.iterator();
@@ -653,10 +653,10 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Notifie les listeners qu'un collaborateur a �t� modifi�.
+	 * Notifie les listeners qu'un collaborateur a été modifié.
 	 * 
 	 * @param collaborator
-	 *            le collaborateur modifi�.
+	 *            le collaborateur modifié.
 	 */
 	private void notifyCollaboratorUpdated(Collaborator collaborator) {
 		Iterator<ICollaboratorListener> it = listeners.iterator();
@@ -667,11 +667,11 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 	}
 
 	/**
-	 * Notifie les listeners que l'�tat d'activation d'un collaborateur a �t�
-	 * modifi�.
+	 * Notifie les listeners que l'état d'activation d'un collaborateur a été
+	 * modifié.
 	 * 
 	 * @param collaborator
-	 *            le collaborateur modifi�.
+	 *            le collaborateur modifié.
 	 */
 	private void notifyCollaboratorActivationStatusChanged(
 			Collaborator collaborator) {
@@ -689,7 +689,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 	 * jfb.tools.activitymgr.ui.DatabaseUI.DbStatusListener#databaseOpened()
 	 */
 	public void databaseOpened() {
-		// Cr�ation d'une racine fictive
+		// Création d'une racine fictive
 		tableViewer.setInput(ROOT_NODE);
 	}
 

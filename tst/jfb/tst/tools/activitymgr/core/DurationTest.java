@@ -19,7 +19,7 @@ public class DurationTest extends AbstractModelTestCase {
 		for (int i=0; i<durations.length; i++) {
 			Duration duration = durations[i];
 			long durationId = duration.getId();
-			assertTrue("Durée nulle", durationId!=0);
+			assertTrue("DurÃ©e nulle", durationId!=0);
 			if (previousDuration!=null)
 				assertTrue("Durations are not correctly sorted", durationId>previousDuration.getId());
 			previousDuration = duration;
@@ -27,7 +27,7 @@ public class DurationTest extends AbstractModelTestCase {
 	}
 
 	public void testNullCreation() throws DbException {
-		// Création de durée nulle
+		// CrÃ©ation de durÃ©e nulle
 		try {
 			Duration duration = new Duration();
 			duration.setId(0);
@@ -40,11 +40,11 @@ public class DurationTest extends AbstractModelTestCase {
 	}
 
 	public void testConflictingCreation() throws DbException, ModelException {
-		// Création d'une durée
+		// CrÃ©ation d'une durÃ©e
 		Duration newDuration = generateNewDuration();
 		newDuration = ModelMgr.createDuration(newDuration);
 		try {
-			// Tentative de recréation
+			// Tentative de recrÃ©ation
 			ModelMgr.createDuration(newDuration);
 			fail("" + newDuration + " is supposed to exist in database, so it musn't be possible to create it");
 		}
@@ -58,7 +58,7 @@ public class DurationTest extends AbstractModelTestCase {
 	public void testRemove() throws DbException, ModelException {
 		Duration duration = generateNewDuration();
 
-		// Création
+		// CrÃ©ation
 		duration = ModelMgr.createDuration(duration);
 		assertTrue(ModelMgr.durationExists(duration));
 
@@ -68,7 +68,7 @@ public class DurationTest extends AbstractModelTestCase {
 	}
 
 	public void testUpdateWithAnExistingDuration() throws DbException, ModelException {
-		// Création
+		// CrÃ©ation
 		Duration duration = generateNewDuration();
 		duration = ModelMgr.createDuration(duration);
 		assertTrue(ModelMgr.durationExists(duration));
@@ -76,7 +76,7 @@ public class DurationTest extends AbstractModelTestCase {
 		duration2 = ModelMgr.createDuration(duration2);
 		assertTrue(ModelMgr.durationExists(duration2));
 
-		// Modif de la durée en une durée existante
+		// Modif de la durÃ©e en une durÃ©e existante
 		try {
 			ModelMgr.updateDuration(duration, duration2);
 			fail("Manage to update a duration whith the value of an existing duration");
@@ -85,33 +85,33 @@ public class DurationTest extends AbstractModelTestCase {
 			// Success
 		}
 		
-		// Suppression des données
+		// Suppression des donnÃ©es
 		ModelMgr.removeDuration(duration);
 		ModelMgr.removeDuration(duration2);
 	}
 	
 	public void testUpdateWithAnUnusedDuration() throws DbException, ModelException {
-		// Création
+		// CrÃ©ation
 		Duration duration = generateNewDuration();
 		duration = ModelMgr.createDuration(duration);
 		assertTrue(ModelMgr.durationExists(duration));
 
-		// Modif de la durée en une autre durée
+		// Modif de la durÃ©e en une autre durÃ©e
 		Duration oldDuration = duration;
 		duration = generateNewDuration();
 		ModelMgr.updateDuration(oldDuration, duration);
 
-		// Suppression des données
+		// Suppression des donnÃ©es
 		ModelMgr.removeDuration(duration);
 	}
 	
 	public void testUpdateDurationUsedByAContribution() throws DbException, ModelException {
-		// Création
+		// CrÃ©ation
 		Duration duration = generateNewDuration();
 		duration = ModelMgr.createDuration(duration);
 		assertTrue(ModelMgr.durationExists(duration));
 
-		// Création d'une contribution
+		// CrÃ©ation d'une contribution
 		Collaborator collaborator = ModelMgr.createNewCollaborator();
 		Task task = ModelMgr.createNewTask(null);
 		Contribution ctb = new Contribution();
@@ -121,7 +121,7 @@ public class DurationTest extends AbstractModelTestCase {
 		ctb.setDurationId(duration.getId());
 		ctb = ModelMgr.createContribution(ctb, false);
 
-		// Tentative de modif d'une durée utilisée
+		// Tentative de modif d'une durÃ©e utilisÃ©e
 		try {
 			Duration duration2 = generateNewDuration();
 			duration2 = ModelMgr.updateDuration(duration, duration2);
@@ -131,7 +131,7 @@ public class DurationTest extends AbstractModelTestCase {
 			// Success
 		}
 		
-		// Suppression des données
+		// Suppression des donnÃ©es
 		ModelMgr.removeContribution(ctb, false);
 		ModelMgr.removeTask(task);
 		ModelMgr.removeCollaborator(collaborator);
@@ -141,7 +141,7 @@ public class DurationTest extends AbstractModelTestCase {
 	private Duration generateNewDuration() throws DbException {
 		Duration duration = new Duration();
 		duration.setId(1);
-		// Recherche d'une durée inexistante en base
+		// Recherche d'une durÃ©e inexistante en base
 		while (ModelMgr.durationExists(duration)) {
 			duration.setId(duration.getId() + 1);
 		}

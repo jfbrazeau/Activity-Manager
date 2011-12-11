@@ -53,7 +53,7 @@ public class DateHelper {
 	private Map<String, SimpleDateFormat> dateFormats = Collections.synchronizedMap(new HashMap<String, SimpleDateFormat>());
 
 	/**
-	 * Retourne le formatteur de date associ� � un format.
+	 * Retourne le formatteur de date associé à un format.
 	 * 
 	 * @param format
 	 *            le format de date.
@@ -69,28 +69,28 @@ public class DateHelper {
 	}
 
 	/**
-	 * Convertit une cha�ne de caract�res au format YYYYMMDD en date.
+	 * Convertit une chaîne de caractères au format YYYYMMDD en date.
 	 * 
 	 * @param yyyyMMdd
 	 *            la date au format YYYYMMDD.
 	 * @return la date convertie.
 	 * @throws ParseException
-	 *             lev� en cas de probl�me de format de la cha�ne.
+	 *             levé en cas de problème de format de la chaîne.
 	 */
 	public Calendar toDate(String yyyyMMdd) throws ParseException {
 		return toDate("yyyyMMdd", yyyyMMdd); //$NON-NLS-1$
 	}
 
 	/**
-	 * Convertit une cha�ne de caract�res au format sp�cifi� en date.
+	 * Convertit une chaîne de caractères au format spécifié en date.
 	 * 
 	 * @param format
 	 *            le format de date.
 	 * @param date
-	 *            la chapine de caract�res.
+	 *            la chapine de caractères.
 	 * @return la date convertie.
 	 * @throws ParseException
-	 *             lev� en cas de probl�me de format de la cha�ne.
+	 *             levé en cas de problème de format de la chaîne.
 	 */
 	public Calendar toDate(String format, String date) throws ParseException {
 		Calendar _date = new GregorianCalendar();
@@ -100,12 +100,12 @@ public class DateHelper {
 	}
 
 	/**
-	 * Convertit une date au format sp�cifi�.
+	 * Convertit une date au format spécifié.
 	 * 
 	 * @param format
 	 *            le format de date.
 	 * @param date
-	 *            la date � convertir.
+	 *            la date à convertir.
 	 * @return la date convertie.
 	 */
 	public String toString(String format, Calendar date) {
@@ -116,7 +116,7 @@ public class DateHelper {
 	 * Convertit une date au format YYYYMMDD.
 	 * 
 	 * @param date
-	 *            la date � convertir.
+	 *            la date à convertir.
 	 * @return la date convertie.
 	 */
 	public String toYYYYMMDD(Calendar date) {
@@ -124,11 +124,11 @@ public class DateHelper {
 	}
 
 	/**
-	 * Retourne l'ann�e associ�e � une date.
+	 * Retourne l'année associée à une date.
 	 * 
 	 * @param date
 	 *            la date.
-	 * @return l'ann�e.
+	 * @return l'année.
 	 */
 	public Integer getYear(Calendar date) {
 		log.debug("getYear()"); //$NON-NLS-1$
@@ -136,7 +136,7 @@ public class DateHelper {
 	}
 
 	/**
-	 * Retourne le mois associ� � une date.
+	 * Retourne le mois associé à une date.
 	 * 
 	 * @param date
 	 *            la date.
@@ -148,7 +148,7 @@ public class DateHelper {
 	}
 
 	/**
-	 * Retourne le jour associ� � une date.
+	 * Retourne le jour associé à une date.
 	 * 
 	 * @param date
 	 *            la date.
@@ -160,11 +160,11 @@ public class DateHelper {
 	}
 
 	/**
-	 * Construit un interval de dates entre deux dates sp�cifi�es dont la
-	 * granularit� est le jour.
+	 * Construit un interval de dates entre deux dates spécifiées dont la
+	 * granularité est le jour.
 	 * 
 	 * @param fromDate
-	 *            date de d�part de l'interval.
+	 *            date de départ de l'interval.
 	 * @param toDate
 	 *            date de fin de l'interval.
 	 * @return l'interval de dates.
@@ -174,11 +174,11 @@ public class DateHelper {
 	}
 
 	/**
-	 * Construit un interval de dates entre deux dates sp�cifi�es dont la
-	 * granularit� est le mois.
+	 * Construit un interval de dates entre deux dates spécifiées dont la
+	 * granularité est le mois.
 	 * 
 	 * @param fromDate
-	 *            date de d�part de l'interval.
+	 *            date de départ de l'interval.
 	 * @param toDate
 	 *            date de fin de l'interval.
 	 * @return l'interval de dates.
@@ -189,15 +189,15 @@ public class DateHelper {
 	}
 
 	/**
-	 * Construit un interval de dates entre deux dates sp�cifi�es dont la
-	 * granularit� est sp�cifi�e en param�tre.
+	 * Construit un interval de dates entre deux dates spécifiées dont la
+	 * granularité est spécifiée en paramétre.
 	 * 
 	 * @param fromDate
-	 *            date de d�part de l'interval.
+	 *            date de départ de l'interval.
 	 * @param toDate
 	 *            date de fin de l'interval.
 	 * @param dateIncrementType
-	 *            granularit� de l'interval.
+	 *            granularité de l'interval.
 	 * @return l'interval de dates.
 	 */
 	private static Calendar[] buildInterval(Calendar fromDate, Calendar toDate,
@@ -222,10 +222,10 @@ public class DateHelper {
 	}
 
 	/**
-	 * Retourne le dernier jour du mois de la date sp�cifi�e.
+	 * Retourne le dernier jour du mois de la date spécifiée.
 	 * 
 	 * @param date
-	 *            la date associ� au mois dont on veut conna�tre le dernier
+	 *            la date associé au mois dont on veut connaître le dernier
 	 *            jour.
 	 * @return le dernier jour du mois.
 	 */

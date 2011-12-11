@@ -40,14 +40,14 @@ import java.util.Calendar;
 import org.apache.log4j.Logger;
 
 /**
- * Classe offrant des services de manipulation de chaines de caract�res.
+ * Classe offrant des services de manipulation de chaines de caractères.
  */
 public class StringHelper {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(StringHelper.class);
 
-	/** Tableau de caract�res utilis� pour la transformation Hexad�cimale */
+	/** Tableau de caractères utilisé pour la transformation Hexadécimale */
 	private static final char[] c = new char[] { '0', '1', '2', '3', '4', '5',
 			'6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
@@ -55,11 +55,11 @@ public class StringHelper {
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd"); //$NON-NLS-1$
 
 	/**
-	 * Convertit un octet en hexad�cimal.
+	 * Convertit un octet en hexadécimal.
 	 * 
 	 * @param b
-	 *            l'octet � convertir.
-	 * @return la valeur hexad�cimale.
+	 *            l'octet à convertir.
+	 * @return la valeur hexadécimale.
 	 */
 	public static String toHex(byte b) {
 		char[] result = new char[2];
@@ -69,10 +69,10 @@ public class StringHelper {
 	}
 
 	/**
-	 * Convertit une chaine hexad�cimal en octet.
+	 * Convertit une chaine hexadécimal en octet.
 	 * 
 	 * @param hex
-	 *            la chaine � convertir.
+	 *            la chaine à convertir.
 	 * @return la valeur binaire.
 	 */
 	public static byte toByte(String hex) {
@@ -80,10 +80,10 @@ public class StringHelper {
 	}
 
 	/**
-	 * Convertit une date en chaine de caract�re.
+	 * Convertit une date en chaine de caractère.
 	 * 
 	 * @param cal
-	 *            la date � convertir.
+	 *            la date à convertir.
 	 * @return la date convertie.
 	 */
 	public static String toYYYYMMDD(Calendar cal) {
@@ -91,10 +91,10 @@ public class StringHelper {
 	}
 
 	/**
-	 * Convertit une valeur en centi�mes en valeur au format de saisie.
+	 * Convertit une valeur en centièmes en valeur au format de saisie.
 	 * 
 	 * @param hundredth
-	 *            la valeur en centi�mes.
+	 *            la valeur en centièmes.
 	 * @return la valeur convertie au format de saisie.
 	 */
 	public static String hundredthToEntry(long hundredth) {
@@ -112,18 +112,18 @@ public class StringHelper {
 		}
 		// Insertion du point
 		buf.insert(buf.length() - 2, '.');
-		// Retour du r�sultat
+		// Retour du résultat
 		return buf.toString();
 	}
 
 	/**
-	 * Convertit une saisie utilisateur en centi�mes.
+	 * Convertit une saisie utilisateur en centièmes.
 	 * 
 	 * @param entry
-	 *            l'entr�e de l'utilisateur.
-	 * @return la valeur convertie en centi�mes.
+	 *            l'entrée de l'utilisateur.
+	 * @return la valeur convertie en centièmes.
 	 * @throws StringFormatException
-	 *             lev� en cas de probl�me de format de la saisie.
+	 *             levé en cas de problème de format de la saisie.
 	 */
 	public static long entryToHundredth(String entry)
 			throws StringFormatException {
@@ -143,13 +143,13 @@ public class StringHelper {
 	}
 
 	/**
-	 * Retourne le contenu d'un flux sous forme d'une cha�ne de caract�res.
+	 * Retourne le contenu d'un flux sous forme d'une chaîne de caractères.
 	 * 
 	 * @param in
 	 *            le flux de lecture.
-	 * @return la cha�ne de caract�re.
+	 * @return la chaîne de caractère.
 	 * @throws IOException
-	 *             lev� en cas d'incident I/O.
+	 *             levé en cas d'incident I/O.
 	 */
 	public static String fromInputStream(InputStream in) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -163,11 +163,11 @@ public class StringHelper {
 	}
 
 	/**
-	 * D�coupe un script pour en extraire les requ�tes SQL.
+	 * Découpe un script pour en extraire les requêtes SQL.
 	 * 
 	 * @param script
-	 *            le script � d�couper.
-	 * @return les requ�tes.
+	 *            le script à découper.
+	 * @return les requêtes.
 	 */
 	public static String[] getQueries(String script) {
 		ArrayList<String> queries = new ArrayList<String>();
@@ -178,7 +178,7 @@ public class StringHelper {
 		do {
 			String line = null;
 			// On ne lit dans le flux que si la ligne courante n'est pas
-			// encore totalement trait�e
+			// encore totalement traitée
 			if (line == null) {
 				try {
 					line = lnr.readLine();
@@ -201,11 +201,11 @@ public class StringHelper {
 				if (line.startsWith("--")) { //$NON-NLS-1$
 					line = null;
 				} else {
-					// Sinon on regarde si la ligne poss�de
+					// Sinon on regarde si la ligne possède
 					// un point virgule
 					int idx = line.indexOf(';');
-					// Si c'est le cas, on d�coupe la cha�ne et on
-					// ex�cute la requ�te
+					// Si c'est le cas, on découpe la chaîne et on
+					// exécute la requête
 					if (idx >= 0) {
 						buf.append(line.subSequence(0, idx));
 						line = line.substring(idx);
@@ -215,7 +215,7 @@ public class StringHelper {
 						if (!"".equals(sql)) //$NON-NLS-1$
 							queries.add(sql);
 					}
-					// sinon on ajoute la ligne au buffer de reque�te
+					// sinon on ajoute la ligne au buffer de requête
 					else {
 						buf.append(line);
 						buf.append('\n');
@@ -224,7 +224,7 @@ public class StringHelper {
 			}
 
 		} while (proceed);
-		// Ajout de la derni�re requ�te (�ventuellement)
+		// Ajout de la dernière requête (éventuellement)
 		if (buf.length() != 0)
 			queries.add(buf.toString());
 		return (String[]) queries.toArray(new String[queries.size()]);

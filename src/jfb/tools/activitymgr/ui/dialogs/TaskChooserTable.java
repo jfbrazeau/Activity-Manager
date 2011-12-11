@@ -43,15 +43,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 
 /**
- * Composant g�rant l'historique des t�che adffich� dans le dialogue de choix
- * d'un t�che.
+ * Composant gérant l'historique des tâche adffiché dans le dialogue de choix
+ * d'un tâche.
  */
 public class TaskChooserTable extends AbstractTableMgr {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(TaskChooserTree.class);
 
-	/** Constantes associ�es aux colonnes */
+	/** Constantes associées aux colonnes */
 	public static final int TASK_PATH_COLUMN_IDX = 0;
 	public static final int TASK_COLUMN_IDX = 1;
 	private static TableOrTreeColumnsMgr tableColsMgr;
@@ -63,18 +63,18 @@ public class TaskChooserTable extends AbstractTableMgr {
 	private Composite parent;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parentComposite
 	 *            composant parent.
 	 * @param layoutData
-	 *            donn�es du layout.
+	 *            données du layout.
 	 * @param tasks
-	 *            la liste des taches � afficher.
+	 *            la liste des taches à afficher.
 	 */
 	public TaskChooserTable(Composite parentComposite, Object layoutData,
 			Task[] tasks) {
-		// Cr�ation du composite parent
+		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayoutData(layoutData);
 		parent.setLayout(new GridLayout());
@@ -89,7 +89,7 @@ public class TaskChooserTable extends AbstractTableMgr {
 		table.setHeaderVisible(true);
 		table.setEnabled(true);
 
-		// Cr�ation du viewer
+		// Création du viewer
 		tableViewer = new TableViewer(table);
 		tableViewer.setContentProvider(this);
 		tableViewer.setLabelProvider(this);
@@ -135,7 +135,7 @@ public class TaskChooserTable extends AbstractTableMgr {
 				return text;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		return (String) safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
@@ -151,9 +151,9 @@ public class TaskChooserTable extends AbstractTableMgr {
 	}
 
 	/**
-	 * Retourne le viewer associ� au tableau.
+	 * Retourne le viewer associé au tableau.
 	 * 
-	 * @return le viewer associ� au tableau.
+	 * @return le viewer associé au tableau.
 	 */
 	public TableViewer getTableViewer() {
 		return tableViewer;

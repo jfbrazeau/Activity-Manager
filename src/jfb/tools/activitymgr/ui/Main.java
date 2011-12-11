@@ -51,7 +51,7 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 
 /**
- * Classe principale de l'application des gestion des l'activit�.
+ * Classe principale de l'application des gestion des l'activité.
  */
 public class Main {
 
@@ -95,7 +95,7 @@ public class Main {
 			splash.setLocation(x, y);
 			splash.open();
 
-			// Ouverture de la fen�tre
+			// Ouverture de la fenêtre
 			final Shell shell = new Shell(display);
 			shell.setSize(910, 550);
 			shell.setText(Strings.getString("Main.texts.TITLE")); //$NON-NLS-1$
@@ -112,41 +112,41 @@ public class Main {
 				}
 			});
 
-			// Cr�ation du groupe d'onglets
+			// Création du groupe d'onglets
 			final TabFolder tabFolder = new TabFolder(shell, SWT.TOP);
 			tabFolder.setLayout(new FillLayout(SWT.VERTICAL));
 			tabFolder
 					.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-			// Cr�ation de l'onglet de param�trage de l'acc�s � la base de
-			// donn�es
+			// Création de l'onglet de paramétrage de l'accès à la base de
+			// données
 			databaseTab = new TabItem(tabFolder, SWT.NONE);
 			databaseTab.setText(Strings.getString("Main.tabs.DATABASE")); //$NON-NLS-1$
 			databaseUI = new DatabaseUI(databaseTab);
 
-			// Cr�ation de l'onglet de gestion des dur�es
+			// Création de l'onglet de gestion des durées
 			durationsTab = new TabItem(tabFolder, SWT.NONE);
 			durationsTab.setText(Strings.getString("Main.tabs.DURATIONS")); //$NON-NLS-1$
 			durationsUI = new DurationsUI(durationsTab);
 
-			// Cr�ation de l'onglet de gestion des collaborateurs
+			// Création de l'onglet de gestion des collaborateurs
 			collaboratorsTab = new TabItem(tabFolder, SWT.NONE);
 			collaboratorsTab.setText(Strings
 					.getString("Main.tabs.COLLABORATORS")); //$NON-NLS-1$
 			collaboratorsUI = new CollaboratorsUI(collaboratorsTab);
 
-			// Cr�ation de l'onglet de gestion des taches
+			// Création de l'onglet de gestion des taches
 			tasksTab = new TabItem(tabFolder, SWT.NONE);
 			tasksTab.setText(Strings.getString("Main.tabs.TASKS")); //$NON-NLS-1$
 			tasksUI = new TasksUI(tasksTab);
 
-			// Cr�ation de l'onglet de gestion des contributions
+			// Création de l'onglet de gestion des contributions
 			contributionsTab = new TabItem(tabFolder, SWT.NONE);
 			contributionsTab.setText(Strings
 					.getString("Main.tabs.CONTRIBUTIONS")); //$NON-NLS-1$
 			contributionsUI = new ContributionsUI(contributionsTab);
 
-			// Cr�ation de l'onglet contenant les informations g�n�rales
+			// Création de l'onglet contenant les informations générales
 			aboutTab = new TabItem(tabFolder, SWT.NONE);
 			aboutTab.setText(Strings.getString("Main.tabs.ABOUT")); //$NON-NLS-1$
 			new AboutUI(aboutTab);
@@ -179,11 +179,11 @@ public class Main {
 				}
 			});
 
-			// Ouverture de la fen�tre
+			// Ouverture de la fenêtre
 			shell.open();
 			shell.setEnabled(false);
 
-			// Initialisation des attributs de connexion par d�faut
+			// Initialisation des attributs de connexion par défaut
 			databaseUI.initUI();
 
 			// Fermeture du splash
@@ -193,7 +193,7 @@ public class Main {
 			shell.setEnabled(true);
 			log.info("Application started"); //$NON-NLS-1$
 
-			// Ex�cution jusqu'� l'arr�t
+			// Exécution jusqu'à l'arrêt
 			while (!shell.isDisposed()) {
 				if (!display.readAndDispatch())
 					display.sleep();

@@ -40,7 +40,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 /**
- * Dialogue p�re des dialogues asoci�s � la page de configuration.
+ * Dialogue père des dialogues associés à la page de configuration.
  */
 public abstract class AbstractDialog extends Dialog {
 
@@ -56,11 +56,11 @@ public abstract class AbstractDialog extends Dialog {
 	/** Valeur initiale */
 	private Object initialValue;
 
-	/** Valeur valid�e */
+	/** Valeur validée */
 	private Object value;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parentShell
 	 *            le shell parent.
@@ -89,7 +89,7 @@ public abstract class AbstractDialog extends Dialog {
 	}
 
 	/**
-	 * D�finit la valeur s�lectionn�e par le dialogue.
+	 * Définit la valeur sélectionnée par le dialogue.
 	 * 
 	 * @param value
 	 *            la nouvelle valeur.
@@ -145,7 +145,7 @@ public abstract class AbstractDialog extends Dialog {
 	 * 
 	 * @return la nouvelle valeur du dialogue.
 	 * @throws DialogException
-	 *             lev� en cas de d�tection d'anomalie dans la saisie de
+	 *             levé en cas de détection d'anomalie dans la saisie de
 	 *             l'utilisateur.
 	 */
 	protected abstract Object validateUserEntry() throws DialogException;
@@ -165,7 +165,7 @@ public abstract class AbstractDialog extends Dialog {
 		if (icon != null)
 			shell.setImage(icon);
 
-		// Mise � jour du Layout
+		// Mise à jour du Layout
 		GridLayout defaultLayout = (GridLayout) c.getLayout();
 		GridLayout layout = new GridLayout(2, false);
 		layout.marginHeight = defaultLayout.marginHeight;
@@ -174,7 +174,7 @@ public abstract class AbstractDialog extends Dialog {
 		layout.horizontalSpacing = defaultLayout.horizontalSpacing;
 		c.setLayout(layout);
 
-		// Retour du r�sultat
+		// Retour du résultat
 		return c;
 	}
 

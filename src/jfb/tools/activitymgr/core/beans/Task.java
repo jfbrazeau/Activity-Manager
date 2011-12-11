@@ -30,7 +30,7 @@ package jfb.tools.activitymgr.core.beans;
 import jfb.tools.activitymgr.core.util.StringHelper;
 
 /**
- * T�che.
+ * Tâche.
  */
 public class Task extends SimpleIdentityBean {
 
@@ -43,7 +43,7 @@ public class Task extends SimpleIdentityBean {
 	/** Chemin de la tache */
 	private String path;
 
-	/** Num�ro de la t�che */
+	/** Numéro de la tâche */
 	private byte number;
 
 	/** Nombre de taches filles */
@@ -55,7 +55,7 @@ public class Task extends SimpleIdentityBean {
 	/** Consommation initiale */
 	private long initiallyConsumed;
 
-	/** Reste � faire */
+	/** Reste à faire */
 	private long todo;
 
 	/** Commentaire sur la tache */
@@ -69,28 +69,28 @@ public class Task extends SimpleIdentityBean {
 	}
 
 	/**
-	 * @return le budget allou� � la tache.
+	 * @return le budget alloué à la tache.
 	 */
 	public long getBudget() {
 		return budget;
 	}
 
 	/**
-	 * @return le consomm� initial de la tache.
+	 * @return le consommé initial de la tache.
 	 */
 	public long getInitiallyConsumed() {
 		return initiallyConsumed;
 	}
 
 	/**
-	 * @return le nom de la t�che.
+	 * @return le nom de la tâche.
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/**
-	 * @return le num�ro de la tache.
+	 * @return le numéro de la tache.
 	 */
 	public byte getNumber() {
 		return number;
@@ -104,21 +104,21 @@ public class Task extends SimpleIdentityBean {
 	}
 
 	/**
-	 * @return le nombre de t�ches filles.
+	 * @return le nombre de tâches filles.
 	 */
 	public int getSubTasksCount() {
 		return subTasksCount;
 	}
 
 	/**
-	 * @return le reste � faire associ� � la t�che.
+	 * @return le reste à faire associé à la tâche.
 	 */
 	public long getTodo() {
 		return todo;
 	}
 
 	/**
-	 * D�finit le code de la t�che.
+	 * Définit le code de la tâche.
 	 * 
 	 * @param code
 	 *            le nouveau code.
@@ -128,7 +128,7 @@ public class Task extends SimpleIdentityBean {
 	}
 
 	/**
-	 * D�finit le budget allou� � la tache
+	 * Définit le budget alloué à la tache
 	 * 
 	 * @param budget
 	 *            le nouveau budget.
@@ -138,17 +138,17 @@ public class Task extends SimpleIdentityBean {
 	}
 
 	/**
-	 * D�finit le consomm� initial de la tache.
+	 * Définit le consommé initial de la tache.
 	 * 
 	 * @param initiallyConsumed
-	 *            le nouveau consomm� initial.
+	 *            le nouveau consommé initial.
 	 */
 	public void setInitiallyConsumed(long initiallyConsumed) {
 		this.initiallyConsumed = initiallyConsumed;
 	}
 
 	/**
-	 * D�finit le nom de la tache.
+	 * Définit le nom de la tache.
 	 * 
 	 * @param name
 	 *            le nouveau nom.
@@ -158,17 +158,17 @@ public class Task extends SimpleIdentityBean {
 	}
 
 	/**
-	 * D�finit le num�ro de la tache.
+	 * Définit le numéro de la tache.
 	 * 
 	 * @param number
-	 *            le nouveau num�ro.
+	 *            le nouveau numéro.
 	 */
 	public void setNumber(byte number) {
 		this.number = number;
 	}
 
 	/**
-	 * D�finit le chemin de la tache.
+	 * Définit le chemin de la tache.
 	 * 
 	 * @param path
 	 *            le nouveau chemin.
@@ -178,7 +178,7 @@ public class Task extends SimpleIdentityBean {
 	}
 
 	/**
-	 * D�finiti le nombre de taches filles.
+	 * Définiti le nombre de taches filles.
 	 * 
 	 * @param subTasksCount
 	 *            le nouveau nombre de taches filles.
@@ -188,19 +188,19 @@ public class Task extends SimpleIdentityBean {
 	}
 
 	/**
-	 * D�finit le reste � faire associ� � la tache.
+	 * Définit le reste à faire associé à la tache.
 	 * 
 	 * @param todo
-	 *            le nouveau reste � faire.
+	 *            le nouveau reste à faire.
 	 */
 	public void setTodo(long todo) {
 		this.todo = todo;
 	}
 
 	/**
-	 * Construit le chemin complet de la t�che.
+	 * Construit le chemin complet de la tâche.
 	 * 
-	 * @return le chemin complet de la t�che.
+	 * @return le chemin complet de la tâche.
 	 */
 	public String getFullPath() {
 		StringBuffer result = new StringBuffer(path != null ? path : ""); //$NON-NLS-1$
@@ -209,16 +209,16 @@ public class Task extends SimpleIdentityBean {
 	}
 
 	/**
-	 * Retourne le commentaire associ� � la tache.
+	 * Retourne le commentaire associé à la tache.
 	 * 
-	 * @return le commentaire associ� � la tache.
+	 * @return le commentaire associé à la tache.
 	 */
 	public String getComment() {
 		return comment;
 	}
 
 	/**
-	 * D�finit le commentaire de la tache.
+	 * Définit le commentaire de la tache.
 	 * 
 	 * @param comment
 	 *            le nouveau commentaire.

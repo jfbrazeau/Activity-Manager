@@ -30,7 +30,7 @@ package jfb.tools.activitymgr.report;
 import jfb.tools.activitymgr.AbstractTechnicalException;
 
 /**
- * Exception lev�e dans le cadre de la g�n�ration de rapports.
+ * Exception levée dans le cadre de la génération de rapports.
  */
 public class ReportException extends AbstractTechnicalException {
 
@@ -38,12 +38,12 @@ public class ReportException extends AbstractTechnicalException {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param message
 	 *            message d'erreur.
 	 * @param cause
-	 *            exception � l'origine de la lev�e d'exception.
+	 *            exception à l'origine de la levée d'exception.
 	 */
 	public ReportException(String message, Throwable cause) {
 		super(message, cause);

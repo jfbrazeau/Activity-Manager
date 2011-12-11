@@ -62,10 +62,10 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 /**
- * Gestionnaire du mod�le.
+ * Gestionnaire du modèle.
  * 
  * <p>
- * Les services offerts par cette classe garantissent l'int�grit� du mod�le.
+ * Les services offerts par cette classe garantissent l'intégrité du modèle.
  * </p>
  */
 public class ModelMgr {
@@ -74,7 +74,7 @@ public class ModelMgr {
 	private static Logger log = Logger.getLogger(ModelMgr.class);
 
 	/**
-	 * Initialise la connexion � la base de donn�es.
+	 * Initialise la connexion à la base de données.
 	 * 
 	 * @param driverName
 	 *            le nom du driver JDBC.
@@ -85,7 +85,7 @@ public class ModelMgr {
 	 * @param password
 	 *            le mot de passe de connexion.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static void initDatabaseAccess(String driverName, String url,
 			String user, String password) throws DbException {
@@ -94,21 +94,21 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Ferme la base de donn�es.
+	 * Ferme la base de données.
 	 * 
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la BDD.
+	 *             levé en cas d'incident technique d'accès à la BDD.
 	 */
 	public static void closeDatabaseAccess() throws DbException {
 		DbMgr.closeDatabaseAccess();
 	}
 
 	/**
-	 * V�rifie si les tables existent dans le mod�le.
+	 * Vérifie si les tables existent dans le modèle.
 	 * 
-	 * @return un bool�en indiquant si la table sp�cifi�e existe dans le mod�le.
+	 * @return un booléen indiquant si la table spécifiée existe dans le modèle.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static boolean tablesExist() throws DbException {
 		log.info("tablesExist()"); //$NON-NLS-1$
@@ -124,7 +124,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return tablesExist;
 		} finally {
 			if (tx != null)
@@ -136,10 +136,10 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Cr�e les tables du mod�le de donn�es.
+	 * Crée les tables du modèle de données.
 	 * 
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static void createTables() throws DbException {
 		log.info("createTables()"); //$NON-NLS-1$
@@ -168,8 +168,8 @@ public class ModelMgr {
 	 * Substitue une partie du chemin d'un groupe de tache et de leurs
 	 * sous-taches par un nouvelle valeur.
 	 * <p>
-	 * Cette m�thode est utilis�e pour d�placer les sous-taches d'une tache qui
-	 * vient d'�tre d�plac�e.
+	 * Cette méthode est utilisée pour déplacer les sous-taches d'une tache qui
+	 * vient d'être déplacée.
 	 * </p>
 	 * 
 	 * @param tx
@@ -177,59 +177,59 @@ public class ModelMgr {
 	 * @param tasks
 	 *            les taches dont on veut changer le chemin.
 	 * @param oldPathLength
-	 *            la taille de la portion de chemin � changer.
+	 *            la taille de la portion de chemin à changer.
 	 * @param newPath
 	 *            le nouveau chemin.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	private static void changeTasksPaths(DbTransaction tx, Task[] tasks,
 			int oldPathLength, String newPath) throws DbException {
-		// R�cup�ration de la liste des taches
+		// Récupération de la liste des taches
 		Iterator<Task> it = Arrays.asList(tasks).iterator();
 		int newPathLength = newPath.length();
 		StringBuffer buf = new StringBuffer(newPath);
 		while (it.hasNext()) {
 			Task task = it.next();
 			log.debug("Updating path of task '" + task.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-			// Mise � jour des taches filles
+			// Mise à jour des taches filles
 			Task[] subTasks = DbMgr.getSubtasks(tx, task);
 			if (subTasks.length > 0)
 				changeTasksPaths(tx, subTasks, oldPathLength, newPath);
-			// Puis mise � jour de la tache elle-m�me
+			// Puis mise à jour de la tache elle-même
 			buf.setLength(newPathLength);
 			buf.append(task.getPath().substring(oldPathLength));
 			log.debug(" - old path : '" + task.getPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 			task.setPath(buf.toString());
 			log.debug(" - new path : '" + task.getPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-			// Mise � jour
+			// Mise à jour
 			DbMgr.updateTask(tx, task);
 		}
 	}
 
 	/**
-	 * V�rifie si la tache sp�cifi�e peut accueillir des sous-taches.
+	 * Vérifie si la tache spécifiée peut accueillir des sous-taches.
 	 * 
 	 * @param tx
 	 *            le contexte de transaction.
 	 * @param task
-	 *            la tache � controler.
+	 *            la tache à controler.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans la cas ou la tache de destination ne peut recevoir
+	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de sous-tache.
 	 */
 	private static void checkAcceptsSubtasks(DbTransaction tx, Task task)
 			throws DbException, ModelException {
 		// Rafraichissement des attributs de la tache
 		task = DbMgr.getTask(tx, task.getId());
-		// Une t�che qui admet d�j� des sous-taches peut en admettre d'autres
-		// La suite des controles n'est donc ex�cut�e que si la tache n'admet
-		// pas de sous-t�ches
+		// Une tâche qui admet déja des sous-taches peut en admettre d'autres
+		// La suite des controles n'est donc exécutée que si la tache n'admet
+		// pas de sous-tâches
 		if (task.getSubTasksCount() == 0) {
 			// Une tache ne peut admettre une sous-tache que si elle
-			// n'est pas d�j� associ�e � un consomm� (ie: � des contributions)
+			// n'est pas déja associée à un consommé (ie: à des contributions)
 			long contribsNb = DbMgr.getContributionsNb(tx, task, null, null,
 					null, null);
 			if (contribsNb != 0)
@@ -249,14 +249,14 @@ public class ModelMgr {
 	}
 
 	/**
-	 * V�rifie si la tache sp�cifi�e peut accueillir des sous-taches.
+	 * Vérifie si la tache spécifiée peut accueillir des sous-taches.
 	 * 
 	 * @param task
-	 *            la tache � controler.
+	 *            la tache à controler.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans la cas ou la tache de destination ne peut recevoir
+	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de sous-tache.
 	 */
 	public static void checkAcceptsSubtasks(Task task) throws DbException,
@@ -268,7 +268,7 @@ public class ModelMgr {
 			tx = DbMgr.beginTransaction();
 
 			// Une tache ne peut admettre une sous-tache que si elle
-			// n'est pas d�j� associ�e � un consomm�
+			// n'est pas déja associée à un consommé
 			checkAcceptsSubtasks(tx, task);
 
 			// Commit et fin de la transaction
@@ -284,17 +284,17 @@ public class ModelMgr {
 	}
 
 	/**
-	 * V�rifie que le chemin et le num�ro de la tache en base de donn�es
-	 * coincident avec la copie de la tache sp�cifi�e.
+	 * Vérifie que le chemin et le numéro de la tache en base de données
+	 * coincident avec la copie de la tache spécifiée.
 	 * 
 	 * @param tx
 	 *            le contexte de transaction.
 	 * @param task
-	 *            la copie de la tache en m�m�oire.
+	 *            la copie de la tache en mémoire.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans la cas ou la tache de destination ne peut recevoir
+	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de sous-tache.
 	 */
 	private static void checkTaskPathAndUpdateSubTasksCount(DbTransaction tx,
@@ -326,23 +326,23 @@ public class ModelMgr {
 	}
 
 	/**
-	 * V�rifie l'unicit� d'un login.
+	 * Vérifie l'unicité d'un login.
 	 * 
 	 * @param tx
 	 *            le contexte de transaction.
 	 * @param collaborator
-	 *            le collaborateur dont on veut v�rifier l'unicit� de login.
+	 *            le collaborateur dont on veut vérifier l'unicité de login.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans le cas ou le ogin n'est pas unique.
+	 *             levé dans le cas ou le ogin n'est pas unique.
 	 */
 	private static void checkUniqueLogin(DbTransaction tx,
 			Collaborator collaborator) throws DbException, ModelException {
-		// V�rification de l'unicit�
+		// Vérification de l'unicité
 		Collaborator colWithSameLogin = DbMgr.getCollaborator(tx,
 				collaborator.getLogin());
-		// V�rification du login
+		// Vérification du login
 		if (colWithSameLogin != null && !colWithSameLogin.equals(collaborator))
 			throw new ModelException(
 					Strings.getString(
@@ -350,15 +350,15 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Cr�e un collaborateur.
+	 * Crée un collaborateur.
 	 * 
 	 * @param collaborator
-	 *            le collaborateur � cr�er.
-	 * @return le collaborateur apr�s cr�ation.
+	 *            le collaborateur à créer.
+	 * @return le collaborateur après création.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans la cas ou la tache de destination ne peut recevoir
+	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de sous-tache.
 	 */
 	public static Collaborator createCollaborator(Collaborator collaborator)
@@ -368,7 +368,7 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Cr�ation du collaborateur
+			// Création du collaborateur
 			collaborator = createCollaborator(tx, collaborator);
 
 			// Commit et fin de la transaction
@@ -376,7 +376,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return collaborator;
 		} finally {
 			if (tx != null)
@@ -393,44 +393,44 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Cr�e un collaborateur dans un contexte de transaction.
+	 * Crée un collaborateur dans un contexte de transaction.
 	 * 
 	 * @param tx
 	 *            le contexte de transaction.
 	 * @param collaborator
-	 *            le collaborateur � cr�er.
-	 * @return le collaborateur apr�s cr�ation.
+	 *            le collaborateur à créer.
+	 * @return le collaborateur après création.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans la cas ou la tache de destination ne peut recevoir
+	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de sous-tache.
 	 */
 	private static Collaborator createCollaborator(DbTransaction tx,
 			Collaborator collaborator) throws DbException, ModelException {
 		log.info("createCollaborator(" + collaborator + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-		// Control de l'unicit� du login
+		// Control de l'unicité du login
 		checkUniqueLogin(tx, collaborator);
 
-		// Cr�ation du collaborateur
+		// Création du collaborateur
 		collaborator = DbMgr.createCollaborator(tx, collaborator);
 
-		// Retour du r�sultat
+		// Retour du résultat
 		return collaborator;
 	}
 
 	/**
-	 * Cr�e une contribution.
+	 * Crée une contribution.
 	 * 
 	 * @param contribution
-	 *            la contribution � cr�er.
+	 *            la contribution à créer.
 	 * @param updateEstimatedTimeToComlete
-	 *            bool�en indiquant si le reste � faire doit �tre d�cr�ment�.
-	 * @return la contribution apr�s cr�ation.
+	 *            booléen indiquant si le reste à faire doit être décrémenté.
+	 * @return la contribution après création.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans la cas ou la tache de destination ne peut recevoir
+	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de contribution.
 	 */
 	public static Contribution createContribution(Contribution contribution,
@@ -441,7 +441,7 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Cr�ation de la contribution
+			// Création de la contribution
 			contribution = createContribution(tx, contribution,
 					updateEstimatedTimeToComlete);
 
@@ -450,7 +450,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return contribution;
 		} finally {
 			if (tx != null)
@@ -467,19 +467,19 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Cr�e une contribution dans un contexte de transaction.
+	 * Crée une contribution dans un contexte de transaction.
 	 * 
 	 * @param tx
 	 *            le contexte de transaction.
 	 * @param contribution
-	 *            la contribution � cr�er.
+	 *            la contribution à créer.
 	 * @param updateEstimatedTimeToComlete
-	 *            bool�en indiquant si le reste � faire doit �tre d�cr�ment�.
-	 * @return la contribution apr�s cr�ation.
+	 *            booléen indiquant si le reste à faire doit être décrémenté.
+	 * @return la contribution après création.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans la cas ou la tache de destination ne peut recevoir
+	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de contribution.
 	 */
 	private static Contribution createContribution(DbTransaction tx,
@@ -493,31 +493,31 @@ public class ModelMgr {
 			throw new ModelException(
 					Strings.getString("ModelMgr.errors.TASK_WITH_AT_LEAST_ONE_SUBTASK_CANNOT_ACCEPT_CONTRIBUTIONS")); //$NON-NLS-1$
 
-		// Cr�ation de la contribution
+		// Création de la contribution
 		contribution = DbMgr.createContribution(tx, contribution);
 
-		// Faut-il mettre � jour automatiquement le RAF de la tache ?
+		// Faut-il mettre à jour automatiquement le RAF de la tache ?
 		if (updateEstimatedTimeToComlete) {
-			// Mise � jour du RAF de la tache
+			// Mise à jour du RAF de la tache
 			long newEtc = task.getTodo() - contribution.getDurationId();
 			task.setTodo(newEtc > 0 ? newEtc : 0);
 			DbMgr.updateTask(tx, task);
 		}
 
-		// Retour du r�sultat
+		// Retour du résultat
 		return contribution;
 	}
 
 	/**
-	 * Cr�e une dur�e.
+	 * Crée une durée.
 	 * 
 	 * @param duration
-	 *            la dur�e � cr�er.
-	 * @return la dur�e cr��e.
+	 *            la durée à créer.
+	 * @return la durée créée.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans la cas ou la dur�e existe d�j�.
+	 *             levé dans la cas ou la durée existe déjà.
 	 */
 	public static Duration createDuration(Duration duration)
 			throws DbException, ModelException {
@@ -526,7 +526,7 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Cr�ation
+			// Création
 			duration = createDuration(tx, duration);
 
 			// Commit et fin de la transaction
@@ -534,7 +534,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return duration;
 		} finally {
 			if (tx != null)
@@ -551,44 +551,44 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Cr�e une dur�e dans un contexte de transaction.
+	 * Crée une durée dans un contexte de transaction.
 	 * 
 	 * @param tx
 	 *            le contexte de transaction.
 	 * @param duration
-	 *            la dur�e � cr�er.
-	 * @return la dur�e cr��e.
+	 *            la durée à créer.
+	 * @return la durée créée.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans la cas ou la dur�e existe d�j�.
+	 *             levé dans la cas ou la durée existe déjà.
 	 */
 	private static Duration createDuration(DbTransaction tx, Duration duration)
 			throws DbException, ModelException {
 		log.info("createDuration(" + duration + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-		// V�rification de l'unicit�
+		// Vérification de l'unicité
 		if (durationExists(tx, duration))
 			throw new ModelException(
 					Strings.getString("ModelMgr.errros.DUPLICATE_DURATION")); //$NON-NLS-1$
 
-		// V�rification de la non nullit�
+		// Vérification de la non nullité
 		if (duration.getId() == 0)
 			throw new ModelException(
 					Strings.getString("ModelMgr.errors.NUL_DURATION_FORBIDDEN")); //$NON-NLS-1$
 
-		// Cr�ation
+		// Création
 		duration = DbMgr.createDuration(tx, duration);
 
-		// Retour du r�sultat
+		// Retour du résultat
 		return duration;
 	}
 
 	/**
-	 * Cr�e un nouveau collaborateur en g�n�rant automatiquement ses attributs.
+	 * Crée un nouveau collaborateur en générant automatiquement ses attributs.
 	 * 
 	 * @return le nouveau collaborateur.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Collaborator createNewCollaborator() throws DbException {
 		log.info("createNewCollaborator()"); //$NON-NLS-1$
@@ -597,8 +597,8 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Le login doit �tre unique => il faut v�rifier si
-			// celui-ci n'a pas d�j� �t� attribu�
+			// Le login doit être unique => il faut vérifier si
+			// celui-ci n'a pas déja été attribué
 			int idx = 0;
 			boolean unique = false;
 			String newLogin = null;
@@ -607,14 +607,14 @@ public class ModelMgr {
 				unique = DbMgr.getCollaborator(tx, newLogin) == null;
 				idx++;
 			}
-			// Cr�ation du nouveau collaborateur
+			// Création du nouveau collaborateur
 			Collaborator collaborator = new Collaborator();
 			collaborator.setLogin(newLogin);
 			collaborator
 					.setFirstName("<" + Strings.getString("ModelMgr.defaults.COLLABORATOR_FIRST_NAME") + ">"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			collaborator
 					.setLastName("<" + Strings.getString("ModelMgr.defaults.COLLABORATOR_LAST_NAME") + ">"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			// Cr�ation en base
+			// Création en base
 			collaborator = DbMgr.createCollaborator(tx, collaborator);
 
 			// Commit et fin de la transaction
@@ -622,7 +622,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return collaborator;
 		} finally {
 			if (tx != null)
@@ -639,25 +639,25 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Cr�e une nouvelle tache en g�n�rant un nom et un code.
+	 * Crée une nouvelle tache en générant un nom et un code.
 	 * 
 	 * <p>
-	 * Avant cr�ation, les caract�ristiques de la tache de destination sont
-	 * controll�es pour voir si elle peut accueillir des sous-taches.
+	 * Avant création, les caractéristiques de la tache de destination sont
+	 * controllées pour voir si elle peut accueillir des sous-taches.
 	 * </p>
 	 * 
 	 * <p>
-	 * Cette m�thode est synchronis�e en raison de la g�n�ration du num�ro de la
-	 * tache qui est d�plac�e � un autre chemin.
+	 * Cette méthode est synchronisé en raison de la génération du numéro de la
+	 * tache qui est déplacée à un autre chemin.
 	 * </p>
 	 * 
 	 * @param parentTask
 	 *            la tache parent de destination.
-	 * @return la tache cr�e.
+	 * @return la tache créée.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans la cas ou la tache de destination ne peut recevoir
+	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de sous-tache.
 	 * @see jfb.tools.activitymgr.core.ModelMgr#checkAcceptsSubtasks(Task)
 	 */
@@ -669,8 +669,8 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Le code doit �tre unique => il faut v�rifier si
-			// celui-ci n'a pas d�j� �t� attribu�
+			// Le code doit être unique => il faut vérifier si
+			// celui-ci n'a pas déja été attribué
 			int idx = 0;
 			boolean unique = false;
 			String newCode = null;
@@ -681,12 +681,12 @@ public class ModelMgr {
 				unique = DbMgr.getTask(tx, taskPath, newCode) == null;
 				idx++;
 			}
-			// Cr�ation du nouveau collaborateur
+			// Création du nouveau collaborateur
 			Task task = new Task();
 			task.setName("<" + Strings.getString("ModelMgr.defaults.TASK_NAME") + ">"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			task.setCode(newCode);
 
-			// Cr�ation en base
+			// Création en base
 			task = createTask(tx, parentTask, task);
 
 			// Commit et fin de la transaction
@@ -694,7 +694,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return task;
 		} finally {
 			if (tx != null)
@@ -711,16 +711,16 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Cr�e une nouvelle tache dans un contexte de transaction.
+	 * Crée une nouvelle tache dans un contexte de transaction.
 	 * 
 	 * <p>
-	 * Avant cr�ation, les caract�ristiques de la tache de destination sont
-	 * controll�es pour voir si elle peut accueillir des sous-taches.
+	 * Avant création, les caractéristiques de la tache de destination sont
+	 * controllées pour voir si elle peut accueillir des sous-taches.
 	 * </p>
 	 * 
 	 * <p>
-	 * Cette m�thode est synchronis�e en raison de la g�n�ration du num�ro de la
-	 * tache qui est d�plac�e � un autre chemin.
+	 * Cette méthode est synchronisé en raison de la génération du numéro de la
+	 * tache qui est déplacée à un autre chemin.
 	 * </p>
 	 * 
 	 * @param tx
@@ -728,12 +728,12 @@ public class ModelMgr {
 	 * @param parentTask
 	 *            la tache parent de destination.
 	 * @param task
-	 *            la tache � cr�er.
-	 * @return la tache cr�e.
+	 *            la tache à créer.
+	 * @return la tache créée.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans la cas ou la tache de destination ne peut recevoir
+	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de sous-tache.
 	 * @see jfb.tools.activitymgr.core.ModelMgr#checkAcceptsSubtasks(Task)
 	 */
@@ -741,11 +741,11 @@ public class ModelMgr {
 			Task parentTask, Task task) throws DbException, ModelException {
 		log.info("createTask(" + parentTask + ", " + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		// Une tache ne peut admettre une sous-tache que si elle
-		// n'est pas d�j� associ�e � un consomm�
+		// n'est pas déja associée à un consommé
 		if (parentTask != null)
 			checkAcceptsSubtasks(tx, parentTask);
 
-		// Check sur l'unicit� du code pour le chemin consid�r�
+		// Check sur l'unicité du code pour le chemin considéré
 		Task sameCodeTask = DbMgr
 				.getTask(
 						tx,
@@ -754,30 +754,30 @@ public class ModelMgr {
 			throw new ModelException(
 					Strings.getString("ModelMgr.errors.TASK_CODE_ALREADY_IN_USE")); //$NON-NLS-1$
 
-		// Cr�ation de la tache
+		// Création de la tache
 		task = DbMgr.createTask(tx, parentTask, task);
 
-		// Retour du r�sultat
+		// Retour du résultat
 		return task;
 	}
 
 	/**
-	 * Cr�e une nouvelle tache.
+	 * Crée une nouvelle tache.
 	 * 
 	 * <p>
-	 * Avant cr�ation, les caract�ristiques de la tache de destination sont
-	 * controll�es pour voir si elle peut accueillir des sous-taches.
+	 * Avant création, les caractéristiques de la tache de destination sont
+	 * controllées pour voir si elle peut accueillir des sous-taches.
 	 * </p>
 	 * 
 	 * @param parentTask
 	 *            la tache parent de destination.
 	 * @param task
-	 *            la tache � cr�er.
-	 * @return la tache cr�e.
+	 *            la tache à créer.
+	 * @return la tache créée.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans la cas ou la tache de destination ne peut recevoir
+	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de sous-tache.
 	 * @see jfb.tools.activitymgr.core.ModelMgr#checkAcceptsSubtasks(Task)
 	 */
@@ -789,7 +789,7 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Cr�ation de la tache
+			// Création de la tache
 			task = createTask(tx, parentTask, task);
 
 			// Commit et fin de la transaction
@@ -797,7 +797,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return task;
 		} finally {
 			if (tx != null)
@@ -814,15 +814,15 @@ public class ModelMgr {
 	}
 
 	/**
-	 * V�rifie si la dur�e existe en base.
+	 * Vérifie si la durée existe en base.
 	 * 
 	 * @param tx
 	 *            le contexte de transaction.
 	 * @param duration
-	 *            la dur�e � v�rifier.
-	 * @return un bool�en indiquant si la dur�e existe.
+	 *            la durée à vérifier.
+	 * @return un booléen indiquant si la durée existe.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	private static boolean durationExists(DbTransaction tx, Duration duration)
 			throws DbException {
@@ -831,13 +831,13 @@ public class ModelMgr {
 	}
 
 	/**
-	 * V�rifie si la dur�e existe en base.
+	 * Vérifie si la durée existe en base.
 	 * 
 	 * @param duration
-	 *            la dur�e � v�rifier.
-	 * @return un bool�en indiquant si la dur�e existe.
+	 *            la durée à vérifier.
+	 * @return un booléen indiquant si la durée existe.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static boolean durationExists(Duration duration) throws DbException {
 		log.info("durationExists(" + duration + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -853,7 +853,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return exists;
 		} finally {
 			if (tx != null)
@@ -870,16 +870,16 @@ public class ModelMgr {
 	 * @param in
 	 *            le flux depuis lequel est lu le flux XML.
 	 * @throws IOException
-	 *             lev� en cas d'incident I/O lors de la lecture sur le flux
-	 *             d'entr�e
+	 *             levé en cas d'incident I/O lors de la lecture sur le flux
+	 *             d'entrée
 	 * @throws DbException
-	 *             lev� en cas d'incident avec la base de donn�es.
+	 *             levé en cas d'incident avec la base de données.
 	 * @throws ParserConfigurationException
-	 *             lev� en cas de mauvaise configuration du parser XML.
+	 *             levé en cas de mauvaise configuration du parser XML.
 	 * @throws SAXException
-	 *             lev� en cas d'erreur de mauvais format du fichier XML.
+	 *             levé en cas d'erreur de mauvais format du fichier XML.
 	 * @throws ModelException
-	 *             lev� en cas d'incoh�rence des donn�es lors de l'import
+	 *             levé en cas d'incohérence des données lors de l'import
 	 */
 	public static void importFromXML(InputStream in) throws IOException,
 			DbException, ParserConfigurationException, SAXException,
@@ -890,7 +890,7 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Cr�ation du gestionnaire de mod�le de donn�es
+			// Création du gestionnaire de modèle de données
 			ModelMgrDelegate modelMgrDelegate = new ModelMgrDelegate() {
 				Map<String, Task> taskCache = new HashMap<String, Task>();
 				Map<String, Collaborator> collaboratorsCache = new HashMap<String, Collaborator>();
@@ -946,14 +946,14 @@ public class ModelMgr {
 				}
 			};
 
-			// Import des donn�es
+			// Import des données
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			factory.setValidating(true);
 			factory.setNamespaceAware(false);
 			SAXParser parser = factory.newSAXParser();
 			XMLReader reader = parser.getXMLReader();
 			XmlHelper xmlHelper = new XmlHelper(modelMgrDelegate, tx);
-			// La DTD est charg�e dans le CLASSPATH
+			// La DTD est chargée dans le CLASSPATH
 			reader.setEntityResolver(xmlHelper);
 			// Positionnement du gestionnaire d'erreur
 			reader.setErrorHandler(xmlHelper);
@@ -961,10 +961,10 @@ public class ModelMgr {
 			reader.setContentHandler(xmlHelper);
 			// Parsing du fichier
 			InputSource is = new InputSource(in);
-			is.setSystemId(""); // Pour emp�cher la lev�e d'erreur associ� � l'URI de la DTD //$NON-NLS-1$
+			is.setSystemId(""); // Pour empâcher la levée d'erreur associé à l'URI de la DTD //$NON-NLS-1$
 			reader.parse(is);
 
-			// Fermeture du flux de donn�es
+			// Fermeture du flux de données
 			in.close();
 			in = null;
 
@@ -1002,12 +1002,12 @@ public class ModelMgr {
 	 * Exporte le contenu de la base dans un fichier XML.
 	 * 
 	 * @param out
-	 *            le flux dans lequel est g�n�r� le flux XML.
+	 *            le flux dans lequel est généré le flux XML.
 	 * @throws IOException
-	 *             lev� en cas d'incident I/O lors de l'�criture sur le flux de
+	 *             levé en cas d'incident I/O lors de l'écriture sur le flux de
 	 *             sortie.
 	 * @throws DbException
-	 *             lev� en cas d'incident avec la base de donn�es.
+	 *             levé en cas d'incident avec la base de données.
 	 */
 	public static void exportToXML(OutputStream out) throws IOException,
 			DbException {
@@ -1017,7 +1017,7 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Ent�te XML
+			// Entête XML
 			XmlHelper
 					.println(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); //$NON-NLS-1$
 			XmlHelper.println(out,
@@ -1067,7 +1067,7 @@ public class ModelMgr {
 			XmlHelper.startXmlNode(out, "", XmlHelper.MODEL_NODE); //$NON-NLS-1$
 			final String INDENT = "      "; //$NON-NLS-1$
 
-			// Exportation des dur�es
+			// Exportation des durées
 			Duration[] durations = DbMgr.getDurations(tx, false);
 			if (durations.length > 0) {
 				XmlHelper.startXmlNode(out, "  ", XmlHelper.DURATIONS_NODE); //$NON-NLS-1$
@@ -1164,12 +1164,12 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Ecrit les sous taches sous forme de XML dans le flux d'�criture.
+	 * Ecrit les sous taches sous forme de XML dans le flux d'écriture.
 	 * 
 	 * @param tx
 	 *            le contexte de transaction.
 	 * @param out
-	 *            le flux d'�criture.
+	 *            le flux d'écriture.
 	 * @param indent
 	 *            l'indentation.
 	 * @param parentTask
@@ -1177,12 +1177,12 @@ public class ModelMgr {
 	 * @param parentCodePath
 	 *            le chemin de la tache parente.
 	 * @param taskCodesPathMap
-	 *            cache contenant les taches index�es par leur chemin.
+	 *            cache contenant les taches indexées par leur chemin.
 	 * @throws IOException
-	 *             lev� en cas d'incident I/O lors de l'�criture sur le flux de
+	 *             levé en cas d'incident I/O lors de l'écriture sur le flux de
 	 *             sortie.
 	 * @throws DbException
-	 *             lev� en cas d'incident avec la base de donn�es.
+	 *             levé en cas d'incident avec la base de données.
 	 */
 	private static void exportSubTasksToXML(DbTransaction tx, OutputStream out,
 			String indent, Task parentTask, String parentCodePath,
@@ -1226,10 +1226,10 @@ public class ModelMgr {
 
 	/**
 	 * @param collaboratorId
-	 *            l'identifiant du collaborateur recherch�.
-	 * @return le collaborateur dont l'identifiant est sp�cifi�.
+	 *            l'identifiant du collaborateur recherché.
+	 * @return le collaborateur dont l'identifiant est spécifié.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Collaborator getCollaborator(long collaboratorId)
 			throws DbException {
@@ -1239,7 +1239,7 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// R�cup�ration des collaborateurs
+			// Récupération des collaborateurs
 			Collaborator collaborator = DbMgr.getCollaborator(tx,
 					collaboratorId);
 
@@ -1247,7 +1247,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return collaborator;
 		} finally {
 			if (tx != null)
@@ -1260,10 +1260,10 @@ public class ModelMgr {
 
 	/**
 	 * @param login
-	 *            l'identifiant de connexion du collaborateur recherch�.
-	 * @return le collaborateur dont l'identifiant de connexion est sp�cifi�.
+	 *            l'identifiant de connexion du collaborateur recherché.
+	 * @return le collaborateur dont l'identifiant de connexion est spécifié.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Collaborator getCollaborator(String login) throws DbException {
 		log.info("getCollaborator(" + login + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1272,14 +1272,14 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// R�cup�ration des collaborateurs
+			// Récupération des collaborateurs
 			Collaborator collaborator = DbMgr.getCollaborator(tx, login);
 
 			// Fin de la transaction
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return collaborator;
 		} finally {
 			if (tx != null)
@@ -1293,7 +1293,7 @@ public class ModelMgr {
 	/**
 	 * @return la liste des collaborateurs.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Collaborator[] getCollaborators() throws DbException {
 		return getCollaborators(Collaborator.LOGIN_FIELD_IDX, true, false);
@@ -1301,12 +1301,12 @@ public class ModelMgr {
 
 	/**
 	 * @param orderByClauseFieldIndex
-	 *            index de l'attribut utilis� pour le tri.
+	 *            index de l'attribut utilisé pour le tri.
 	 * @param ascendantSort
-	 *            bool�en indiquant si le tri doit �tre ascendant.
+	 *            booléen indiquant si le tri doit être ascendant.
 	 * @return la liste des collaborateurs actifs.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Collaborator[] getActiveCollaborators(
 			int orderByClauseFieldIndex, boolean ascendantSort)
@@ -1316,12 +1316,12 @@ public class ModelMgr {
 
 	/**
 	 * @param orderByClauseFieldIndex
-	 *            index de l'attribut utilis� pour le tri.
+	 *            index de l'attribut utilisé pour le tri.
 	 * @param ascendantSort
-	 *            bool�en indiquant si le tri doit �tre ascendant.
+	 *            booléen indiquant si le tri doit être ascendant.
 	 * @return la liste des collaborateurs.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Collaborator[] getCollaborators(int orderByClauseFieldIndex,
 			boolean ascendantSort) throws DbException {
@@ -1330,15 +1330,15 @@ public class ModelMgr {
 
 	/**
 	 * @param orderByClauseFieldIndex
-	 *            index de l'attribut utilis� pour le tri.
+	 *            index de l'attribut utilisé pour le tri.
 	 * @param ascendantSort
-	 *            bool�en indiquant si le tri doit �tre ascendant.
+	 *            booléen indiquant si le tri doit être ascendant.
 	 * @param onlyActiveCollaborators
-	 *            bool�en indiquant si l'on ne doit retourner que les
+	 *            booléen indiquant si l'on ne doit retourner que les
 	 *            collaborateurs actifs.
 	 * @return la liste des collaborateurs.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	private static Collaborator[] getCollaborators(int orderByClauseFieldIndex,
 			boolean ascendantSort, boolean onlyActiveCollaborators)
@@ -1349,7 +1349,7 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// R�cup�ration des collaborateurs
+			// Récupération des collaborateurs
 			Collaborator[] collaborators = DbMgr.getCollaborators(tx,
 					orderByClauseFieldIndex, ascendantSort,
 					onlyActiveCollaborators);
@@ -1358,7 +1358,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return collaborators;
 		} finally {
 			if (tx != null)
@@ -1370,24 +1370,24 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Retourne les contributions associ�es aux param�tres sp�cifi�s.
+	 * Retourne les contributions associées aux paramétres spécifiés.
 	 * 
 	 * @param task
-	 *            la t�che associ�e aux contributions (facultative).
+	 *            la tâche associée aux contributions (facultative).
 	 * @param contributor
-	 *            le collaborateur associ� aux contributions (facultatif).
+	 *            le collaborateur associé aux contributions (facultatif).
 	 * @param year
-	 *            l'ann�e (facultative).
+	 *            l'année (facultative).
 	 * @param month
 	 *            le mois (facultatif).
 	 * @param day
 	 *            le jour (facultatif).
 	 * @return les contributions.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� en cas d'incoh�rence des donn�es en entr�e avec le
-	 *             mod�le.
+	 *             levé en cas d'incohérence des données en entrée avec le
+	 *             modèle.
 	 * 
 	 * @see jfb.tools.activitymgr.core.DbMgr#getContributions(DbTransaction,
 	 *      Task, Collaborator, Integer, Integer, Integer)
@@ -1401,13 +1401,13 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// V�rification de la tache (le chemin de la tache doit �tre le bon
+			// Vérification de la tache (le chemin de la tache doit être le bon
 			// pour
 			// que le calcul le soit)
 			if (task != null)
 				checkTaskPathAndUpdateSubTasksCount(tx, task);
 
-			// R�cup�ration des dur�es
+			// Récupération des durées
 			Contribution[] result = DbMgr.getContributions(tx, task,
 					contributor, year, month, day);
 
@@ -1415,7 +1415,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return result;
 		} finally {
 			if (tx != null)
@@ -1427,24 +1427,24 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Calcule le nombre des contributions associ�e aux param�tres sp�cifi�s.
+	 * Calcule le nombre des contributions associée aux paramétres spécifiés.
 	 * 
 	 * @param task
-	 *            la t�che associ�e aux contributions (facultative).
+	 *            la tâche associée aux contributions (facultative).
 	 * @param contributor
-	 *            le collaborateur associ� aux contributions (facultatif).
+	 *            le collaborateur associé aux contributions (facultatif).
 	 * @param year
-	 *            l'ann�e (facultative).
+	 *            l'année (facultative).
 	 * @param month
 	 *            le mois (facultatif).
 	 * @param day
 	 *            le jour (facultatif).
 	 * @return la seomme des contributions.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� en cas d'incoh�rence des donn�es en entr�e avec le
-	 *             mod�le.
+	 *             levé en cas d'incohérence des données en entrée avec le
+	 *             modèle.
 	 * 
 	 * @see jfb.tools.activitymgr.core.DbMgr#getContributionsNb(DbTransaction,
 	 *      Task, Collaborator, Integer, Integer, Integer)
@@ -1458,7 +1458,7 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// R�cup�ration du r�sultat
+			// Récupération du résultat
 			long sum = getContributionsNb(tx, task, contributor, year, month,
 					day);
 
@@ -1466,7 +1466,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return sum;
 		} finally {
 			if (tx != null)
@@ -1478,17 +1478,17 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Calcule le total des contributions associ�e aux param�tres sp�cifi�s.
+	 * Calcule le total des contributions associée aux paramétres spécifiés.
 	 * 
 	 * @param contributor
-	 *            le collaborateur associ� aux contributions (facultatif).
+	 *            le collaborateur associé aux contributions (facultatif).
 	 * @param fromDate
-	 *            la date de d�part.
+	 *            la date de départ.
 	 * @param toDate
 	 *            la date de fin.
 	 * @return la seomme des contributions.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @deprecated
 	 */
 	public static long getContributionsSum(Task task, Collaborator contributor,
@@ -1499,7 +1499,7 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// R�cup�ration du r�sultat
+			// Récupération du résultat
 			long sum = DbMgr.getContributionsSum(tx, task, contributor,
 					fromDate, toDate);
 
@@ -1507,7 +1507,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return sum;
 		} finally {
 			if (tx != null)
@@ -1520,25 +1520,25 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Calcule le cumul des consommations associees aux contributions associ�e
-	 * pour les param�tres sp�cifi�s.
+	 * Calcule le cumul des consommations associees aux contributions associée
+	 * pour les paramétres spécifiés.
 	 * 
 	 * @param task
-	 *            la t�che associ�e aux contributions (facultative).
+	 *            la tâche associée aux contributions (facultative).
 	 * @param contributor
-	 *            le collaborateur associ� aux contributions (facultatif).
+	 *            le collaborateur associé aux contributions (facultatif).
 	 * @param year
-	 *            l'ann�e (facultative).
+	 *            l'année (facultative).
 	 * @param month
 	 *            le mois (facultatif).
 	 * @param day
 	 *            le jour (facultatif).
 	 * @return la seomme des contributions.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� en cas d'incoh�rence des donn�es en entr�e avec le
-	 *             mod�le.
+	 *             levé en cas d'incohérence des données en entrée avec le
+	 *             modèle.
 	 * 
 	 * @see jfb.tools.activitymgr.core.DbMgr#getContributionsSum(DbTransaction,
 	 *      Task, Collaborator, Integer, Integer, Integer)
@@ -1553,7 +1553,7 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// R�cup�ration du r�sultat
+			// Récupération du résultat
 			long sum = DbMgr.getContributionsSum(tx, task, contributor, year,
 					month, day);
 
@@ -1561,7 +1561,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return sum;
 		} finally {
 			if (tx != null)
@@ -1574,27 +1574,27 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Calcule le nombre de contributions associ�e aux param�tres sp�cifi�s dans
+	 * Calcule le nombre de contributions associée aux paramétres spécifiés dans
 	 * un contexte de transaction.
 	 * 
 	 * @param tx
 	 *            le contexte de transaction.
 	 * @param task
-	 *            la t�che associ�e aux contributions (facultative).
+	 *            la tâche associée aux contributions (facultative).
 	 * @param contributor
-	 *            le collaborateur associ� aux contributions (facultatif).
+	 *            le collaborateur associé aux contributions (facultatif).
 	 * @param year
-	 *            l'ann�e (facultative).
+	 *            l'année (facultative).
 	 * @param month
 	 *            le mois (facultatif).
 	 * @param day
 	 *            le jour (facultatif).
 	 * @return la seomme des contributions.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� en cas d'incoh�rence des donn�es en entr�e avec le
-	 *             mod�le.
+	 *             levé en cas d'incohérence des données en entrée avec le
+	 *             modèle.
 	 * 
 	 * @see jfb.tools.activitymgr.core.DbMgr#getContributionsSum(DbTransaction,
 	 *      Task, Collaborator, Integer, Integer, Integer)
@@ -1602,41 +1602,41 @@ public class ModelMgr {
 	public static long getContributionsNb(DbTransaction tx, Task task,
 			Collaborator contributor, Integer year, Integer month, Integer day)
 			throws ModelException, DbException {
-		// V�rification de la tache (le chemin de la tache doit �tre le bon pour
+		// Vérification de la tache (le chemin de la tache doit être le bon pour
 		// que le calcul le soit)
 		if (task != null)
 			checkTaskPathAndUpdateSubTasksCount(tx, task);
 
-		// R�cup�ration du total
+		// Récupération du total
 		long sum = DbMgr.getContributionsNb(tx, task, contributor, year, month,
 				day);
 
-		// Retour du r�sultat
+		// Retour du résultat
 		return sum;
 	}
 
 	/**
-	 * Retourne la liste des contributions associ�es � une tache, un
-	 * collaborateur et � un interval de temps donn�s.
+	 * Retourne la liste des contributions associées à une tache, un
+	 * collaborateur et à un interval de temps donnés.
 	 * 
 	 * <p>
-	 * Un tableau dont la taille est �gale au nombre de jours s�parant les deux
-	 * dates sp�cifi�es est retourn�.
+	 * Un tableau dont la taille est égale au nombre de jours séparant les deux
+	 * dates spécifiées est retourné.
 	 * 
 	 * @param contributor
-	 *            le collaborateur associ� aux contributions.
+	 *            le collaborateur associé aux contributions.
 	 * @param task
-	 *            la tache associ�e aux contributions (optional).
+	 *            la tache associée aux contributions (optional).
 	 * @param fromDate
-	 *            la date de d�part.
+	 *            la date de départ.
 	 * @param toDate
 	 *            la date de fin.
 	 * @return la liste des contributions.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans le cas ou la date de fin sp�cifi�e est ant�rieure �
-	 *             la date de d�but sp�cifi�e.
+	 *             levé dans le cas ou la date de fin spécifiée est antérieure à
+	 *             la date de début spécifiée.
 	 */
 	public static IntervalContributions getIntervalContributions(
 			Collaborator contributor, Task task, Calendar fromDate,
@@ -1652,7 +1652,7 @@ public class ModelMgr {
 				throw new ModelException(
 						Strings.getString("ModelMgr.errors.FROM_DATE_MUST_BE_BEFORE_TO_DATE")); //$NON-NLS-1$
 			int daysCount = countDaysBetween(fromDate, toDate) + 1;
-			// R�cup�ration des contributions
+			// Récupération des contributions
 			Contribution[] contributionsArray = DbMgr.getContributions(tx,
 					contributor, task, fromDate, toDate);
 
@@ -1712,7 +1712,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return result;
 		} finally {
 			if (tx != null)
@@ -1756,18 +1756,18 @@ public class ModelMgr {
 	}
 
 	/**
-	 * @return la liste des dur�es actives.
+	 * @return la liste des durées actives.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Duration[] getDurations() throws DbException {
 		return getDurations(false);
 	}
 
 	/**
-	 * @return la liste des dur�es actives.
+	 * @return la liste des durées actives.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Duration[] getActiveDurations() throws DbException {
 		return getDurations(true);
@@ -1775,11 +1775,11 @@ public class ModelMgr {
 
 	/**
 	 * @param onlyActiveCollaborators
-	 *            bool�en indiquant si l'on ne doit retourner que les
+	 *            booléen indiquant si l'on ne doit retourner que les
 	 *            collaborateurs actifs.
-	 * @return la liste des dur�es.
+	 * @return la liste des durées.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	private static Duration[] getDurations(boolean onlyActiveCollaborators)
 			throws DbException {
@@ -1789,7 +1789,7 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// R�cup�ration des dur�es
+			// Récupération des durées
 			Duration[] durations = DbMgr.getDurations(tx,
 					onlyActiveCollaborators);
 
@@ -1797,7 +1797,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return durations;
 		} finally {
 			if (tx != null)
@@ -1810,10 +1810,10 @@ public class ModelMgr {
 
 	/**
 	 * @param durationId
-	 *            identifiant de la dur�e.
-	 * @return la dur�e dont l'identifiant est sp�cifi�e.
+	 *            identifiant de la durée.
+	 * @return la durée dont l'identifiant est spécifiée.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Duration getDuration(long durationId) throws DbException {
 		log.info("getDurations()"); //$NON-NLS-1$
@@ -1822,14 +1822,14 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// R�cup�ration des dur�es
+			// Récupération des durées
 			Duration duration = DbMgr.getDuration(tx, durationId);
 
 			// Fin de la transaction
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return duration;
 		} finally {
 			if (tx != null)
@@ -1843,9 +1843,9 @@ public class ModelMgr {
 	/**
 	 * @param task
 	 *            la tache dont on veut connaitre la tache parent.
-	 * @return la tache parent d'une tache sp�cifi�e.
+	 * @return la tache parent d'une tache spécifiée.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Task getParentTask(Task task) throws DbException {
 		log.info("getParentTask(" + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1854,14 +1854,14 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// R�cup�ration de la t�che
+			// Récupération de la tâche
 			Task parentTask = DbMgr.getParentTask(tx, task);
 
 			// Fin de la transaction
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return parentTask;
 		} finally {
 			if (tx != null)
@@ -1874,11 +1874,11 @@ public class ModelMgr {
 
 	/**
 	 * @param parentTaskId
-	 *            l'identifiant de la tache dont on veut conna�tre les
+	 *            l'identifiant de la tache dont on veut connaître les
 	 *            sous-taches.
-	 * @return la liste des taches associ�es � un chemin donn�.
+	 * @return la liste des taches associées à un chemin donné.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Task[] getSubtasks(Long parentTaskId) throws DbException {
 		log.info("getSubtasks(" + parentTaskId + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1887,7 +1887,7 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// R�cup�ration des sous t�ches
+			// Récupération des sous tâches
 			Task parentTask = parentTaskId != null ? DbMgr.getTask(tx,
 					parentTaskId) : null;
 			Task[] subTasks = DbMgr.getSubtasks(tx, parentTask);
@@ -1896,7 +1896,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return subTasks;
 		} finally {
 			if (tx != null)
@@ -1909,10 +1909,10 @@ public class ModelMgr {
 
 	/**
 	 * @param parentTask
-	 *            la tache dont on veut conna�tre les sous-taches.
-	 * @return la liste des taches associ�es � un chemin donn�.
+	 *            la tache dont on veut connaître les sous-taches.
+	 * @return la liste des taches associées à un chemin donné.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Task[] getSubtasks(Task parentTask) throws DbException {
 		log.info("getSubtasks(" + parentTask + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1921,14 +1921,14 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// R�cup�ration des sous t�ches
+			// Récupération des sous tâches
 			Task[] subTasks = DbMgr.getSubtasks(tx, parentTask);
 
 			// Fin de la transaction
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return subTasks;
 		} finally {
 			if (tx != null)
@@ -1941,10 +1941,10 @@ public class ModelMgr {
 
 	/**
 	 * @param taskId
-	 *            l'identifiant de la tache recherch�e.
-	 * @return la tache dont l'identifiant est sp�cifi�.
+	 *            l'identifiant de la tache recherchée.
+	 * @return la tache dont l'identifiant est spécifié.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Task getTask(long taskId) throws DbException {
 		log.info("getTask(" + taskId + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1953,14 +1953,14 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// R�cup�ration de la t�che
+			// Récupération de la tâche
 			Task task = DbMgr.getTask(tx, taskId);
 
 			// Fin de la transaction
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return task;
 		} finally {
 			if (tx != null)
@@ -1973,14 +1973,14 @@ public class ModelMgr {
 
 	/**
 	 * Retourn la liste des taches correspondant au filtre de recherche
-	 * sp�cifi�.
+	 * spécifié.
 	 * 
 	 * @param filter
 	 *            le filtre de recherche.
 	 * @return la liste des taches correspondant au filtre de recherche
-	 *         sp�cifi�.
+	 *         spécifié.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Task[] getTasks(TaskSearchFilter filter) throws DbException {
 		log.info("getTasks(" + filter + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1989,14 +1989,14 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// R�cup�ration de la t�che
+			// Récupération de la tâche
 			Task[] tasks = DbMgr.getTasks(tx, filter);
 
 			// Fin de la transaction
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return tasks;
 		} finally {
 			if (tx != null)
@@ -2009,12 +2009,12 @@ public class ModelMgr {
 
 	/**
 	 * @param taskPath
-	 *            le chemin de la tache recherch�e.
+	 *            le chemin de la tache recherchée.
 	 * @param taskCode
-	 *            le code de la tache recherch�e.
-	 * @return la tache dont le code et la tache parent sont sp�cifi�s.
+	 *            le code de la tache recherchée.
+	 * @return la tache dont le code et la tache parent sont spécifiés.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Task getTask(String taskPath, String taskCode)
 			throws DbException {
@@ -2024,14 +2024,14 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// R�cup�ration de la t�che
+			// Récupération de la tâche
 			Task task = DbMgr.getTask(tx, taskPath, taskCode);
 
 			// Fin de la transaction
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return task;
 		} finally {
 			if (tx != null)
@@ -2043,16 +2043,16 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Retourne la tache associ�e � un chemin construit � partir de codes de
+	 * Retourne la tache associée à un chemin construit à partir de codes de
 	 * taches.
 	 * 
 	 * @param codePath
-	 *            le chemin � base de code.
-	 * @return la tache trouv�e.
+	 *            le chemin à base de code.
+	 * @return la tache trouvée.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique avec la base de donn�es.
+	 *             levé en cas d'incident technique avec la base de données.
 	 * @throws ModelException
-	 *             lev� dans le cas ou le chemin de tache est inconnu.
+	 *             levé dans le cas ou le chemin de tache est inconnu.
 	 */
 	public static Task getTaskByCodePath(final String codePath)
 			throws DbException, ModelException {
@@ -2065,7 +2065,7 @@ public class ModelMgr {
 			// Recherche de la tache
 			Task task = getTaskByCodePath(tx, codePath);
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return task;
 		} finally {
 			if (tx != null)
@@ -2077,18 +2077,18 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Retourne la tache associ�e � un chemin construit � partir de codes de
+	 * Retourne la tache associée à un chemin construit à partir de codes de
 	 * taches.
 	 * 
 	 * @param tx
 	 *            le contexte de transaction.
 	 * @param codePath
-	 *            le chemin � base de code.
-	 * @return la tache trouv�e.
+	 *            le chemin à base de code.
+	 * @return la tache trouvée.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique avec la base de donn�es.
+	 *             levé en cas d'incident technique avec la base de données.
 	 * @throws ModelException
-	 *             lev� dans le cas ou le chemin de tache est inconnu.
+	 *             levé dans le cas ou le chemin de tache est inconnu.
 	 */
 	private static Task getTaskByCodePath(DbTransaction tx,
 			final String codePath) throws DbException, ModelException {
@@ -2112,7 +2112,7 @@ public class ModelMgr {
 		}
 		log.debug("Found " + task); //$NON-NLS-1$
 
-		// Retour du r�sultat
+		// Retour du résultat
 		return task;
 	}
 
@@ -2120,13 +2120,13 @@ public class ModelMgr {
 	 * @param collaborator
 	 *            le collaborateur.
 	 * @param fromDate
-	 *            date de d�but.
+	 *            date de début.
 	 * @param toDate
 	 *            date de fin.
-	 * @return la liste de taches associ�es au collaborateur entre les 2 dates
-	 *         sp�cifi�es.
+	 * @return la liste de taches associées au collaborateur entre les 2 dates
+	 *         spécifiées.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Task[] getTasks(Collaborator collaborator, Calendar fromDate,
 			Calendar toDate) throws DbException {
@@ -2136,14 +2136,14 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// R�cup�ration des t�ches
+			// Récupération des tâches
 			Task[] tasks = DbMgr.getTasks(tx, collaborator, fromDate, toDate);
 
 			// Fin de la transaction
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return tasks;
 		} finally {
 			if (tx != null)
@@ -2155,14 +2155,14 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Retourne la liste des taches associ�es aux chemins sp�cifi�s.
+	 * Retourne la liste des taches associées aux chemins spécifiés.
 	 * 
 	 * @param codePaths
 	 *            la liste des chemins.
-	 * @return la liste des t�ches.
+	 * @return la liste des tâches.
 	 * @throws DbException
 	 * @throws ModelException
-	 *             lev� dans le cas ou une tache n'existe pas.
+	 *             levé dans le cas ou une tache n'existe pas.
 	 */
 	public static Task[] getTasksByCodePath(String[] codePaths)
 			throws DbException, ModelException {
@@ -2185,7 +2185,7 @@ public class ModelMgr {
 				tasks[i] = task;
 			}
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return tasks;
 		} finally {
 			if (tx != null)
@@ -2198,17 +2198,17 @@ public class ModelMgr {
 
 	/**
 	 * @param task
-	 *            la t�che pour laquelle on souhaite conna�tre les totaux.
+	 *            la tâche pour laquelle on souhaite connaître les totaux.
 	 * @param fromDate
-	 *            date de d�part � prendre en compte pour le calcul.
+	 *            date de départ à prendre en compte pour le calcul.
 	 * @param toDate
-	 *            date de fin � prendre en compte pour le calcul.
-	 * @return les totaux associ�s � une tache (consomm�, etc.).
+	 *            date de fin à prendre en compte pour le calcul.
+	 * @return les totaux associés à une tache (consommé, etc.).
 	 * @throws ModelException
-	 *             lev� dans le cas ou le chemin ou le num�ro de la tache en
-	 *             base ne sont pas ceux de la tache sp�cifi�e.
+	 *             levé dans le cas ou le chemin ou le numéro de la tache en
+	 *             base ne sont pas ceux de la tache spécifiée.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static TaskSums getTaskSums(Task task, Calendar fromDate,
 			Calendar toDate) throws ModelException, DbException {
@@ -2218,7 +2218,7 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// V�rification de la tache (le chemin de la tache doit �tre le bon
+			// Vérification de la tache (le chemin de la tache doit être le bon
 			// pour
 			// que le calcul le soit)
 			if (task != null)
@@ -2231,7 +2231,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return sums;
 		} finally {
 			if (tx != null)
@@ -2243,16 +2243,16 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Construit le chemin de la t�che � partir des codes de tache.
+	 * Construit le chemin de la tâche à partir des codes de tache.
 	 * 
 	 * @param task
-	 *            la tache dont on veut conna�tre le chemin.
+	 *            la tache dont on veut connaître le chemin.
 	 * @return le chemin.
 	 * @throws ModelException
-	 *             lev� dans le cas ou le chemin ou le num�ro de la tache ont
-	 *             chang�.
+	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
+	 *             changé.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique avec la base de donn�es.
+	 *             levé en cas d'incident technique avec la base de données.
 	 */
 	public static String getTaskCodePath(Task task) throws ModelException,
 			DbException {
@@ -2262,11 +2262,11 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Le chemin de la tache et son num�ro ne doivent pas avoir chang�s
-			// pour pouvoir invoquer cette m�thode (la modification des
+			// Le chemin de la tache et son numéro ne doivent pas avoir changés
+			// pour pouvoir invoquer cette méthode (la modification des
 			// attributs
-			// n'est autoris�e que pour les champs autres que le chemin et le
-			// num�ro.
+			// n'est autorisée que pour les champs autres que le chemin et le
+			// numéro.
 			checkTaskPathAndUpdateSubTasksCount(tx, task);
 
 			// Construction du chemin
@@ -2276,7 +2276,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return taskPath.toString();
 		} finally {
 			if (tx != null)
@@ -2288,15 +2288,15 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Construit le chemin de la t�che � partir des codes de tache.
+	 * Construit le chemin de la tâche à partir des codes de tache.
 	 * 
 	 * @param tx
 	 *            le contexte de transaction.
 	 * @param task
-	 *            la tache dont on veut conna�tre le chemin.
+	 *            la tache dont on veut connaître le chemin.
 	 * @return le chemin.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique avec la base de donn�es.
+	 *             levé en cas d'incident technique avec la base de données.
 	 */
 	private static String getTaskCodePath(DbTransaction tx, Task task)
 			throws DbException {
@@ -2309,26 +2309,26 @@ public class ModelMgr {
 			cursor = DbMgr.getParentTask(tx, cursor);
 		}
 
-		// Retour du r�sultat
+		// Retour du résultat
 		return taskPath.toString();
 	}
 
 	/**
-	 * D�place la tache d'un cran vers le bas.
+	 * Déplace la tache d'un cran vers le bas.
 	 * <p>
-	 * Le chemin de la tache et son num�ro ne doivent pas avoir chang�s pour
-	 * pouvoir invoquer cette m�thode (la modification des attributs n'est
-	 * autoris�e que pour les champs autres que le chemin et le num�ro de la
+	 * Le chemin de la tache et son numéro ne doivent pas avoir changés pour
+	 * pouvoir invoquer cette méthode (la modification des attributs n'est
+	 * autorisée que pour les champs autres que le chemin et le numéro de la
 	 * tache.
 	 * </p>
 	 * 
 	 * @param task
-	 *            la tache � d�placer vers le bas.
+	 *            la tache à déplacer vers le bas.
 	 * @throws ModelException
-	 *             lev� dans le cas ou le chemin ou le num�ro de la tache ont
-	 *             chang�.
+	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
+	 *             changé.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique avec la base de donn�es.
+	 *             levé en cas d'incident technique avec la base de données.
 	 */
 	public static void moveDownTask(Task task) throws ModelException,
 			DbException {
@@ -2338,14 +2338,14 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Le chemin de la tache et son num�ro ne doivent pas avoir chang�s
-			// pour pouvoir invoquer cette m�thode (la modification des
+			// Le chemin de la tache et son numéro ne doivent pas avoir changés
+			// pour pouvoir invoquer cette méthode (la modification des
 			// attributs
-			// n'est autoris�e que pour les champs autres que le chemin et le
-			// num�ro.
+			// n'est autorisée que pour les champs autres que le chemin et le
+			// numéro.
 			checkTaskPathAndUpdateSubTasksCount(tx, task);
 
-			// Recherche de la tache � descendre (incr�mentation du num�ro)
+			// Recherche de la tache à descendre (incrémentation du numéro)
 			byte taskToMoveUpNumber = (byte) (task.getNumber() + 1);
 			Task taskToMoveUp = DbMgr.getTask(tx, task.getPath(),
 					taskToMoveUpNumber);
@@ -2375,17 +2375,17 @@ public class ModelMgr {
 	}
 
 	/**
-	 * D�place une tache de plus d'un cran (au contraire des m�thodes
+	 * Déplace une tache de plus d'un cran (au contraire des méthodes
 	 * <code>moveUp</code> et <code>moveDown</code>.
 	 * 
 	 * @param task
-	 *            la tache � d�placer.
+	 *            la tache à déplacer.
 	 * @param newTaskNumber
-	 *            le nouveau num�ro de la t�che.
+	 *            le nouveau numéro de la tâche.
 	 * @throws ModelException
-	 *             lev� en cas de violation du mod�le.
+	 *             levé en cas de violation du modèle.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique avec la base de donn�es.
+	 *             levé en cas d'incident technique avec la base de données.
 	 */
 	public static void moveTaskUpOrDown(Task task, int newTaskNumber)
 			throws ModelException, DbException {
@@ -2395,24 +2395,24 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Le chemin de la tache et son num�ro ne doivent pas avoir chang�s
-			// pour pouvoir invoquer cette m�thode
+			// Le chemin de la tache et son numéro ne doivent pas avoir changés
+			// pour pouvoir invoquer cette méthode
 			checkTaskPathAndUpdateSubTasksCount(tx, task);
 
-			// Pour que la m�thode fonctionne, il faut que le nombre
-			// cible soit diff�rent du nombre courant
+			// Pour que la méthode fonctionne, il faut que le nombre
+			// cible soit différent du nombre courant
 			if (task.getNumber() == newTaskNumber)
 				throw new ModelException(
 						"New task number is equal to current task number ; task not moved");
 
-			// R�cup�ration de la tache parent, et contr�le du mod�le
-			// (le num�ro de destination ne peut �tre hors intervalle)
+			// Récupération de la tache parent, et contrôle du modèle
+			// (le numéro de destination ne peut être hors intervalle)
 			Task parentTask = DbMgr.getParentTask(tx, task);
 			if (newTaskNumber > parentTask.getSubTasksCount()
 					|| newTaskNumber < 1)
 				throw new ModelException("Invalid task number");
 
-			// D�finition du sens de d�placement
+			// Définition du sens de déplacement
 			int stepSign = task.getNumber() > newTaskNumber ? -1 : 1;
 			for (int i = task.getNumber(); i != newTaskNumber + stepSign; i = i
 					+ stepSign) {
@@ -2441,29 +2441,29 @@ public class ModelMgr {
 	}
 
 	/**
-	 * D�place la tache vers un autre endroit dans la hi�rarchie des taches.
+	 * Déplace la tache vers un autre endroit dans la hiérarchie des taches.
 	 * 
 	 * <p>
-	 * Le chemin de la tache et son num�ro ne doivent pas avoir chang�s pour
-	 * pouvoir invoquer cette m�thode (la modification des attributs n'est
-	 * autoris�e que pour les champs autres que le chemin et le num�ro de la
+	 * Le chemin de la tache et son numéro ne doivent pas avoir changés pour
+	 * pouvoir invoquer cette méthode (la modification des attributs n'est
+	 * autorisée que pour les champs autres que le chemin et le numéro de la
 	 * tache.
 	 * </p>
 	 * 
 	 * <p>
-	 * Cette m�thode est synchronis�e en raison de la g�n�ration du num�ro de la
-	 * tache qui est d�plac�e � un autre chemin.
+	 * Cette méthode est synchronisé en raison de la génération du numéro de la
+	 * tache qui est déplacée à un autre chemin.
 	 * </p>
 	 * 
 	 * @param task
-	 *            la tache � d�placer.
+	 *            la tache à déplacer.
 	 * @param destParentTask
 	 *            tache parent de destination.
 	 * @throws ModelException
-	 *             lev� dans le cas ou le chemin ou le num�ro de la tache ont
-	 *             chang�.
+	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
+	 *             changé.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique avec la base de donn�es.
+	 *             levé en cas d'incident technique avec la base de données.
 	 */
 	public static synchronized void moveTask(Task task, Task destParentTask)
 			throws ModelException, DbException {
@@ -2474,20 +2474,20 @@ public class ModelMgr {
 			tx = DbMgr.beginTransaction();
 
 			/**
-			 * Controles d'int�grit�.
+			 * Controles d'intégrité.
 			 */
 
-			// Le chemin de la tache et son num�ro ne doivent pas avoir chang�s
-			// pour pouvoir invoquer cette m�thode (la modification des
+			// Le chemin de la tache et son numéro ne doivent pas avoir changés
+			// pour pouvoir invoquer cette méthode (la modification des
 			// attributs
-			// n'est autoris�e que pour les champs autres que le chemin et le
-			// num�ro.
+			// n'est autorisée que pour les champs autres que le chemin et le
+			// numéro.
 			checkTaskPathAndUpdateSubTasksCount(tx, task);
 			if (destParentTask != null)
 				checkTaskPathAndUpdateSubTasksCount(tx, destParentTask);
 
-			// Control : la tache de destination ne doit pas �tre
-			// une tache fille de la tache � d�placer
+			// Control : la tache de destination ne doit pas être
+			// une tache fille de la tache à déplacer
 			Task cursor = destParentTask;
 			while (cursor != null) {
 				if (cursor.equals(task))
@@ -2497,11 +2497,11 @@ public class ModelMgr {
 			}
 
 			// Une tache ne peut admettre une sous-tache que si elle
-			// n'est pas d�j� associ�e � un consomm�
+			// n'est pas déja associée à un consommé
 			if (destParentTask != null)
 				checkAcceptsSubtasks(tx, destParentTask);
 
-			// Le code de la tache � d�placer ne doit pas �tre en conflit
+			// Le code de la tache à déplacer ne doit pas être en conflit
 			// avec un code d'une autre tache fille de la tache parent
 			// de destination
 			String destPath = destParentTask != null ? destParentTask
@@ -2513,27 +2513,27 @@ public class ModelMgr {
 								"ModelMgr.errors.TASK_CODE_EXIST_AT_DESTINATION", task.getCode())); //$NON-NLS-1$ //$NON-NLS-2$
 
 			/**
-			 * D�placement de la tache.
+			 * Déplacement de la tache.
 			 */
 
-			// R�cup�ration de la tache parent et des sous-taches
-			// avant modification de son num�ro et de son chemin
+			// Récupération de la tache parent et des sous-taches
+			// avant modification de son numéro et de son chemin
 			String initialTaskFullPath = task.getFullPath();
 			Task srcParentTask = DbMgr.getParentTask(tx, task);
 			Task[] subTasksToMove = DbMgr.getSubtasks(tx, task);
 
-			// D�placement de la tache
+			// Déplacement de la tache
 			byte number = DbMgr.newTaskNumber(tx, destPath);
 			task.setPath(destPath);
 			task.setNumber(number);
 			DbMgr.updateTask(tx, task);
 
-			// D�placement des sous-taches
+			// Déplacement des sous-taches
 			changeTasksPaths(tx, subTasksToMove, initialTaskFullPath.length(),
 					task.getFullPath());
 
-			// Reconstruction des num�ros de t�ches d'o� la t�che provenait
-			// et qui a laiss� un 'trou' en �tant d�plac�e
+			// Reconstruction des numéros de tâches d'où la tâche provenait
+			// et qui a laissé un 'trou' en étant déplacée
 			rebuildSubtasksNumbers(tx, srcParentTask);
 
 			// Commit et fin de la transaction
@@ -2555,21 +2555,21 @@ public class ModelMgr {
 	}
 
 	/**
-	 * D�place la tache d'un cran vers le haut.
+	 * Déplace la tache d'un cran vers le haut.
 	 * <p>
-	 * Le chemin de la tache et son num�ro ne doivent pas avoir chang�s pour
-	 * pouvoir invoquer cette m�thode (la modification des attributs n'est
-	 * autoris�e que pour les champs autres que le chemin et le num�ro de la
+	 * Le chemin de la tache et son numéro ne doivent pas avoir changés pour
+	 * pouvoir invoquer cette méthode (la modification des attributs n'est
+	 * autorisée que pour les champs autres que le chemin et le numéro de la
 	 * tache.
 	 * </p>
 	 * 
 	 * @param task
-	 *            la tache � d�placer vers le haut.
+	 *            la tache à déplacer vers le haut.
 	 * @throws ModelException
-	 *             lev� dans le cas ou le chemin ou le num�ro de la tache ont
-	 *             chang�.
+	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
+	 *             changé.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique avec la base de donn�es.
+	 *             levé en cas d'incident technique avec la base de données.
 	 */
 	public static void moveUpTask(Task task) throws ModelException, DbException {
 		log.info("moveUpTask(" + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -2578,14 +2578,14 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Le chemin de la tache et son num�ro ne doivent pas avoir chang�s
-			// pour pouvoir invoquer cette m�thode (la modification des
+			// Le chemin de la tache et son numéro ne doivent pas avoir changés
+			// pour pouvoir invoquer cette méthode (la modification des
 			// attributs
-			// n'est autoris�e que pour les champs autres que le chemin et le
-			// num�ro.
+			// n'est autorisée que pour les champs autres que le chemin et le
+			// numéro.
 			checkTaskPathAndUpdateSubTasksCount(tx, task);
 
-			// Recherche de la tache � monter (d�cr�mentation du num�ro)
+			// Recherche de la tache à monter (décrémentation du numéro)
 			byte taskToMoveDownNumber = (byte) (task.getNumber() - 1);
 			Task taskToMoveDown = DbMgr.getTask(tx, task.getPath(),
 					taskToMoveDownNumber);
@@ -2615,19 +2615,19 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Reconstruit les num�ros de taches pour un chemin donn� (chemin complet de
-	 * la tache parent consid�r�e).
+	 * Reconstruit les numéros de taches pour un chemin donné (chemin complet de
+	 * la tache parent considérée).
 	 * 
 	 * @param tx
 	 *            le contexte de transaction.
 	 * @param parentTask
 	 *            la tache parent.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	private static void rebuildSubtasksNumbers(DbTransaction tx, Task parentTask)
 			throws DbException {
-		// R�cup�ration des sous-taches
+		// Récupération des sous-taches
 		Task[] tasks = DbMgr.getSubtasks(tx, parentTask);
 		for (int i = 0; i < tasks.length; i++) {
 			Task task = tasks[i];
@@ -2647,12 +2647,12 @@ public class ModelMgr {
 	 * Supprime un collaborateur.
 	 * 
 	 * @param collaborator
-	 *            le collaborateur � supprimer.
+	 *            le collaborateur à supprimer.
 	 * @throws ModelException
-	 *             lev� dans le cas ou le collaborateur est associ� � des
+	 *             levé dans le cas ou le collaborateur est associé à des
 	 *             contributions en base.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static void removeCollaborator(Collaborator collaborator)
 			throws ModelException, DbException {
@@ -2662,7 +2662,7 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// V�rification que le collaborateur n'est pas utilis�
+			// Vérification que le collaborateur n'est pas utilisé
 			long contribsNb = getContributionsNb(tx, null, collaborator, null,
 					null, null);
 			if (contribsNb != 0)
@@ -2695,13 +2695,13 @@ public class ModelMgr {
 	 * Supprime une contribution.
 	 * 
 	 * @param contribution
-	 *            la contribution � supprimer.
+	 *            la contribution à supprimer.
 	 * @param updateEstimatedTimeToComlete
-	 *            bool�en indiquant si le reste � faire doit �tre incr�ment�.
+	 *            booléen indiquant si le reste à faire doit être incrémenté.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans le cas ou la donn�e a chang� en base de donn�es.
+	 *             levé dans le cas ou la donnée a changé en base de données.
 	 */
 	public static void removeContribution(Contribution contribution,
 			boolean updateEstimatedTimeToComlete) throws DbException,
@@ -2712,30 +2712,30 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Faut-il mettre � jour automatiquement le RAF de la tache ?
+			// Faut-il mettre à jour automatiquement le RAF de la tache ?
 			if (!updateEstimatedTimeToComlete) {
 				// Suppression de la contribution
 				DbMgr.removeContribution(tx, contribution);
 			} else {
-				// R�cup�ration des �l�ments de la contribution
+				// Récupération des éléments de la contribution
 				Collaborator contributor = DbMgr.getCollaborator(tx,
 						contribution.getContributorId());
 				Task task = DbMgr.getTask(tx, contribution.getTaskId());
-				// R�cup�ration de la contribution correspondante en base
+				// Récupération de la contribution correspondante en base
 				Contribution[] contributions = DbMgr.getContributions(tx,
 						contributor, task, contribution.getDate(),
 						contribution.getDate());
 				if (contributions.length == 0) {
-					// Si la contribution n'existait pas, il n'yu a rien � faire
+					// Si la contribution n'existait pas, il n'yu a rien à faire
 					// de plus
 				}
-				// Sinon, il y a forc�ment une seule contribution
+				// Sinon, il y a forcément une seule contribution
 				else {
-					// On v�rifie que la donn�e en base est en phase avec
+					// On vérifie que la donnée en base est en phase avec
 					// l'entrant
-					// pour s'assurer qu'on ne va pas incr�meter le RAF de la
+					// pour s'assurer qu'on ne va pas incrémenter le RAF de la
 					// tache
-					// avec une valeur incoh�rente
+					// avec une valeur incohérente
 					if (contribution.getDurationId() != contributions[0]
 							.getDurationId())
 						throw new ModelException(
@@ -2744,7 +2744,7 @@ public class ModelMgr {
 					// Suppression de la contribution
 					DbMgr.removeContribution(tx, contribution);
 
-					// Mise � jour du RAF de la tache
+					// Mise à jour du RAF de la tache
 					task.setTodo(task.getTodo() + contribution.getDurationId());
 					DbMgr.updateTask(tx, task);
 				}
@@ -2772,9 +2772,9 @@ public class ModelMgr {
 	 * Supprime des contributions.
 	 * 
 	 * @param contributions
-	 *            les contributions � supprimer.
+	 *            les contributions à supprimer.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static void removeContributions(Contribution[] contributions)
 			throws DbException {
@@ -2807,14 +2807,14 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Supprime une dur�e du r�f�rentiel de dur�es.
+	 * Supprime une durée du référentiel de durées.
 	 * 
 	 * @param duration
-	 *            la dur�e � supprimer.
+	 *            la durée à supprimer.
 	 * @throws ModelException
-	 *             lev� dans le cas ou la dur�e n'existe pas en base.
+	 *             levé dans le cas ou la durée n'existe pas en base.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static void removeDuration(Duration duration) throws ModelException,
 			DbException {
@@ -2846,26 +2846,26 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Supprime une dur�e du r�f�rentiel de dur�es dans un contexte de
+	 * Supprime une durée du référentiel de durées dans un contexte de
 	 * transaction.
 	 * 
 	 * @param tx
 	 *            le contexte de transaction.
 	 * @param duration
-	 *            la dur�e � supprimer.
+	 *            la durée à supprimer.
 	 * @throws ModelException
-	 *             lev� dans le cas ou la dur�e n'existe pas en base.
+	 *             levé dans le cas ou la durée n'existe pas en base.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	private static void removeDuration(DbTransaction tx, Duration duration)
 			throws ModelException, DbException {
-		// V�rification de l'existance
+		// Vérification de l'existance
 		if (!durationExists(tx, duration))
 			throw new ModelException(
 					Strings.getString("ModelMgr.errors.DURATION_DOES_NOT_EXIST")); //$NON-NLS-1$
 
-		// V�rification de la non utilisation de la dur�e
+		// Vérification de la non utilisation de la durée
 		if (DbMgr.durationIsUsed(tx, duration))
 			throw new ModelException(
 					Strings.getString("ModelMgr.errors.UNMOVEABLE_DURATION")); //$NON-NLS-1$
@@ -2878,17 +2878,17 @@ public class ModelMgr {
 	 * Supprime une tache.
 	 * 
 	 * <p>
-	 * Cette m�thode est synchronis�e en raison de la modification potentielle
-	 * du num�ro de certaines taches.
+	 * Cette méthode est synchronisé en raison de la modification potentielle
+	 * du numéro de certaines taches.
 	 * </p>
 	 * 
 	 * @param task
-	 *            la tache � supprimer.
+	 *            la tache à supprimer.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� en cas de violation d'une contrainte d'int�grit� du
-	 *             mod�le.
+	 *             levé en cas de violation d'une contrainte d'intégrité du
+	 *             modèle.
 	 */
 	public static synchronized void removeTask(Task task) throws DbException,
 			ModelException {
@@ -2898,11 +2898,11 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// V�rification de l'ad�quation des attibuts de la tache avec les
-			// donn�es en base
+			// Vérification de l'adéquation des attibuts de la tache avec les
+			// données en base
 			checkTaskPathAndUpdateSubTasksCount(tx, task);
 
-			// V�rification que la tache n'est pas utilis�
+			// Vérification que la tache n'est pas utilisé
 			long contribsNb = getContributionsNb(tx, task, null, null, null,
 					null);
 			if (contribsNb != 0)
@@ -2910,14 +2910,14 @@ public class ModelMgr {
 						Strings.getString(
 								"ModelMgr.errors.TASK_HAS_SUBTASKS", new Long(contribsNb))); //$NON-NLS-1$ //$NON-NLS-2$
 
-			// R�cup�ration de la t�che parent pour reconstruction des
-			// num�ros de taches
+			// Récupération de la tâche parent pour reconstruction des
+			// numéros de taches
 			Task parentTask = DbMgr.getParentTask(tx, task);
 
 			// Suppression des taches et sous taches
 			DbMgr.removeTask(tx, task);
 
-			// Reconstruction des num�ros de taches
+			// Reconstruction des numéros de taches
 			rebuildSubtasksNumbers(tx, parentTask);
 
 			// Commit et fin de la transaction
@@ -2944,11 +2944,11 @@ public class ModelMgr {
 	 * @param tx
 	 *            contexte de transaction.
 	 * @param task1
-	 *            la 1� tache.
+	 *            la 1° tache.
 	 * @param task2
 	 *            la 2nde tache.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	private static void toggleTasks(DbTransaction tx, Task task1, Task task2)
 			throws DbException {
@@ -2957,23 +2957,23 @@ public class ModelMgr {
 		String task1InitialFullpath = task1.getFullPath();
 		String task2InitialFullpath = task2.getFullPath();
 
-		// R�cup�ration des taches filles de ces 2 taches
+		// Récupération des taches filles de ces 2 taches
 		Task[] task1subTasks = DbMgr.getSubtasks(tx, task1);
 		Task[] task2subTasks = DbMgr.getSubtasks(tx, task2);
 
-		// Changement des num�ros de la tache 1 avec une valeur fictive
+		// Changement des numéros de la tache 1 avec une valeur fictive
 		task1.setNumber((byte) 0);
 		DbMgr.updateTask(tx, task1);
 		changeTasksPaths(tx, task1subTasks, task1InitialFullpath.length(),
 				task1.getFullPath());
 
-		// Changement des num�ros de la tache 2
+		// Changement des numéros de la tache 2
 		task2.setNumber(task1InitialNumber);
 		DbMgr.updateTask(tx, task2);
 		changeTasksPaths(tx, task2subTasks, task2InitialFullpath.length(),
 				task2.getFullPath());
 
-		// Changement des num�ros de la tache 1
+		// Changement des numéros de la tache 1
 		task1.setNumber(task2InitialNumber);
 		DbMgr.updateTask(tx, task1);
 		changeTasksPaths(tx, task1subTasks, task1InitialFullpath.length(),
@@ -2984,12 +2984,12 @@ public class ModelMgr {
 	 * Modifie les attributs d'un collaborateur.
 	 * 
 	 * @param collaborator
-	 *            le collaborateur � modifier.
-	 * @return le collaborateur modifi�.
+	 *            le collaborateur à modifier.
+	 * @return le collaborateur modifié.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� en cas de non unicit� du login.
+	 *             levé en cas de non unicité du login.
 	 */
 	public static Collaborator updateCollaborator(Collaborator collaborator)
 			throws DbException, ModelException {
@@ -2999,10 +2999,10 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Control de l'unicit� du login
+			// Control de l'unicité du login
 			checkUniqueLogin(tx, collaborator);
 
-			// Mise � jour des donn�es
+			// Mise à jour des données
 			collaborator = DbMgr.updateCollaborator(tx, collaborator);
 
 			// Commit et fin de la transaction
@@ -3010,7 +3010,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return collaborator;
 		} finally {
 			if (tx != null)
@@ -3027,13 +3027,13 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Met � jour une dur�e.
+	 * Met à jour une durée.
 	 * 
 	 * @param duration
-	 *            la dur�e � mettre � jour.
-	 * @return la dur�e mise � jour.
+	 *            la durée à mettre à jour.
+	 * @return la durée mise à jour.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public static Duration updateDuration(Duration duration) throws DbException {
 		log.info("updateDuration(" + duration + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -3042,7 +3042,7 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Mise � jour des donn�es
+			// Mise à jour des données
 			duration = DbMgr.updateDuration(tx, duration);
 
 			// Commit et fin de la transaction
@@ -3050,7 +3050,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return duration;
 		} finally {
 			if (tx != null)
@@ -3070,14 +3070,14 @@ public class ModelMgr {
 	 * Modifie les attributs d'une contribution.
 	 * 
 	 * @param contribution
-	 *            la contribution � modifier.
+	 *            la contribution à modifier.
 	 * @param updateEstimatedTimeToComlete
-	 *            bool�en indiquant si le reste � faire doit �tre d�cr�ment�.
-	 * @return la contribution modifi�e.
+	 *            booléen indiquant si le reste à faire doit être décrémenté.
+	 * @return la contribution modifiée.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans le cas ou la donn�e a chang� en base de donn�es.
+	 *             levé dans le cas ou la donnée a changé en base de données.
 	 */
 	public static Contribution updateContribution(Contribution contribution,
 			boolean updateEstimatedTimeToComlete) throws DbException,
@@ -3089,27 +3089,26 @@ public class ModelMgr {
 			tx = DbMgr.beginTransaction();
 
 			Contribution result = null;
-			// Faut-il mettre � jour automatiquement le RAF de la tache ?
+			// Faut-il mettre à jour automatiquement le RAF de la tache ?
 			if (!updateEstimatedTimeToComlete) {
-				// Mise � jour des donn�es
+				// Mise à jour des données
 				result = DbMgr.updateContribution(tx, contribution);
 			} else {
-				// R�cup�ration des �l�ments de la contribution
+				// Récupération des éléments de la contribution
 				Collaborator contributor = DbMgr.getCollaborator(tx,
 						contribution.getContributorId());
 				Task task = DbMgr.getTask(tx, contribution.getTaskId());
-				// R�cup�ration de la contribution correspondante en base
+				// Récupération de la contribution correspondante en base
 				Contribution[] contributions = DbMgr.getContributions(tx,
 						contributor, task, contribution.getDate(),
 						contribution.getDate());
 				if (contributions.length == 0) {
 					// Si la contribution n'existe pas, c'est qu'il y a
-					// d�phasage
-					// entre les donn�es de l'appelant et la BDD
+					// déphasage entre les données de l'appelant et la BDD
 					throw new ModelException(
 							Strings.getString("ModelMgr.errors.CONTRIBUTION_DELETION_DETECTED")); //$NON-NLS-1$
 				}
-				// Sinon, il y a forc�ment une seule contribution
+				// Sinon, il y a forcément une seule contribution
 				else {
 					long oldDuration = contributions[0].getDurationId();
 					long newDuration = contribution.getDurationId();
@@ -3117,7 +3116,7 @@ public class ModelMgr {
 					// Suppression de la contribution
 					DbMgr.updateContribution(tx, contribution);
 
-					// Mise � jour du RAF de la tache
+					// Mise à jour du RAF de la tache
 					long newEtc = task.getTodo() + oldDuration - newDuration;
 					task.setTodo(newEtc > 0 ? newEtc : 0);
 					DbMgr.updateTask(tx, task);
@@ -3129,7 +3128,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour du r�sultat
+			// Retour du résultat
 			return result;
 		} finally {
 			if (tx != null)
@@ -3151,12 +3150,12 @@ public class ModelMgr {
 	 * @param contributions
 	 *            la liste de contributions.
 	 * @param newContributionTask
-	 *            la tache � affecter.
-	 * @return la liste de contributions mise � jour.
+	 *            la tache à affecter.
+	 * @return la liste de contributions mise à jour.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique d'acc�s � la base.
+	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
-	 *             lev� dans le cas o� la tache cible ne peut �tre acdepter de
+	 *             levé dans le cas où la tache cible ne peut être acdepter de
 	 *             contribution.
 	 * 
 	 */
@@ -3175,7 +3174,7 @@ public class ModelMgr {
 				throw new ModelException(
 						Strings.getString("ModelMgr.errors.A_TASK_WITH_SUBTASKS_CANNOT_ACCEPT_CONTRIBUTIONS")); //$NON-NLS-1$
 
-			// Mise � jour des identifiants de t�che
+			// Mise à jour des identifiants de tâche
 			for (int i = 0; i < contributions.length; i++) {
 				Contribution contribution = contributions[i];
 				DbMgr.changeContributionTask(tx, contribution,
@@ -3187,7 +3186,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour de la tache modifi�e
+			// Retour de la tache modifiée
 			return contributions;
 		} finally {
 			if (tx != null)
@@ -3204,39 +3203,39 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Modifie une dur�e.
+	 * Modifie une durée.
 	 * <p>
-	 * Pour pouvoir �tre modifi�e, la dur�e ne doit pas �tre utilis�e.
+	 * Pour pouvoir être modifiée, la durée ne doit pas être utilisée.
 	 * </p>
 	 * 
 	 * @param duration
-	 *            la dur�e � modifier.
+	 *            la durée à modifier.
 	 * @param newDuration
-	 *            la nouvelle valeur de la dur�e.
-	 * @return la dur�e modifi�e.
+	 *            la nouvelle valeur de la durée.
+	 * @return la durée modifiée.
 	 * @throws ModelException
-	 *             lev� dans le cas ou la dur�e � changer est utilis�e ou dans
-	 *             le cas ou la nouvelle valeur pour la dur�e existe d�j� dans
-	 *             le r�f�rentiel.
+	 *             levé dans le cas ou la durée à changer est utilisée ou dans
+	 *             le cas ou la nouvelle valeur pour la durée existe déja dans
+	 *             le référentiel.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique avec la base de donn�es.
+	 *             levé en cas d'incident technique avec la base de données.
 	 */
 	public static Duration updateDuration(Duration duration,
 			Duration newDuration) throws ModelException, DbException {
 		log.info("updateDuration(" + duration + ", " + newDuration + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		DbTransaction tx = null;
 		try {
-			// Si la nouvelle dur�e est �gale � l'ancienne, il n'y a rien
-			// � faire de plus!...
+			// Si la nouvelle durée est égale à l'ancienne, il n'y a rien
+			// à faire de plus!...
 			if (!newDuration.equals(duration)) {
 
 				// Ouverture de la transaction
 				tx = DbMgr.beginTransaction();
 
-				// Tentative de suppression de la dur�e
+				// Tentative de suppression de la durée
 				removeDuration(tx, duration);
 
-				// Insertion de la nouvelle dur�e
+				// Insertion de la nouvelle durée
 				createDuration(tx, newDuration);
 
 				// Commit et fin de la transaction
@@ -3244,7 +3243,7 @@ public class ModelMgr {
 				DbMgr.endTransaction(tx);
 				tx = null;
 			}
-			// Retour de la tache modifi�e
+			// Retour de la tache modifiée
 			return newDuration;
 		} finally {
 			if (tx != null)
@@ -3261,22 +3260,22 @@ public class ModelMgr {
 	}
 
 	/**
-	 * Met � jour les attributs d'une tache en base.
+	 * Met à jour les attributs d'une tache en base.
 	 * <p>
-	 * Le chemin de la tache et son num�ro ne doivent pas avoir chang�s pour
-	 * pouvoir invoquer cette m�thode (la modification des attributs n'est
-	 * autoris�e que pour les champs autres que le chemin et le num�ro de la
+	 * Le chemin de la tache et son numéro ne doivent pas avoir changés pour
+	 * pouvoir invoquer cette méthode (la modification des attributs n'est
+	 * autorisée que pour les champs autres que le chemin et le numéro de la
 	 * tache.
 	 * </p>
 	 * 
 	 * @param task
-	 *            la tache � mettre � jour.
-	 * @return la tache mise � jour.
+	 *            la tache à mettre à jour.
+	 * @return la tache mise à jour.
 	 * @throws ModelException
-	 *             lev� dans le cas ou le chemin ou le num�ro de la tache ont
-	 *             chang�.
+	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
+	 *             changé.
 	 * @throws DbException
-	 *             lev� en cas d'incident technique avec la base de donn�es.
+	 *             levé en cas d'incident technique avec la base de données.
 	 */
 	public static Task updateTask(Task task) throws ModelException, DbException {
 		log.info("updateTask(" + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -3285,14 +3284,14 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
-			// Le chemin de la tache et son num�ro ne doivent pas avoir chang�s
-			// pour pouvoir invoquer cette m�thode (la modification des
+			// Le chemin de la tache et son numéro ne doivent pas avoir changés
+			// pour pouvoir invoquer cette méthode (la modification des
 			// attributs
-			// n'est autoris�e que pour les champs autres que le chemin et le
-			// num�ro.
+			// n'est autorisée que pour les champs autres que le chemin et le
+			// numéro.
 			checkTaskPathAndUpdateSubTasksCount(tx, task);
 
-			// Check sur l'unicit� du code pour le chemin consid�r�
+			// Check sur l'unicité du code pour le chemin considéré
 			Task parentTask = DbMgr.getParentTask(tx, task);
 			Task sameCodeTask = DbMgr
 					.getTask(tx, parentTask != null ? parentTask.getFullPath()
@@ -3301,7 +3300,7 @@ public class ModelMgr {
 				throw new ModelException(
 						Strings.getString("ModelMgr.errors.TASK_CODE_ALREADY_IN_USE")); //$NON-NLS-1$
 
-			// Mise � jour des donn�es
+			// Mise à jour des données
 			task = DbMgr.updateTask(tx, task);
 
 			// Commit et fin de la transaction
@@ -3309,7 +3308,7 @@ public class ModelMgr {
 			DbMgr.endTransaction(tx);
 			tx = null;
 
-			// Retour de la tache modifi�e
+			// Retour de la tache modifiée
 			return task;
 		} finally {
 			if (tx != null)

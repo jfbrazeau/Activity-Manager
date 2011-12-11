@@ -30,7 +30,7 @@ package jfb.tools.activitymgr.ui.util;
 import jfb.tools.activitymgr.AbstractTechnicalException;
 
 /**
- * Exception lev�e en cas d'incident technique dans l'IHM.
+ * Exception levée en cas d'incident technique dans l'IHM.
  */
 public class UITechException extends AbstractTechnicalException {
 

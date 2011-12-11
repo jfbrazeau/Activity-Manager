@@ -51,27 +51,27 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 
 /**
- * Dialogue affichant une erreur avec la pile associ�e.
+ * Dialogue affichant une erreur avec la pile associée.
  */
 public class ErrorDialog extends IconAndMessageDialog {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(ErrorDialog.class);
 
-	/** Bouton d'affichage du d�tail */
+	/** Bouton d'affichage du détail */
 	private Button detailsButton;
 
-	/** Bool�en indiquant si le d�tail est affich� */
+	/** Booléen indiquant si le détail est affiché */
 	private boolean detailsShown = false;
 
 	/** Liste contenant la pile d'erreur */
 	private List list;
 
-	/** Exception associ�e � l'erreur */
+	/** Exception associée à l'erreur */
 	private Throwable throwable;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parentShell
 	 *            shell parent.

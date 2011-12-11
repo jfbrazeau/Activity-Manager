@@ -47,18 +47,18 @@ public class XmlTest extends AbstractModelTestCase {
 	}
 
 	public void testCreateDurations() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
-		// V�rification du nombre initial de dur�es
+		// Vérification du nombre initial de durées
 		Duration[] initialDurations = ModelMgr.getDurations();
 
-		// Import du fichier associ� au test
+		// Import du fichier associé au test
 		importTestFile();
 		
-		// V�rification du nombre de dur�es apr�s import
+		// Vérification du nombre de durées après import
 		Duration[] durations = ModelMgr.getDurations();
 		assertNotNull(durations);
 		assertEquals(initialDurations.length + 3, durations.length);
 
-		// Suppression des dur�es
+		// Suppression des durées
 		Duration duration = new Duration();
 		duration.setId(200);
 		ModelMgr.removeDuration(duration);
@@ -69,31 +69,31 @@ public class XmlTest extends AbstractModelTestCase {
 	}
 	
 	public void testCreateCollaborators() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
-		// V�rification du nombre initial de dur�es
+		// Vérification du nombre initial de durées
 		Collaborator[] initialCollaborators = ModelMgr.getCollaborators();
 		assertNotNull(initialCollaborators);
 		assertEquals(0, initialCollaborators.length);
 
-		// Import du fichier associ� au test
+		// Import du fichier associé au test
 		importTestFile();
 		
-		// V�rification du nombre de dur�es apr�s import
+		// Vérification du nombre de durées après import
 		Collaborator[] collaborators = ModelMgr.getCollaborators();
 		assertNotNull(collaborators);
 		assertEquals(2, collaborators.length);
 
-		// Suppression des dur�es
+		// Suppression des durées
 		ModelMgr.removeCollaborator(collaborators[0]);
 		ModelMgr.removeCollaborator(collaborators[1]);
 	}
 	
 	public void testDuplicateCollaboratorLogin() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
-		// V�rification du nombre initial de collaborateurs
+		// Vérification du nombre initial de collaborateurs
 		Collaborator[] initialCollaborators = ModelMgr.getCollaborators();
 		assertNotNull(initialCollaborators);
 		assertEquals(0, initialCollaborators.length);
 
-		// Import du fichier associ� au test
+		// Import du fichier associé au test
 		try {
 			importTestFile();
 			fail("Duplicate login must generate an error");
@@ -104,38 +104,38 @@ public class XmlTest extends AbstractModelTestCase {
 	}
 
 	public void testCreateTasks() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
-		// V�rification du nombre initial de taches
+		// Vérification du nombre initial de taches
 		Task[] initialTasks = ModelMgr.getSubtasks((Task) null);
 		assertNotNull(initialTasks);
 		assertEquals(0, initialTasks.length);
 
-		// Import du fichier associ� au test
+		// Import du fichier associé au test
 		importTestFile();
 		
-		// V�rification du nombre de dur�es apr�s import
+		// Vérification du nombre de durées après import
 		Task[] tasks = ModelMgr.getSubtasks((Task) null);
 		assertNotNull(tasks);
 		assertEquals(1, tasks.length);
 
-		// Suppression des dur�es
+		// Suppression des durées
 		ModelMgr.removeTask(tasks[0]);
 	}
 	
 	public void testCreateContributions() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
-		// V�rification du nombre initial de taches
+		// Vérification du nombre initial de taches
 		Contribution[] initialContributions = ModelMgr.getContributions(null, null, null, null, null);
 		assertNotNull(initialContributions);
 		assertEquals(0, initialContributions.length);
 
-		// Import du fichier associ� au test
+		// Import du fichier associé au test
 		importTestFile();
 		
-		// V�rification du nombre de dur�es apr�s import
+		// Vérification du nombre de durées après import
 		Contribution[] contributions = ModelMgr.getContributions(null, null, null, null, null);
 		assertNotNull(contributions);
 		assertEquals(2, contributions.length);
 
-		// Suppression des donn�es
+		// Suppression des données
 		ModelMgr.removeContribution(contributions[0], false);
 		ModelMgr.removeContribution(contributions[1], false);
 		Task[] tasks = ModelMgr.getSubtasks((Task) null);
@@ -151,7 +151,7 @@ public class XmlTest extends AbstractModelTestCase {
 	}
 	
 	public void testExportAndImport() throws DbException, ModelException, IOException, ParserConfigurationException, SAXException {
-		// Cr�ation des objets de test
+		// Création des objets de test
 		Duration duration = new Duration();
 		duration.setId(100);
 		duration = ModelMgr.createDuration(duration);
@@ -195,7 +195,7 @@ public class XmlTest extends AbstractModelTestCase {
 		ModelMgr.removeCollaborator(collaborator);
 		ModelMgr.removeDuration(duration);
 
-		// R�importation
+		// Réimportation
 		ModelMgr.importFromXML(new ByteArrayInputStream(out.toByteArray()));
 		
 		// Nouvel export puis comparaison
@@ -209,7 +209,7 @@ public class XmlTest extends AbstractModelTestCase {
 		// Comparaison
 		assertEquals(export, export2);
 
-		// Supression des objets de test ayant �t� r�import�s
+		// Supression des objets de test ayant été réimportés
 		contribution = ModelMgr.getContributions(null, null, null, null, null)[0];
 		ModelMgr.removeContribution(contribution, false);
 		task = ModelMgr.getTaskByCodePath("/Par/Code");
@@ -222,7 +222,7 @@ public class XmlTest extends AbstractModelTestCase {
 	}
 	
 	/*
-	 * M�thodes priv�es 
+	 * Méthodes privées 
 	 */
 
 	private void assertSAXExceptionThrown(String testFailMessage) throws DbException, IOException, ParserConfigurationException, ModelException {
@@ -231,7 +231,7 @@ public class XmlTest extends AbstractModelTestCase {
 			fail(testFailMessage);
 		}
 		catch (SAXException e) {
-			// Exception normalement lev�e en cas de mauvais format
+			// Exception normalement levée en cas de mauvais format
 		}
 	}
 
@@ -247,7 +247,7 @@ public class XmlTest extends AbstractModelTestCase {
 		if (in==null) {
 			throw new FileNotFoundException(fileName);
 		}
-		// Importation des donn�es
+		// Importation des données
 		ModelMgr.importFromXML(in);
 		// Fermeture du flux
 		in.close();

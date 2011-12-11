@@ -45,14 +45,14 @@ public class TasksChooserDialog extends AbstractDialog implements MouseListener 
 	/** Logger */
 	private static Logger log = Logger.getLogger(TasksChooserDialog.class);
 
-	/** Arbre contenant la liste des t�ches */
+	/** Arbre contenant la liste des tâches */
 	private TasksChooserTree tasksTree;
 
 	/** Valideur */
 	private ITaskChooserValidator validator;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parentShell
 	 *            shell parent.

@@ -30,15 +30,15 @@ package jfb.tools.activitymgr.ui.util;
 import jfb.tools.activitymgr.core.beans.Collaborator;
 
 /**
- * Interface d'�coute de s�lection de taches.
+ * Interface d'écoute de sélection de taches.
  */
 public interface ICollaboratorSelectionListener {
 
 	/**
-	 * Notifie de la s�lection d'un collaborateur.
+	 * Notifie de la sélection d'un collaborateur.
 	 * 
 	 * @param selectedCollaborator
-	 *            le collaborateur s�lectionn�e.
+	 *            le collaborateur sélectionnée.
 	 */
 	public void collaboratorSelected(Collaborator selectedCollaborator);
 

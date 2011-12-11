@@ -32,23 +32,23 @@ import jfb.tools.activitymgr.ui.util.UITechException;
 import org.eclipse.swt.widgets.Control;
 
 /**
- * Exception utilis�e dans les dialogues.
+ * Exception utilisée dans les dialogues.
  */
 public class DialogException extends UITechException {
 
 	/** Fake serial version UID */
 	private static final long serialVersionUID = 1L;
 
-	/** Contr�le � l'origine de la lev�e de l'exception */
+	/** Contrôle à l'origine de la levée de l'exception */
 	private Control control;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param message
 	 *            le message d'erreur.
 	 * @param control
-	 *            le contr�le � l'origine de la lev�e de l'exception.
+	 *            le contrôle à l'origine de la levée de l'exception.
 	 */
 	public DialogException(String message, Control control) {
 		super(message);
@@ -56,7 +56,7 @@ public class DialogException extends UITechException {
 	}
 
 	/**
-	 * @return le contr�le � l'origine de la lev�e de l'exception.
+	 * @return le contrôle à l'origine de la levée de l'exception.
 	 */
 	public Control getControl() {
 		return control;

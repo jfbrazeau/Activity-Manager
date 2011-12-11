@@ -47,14 +47,14 @@ public class TaskChooserDialog extends AbstractDialog {
 	/** Logger */
 	private static Logger log = Logger.getLogger(TaskChooserDialog.class);
 
-	/** Tableau contenant les derni�res taches s�lectionn�es */
+	/** Tableau contenant les dernières taches sélectionnées */
 	private TaskChooserTable tasksTable;
 
-	/** Liste des taches � afficher */
+	/** Liste des taches à afficher */
 	private Task[] tasks;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parentShell
 	 *            shell parent.
@@ -89,13 +89,13 @@ public class TaskChooserDialog extends AbstractDialog {
 		Composite parentComposite = (Composite) super.createDialogArea(parent);
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		// Ajout de la liste des taches
-		// Ajout du titre de s�lection des taches pr�c�demment s�lectionn�es
+		// Ajout du titre de sélection des taches précédemment sélectionnées
 		Label label = new Label(parentComposite, SWT.NONE);
 		gridData = new GridData(SWT.FILL, SWT.FILL, false, false);
 		gridData.horizontalSpan = 2;
 		label.setLayoutData(gridData);
 		label.setText(Strings.getString("TaskChooserDialog.labels.FOUND_TASKS")); //$NON-NLS-1$
-		// Ajout de la liste des s�lections pr�c�dentes
+		// Ajout de la liste des sélections précédentes
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData.horizontalSpan = 2;
 		gridData.heightHint = 300;
@@ -112,7 +112,7 @@ public class TaskChooserDialog extends AbstractDialog {
 	}
 
 	/**
-	 * D�finit la liste des taches qui doivent �tre affich�es dans le dialogue.
+	 * Définit la liste des taches qui doivent être affichées dans le dialogue.
 	 * 
 	 * @param tasks
 	 *            la liste des taches.

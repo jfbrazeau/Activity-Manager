@@ -30,7 +30,7 @@ package jfb.tools.activitymgr.core.util;
 import jfb.tools.activitymgr.AbstractApplicationException;
 
 /**
- * Exception utilis�e pour les probl�mes de conversion de cha�nes de caact�re.
+ * Exception utilisée pour les problèmes de conversion de chaînes de caractère.
  */
 public class StringFormatException extends AbstractApplicationException {
 
@@ -38,7 +38,7 @@ public class StringFormatException extends AbstractApplicationException {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param message
 	 *            message d'erreur.
@@ -53,7 +53,7 @@ public class StringFormatException extends AbstractApplicationException {
 	 * @param message
 	 *            message d'erreur.
 	 * @param cause
-	 *            cause de la lev�e d'exception.
+	 *            cause de la levée d'exception.
 	 */
 	public StringFormatException(String message, Throwable cause) {
 		super(message, cause);

@@ -42,19 +42,19 @@ public interface ImagesDatas {
 	public static final ImageData APPLICATION_ICON = new ImageData(
 			ImagesDatas.class.getResourceAsStream("logo-16x16.ico")); //$NON-NLS-1$
 
-	/** Icone case coch�e */
+	/** Icone case cochée */
 	public static final ImageData CHECKED_ICON = new ImageData(
 			ImagesDatas.class.getResourceAsStream("checkedIcon.gif")); //$NON-NLS-1$
 
-	/** Icone case d�coch�e */
+	/** Icone case décochée */
 	public static final ImageData UNCHECKED_ICON = new ImageData(
 			ImagesDatas.class.getResourceAsStream("uncheckedIcon.gif")); //$NON-NLS-1$
 
-	/** Icone item s�lectionn� */
+	/** Icone item sélectionné */
 	public static final ImageData SELECTED_ITEM_ICON = new ImageData(
 			ImagesDatas.class.getResourceAsStream("selectedItemIcon.gif")); //$NON-NLS-1$
 
-	/** Icone item non s�lectionn� */
+	/** Icone item non sélectionné */
 	public static final ImageData UNSELECTED_ITEM_ICON = new ImageData(
 			ImagesDatas.class.getResourceAsStream("unselectedItemIcon.gif")); //$NON-NLS-1$
 

@@ -40,52 +40,52 @@ import jfb.tools.activitymgr.core.util.Strings;
 import org.apache.log4j.Logger;
 
 /**
- * Classe offrant des services d'acc�s aux propri�t�s de configuration pour la
- * g�n�ration de rapports avec Velocity.
+ * Classe offrant des services d'accès aux propriétés de configuration pour la
+ * génération de rapports avec Velocity.
  * 
  * <p>
  * Pour Velocity, une variable de type <code>${a.b}</code> peut vouloir dire au
  * choix :
  * <ul>
  * <li>l'attibut b de l'instance a (ou a est un bean Java)</li>
- * <li>la propri�t� b de l'instance a (ou a est une Map)</li>
+ * <li>la propriété b de l'instance a (ou a est une Map)</li>
  * </ul>
  * </p>
  * 
  * <p>
- * On exploite la deuxi�me possibilit� pour rendre '<i>visible</i>' une
- * propri�t� d�finie dans le fichier de configuration des rapports dans un
+ * On exploite la deuxième possibilité pour rendre '<i>visible</i>' une
+ * propriété définie dans le fichier de configuration des rapports dans un
  * template velocity. Une instance de <code>PropertiesHelper</code> est
- * enregistr�e dans le contexte velocity sous le nom <code>props</code>. Comme
- * cette classe impl�mente l'interface <code>java.util.Map</code>, Velocity
- * invoque la m�thode <code>get(String)</code> en lui passant en argument la
- * chaine aussitot plac�e apr�s <code>props.</code>. La fin de la propri�t� est
- * marqu�e par l'invocation de la m�thode <code>get()</code>.
+ * enregistrée dans le contexte velocity sous le nom <code>props</code>. Comme
+ * cette classe implémente l'interface <code>java.util.Map</code>, Velocity
+ * invoque la méthode <code>get(String)</code> en lui passant en argument la
+ * chaine aussitot placée après <code>props.</code>. La fin de la propriété est
+ * marquée par l'invocation de la méthode <code>get()</code>.
  * </p>
  * 
  * <p>
- * Il est suppos� que les propri�t�s contenues dans le fichier de configuration
- * et acc�d�es depuis les templates Velocity sont pr�fix�es par :<br>
- * <code>reports.&lt;reportId&gt;</code> ou <code>reportId</code> d�signe
+ * Il est supposé que les propriétés contenues dans le fichier de configuration
+ * et accédées depuis les templates Velocity sont préfixées par :<br>
+ * <code>reports.&lt;reportId&gt;</code> ou <code>reportId</code> désigne
  * l'identifiant du rapport.
  * </p>
  * 
  * <p>
  * Exemple : <code>${props.startYear.get()}</code> pour le rapport dont
- * l'identifiant est <code>myReport</code> va r�f�rencer la propri�t�
+ * l'identifiant est <code>myReport</code> va référencer la propriété
  * <code>reports.myReport.startYear</code> dans le fichier de configuration. Si
- * cette propri�t� n'est pas d�finie, le moteur regarde ensuite tour � tour les
- * propri�t�s <code>reports.startYear</code> et <code>startYear</code>. Si
- * toutes ces propri�t�s sont ind�finies, une exception est lev�e.
+ * cette propriété n'est pas définie, le moteur regarde ensuite tour à tour les
+ * propriétés <code>reports.startYear</code> et <code>startYear</code>. Si
+ * toutes ces propriétés sont indéfinies, une exception est levée.
  * </p>
  * 
  * <p>
- * Dans le cas ou le nom de la propri�t� est compos�e (ex :
- * <code>start.year</code>), la m�thode <code>get</code> retourne l'instance de
- * <code>PropertiesHelper</code> et la premi�re partie du nom de la propri�t�
- * est d�pos�e sur la pile. Lors de l'invocation suivante, les diff�rentes
- * parties du nom de la propri�t� sont r�assembl�es pour former le nom de la
- * propri�t� dans son ensemble.
+ * Dans le cas ou le nom de la propriété est composée (ex :
+ * <code>start.year</code>), la méthode <code>get</code> retourne l'instance de
+ * <code>PropertiesHelper</code> et la première partie du nom de la propriété
+ * est déposée sur la pile. Lors de l'invocation suivante, les différentes
+ * parties du nom de la propriété sont réassemblées pour former le nom de la
+ * propriété dans son ensemble.
  * </p>
  * 
  * <p>
@@ -99,22 +99,22 @@ public class PropertiesHelper implements Map<Object, Object> {
 	/** Logger */
 	private static Logger log = Logger.getLogger(PropertiesHelper.class);
 
-	/** Dictionnaire de propri�t�s */
+	/** Dictionnaire de propriétés */
 	private Properties props;
 
 	/** Identifiant courant de rapport */
 	private String currentReportId;
 
-	/** Pile utilis�e pour extraire les propri�t�s */
+	/** Pile utilisée pour extraire les propriétés */
 	private Stack<String> stack = new Stack<String>();
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param reportId
 	 *            identifiant du rapport courant.
 	 * @param props
-	 *            dictionnaire par d�faut.
+	 *            dictionnaire par défaut.
 	 */
 	public PropertiesHelper(String reportId, Properties props) {
 		this.currentReportId = reportId;
@@ -122,15 +122,15 @@ public class PropertiesHelper implements Map<Object, Object> {
 	}
 
 	/**
-	 * Retourne la valeur de la propri�t� dont la cl� est constitu� des cha�nes
-	 * empil�es dans la pile.
+	 * Retourne la valeur de la propriété dont la clé est constitué des chaînes
+	 * empilées dans la pile.
 	 * 
-	 * @return la valeur de la propri�t�.
+	 * @return la valeur de la propriété.
 	 * @throws ReportException
-	 *             lev� dans le cas o� la cl� n'existe pas.
+	 *             levé dans le cas où la clé n'existe pas.
 	 */
 	public String get() throws ReportException {
-		// Construction de la fin de la cl�
+		// Construction de la fin de la clé
 		StringBuffer buf = new StringBuffer();
 		for (int i = 0; i < stack.size(); i++) {
 			if (i > 0)
@@ -140,20 +140,20 @@ public class PropertiesHelper implements Map<Object, Object> {
 		log.debug("get(" + buf.toString() + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		// Purge de la pile
 		stack.clear();
-		// Lecture de la 1� cl� par d�faut
+		// Lecture de la 1° clé par défaut
 		String propKey0 = new StringBuffer("reports.") //$NON-NLS-1$
 				.append(currentReportId).append('.').append(buf.toString())
 				.toString();
 		log.debug("PropertyKey=" + propKey0); //$NON-NLS-1$
 		String propValue = props.getProperty(propKey0);
-		// Lecture de la 2� cl� par d�faut si la 1� n'a rien donn�
+		// Lecture de la 2° clé par défaut si la 1° n'a rien donné
 		if (propValue == null) {
 			String propKey1 = new StringBuffer("reports.") //$NON-NLS-1$
 					.append(buf.toString()).toString();
 			log.debug("PropertyKey=" + propKey1); //$NON-NLS-1$
 			propValue = props.getProperty(propKey1);
-			// Lecture de la 3� cl� par d�faut si la 1� et la 2�
-			// n'ont rien donn�
+			// Lecture de la 3° clé par défaut si la 1° et la 2°
+			// n'ont rien donné
 			if (propValue == null) {
 				String propKey2 = buf.toString();
 				log.debug("PropertyKey=" + propKey2); //$NON-NLS-1$
@@ -164,20 +164,20 @@ public class PropertiesHelper implements Map<Object, Object> {
 									"PropertiesHelper.errors.PARAMETER_NOT_SPECIFIED", new Object[] { buf.toString(), propKey0, propKey1, propKey2 }), null); //$NON-NLS-1$
 			}
 		}
-		// Retour du r�sultat
+		// Retour du résultat
 		String value = substitueVariables(propValue);
 		log.debug("PropertyValue=" + value); //$NON-NLS-1$
 		return value;
 	}
 
 	/**
-	 * Retourne la valeur de la propri�t� dont le postfix est sp�cifi�.
+	 * Retourne la valeur de la propriété dont le postfix est spécifié.
 	 * 
 	 * @param postPropertyKey
-	 *            le postfix de cl� de propri�t�.
-	 * @return la valeur de la propri�t�.
+	 *            le postfix de clé de propriété.
+	 * @return la valeur de la propriété.
 	 * @throws ReportException
-	 *             lev� en cas de non conformit� de la valeur de la cha�ne.
+	 *             levé en cas de non conformité de la valeur de la chaîne.
 	 */
 	public String getProperty(String postPropertyKey) throws ReportException {
 		String propKey0 = new StringBuffer("reports.") //$NON-NLS-1$
@@ -192,14 +192,14 @@ public class PropertiesHelper implements Map<Object, Object> {
 	}
 
 	/**
-	 * Substitue les cha�nes de type ${xxx.xxx.xxx} par leur valeur trouv�es
-	 * dans les propri�t�s syst�me.
+	 * Substitue les chaînes de type ${xxx.xxx.xxx} par leur valeur trouvées
+	 * dans les propriétés système.
 	 * 
 	 * @param s
-	 *            la cha�ne de caract�re � parcourir.
-	 * @return le r�sultat.
+	 *            la chaîne de caractère à parcourir.
+	 * @return le résultat.
 	 * @throws ReportException
-	 *             lev� en cas de non conformit� de la cha�ne.
+	 *             levé en cas de non conformité de la chaîne.
 	 */
 	private String substitueVariables(String s) throws ReportException {
 		return substitueVariables(new Stack<String>(), s);
@@ -221,42 +221,42 @@ public class PropertiesHelper implements Map<Object, Object> {
 	 * valeur lorsqu'elle existe dans le dictionnaire.
 	 * 
 	 * @param stack
-	 *            pile permettant de d�tecter les r�f�rences circulaires.
+	 *            pile permettant de détecter les références circulaires.
 	 * @param s
-	 *            la cha�ne contenant les variables.
-	 * @return la cha�ne substitu�e.
+	 *            la chaîne contenant les variables.
+	 * @return la chaîne substituée.
 	 * @throws ReportException
-	 *             lev� en cas de d�tection de r�f�rences circulaires.
+	 *             levé en cas de détection de références circulaires.
 	 */
 	private String substitueVariables(Stack<String> stack, String s)
 			throws ReportException {
 		String result = null;
 		if (s != null) {
-			// Pr�paration de l'expression r�guli�re
+			// Préparation de l'expression régulière
 			Pattern pattern = Pattern.compile("\\$\\{[a-zA-Z0-9.'_-]+\\}"); //$NON-NLS-1$
 			Matcher matcher = pattern.matcher(s);
-			// Pr�paration du buffer accueillant la chaine substitu�e
+			// Préparation du buffer accueillant la chaine substituée
 			StringBuffer buf = new StringBuffer();
 			int idx = 0;
 			// Parcours des valeurs obtenues
 			while (matcher.find()) {
-				// R�cup�ration de la chaine ${xxx.xxx.xxx}
+				// Récupération de la chaine ${xxx.xxx.xxx}
 				String matched = matcher.group();
-				// Ajout du bout de chaine pr�c�dent la valeur trouv�e
+				// Ajout du bout de chaine précédent la valeur trouvée
 				buf.append(s.substring(idx, (idx = s.indexOf(matched, idx))));
 				// Extraction du nom de la variable
 				String name = matched.substring(2, matched.length() - 1);
-				// Si cette variable est dans la pile => r�f�rence cyclique
+				// Si cette variable est dans la pile => référence cyclique
 				if (stack.contains(name))
 					throw new ReportException(
 							Strings.getString(
 									"PropertiesHelper.errors.CIRCULAR_REFERENCE", name), null); //$NON-NLS-1$ //$NON-NLS-2$
-				// R�cup�ration de sa valeur, et ajout au buffer
+				// Récupération de sa valeur, et ajout au buffer
 				String value = props.getProperty(name);
 				if (value == null)
 					value = System.getProperty(name);
 				// Si la valeur est non nulle, on effectue le traitement
-				// r�cursivement
+				// récursivement
 				if (value != null) {
 					stack.push(name);
 					value = substitueVariables(stack, value);
@@ -266,16 +266,16 @@ public class PropertiesHelper implements Map<Object, Object> {
 				// throw new ReportException("Missing property " +
 				// "variable '${" + name + "}'", null);
 				log.debug("Var(" + name + ")='" + value + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				// Concat�nation...
+				// Concaténation...
 				buf.append(value != null ? value : matched);
-				// Incr�mentation de l'index
+				// Incrémentation de l'index
 				idx += matched.length();
 			}
 			// Ajout de la fin de la chaine
 			buf.append(s.substring(idx));
 			result = buf.toString();
 		}
-		// Retour du r�sultat
+		// Retour du résultat
 		return result;
 	}
 

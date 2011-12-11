@@ -32,7 +32,7 @@ import jfb.tools.activitymgr.core.beans.Task;
 /**
  * Interface permettant d'adapter le comportement du dialogue de choix d'une
  * tache et en particulier, selon le contexte, de choisir si une tache peut ou
- * non �tre choisie par l'utilisateur.
+ * non être choisie par l'utilisateur.
  */
 public interface ITaskChooserValidator {
 
@@ -42,7 +42,7 @@ public interface ITaskChooserValidator {
 	 * @param selectedTask
 	 *            la tache choisie.
 	 * @throws DialogException
-	 *             lev� en cas d'invalidation de la tache choisie.
+	 *             levé en cas d'invalidation de la tache choisie.
 	 */
 	public void validateChoosenTask(Task selectedTask) throws DialogException;
 

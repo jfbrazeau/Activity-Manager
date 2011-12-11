@@ -30,15 +30,15 @@ package jfb.tools.activitymgr.ui.util;
 import jfb.tools.activitymgr.core.beans.Task;
 
 /**
- * Interface d'�coute de s�lection de taches.
+ * Interface d'écoute de sélection de taches.
  */
 public interface ITaskSelectionListener {
 
 	/**
-	 * Notifie de la s�lection d'une tache.
+	 * Notifie de la sélection d'une tache.
 	 * 
 	 * @param selectedTask
-	 *            la tache s�lectionn�e.
+	 *            la tache sélectionnée.
 	 */
 	public void taskSelected(Task selectedTask);
 

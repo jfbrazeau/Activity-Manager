@@ -28,7 +28,7 @@
 package jfb.tools.activitymgr;
 
 /**
- * Exception m�re des exceptions applicatives.
+ * Exception mère des exceptions applicatives.
  */
 public abstract class AbstractApplicationException extends AbstractException {
 

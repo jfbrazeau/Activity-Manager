@@ -28,20 +28,20 @@
 package jfb.tools.activitymgr.core.beans;
 
 /**
- * Sommes associ�es � une tache et ses sous-taches.
+ * Sommes associées à une tache et ses sous-taches.
  */
 public class TaskSums {
 
 	/** Somme des budgets */
 	private long budgetSum;
 
-	/** Somme des consomm�s initiaux */
+	/** Somme des consommés initiaux */
 	private long initiallyConsumedSum;
 
-	/** Somme des reste � faire */
+	/** Somme des reste à faire */
 	private long todoSum;
 
-	/** Somme des consomm�s */
+	/** Somme des consommés */
 	private long consumedSum;
 
 	/** Nombre de contributions */
@@ -55,7 +55,7 @@ public class TaskSums {
 	}
 
 	/**
-	 * D�finit la somme des budgets.
+	 * Définit la somme des budgets.
 	 * 
 	 * @param budgetSum
 	 *            la nouvelle somme.
@@ -65,14 +65,14 @@ public class TaskSums {
 	}
 
 	/**
-	 * @return la somme des consomm�s initiaux.
+	 * @return la somme des consommés initiaux.
 	 */
 	public long getInitiallyConsumedSum() {
 		return initiallyConsumedSum;
 	}
 
 	/**
-	 * D�finit la somme des consomm�s initiaux.
+	 * Définit la somme des consommés initiaux.
 	 * 
 	 * @param initiallyConsumedSum
 	 *            la nouvelle somme.
@@ -82,14 +82,14 @@ public class TaskSums {
 	}
 
 	/**
-	 * @return la somme des reste � faire.
+	 * @return la somme des reste à faire.
 	 */
 	public long getTodoSum() {
 		return todoSum;
 	}
 
 	/**
-	 * D�finit la somme des reste � faire.
+	 * Définit la somme des reste à faire.
 	 * 
 	 * @param todoSum
 	 *            la nouvelle somme.
@@ -99,14 +99,14 @@ public class TaskSums {
 	}
 
 	/**
-	 * @return la somme des consomm�s.
+	 * @return la somme des consommés.
 	 */
 	public long getConsumedSum() {
 		return consumedSum;
 	}
 
 	/**
-	 * D�finit la somme des consomm�s.
+	 * Définit la somme des consommés.
 	 * 
 	 * @param consumed
 	 *            la nouvelle somme.
@@ -125,7 +125,7 @@ public class TaskSums {
 	}
 
 	/**
-	 * D�finit le nombre de contributions.
+	 * Définit le nombre de contributions.
 	 * 
 	 * @param contributionsNb
 	 *            le nombre de contributions.

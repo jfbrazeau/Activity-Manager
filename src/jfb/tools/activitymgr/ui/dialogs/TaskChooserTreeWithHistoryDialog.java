@@ -62,10 +62,10 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 	private static Logger log = Logger
 			.getLogger(TaskChooserTreeWithHistoryDialog.class);
 
-	/** Arbre contenant la liste des t�ches */
+	/** Arbre contenant la liste des tâches */
 	private TaskChooserTree tasksTree;
 
-	/** Tableau contenant les derni�res taches s�lectionn�es */
+	/** Tableau contenant les dernières taches sélectionnées */
 	private TaskChooserTable previouslySelectedTasksTable;
 
 	/** Valideur */
@@ -74,11 +74,11 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 	/** Panneau de recherche de tache */
 	private TaskFinderPanel taskFinderPanel;
 
-	/** Liste des s�lections pr�c�dentes */
+	/** Liste des sélections précédentes */
 	private List<Task> previouslySelectedTasks = new ArrayList<Task>();
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parentShell
 	 *            shell parent.
@@ -109,7 +109,7 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 		if (validator != null)
 			validator.validateChoosenTask(selectedTask);
 		// Suppression puis enregistrement de la tache dans l'historique
-		// (la suppression permet de garantir que la tache soit la premi�re
+		// (la suppression permet de garantir que la tache soit la première
 		// dans l'historique)
 		previouslySelectedTasks.remove(selectedTask);
 		if (!previouslySelectedTasks.contains(selectedTask))
@@ -142,7 +142,7 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 			}
 		});
 
-		// Montre-t-on le panneau contenant l'hitorique des s�lections ?
+		// Montre-t-on le panneau contenant l'hitorique des sélections ?
 		boolean showHistoryPanel = (previouslySelectedTasks.size() != 0);
 
 		// Arbre contenant les taches
@@ -167,7 +167,7 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 			viewer.setSelection(new StructuredSelection(lastValue));
 		}
 
-		// Zone de s�lection des taches pr�c�demment s�lectionn�es
+		// Zone de sélection des taches précédemment sélectionnées
 		if (showHistoryPanel) {
 			gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 			Group lastSelectionsGroup = new Group(parentComposite, SWT.NONE);
@@ -176,8 +176,8 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 							.getString("TaskChooserTreeWithHistoryDialog.labels.PREVIOUS_SELECTION")); //$NON-NLS-1$
 			lastSelectionsGroup.setLayoutData(gridData);
 			lastSelectionsGroup.setLayout(new FillLayout());
-			// R�cup�ration de l'hitorique avec tri invers� (le premier arriv�
-			// est affich� en dernier)
+			// Récupération de l'hitorique avec tri inversé (le premier arrivé
+			// est affiché en dernier)
 			Task[] history = (Task[]) previouslySelectedTasks
 					.toArray(new Task[previouslySelectedTasks.size()]);
 			Task[] _history = new Task[history.length];
@@ -213,10 +213,10 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 	}
 
 	/**
-	 * S�lectionne la tache sp�cifi�e dans l'arbre des taches.
+	 * Sélectionne la tache spécifiée dans l'arbre des taches.
 	 * 
 	 * @param selectedTask
-	 *            la tache � s�lectionner.
+	 *            la tache à sélectionner.
 	 */
 	private void selectTaskInTree(Task selectedTask) {
 		TreeViewer treeViewer = tasksTree.getTreeViewer();
@@ -240,9 +240,9 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 	 * .core.beans.Task)
 	 */
 	public void taskAdded(Task task) {
-		// Quand une tache est ajout�e, elle ne peut pas �tre pr�sente dans
+		// Quand une tache est ajoutée, elle ne peut pas être présente dans
 		// l'historique
-		// des taches => donc rien � faire
+		// des taches => donc rien à faire
 	}
 
 	/*
@@ -254,42 +254,42 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 	public void taskRemoved(final Task removedTask) {
 		new SafeRunner() {
 			protected Object runUnsafe() throws Exception {
-				// Parcours des taches pr�sentes dans le tableau
+				// Parcours des taches présentes dans le tableau
 				int itemIdxToRemove = -1;
 				for (int i = 0; i < previouslySelectedTasks.size(); i++) {
 					Task currentTask = (Task) previouslySelectedTasks.get(i);
-					// Cas ou la tache supprim�e est dans le tableau
-					// dans ce cas, on sauvegarde le N� pour effectuer
+					// Cas ou la tache supprimée est dans le tableau
+					// dans ce cas, on sauvegarde le N° pour effectuer
 					// la suppression par la suite
 					if (currentTask.getId() == removedTask.getId()) {
 						itemIdxToRemove = i;
 					}
-					// Autre cas : la tache supprim�e est la soeur d'une des
+					// Autre cas : la tache supprimée est la soeur d'une des
 					// taches parent
 					// de la tache en cours ; c'est le cas si le chemin de la
 					// tache en cours
-					// commence par le chemin de la tache qui a �t� supprim�e
+					// commence par le chemin de la tache qui a été supprimée
 					else if (currentTask.getPath().startsWith(
 							removedTask.getPath())) {
 						String removedTaskFullpath = removedTask.getFullPath();
 						String removedTaskSisterFullPath = currentTask
 								.getFullPath().substring(0,
 										removedTaskFullpath.length());
-						// La tache n'est impact�e que si sa tache parent se
-						// trouvant �tre la soeur de
-						// celle qui a �t� supprim�e poss�de un num�ro sup�rieur
-						// � celui de la
-						// tache supprim�e
+						// La tache n'est impactée que si sa tache parent se
+						// trouvant être la soeur de
+						// celle qui a été supprimée possède un numéro supérieur
+						// à celui de la
+						// tache supprimée
 						if (removedTaskSisterFullPath
 								.compareTo(removedTaskFullpath) > 0) {
-							// Dans ce cas il faut mettre � jour le chemin de la
+							// Dans ce cas il faut mettre à jour le chemin de la
 							// tache
 							currentTask = ModelMgr.getTask(currentTask.getId());
 							previouslySelectedTasks.set(i, currentTask);
 						}
 					}
 				}
-				// Si on a trouv� l'item supprim�, on le supprime
+				// Si on a trouvé l'item supprimé, on le supprime
 				if (itemIdxToRemove >= 0)
 					previouslySelectedTasks.remove(itemIdxToRemove);
 				return null;
@@ -323,23 +323,23 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 	public void taskMoved(final String oldTaskFullpath, final Task movedTask) {
 		new SafeRunner() {
 			protected Object runUnsafe() throws Exception {
-				// D�duction de l'ancien chemin de la tache � partir de l'ancien
+				// Déduction de l'ancien chemin de la tache à partir de l'ancien
 				// chemin complet
 				String oldTaskPath = oldTaskFullpath.substring(0,
 						oldTaskFullpath.length() - 2);
 				for (int i = 0; i < previouslySelectedTasks.size(); i++) {
 					Task currentTask = (Task) previouslySelectedTasks.get(i);
-					// Cas ou la tache modifi�e est dans la liste
+					// Cas ou la tache modifiée est dans la liste
 					if (currentTask.getId() == movedTask.getId()) {
 						previouslySelectedTasks.set(i, movedTask);
 					}
-					// Autre cas : la tache a d�plac�e est une tache
+					// Autre cas : la tache a déplacée est une tache
 					// parent de la tache en cours
 					else if (currentTask.getPath().startsWith(oldTaskFullpath)) {
 						currentTask = ModelMgr.getTask(currentTask.getId());
 						previouslySelectedTasks.set(i, currentTask);
 					}
-					// Autre cas : la tache d�plac�e est la soeur d'une des
+					// Autre cas : la tache déplacée est la soeur d'une des
 					// taches parent
 					// de la tache en cours
 					else if (currentTask.getPath().startsWith(oldTaskPath)) {

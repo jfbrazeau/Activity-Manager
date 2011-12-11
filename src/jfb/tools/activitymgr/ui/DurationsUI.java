@@ -74,7 +74,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 
 /**
- * IHM de gestion des dur�es.
+ * IHM de gestion des durées.
  */
 public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 		ICellModifier, SelectionListener, MenuListener {
@@ -82,49 +82,49 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	/** Logger */
 	private static Logger log = Logger.getLogger(DurationsUI.class);
 
-	/** Constantes associ�es aux colonnes */
+	/** Constantes associées aux colonnes */
 	public static final int IS_ACTIVE_COLUMN_IDX = 0;
 	public static final int DURATION_COLUMN_IDX = 1;
 	private static TableOrTreeColumnsMgr tableColsMgr;
 
 	/**
-	 * Interface utilis�e pour permettre l'�coute de la suppression ou de
-	 * l'ajout de dur�es.
+	 * Interface utilisée pour permettre l'écoute de la suppression ou de
+	 * l'ajout de durées.
 	 */
 	public static interface IDurationListener {
 
 		/**
-		 * Indique qu'une dur�e a �t� ajout�e au r�f�rentiel.
+		 * Indique qu'une durée a été ajoutée au référentiel.
 		 * 
 		 * @param duration
-		 *            la dur�e ajout�e.
+		 *            la durée ajoutée.
 		 */
 		public void durationAdded(Duration duration);
 
 		/**
-		 * Indique qu'une dur�e a �t� supprim�e du r�f�rentiel.
+		 * Indique qu'une durée a été supprimée du référentiel.
 		 * 
 		 * @param duration
-		 *            la dur�e supprim�e.
+		 *            la durée supprimée.
 		 */
 		public void durationRemoved(Duration duration);
 
 		/**
-		 * Indique qu'une dur�e a �t� modifi�e dans le r�f�rentiel.
+		 * Indique qu'une durée a été modifiée dans le référentiel.
 		 * 
 		 * @param oldDuration
-		 *            la dur�e modifi�e.
+		 *            la durée modifiée.
 		 * @param newDuration
-		 *            la nouvelle dur�e.
+		 *            la nouvelle durée.
 		 */
 		public void durationUpdated(Duration oldDuration, Duration newDuration);
 
 		/**
-		 * Indique que l'�tat d'activation d'une dur�e a �t� d�sactiv�e dans le
-		 * r�f�rentiel.
+		 * Indique que l'état d'activation d'une durée a été désactivée dans le
+		 * référentiel.
 		 * 
 		 * @param duration
-		 *            la dur�e modifi�e.
+		 *            la durée modifiée.
 		 */
 		public void durationActivationStatusChanged(Duration duration);
 	}
@@ -143,10 +143,10 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	/** Listeners */
 	private List<IDurationListener> listeners = new ArrayList<IDurationListener>();
 
-	/** Icone utilis� pour marquer les dur�es actifs */
+	/** Icone utilisé pour marquer les durées actifs */
 	private Image checkedIcon;
 
-	/** Icone utilis� pour les dur�es non actifs */
+	/** Icone utilisé pour les durées non actifs */
 	private Image uncheckedIcon;
 
 	/**
@@ -161,13 +161,13 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	}
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param parentComposite
 	 *            composant parent.
 	 */
 	public DurationsUI(Composite parentComposite) {
-		// Cr�ation du composite parent
+		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayout(new GridLayout(1, false));
 
@@ -182,7 +182,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 		table.setEnabled(true);
 		table.setToolTipText(Strings.getString("DurationsUI.table.TOOL_TIP")); //$NON-NLS-1$
 
-		// Cr�ation du viewer
+		// Création du viewer
 		tableViewer = new TableViewer(table);
 		tableViewer.setCellModifier(this);
 		tableViewer.setContentProvider(this);
@@ -196,7 +196,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 						"DURATION", Strings.getString("DurationsUI.columns.DURATION"), 100, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
 		tableColsMgr.configureTable(tableViewer);
 
-		// Configuration des �diteurs de cellules
+		// Configuration des éditeurs de cellules
 		CellEditor[] editors = new CellEditor[9];
 		editors[IS_ACTIVE_COLUMN_IDX] = new CheckboxCellEditor(table);
 		editors[DURATION_COLUMN_IDX] = new TextCellEditor(table);
@@ -231,13 +231,13 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	 * .lang.Object)
 	 */
 	public Object[] getElements(Object inputElement) {
-		// Chargement des donn�es
+		// Chargement des données
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				return ModelMgr.getDurations();
 			}
 		};
-		// Ex�cution
+		// Exécution
 		return (Object[]) safeRunner.run(parent.getShell());
 	}
 
@@ -281,7 +281,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 				return value;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		return safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
@@ -299,12 +299,12 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 		final int columnIndex = tableColsMgr.getColumnIndex(property);
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				// Cr�ation d'un clone dans le cas ou il s'ag�t
-				// d'une modification de la valeur de la dur�e
+				// Création d'un clone dans le cas ou il s'agît
+				// d'une modification de la valeur de la durée
 				Duration oldDuration = new Duration();
 				oldDuration.setId(duration.getId());
 				oldDuration.setIsActive(duration.getIsActive());
-				// Bool�ens indiquant quelles notifications doivent �tre �mises
+				// Booléens indiquant quelles notifications doivent être émises
 				boolean mustNotifyUpdateEvent = false;
 				boolean mustNotifyActivationStatusChangeEvent = false;
 				switch (columnIndex) {
@@ -315,17 +315,17 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 					mustNotifyActivationStatusChangeEvent = true;
 					break;
 				case (DURATION_COLUMN_IDX):
-					// Mise � jour en base
+					// Mise à jour en base
 					Duration newDuration = new Duration();
 					newDuration.setId(StringHelper
 							.entryToHundredth((String) value));
 					newDuration.setIsActive(duration.getIsActive());
 					newDuration = ModelMgr.updateDuration(oldDuration,
 							newDuration);
-					// Mise � jour dans le mod�le
+					// Mise à jour dans le modèle
 					duration.setId(newDuration.getId());
 					mustNotifyUpdateEvent = true;
-					// Tri des donn�es
+					// Tri des données
 					sortDurations();
 					break;
 				default:
@@ -342,7 +342,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 				return null;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		safeRunner.run(parent.getShell());
 	}
 
@@ -361,7 +361,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 				String text = null;
 				switch (columnIndex) {
 				case IS_ACTIVE_COLUMN_IDX:
-					text = ""; // colonne indiquant si la dur�e est active ou non //$NON-NLS-1$
+					text = ""; // colonne indiquant si la durée est active ou non //$NON-NLS-1$
 					break;
 				case (DURATION_COLUMN_IDX):
 					text = String.valueOf(new BigDecimal(duration.getId())
@@ -374,7 +374,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 				return text;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		return (String) safeRunner.run(parent.getShell(), ""); //$NON-NLS-1$
 	}
 
@@ -406,7 +406,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 				return image;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		return (Image) safeRunner.run(parent.getShell());
 	}
 
@@ -424,7 +424,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 			public Object runUnsafe() throws Exception {
 				// TableItem[] selection =
 				// tableViewer.getTable().getSelection();
-				// Cas d'une cr�ation
+				// Cas d'une création
 				if (newItem.equals(source)) {
 					InputDialog dialog = new InputDialog(
 							parent.getShell(),
@@ -436,12 +436,12 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 									String errorMsg = null;
 									Duration duration = new Duration();
 									try {
-										// Parsing de la saisie et contr�le du
+										// Parsing de la saisie et contrôle du
 										// format
 										duration.setId(StringHelper
 												.entryToHundredth(newText));
-										// V�rification de la non existence de
-										// la dur�e
+										// Vérification de la non existence de
+										// la durée
 										if (ModelMgr.durationExists(duration))
 											errorMsg = Strings
 													.getString("DurationsUI.errors.DURATION_ALREADY_EXIST"); //$NON-NLS-1$
@@ -451,7 +451,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 										errorMsg = Strings
 												.getString("DurationsUI.errors.DATABASE_CONNECTION_FAILURE_WHILE_DURATION_EXISTENCE_CHECK"); //$NON-NLS-1$
 									}
-									// Retour du r�sultat
+									// Retour du résultat
 									return errorMsg;
 								}
 							});
@@ -464,7 +464,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 						newLine(newDuration);
 						// Notification des listeners
 						notifyDurationAdded(newDuration);
-						// Tri des donn�es
+						// Tri des données
 						sortDurations();
 					}
 				}
@@ -487,7 +487,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 				return null;
 			}
 		};
-		// Ex�cution
+		// Exécution
 		safeRunner.run(parent.getShell());
 	}
 
@@ -495,7 +495,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	 * Ajoute une ligne dans le tableau.
 	 * 
 	 * @param duration
-	 *            la dur�e associ�e � la nouvelle ligne.
+	 *            la durée associée à la nouvelle ligne.
 	 */
 	private void newLine(Duration duration) {
 		// Ajout dans l'arbre
@@ -563,10 +563,10 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	}
 
 	/**
-	 * Notifie les listeners qu'une dur�e a �t� ajout�e.
+	 * Notifie les listeners qu'une durée a été ajoutée.
 	 * 
 	 * @param newDuration
-	 *            la dur�e ajout�e.
+	 *            la durée ajoutée.
 	 */
 	private void notifyDurationAdded(Duration newDuration) {
 		Iterator<IDurationListener> it = listeners.iterator();
@@ -577,10 +577,10 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	}
 
 	/**
-	 * Notifie les listeners qu'une dur�e a �t� supprim�e.
+	 * Notifie les listeners qu'une durée a été supprimée.
 	 * 
 	 * @param duration
-	 *            la dur�e supprim�e.
+	 *            la durée supprimée.
 	 */
 	private void notifyDurationRemoved(Duration duration) {
 		Iterator<IDurationListener> it = listeners.iterator();
@@ -591,12 +591,12 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	}
 
 	/**
-	 * Notifie les listeners qu'un collaborateur a �t� modifi�.
+	 * Notifie les listeners qu'un collaborateur a été modifié.
 	 * 
 	 * @param oldDuration
-	 *            la dur�e modifi�e.
+	 *            la durée modifiée.
 	 * @param newDuration
-	 *            la nouvelle dur�e.
+	 *            la nouvelle durée.
 	 */
 	private void notifyDurationUpdated(Duration oldDuration,
 			Duration newDuration) {
@@ -608,10 +608,10 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	}
 
 	/**
-	 * Notifie les listeners que l'�tat d'activation d'une dur�e a �t� modifi�e.
+	 * Notifie les listeners que l'état d'activation d'une durée a été modifiée.
 	 * 
 	 * @param duration
-	 *            la dur�e modifi�e.
+	 *            la durée modifiée.
 	 */
 	private void notifyDurationActivationStatusChanged(Duration duration) {
 		Iterator<IDurationListener> it = listeners.iterator();
@@ -646,15 +646,15 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	}
 
 	/**
-	 * Trie les dur�es.
+	 * Trie les durées.
 	 */
 	private void sortDurations() {
-		// R�initialisation des don�es
+		// Réinitialisation des donées
 		initUI();
 	}
 
 	/**
-	 * Initialise l'IHM avec les donn�es en base.
+	 * Initialise l'IHM avec les données en base.
 	 */
 	private void initUI() {
 		// Initialisation de la table

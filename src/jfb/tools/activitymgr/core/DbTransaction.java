@@ -45,30 +45,30 @@ public class DbTransaction {
 	private Connection con;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param con
-	 *            connexion � la base de donn�es.
+	 *            connexion à la base de données.
 	 */
 	protected DbTransaction(Connection con) {
 		this.con = con;
 	}
 
 	/**
-	 * @return la connexion � la base de donn�es.
+	 * @return la connexion à la base de données.
 	 */
 	public Connection getConnection() {
 		return con;
 	}
 
 	/**
-	 * Pr�pare une requ�te SQL.
+	 * Prépare une requête SQL.
 	 * 
 	 * @param sql
-	 *            requ�te SQL.
-	 * @return la requ�te initialis�e.
+	 *            requête SQL.
+	 * @return la requête initialisée.
 	 * @throws SQLException
-	 *             en cas d'erreur li� � la BDD.
+	 *             en cas d'erreur lié à la BDD.
 	 */
 	protected PreparedStatement prepareStatement(String sql)
 			throws SQLException {

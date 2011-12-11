@@ -31,11 +31,11 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 /**
- * Contribution d'un collaborateur � une tache.
+ * Contribution d'un collaborateur à une tache.
  */
 public class Contribution {
 
-	/** Ann�e */
+	/** Année */
 	private int year;
 
 	/** Mois */
@@ -50,7 +50,7 @@ public class Contribution {
 	/** Identifiant de la tache */
 	private long taskId;
 
-	/** Dur�e */
+	/** Durée */
 	private long durationId;
 
 	/**
@@ -61,7 +61,7 @@ public class Contribution {
 	}
 
 	/**
-	 * D�finit l'identifiant du collaborateur.
+	 * Définit l'identifiant du collaborateur.
 	 * 
 	 * @param contributorId
 	 *            le nouvel identifiant.
@@ -71,17 +71,17 @@ public class Contribution {
 	}
 
 	/**
-	 * @return la dur�e.
+	 * @return la durée.
 	 */
 	public long getDurationId() {
 		return durationId;
 	}
 
 	/**
-	 * D�finit la dur�e.
+	 * Définit la durée.
 	 * 
 	 * @param duration
-	 *            la nouvelle dur�e.
+	 *            la nouvelle durée.
 	 */
 	public void setDurationId(long duration) {
 		this.durationId = duration;
@@ -95,7 +95,7 @@ public class Contribution {
 	}
 
 	/**
-	 * D�finit l'identifiant de la tache.
+	 * Définit l'identifiant de la tache.
 	 * 
 	 * @param taskId
 	 *            le nouvel identifiant.
@@ -112,7 +112,7 @@ public class Contribution {
 	}
 
 	/**
-	 * D�finit le jour de la contribution.
+	 * Définit le jour de la contribution.
 	 * 
 	 * @param day
 	 *            le nouveau jour.
@@ -129,7 +129,7 @@ public class Contribution {
 	}
 
 	/**
-	 * D�finit le mois de la contribution.
+	 * Définit le mois de la contribution.
 	 * 
 	 * @param month
 	 *            le nouveau mois.
@@ -139,24 +139,24 @@ public class Contribution {
 	}
 
 	/**
-	 * @return l'ann�e de la contribution.
+	 * @return l'année de la contribution.
 	 */
 	public int getYear() {
 		return year;
 	}
 
 	/**
-	 * D�finit l'ann�e de la contribution.
+	 * Définit l'année de la contribution.
 	 * 
 	 * @param year
-	 *            la nouvelle ann�e.
+	 *            la nouvelle année.
 	 */
 	public void setYear(int year) {
 		this.year = year;
 	}
 
 	/**
-	 * D�finit la date associ�e � la contribution.
+	 * Définit la date associée à la contribution.
 	 * 
 	 * @param date
 	 *            la nouvelle date.
@@ -168,7 +168,7 @@ public class Contribution {
 	}
 
 	/**
-	 * @return la date associ�e � la contribution.
+	 * @return la date associée à la contribution.
 	 */
 	public Calendar getDate() {
 		GregorianCalendar cal = new GregorianCalendar(year, month - 1, day);

@@ -50,24 +50,24 @@ public class Collaborator extends SimpleIdentityBean {
 	/** Nom */
 	private String firstName;
 
-	/** Pr�nom */
+	/** Prénom */
 	private String lastName;
 
-	/** Bool�en indiquant si le collaborateur est actif ou non */
+	/** Booléen indiquant si le collaborateur est actif ou non */
 	private boolean isActive = true;
 
 	/**
-	 * @return le pr�nom du collaborateur.
+	 * @return le prénom du collaborateur.
 	 */
 	public String getFirstName() {
 		return firstName;
 	}
 
 	/**
-	 * D�finit le pr�nom du collaborateur.
+	 * Définit le prénom du collaborateur.
 	 * 
 	 * @param firstName
-	 *            le nouveau pr�nom.
+	 *            le nouveau prénom.
 	 */
 	public void setFirstName(String firstName) {
 		this.firstName = firstName;
@@ -81,7 +81,7 @@ public class Collaborator extends SimpleIdentityBean {
 	}
 
 	/**
-	 * D�finit le nom du collaborateur.
+	 * Définit le nom du collaborateur.
 	 * 
 	 * @param lastName
 	 *            le nouveau nom.
@@ -98,7 +98,7 @@ public class Collaborator extends SimpleIdentityBean {
 	}
 
 	/**
-	 * D�finit l'identifiant du collaborateur.
+	 * Définit l'identifiant du collaborateur.
 	 * 
 	 * @param login
 	 *            le nouvel identifiant.
@@ -108,19 +108,19 @@ public class Collaborator extends SimpleIdentityBean {
 	}
 
 	/**
-	 * Retourne un bool�en indiquant si le collaborateur est actif ou non.
+	 * Retourne un booléen indiquant si le collaborateur est actif ou non.
 	 * 
-	 * @return un bool�en indiquant si le collaborateur est actif ou non.
+	 * @return un booléen indiquant si le collaborateur est actif ou non.
 	 */
 	public boolean getIsActive() {
 		return isActive;
 	}
 
 	/**
-	 * D�finit si le collaborateur est actif ou non.
+	 * Définit si le collaborateur est actif ou non.
 	 * 
 	 * @param isActive
-	 *            un bool�en indiquant si le collaborateur est actif ou non.
+	 *            un booléen indiquant si le collaborateur est actif ou non.
 	 */
 	public void setIsActive(boolean isActive) {
 		this.isActive = isActive;

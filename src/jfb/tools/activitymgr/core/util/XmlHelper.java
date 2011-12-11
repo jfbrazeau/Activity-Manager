@@ -23,45 +23,45 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
- * Classe offrant des services de manipulation ou de g�n�ration de documents
+ * Classe offrant des services de manipulation ou de génération de documents
  * XML.
  */
 public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 
 	/**
-	 * Interface de cr�ation des objets en base de donn�es.
+	 * Interface de création des objets en base de données.
 	 */
 	public static interface ModelMgrDelegate {
 
 		/**
-		 * Cr�e une dur�e dans un contexte de transaction.
+		 * Crée une durée dans un contexte de transaction.
 		 * 
 		 * @param tx
 		 *            le contexte de transaction.
 		 * @param duration
-		 *            la dur�e � cr�er.
-		 * @return la dur�e cr��e.
+		 *            la durée à créer.
+		 * @return la durée créée.
 		 * @throws DbException
-		 *             lev� en cas d'incident technique d'acc�s � la base.
+		 *             levé en cas d'incident technique d'accès à la base.
 		 * @throws ModelException
-		 *             lev� dans la cas ou la dur�e existe d�j�.
+		 *             levé dans la cas ou la durée existe déjà.
 		 * @see jfb.tools.activitymgr.core.ModelMgr#createDuration(Duration)
 		 */
 		public Duration createDuration(DbTransaction tx, Duration duration)
 				throws ModelException, DbException;
 
 		/**
-		 * Cr�e un collaborateur dans un contexte de transaction.
+		 * Crée un collaborateur dans un contexte de transaction.
 		 * 
 		 * @param tx
 		 *            le contexte de transaction.
 		 * @param collaborator
-		 *            le collaborateur � cr�er.
-		 * @return le collaborateur apr�s cr�ation.
+		 *            le collaborateur à créer.
+		 * @return le collaborateur après création.
 		 * @throws DbException
-		 *             lev� en cas d'incident technique d'acc�s � la base.
+		 *             levé en cas d'incident technique d'accès à la base.
 		 * @throws ModelException
-		 *             lev� dans la cas ou la tache de destination ne peut
+		 *             levé dans la cas ou la tache de destination ne peut
 		 *             recevoir de sous-tache.
 		 * @see jfb.tools.activitymgr.core.ModelMgr#createCollaborator(Collaborator)
 		 */
@@ -69,19 +69,19 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 				Collaborator collaborator) throws DbException, ModelException;
 
 		/**
-		 * Cr�e une nouvelle tache dans un contexte de transaction.
+		 * Crée une nouvelle tache dans un contexte de transaction.
 		 * 
 		 * @param tx
 		 *            le contexte de transaction.
 		 * @param parentTask
 		 *            la tache parent de destination.
 		 * @param task
-		 *            la tache � cr�er.
-		 * @return la tache cr�e.
+		 *            la tache à créer.
+		 * @return la tache créée.
 		 * @throws DbException
-		 *             lev� en cas d'incident technique d'acc�s � la base.
+		 *             levé en cas d'incident technique d'accès à la base.
 		 * @throws ModelException
-		 *             lev� dans la cas ou la tache de destination ne peut
+		 *             levé dans la cas ou la tache de destination ne peut
 		 *             recevoir de sous-tache.
 		 * @see jfb.tools.activitymgr.core.ModelMgr#createTask(Task, Task)
 		 */
@@ -89,17 +89,17 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 				throws DbException, ModelException;
 
 		/**
-		 * Cr�e une contribution dans un contexte de transaction.
+		 * Crée une contribution dans un contexte de transaction.
 		 * 
 		 * @param tx
 		 *            le contexte de transaction.
 		 * @param contribution
-		 *            la contribution � cr�er.
-		 * @return la contribution apr�s cr�ation.
+		 *            la contribution à créer.
+		 * @return la contribution après création.
 		 * @throws DbException
-		 *             lev� en cas d'incident technique d'acc�s � la base.
+		 *             levé en cas d'incident technique d'accès à la base.
 		 * @throws ModelException
-		 *             lev� dans la cas ou la tache de destination ne peut
+		 *             levé dans la cas ou la tache de destination ne peut
 		 *             recevoir de contribution.
 		 * @see jfb.tools.activitymgr.core.ModelMgr#createCollaborator(Collaborator)
 		 */
@@ -107,34 +107,34 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 				Contribution contribution) throws DbException, ModelException;
 
 		/**
-		 * Retourne la tache associ�e � un chemin construit � partir de codes de
+		 * Retourne la tache associée à un chemin construit à partir de codes de
 		 * taches.
 		 * 
 		 * @param tx
 		 *            le contexte de transaction.
 		 * @param codePath
-		 *            le chemin � base de code.
-		 * @return la tache trouv�e.
+		 *            le chemin à base de code.
+		 * @return la tache trouvée.
 		 * @throws DbException
-		 *             lev� en cas d'incident technique avec la base de donn�es.
+		 *             levé en cas d'incident technique avec la base de données.
 		 * @throws ModelException
-		 *             lev� dans le cas ou le chemin de tache est inconnu.
+		 *             levé dans le cas ou le chemin de tache est inconnu.
 		 */
 		public Task getTaskByCodePath(DbTransaction tx, final String codePath)
 				throws DbException, ModelException;
 
 		/**
-		 * Retourne le collabirateur dont le login est sp�cifi� dans un contexte
+		 * Retourne le collabirateur dont le login est spécifié dans un contexte
 		 * de transaction.
 		 * 
 		 * @param tx
 		 *            le contexte de transaction.
 		 * @param login
-		 *            l'identifiant de connexion du collaborateur recherch�.
+		 *            l'identifiant de connexion du collaborateur recherché.
 		 * @return le collaborateur dont l'identifiant de connexion est
-		 *         sp�cifi�.
+		 *         spécifié.
 		 * @throws DbException
-		 *             lev� en cas d'incident technique d'acc�s � la base.
+		 *             levé en cas d'incident technique d'accès à la base.
 		 */
 		public Collaborator getCollaborator(DbTransaction tx, String login)
 				throws DbException;
@@ -175,7 +175,7 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	/** Contexte de transaction */
 	private DbTransaction transaction;
 
-	/** Gestionnaire du mod�le */
+	/** Gestionnaire du modèle */
 	private ModelMgrDelegate modelMgrDelegate;
 
 	/** Sauvegarde des objets en cours de chargement */
@@ -186,14 +186,14 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	private Contribution currentContribution;
 	private StringBuffer currentText = new StringBuffer();
 
-	/** Pointeur de location dans le fichier XML pars� */
+	/** Pointeur de location dans le fichier XML parsé */
 	private Locator locator;
 
 	/**
-	 * Constructeur par d�faut.
+	 * Constructeur par défaut.
 	 * 
 	 * @param modelMgrDelegate
-	 *            d�l�gu� du gestionnaire de mod�le.
+	 *            délégué du gestionnaire de modèle.
 	 * @param tx
 	 *            contexte de transaction.
 	 */
@@ -294,7 +294,7 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	}
 
 	/**
-	 * Retourne la valeur d'un attribut num�rique ou l�ve un exception si
+	 * Retourne la valeur d'un attribut numérique ou lève une exception si
 	 * l'attribut n'existe pas ou qu'il n'a pas un format correct.
 	 * 
 	 * @param atts
@@ -303,7 +303,7 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	 *            le nom de l'attribut.
 	 * @return la valeur de l'attribut.
 	 * @throws SAXParseException
-	 *             lev� en cas d'absence ou de mauvais format de l'attribut.
+	 *             levé en cas d'absence ou de mauvais format de l'attribut.
 	 */
 	private long getNumAttrValue(Attributes atts, String qName)
 			throws SAXParseException {
@@ -320,7 +320,7 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 					Strings.getString(
 							"XmlHelper.errors.INVALID_ATTRIBUTE", value, qName), locator)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		}
-		// Retour du r�sultat
+		// Retour du résultat
 		return result;
 	}
 
@@ -335,7 +335,7 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		log.debug("end(" + qName + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		try {
 			String textToSave = currentText.toString();
-			// R�initialisation de la sauvegarde du texte courant
+			// Réinitialisation de la sauvegarde du texte courant
 			currentText.setLength(0);
 			if (MODEL_NODE.equals(qName) || DURATIONS_NODE.equals(qName)
 					|| COLLABORATORS_NODE.equals(qName)
@@ -518,13 +518,13 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	}
 
 	/**
-	 * L�ve une exception indiquant qu'une fontionnalit� n'est pas impl�ment�e
+	 * Lève une exception indiquant qu'une fontionnalité n'est pas implémentée
 	 * pour ActivityManager
 	 * 
 	 * @param featureName
-	 *            nom de la fonctionnalit�
+	 *            nom de la fonctionnalité
 	 * @throws SAXException
-	 *             lev�e dans tous les cas.
+	 *             levée dans tous les cas.
 	 */
 	private void saxFeatureNotImplemented(String featureName)
 			throws SAXException {
@@ -535,16 +535,16 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	/** Static XML serialization methods */
 
 	/**
-	 * Commence un noeud XML dans le flux d'�criture.
+	 * Commence un noeud XML dans le flux d'écriture.
 	 * 
 	 * @param indent
 	 *            l'indentation.
 	 * @param out
-	 *            le flux d'�criture.
+	 *            le flux d'écriture.
 	 * @param name
 	 *            le nom du noeud XML.
 	 * @throws IOException
-	 *             lev� en cas d'incident I/O lors de l'�criture sur le flux de
+	 *             levé en cas d'incident I/O lors de l'écriture sur le flux de
 	 *             sortie.
 	 */
 	public static void startXmlNode(OutputStream out, String indent, String name)
@@ -557,16 +557,16 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	}
 
 	/**
-	 * Termine un noeud XML dans le flux d'�criture avec une indentation.
+	 * Termine un noeud XML dans le flux d'écriture avec une indentation.
 	 * 
 	 * @param out
-	 *            le flux d'�criture.
+	 *            le flux d'écriture.
 	 * @param indent
 	 *            l'indentation.
 	 * @param name
 	 *            le nom du noeud XML.
 	 * @throws IOException
-	 *             lev� en cas d'incident I/O lors de l'�criture sur le flux de
+	 *             levé en cas d'incident I/O lors de l'écriture sur le flux de
 	 *             sortie.
 	 */
 	public static void endXmlNode(OutputStream out, String indent, String name)
@@ -576,14 +576,14 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	}
 
 	/**
-	 * Termine un noeud XML dans le flux d'�criture.
+	 * Termine un noeud XML dans le flux d'écriture.
 	 * 
 	 * @param out
-	 *            le flux d'�criture.
+	 *            le flux d'écriture.
 	 * @param name
 	 *            le nom du noeud XML.
 	 * @throws IOException
-	 *             lev� en cas d'incident I/O lors de l'�criture sur le flux de
+	 *             levé en cas d'incident I/O lors de l'écriture sur le flux de
 	 *             sortie.
 	 */
 	public static void endXmlNode(OutputStream out, String name)
@@ -596,18 +596,18 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	}
 
 	/**
-	 * Ecrit un noeud XML dans le flux d'�criture.
+	 * Ecrit un noeud XML dans le flux d'écriture.
 	 * 
 	 * @param indent
 	 *            l'indentation.
 	 * @param out
-	 *            le flux d'�criture.
+	 *            le flux d'écriture.
 	 * @param name
 	 *            le nom du noeud XML.
 	 * @param value
 	 *            la valeur du noeud XML.
 	 * @throws IOException
-	 *             lev� en cas d'incident I/O lors de l'�criture sur le flux de
+	 *             levé en cas d'incident I/O lors de l'écriture sur le flux de
 	 *             sortie.
 	 */
 	public static void printTextNode(OutputStream out, String indent,
@@ -621,16 +621,16 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	}
 
 	/**
-	 * Ecrit un attribut de noeud XML dans le flux d'�criture.
+	 * Ecrit un attribut de noeud XML dans le flux d'écriture.
 	 * 
 	 * @param out
-	 *            le flux d'�criture.
+	 *            le flux d'écriture.
 	 * @param name
 	 *            le nom de l'attribut XML.
 	 * @param value
 	 *            la valeur de l'attribut XML.
 	 * @throws IOException
-	 *             lev� en cas d'incident I/O lors de l'�criture sur le flux de
+	 *             levé en cas d'incident I/O lors de l'écriture sur le flux de
 	 *             sortie.
 	 */
 	public static void printTextAttribute(OutputStream out, String name,
@@ -643,15 +643,15 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	}
 
 	/**
-	 * Ecrit une cha�ne de caract�res dans le flux de sortie en rempla�ant les
-	 * caract�res sp�ciaux.
+	 * Ecrit une chaîne de caractères dans le flux de sortie en remplaçant les
+	 * caractères spéciaux.
 	 * 
 	 * @param out
 	 *            le flux de sortie.
 	 * @param str
-	 *            la cha�ne de caract�res.
+	 *            la chaîne de caractères.
 	 * @throws IOException
-	 *             lev� en cas d'incident lors de l'�criture des donn�es sur le
+	 *             levé en cas d'incident lors de l'écriture des données sur le
 	 *             flux.
 	 */
 	public static void printTextValue(OutputStream out, String str)
@@ -663,14 +663,14 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	}
 
 	/**
-	 * Ecrit une cha�ne de caract�res dans le flux de sortie.
+	 * Ecrit une chaîne de caractères dans le flux de sortie.
 	 * 
 	 * @param out
 	 *            le flux de sortie.
 	 * @param str
-	 *            la cha�ne de caract�res.
+	 *            la chaîne de caractères.
 	 * @throws IOException
-	 *             lev� en cas d'incident lors de l'�criture des donn�es sur le
+	 *             levé en cas d'incident lors de l'écriture des données sur le
 	 *             flux.
 	 */
 	public static void print(OutputStream out, String str) throws IOException {
@@ -678,14 +678,14 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	}
 
 	/**
-	 * Ecrit une cha�ne de caract�res dans le flux de sortie.
+	 * Ecrit une chaîne de caractères dans le flux de sortie.
 	 * 
 	 * @param out
 	 *            le flux de sortie.
 	 * @param s
-	 *            la cha�ne de caract�res.
+	 *            la chaîne de caractères.
 	 * @throws IOException
-	 *             lev� en cas d'incident lors de l'�criture des donn�es sur le
+	 *             levé en cas d'incident lors de l'écriture des données sur le
 	 *             flux.
 	 */
 	public static void println(OutputStream out, String s) throws IOException {

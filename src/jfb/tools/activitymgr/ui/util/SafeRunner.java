@@ -36,25 +36,25 @@ import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Shell;
 
 /**
- * Offre un contexte d'ex�cution s�curis�.
+ * Offre un contexte d'exécution sécurisé.
  * 
  * <p>
- * Si une exception est lev�e dans le traitement, elle est attrap�e et un popup
- * d'erreur est affich�.
+ * Si une exception est levée dans le traitement, elle est attrapée et un popup
+ * d'erreur est affiché.
  * </p>
  * 
  * <p>
  * Exemple d'utilisation :<br>
  * 
  * <pre>
- * // Initialisation du contexte d'ex�cution s�curis�
+ * // Initialisation du contexte d'exécution sécurisé
  * SafeRunner safeRunner = new SafeRunner() {
  * 	public Object runUnsafe() throws Exception {
  * 		// Declare unsafe code...
  * 		return result;
  * 	}
  * };
- * // Ex�cution du traitement
+ * // Exécution du traitement
  * Object result = safeRunner.run(parent.getShell(), &quot;&quot;);
  * </pre>
  */
@@ -64,39 +64,39 @@ public abstract class SafeRunner {
 	private static Logger log = Logger.getLogger(SafeRunner.class);
 
 	/**
-	 * Classe permettant de stoker le r�sultat du traitement. (sans cet objet il
-	 * n'est pas possible de r�cup�rer le r�sultat dans le traitement ex�cut�
-	 * dans le Runnable puisqu'il faut passer par une r�f�rence finale).
+	 * Classe permettant de stoker le résultat du traitement. (sans cet objet il
+	 * n'est pas possible de récupérer le résultat dans le traitement exécuté
+	 * dans le Runnable puisqu'il faut passer par une référence finale).
 	 */
 	private static class Result {
 		public Object value;
 	}
 
 	/**
-	 * Lance le traitement dans le contexte s�curis�.
+	 * Lance le traitement dans le contexte sécurisé.
 	 * 
 	 * @param parentShell
-	 *            shell parent (peut �tre nul).
-	 * @return le r�sultat du traitement.
+	 *            shell parent (peut être nul).
+	 * @return le résultat du traitement.
 	 */
 	public Object run(Shell parentShell) {
 		return run(parentShell, null);
 	}
 
 	/**
-	 * Lance le traitement dans le contexte s�curis�.
+	 * Lance le traitement dans le contexte sécurisé.
 	 * 
 	 * @param parentShell
-	 *            shell parent (peut �tre nul).
+	 *            shell parent (peut être nul).
 	 * @param defaultValue
-	 *            la valeur � retourner par d�faut.
-	 * @return le r�sultat du traitement.
+	 *            la valeur à retourner par défaut.
+	 * @return le résultat du traitement.
 	 */
 	public Object run(final Shell parentShell, Object defaultValue) {
 		log.debug("ParentShell : " + parentShell); //$NON-NLS-1$
 		final Result result = new Result();
 		result.value = defaultValue;
-		// Ex�cution du traitement
+		// Exécution du traitement
 		BusyIndicator.showWhile(parentShell.getDisplay(), new Runnable() {
 			public void run() {
 				try {
@@ -114,19 +114,19 @@ public abstract class SafeRunner {
 				}
 			}
 		});
-		// Retour du r�sultat
+		// Retour du résultat
 		log.debug(" -> result='" + result.value + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 		return result.value;
 	}
 
 	/**
-	 * Traitement potentiellement � risque.
+	 * Traitement potentiellement à risque.
 	 * 
 	 * <p>
-	 * Cette m�thode doit �tre impl�ment�e.
+	 * Cette méthode doit être implémentée.
 	 * </p>
 	 * 
-	 * @return le r�sultat du traitement.
+	 * @return le résultat du traitement.
 	 * @throws Exception
 	 *             le traitement peut potentiellement lever n'importe quelle
 	 *             exception.

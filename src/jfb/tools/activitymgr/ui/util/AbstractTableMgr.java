@@ -40,8 +40,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 
 /**
- * Classe de base impl�mentant une partie des m�thodes qui doivent �tre
- * impl�ment�es pour g�rer des tableaux.
+ * Classe de base implémentant une partie des méthodes qui doivent être
+ * implémentées pour gérer des tableaux.
  */
 public abstract class AbstractTableMgr implements ITableLabelProvider,
 		IStructuredContentProvider {
@@ -125,7 +125,7 @@ public abstract class AbstractTableMgr implements ITableLabelProvider,
 	 * Notifie les listeners du changement de valeur d'un label.
 	 * 
 	 * @param e
-	 *            l'�v�nement.
+	 *            l'évènement.
 	 */
 	protected void notifyLabelProviderListener(LabelProviderChangedEvent e) {
 		Iterator<ILabelProviderListener> it = labelProviderListeners.iterator();
