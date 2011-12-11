@@ -573,7 +573,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 					task.setName((String) value);
 					break;
 				case (CODE_COLUMN_IDX):
-					task.setCode((String) value);
+					task.setCode(((String) value).trim());
 					break;
 				case (INITIAL_FUND_COLUMN_IDX):
 					long newInitialFund = StringHelper
