@@ -964,6 +964,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 					}
 					// Mise � jour de l'IHM
 					tableViewer.remove(wc);
+					tableViewer.refresh(WeekContributionsSum.getInstance());
 				}
 				// Cas d'une demande d'export vers un fichier EXCEL
 				else if (exportItem.equals(source)) {
