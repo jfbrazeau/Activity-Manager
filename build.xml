@@ -83,6 +83,8 @@
 		<copy todir="${dist.bin.dir}">
 			<fileset refid="binDistFileSet"/>
 		</copy>
+		<fixcrlf srcdir="${dist.bin.dir}/bin" includes="*.sh"
+		         eol="unix" eof="remove" />
 		<!-- Compilation des classes et construction du jar -->
 		<antcall target="srcToJar">
 			<param name="javac.src.dir" value="src"/>
