@@ -37,7 +37,7 @@
 				manipulation, particulary if you wish to use a database which is
 				different from MySql and HSQL.
 			</p>
-			<p>It has been tested on Windows XP and Mandrake Linux 9.1 (GTK) and
+			<p>It has been tested on Windows 7 and Xubuntu and
 				may work with any version of MySQL.
 				<center>
 					<img thumbnail="tasks-tab-small.png" src="tasks-tab.png"/>

@@ -3,13 +3,24 @@
 <book>
 	<id>releaseNotes</id>
 	<title>Release notes</title>
-
 	<chapter>
 		<body>
 			<p>
 				<ul>
 					<li>
-						<bold>Activity Manager V0.3 :</bold>
+						<bold>V0.4 [2011-12-13]:</bold>
+						<ul>
+							<li>Internationalization (supported languages : english, french)</li>
+							<li>Performance optimizations</li>
+							<li>SWT upgrade (v3.2=&gt;v3.6.2)</li>
+							<li>JFace upgrade (v3.2=&gt;v3.7.0)</li>
+							<li>Eclipse libraries update (v3.2.0=&gt;v3.6.0)</li>
+							<li>Bug fix : in the contribution tab, when a week contribution is removed, the sums are now updated</li>
+						</ul>
+						<br/>
+					</li>
+					<li>
+						<bold>V0.3 [2006-12-19]:</bold>
 						<ul>
 							<li>
 								Added a task search feature<br/>
@@ -52,7 +63,7 @@
 						<br/>
 					</li>
 					<li>
-						<bold>Activity Manager V0.2.1 :</bold>
+						<bold>V0.2.1 [2006-11-28]:</bold>
 						<ul>
 							<li>Added XSL based documentation builder (misc/doc)</li>
 							<li>Fixed sample reports configuration bug (missing / ahead task path)</li>
@@ -60,7 +71,7 @@
 						<br/>
 					</li>
 					<li>
-						<bold>Activity Manager V0.2 :</bold>
+						<bold>Activity Manager V0.2 [2006-03-29]:</bold>
 						<ul>
 							<li>Added linux compatibility</li>
 							<li>Added standalone mode (with an embedded HSQLDB database)</li>
@@ -75,7 +86,7 @@
 						<br/>
 					</li>
 					<li>
-						<bold>Activity Manager V0.1 :</bold>
+						<bold>Activity Manager V0.1 [2005-12-18]:</bold>
 						<ul>
 							<li>Collaborators repository administration</li>
 							<li>Tasks repository administration</li>

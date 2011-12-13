@@ -80,7 +80,7 @@
 	</chapter>
 
 	<chapter>
-		<id>datamigration</id>
+		<id>datamigration0_2_To_0_3</id>
 		<title>Data migration from version 0.2 to version 0.3</title>
 		<body>
 			<p>
@@ -100,6 +100,28 @@
 						(see '<a href="#dbinit" type="book-ref">Database initialization</a>'
 						for more details)</li>
 					<li>Start Activity Manager V0.3 and import this file (in the database
+						tab, specify the file name, click on import and click successively on 
+						'OK', 'Yes', 'Yes', 'Yes', 'Yes', 'No')</li>
+					<li>It should be over!</li>
+				</ul>
+			</p>
+		</body>
+	</chapter>
+
+	<chapter>
+		<id>datamigration0_3_To_0_4</id>
+		<title>Data migration from version 0.3 to version 0.4</title>
+		<body>
+			<p>
+				In order to migrate a V0.3 model to a V0.4 compliant model, follow
+				these steps :
+				<ul>
+					<li>With Activity Manager V0.3, export the model (in the database
+					tab, specify a file name and click on export)</li>
+					<li>If you use MySql, prepare a database for Activity Manager 0.4 
+						(see '<a href="#dbinit" type="book-ref">Database initialization</a>'
+						for more details)</li>
+					<li>Start Activity Manager V0.4 and import this file (in the database
 						tab, specify the file name, click on import and click successively on 
 						'OK', 'Yes', 'Yes', 'Yes', 'Yes', 'No')</li>
 					<li>It should be over!</li>
