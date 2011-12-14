@@ -133,13 +133,13 @@
 							</table>
 						</td>
 						<td valign="top">
-							<script type="text/javascript"><!--
+							<script type="text/javascript">&lt;!--
 								google_ad_client = "ca-pub-3785517971049731";
 								/* ActivityManager */
 								google_ad_slot = "9561992204";
 								google_ad_width = 120;
 								google_ad_height = 600;
-								//-->
+								//--&gt;
 							</script>
 							<script type="text/javascript"
 								src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
