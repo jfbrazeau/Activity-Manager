@@ -1732,27 +1732,8 @@ public class ModelMgr {
 	 * @return the days count between the two dates.
 	 */
 	private static int countDaysBetween(Calendar date1, Calendar date2) {
-		date1 = removeHours(date1);
-		date2 = removeHours(date2);
-		boolean date2IsGreater = date2.compareTo(date1) >= 0;
-		Calendar dateA = date2IsGreater ? date1 : date2;
-		Calendar dateB = date2IsGreater ? date2 : date1;
-		return (int) ((dateB.getTime().getTime() - dateA.getTime().getTime()) / (1000 * 60 * 60 * 24));
-	}
-
-	/**
-	 * Removes the hour from the specified date.
-	 * 
-	 * @param date
-	 *            the date.
-	 */
-	private static Calendar removeHours(Calendar date) {
-		Calendar newDate = (Calendar) date.clone();
-		newDate.set(Calendar.HOUR_OF_DAY, 0);
-		newDate.set(Calendar.MINUTE, 0);
-		newDate.set(Calendar.SECOND, 0);
-		newDate.set(Calendar.MILLISECOND, 0);
-		return newDate;
+		return (date2.get(Calendar.DAY_OF_YEAR) + date2.get(Calendar.YEAR) * 365)
+				- (date1.get(Calendar.DAY_OF_YEAR) + date1.get(Calendar.YEAR) * 365);
 	}
 
 	/**
