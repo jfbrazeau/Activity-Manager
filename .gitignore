@@ -1,2 +1,8 @@
 # Classes
 classes/*
+
+# Binary builds
+ActivityMgr_*
+
+# Build directory
+.dist/*
