@@ -8,6 +8,13 @@
 			<p>
 				<ul>
 					<li>
+						<bold>V0.4.1 [2012-04-01]:</bold>
+						<ul>
+							<li>Bug fix : days count computation didn't work well with time change weeks (for example in France)</li>
+						</ul>
+						<br/>
+					</li>
+					<li>
 						<bold>V0.4 [2011-12-13]:</bold>
 						<ul>
 							<li>Internationalization (supported languages : english, french)</li>
