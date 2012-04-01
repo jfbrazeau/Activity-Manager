@@ -19,7 +19,6 @@ import jfb.tst.tools.activitymgr.AbstractModelTestCase;
 
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 public class XmlTest extends AbstractModelTestCase {
 
@@ -98,7 +97,7 @@ public class XmlTest extends AbstractModelTestCase {
 			importTestFile();
 			fail("Duplicate login must generate an error");
 		}
-		catch (SAXParseException expected) {
+		catch (ModelException expected) {
 			// Do nothing...
 		}
 	}
