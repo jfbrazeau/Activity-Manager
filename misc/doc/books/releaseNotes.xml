@@ -8,6 +8,13 @@
 			<p>
 				<ul>
 					<li>
+						<bold>V0.4.2 [2013-01-23]:</bold>
+						<ul>
+							<li>Bug fix : days count computation was erroneous with bissextile years</li>
+						</ul>
+						<br/>
+					</li>
+					<li>
 						<bold>V0.4.1 [2012-04-01]:</bold>
 						<ul>
 							<li>Bug fix : days count computation didn't work well with time change weeks (for example in France)</li>
