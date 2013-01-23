@@ -12,6 +12,10 @@
 			<p>Activity Manager is open source software. You can use it
 				and redistribute it freely (see <a href="legal" type="book-ref">legal</a>
 				for more details).</p>
+			<p>
+				The source code is freely available on
+				<a href="https://github.com/jfbrazeau/Activity-Manager">github</a>.
+			</p>
 			<p>The tool's features are :
 				<ul>
 					<li>Durations repository administration</li>
