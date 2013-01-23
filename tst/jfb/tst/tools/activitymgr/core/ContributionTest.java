@@ -390,4 +390,65 @@ public class ContributionTest extends AbstractModelTestCase {
 		// Suppression des taches de test
 		removeSampleObjects();
 	}
+
+	public void testCountDaysWhenYearHasMoreThan365Days() throws DbException, ModelException {
+		// Création des taches de test
+		createSampleObjects(true);
+
+		// A contribution on 1st January 2013
+		Calendar date = new GregorianCalendar(2013, 0, 1);
+		Contribution c = new Contribution();
+		c.setTaskId(task111.getId());
+		c.setContributorId(col1.getId());
+		c.setDurationId(100);
+		c.setDate(date);
+		c = ModelMgr.createContribution(c, false);
+
+		// Retrieve interval contributions
+		IntervalContributions ic = ModelMgr.getIntervalContributions(col1, null, 
+				new GregorianCalendar(2012, 11, 24), // 24th December 2012
+				new GregorianCalendar(2013, 0, 6)); // 6 January 2013
+		assertNotNull(ic);
+		assertNotNull(ic.getTaskContributions());
+		assertEquals(1, ic.getTaskContributions().length);
+		assertNotNull(ic.getTaskContributions()[0]);
+		assertNotNull(ic.getTaskContributions()[0].getContributions());
+		// Expected size : 14 days
+		assertEquals(14, ic.getTaskContributions()[0].getContributions().length);
+		
+		// Suppression des taches de test
+		ModelMgr.removeContribution(c, false);
+		removeSampleObjects();
+	}
+
+	public void testCountDaysWhenHourChanges() throws DbException, ModelException {
+		// Création des taches de test
+		createSampleObjects(true);
+
+		// A contribution on 27th March 2012
+		Calendar date = new GregorianCalendar(2012, 2, 27);
+		Contribution c = new Contribution();
+		c.setTaskId(task111.getId());
+		c.setContributorId(col1.getId());
+		c.setDurationId(100);
+		c.setDate(date);
+		c = ModelMgr.createContribution(c, false);
+
+		// Retrieve interval contributions
+		IntervalContributions ic = ModelMgr.getIntervalContributions(col1, null, 
+				new GregorianCalendar(2012, 2, 19), // 19th March 2012
+				new GregorianCalendar(2012, 3, 1)); // 1st Arpril 2012
+		assertNotNull(ic);
+		assertNotNull(ic.getTaskContributions());
+		assertEquals(1, ic.getTaskContributions().length);
+		assertNotNull(ic.getTaskContributions()[0]);
+		assertNotNull(ic.getTaskContributions()[0].getContributions());
+		// Expected size : 14 days
+		assertEquals(14, ic.getTaskContributions()[0].getContributions().length);
+		
+		// Suppression des taches de test
+		ModelMgr.removeContribution(c, false);
+		removeSampleObjects();
+	}
+
 }
