@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Activity Manager Core
+Bundle-SymbolicName: org.activitymgr.core
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Jean-Francois Brazeau
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.apache.log4j,
+ org.apache.commons.dbcp,
+ org.apache.commons.pool
+Export-Package: org.activitymgr.core,
+ org.activitymgr.core.beans,
+ org.activitymgr.core.util

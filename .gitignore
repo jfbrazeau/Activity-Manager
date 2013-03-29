@@ -1,5 +1,6 @@
-# Classes
-classes/*
+# Build directories
+bin
+target
 
 # Binary builds
 ActivityMgr_*

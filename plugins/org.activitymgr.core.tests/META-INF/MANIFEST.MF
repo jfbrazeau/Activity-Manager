@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Activity Manager Core Tests
+Bundle-SymbolicName: org.activitymgr.core.tests
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Jean-Francois Brazeau
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.junit;bundle-version="[3.8.2,4.0.0)",
+ org.activitymgr.core,
+ org.apache.log4j

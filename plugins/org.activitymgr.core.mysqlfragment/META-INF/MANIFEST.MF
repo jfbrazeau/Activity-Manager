@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Activity Manager Hsqldb Mysql Driver Fragment
+Bundle-SymbolicName: org.activitymgr.core.hsqldbfragment
+Bundle-Version: 1.0.0.qualifier
+Fragment-Host: org.apache.commons.dbcp
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ClassPath: hsqldb.jar
