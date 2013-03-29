@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Activity Manager RCP UI
+Bundle-SymbolicName: org.activitymgr.ui; singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.activitymgr.ui.rcp.Activator
+Bundle-Vendor: Jean-Francois Brazeau
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.activitymgr.core,
+ org.apache.log4j
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: lib/poi-2.5.1-final-20040804.jar,
+ .
