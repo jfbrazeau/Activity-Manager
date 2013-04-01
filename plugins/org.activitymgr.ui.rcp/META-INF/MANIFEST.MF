@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Activity Manager RCP UI
-Bundle-SymbolicName: org.activitymgr.ui; singleton:=true
+Bundle-SymbolicName: org.activitymgr.ui.rcp;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.activitymgr.ui.rcp.Activator
 Bundle-Vendor: Jean-Francois Brazeau

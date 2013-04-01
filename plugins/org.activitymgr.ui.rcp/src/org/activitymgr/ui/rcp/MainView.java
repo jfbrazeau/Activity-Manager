@@ -2,29 +2,21 @@ package org.activitymgr.ui.rcp;
 
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.DatabaseUI.IDbStatusListener;
-import org.apache.log4j.Logger;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 public class MainView extends ViewPart {
 	public static final String ID = "org.activitymgr.ui.view";
 
 	/** Logger */
-	private static Logger log = Logger.getLogger(MainView.class);
+	//private static Logger log = Logger.getLogger(MainView.class);
 
 	/** Onglets */
 	private static TabItem databaseTab;
@@ -95,23 +87,31 @@ public class MainView extends ViewPart {
 		contributionsUI.addContributionListener(tasksUI);
 
 		// Barre de statut
-		final Label statusBar = new Label(parent, SWT.NONE);
-		statusBar.setLayoutData(new GridData(SWT.RIGHT, SWT.NONE, false,
-				false));
-		statusBar.setAlignment(SWT.RIGHT);
-		statusBar.setText(Strings.getString("Main.status.NOT_CONNECTED")); //$NON-NLS-1$
-		databaseUI.addDbStatusListener(new IDbStatusListener() {
+		final IStatusLineManager statusBar = getViewSite().getActionBars().getStatusLineManager();
+		final Shell shell = parent.getShell();
+		IDbStatusListener dbStatusListener = new IDbStatusListener() {
 			public void databaseOpened() {
-				statusBar.setText(Strings
-						.getString("Main.status.CONNECTED")); //$NON-NLS-1$
+				shell.getDisplay().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						statusBar.setMessage(Strings
+								.getString("Main.status.CONNECTED")); //$NON-NLS-1$
+					}
+				});
 			}
 
 			public void databaseClosed() {
-				statusBar.setText(Strings
-						.getString("Main.status.NOT_CONNECTED")); //$NON-NLS-1$
+				shell.getDisplay().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						statusBar.setMessage(Strings
+								.getString("Main.status.NOT_CONNECTED")); //$NON-NLS-1$
+					}
+				});
 			}
-		});
-
+		};
+		databaseUI.addDbStatusListener(dbStatusListener);
+		dbStatusListener.databaseClosed();
 		// Initialisation des attributs de connexion par défaut
 		databaseUI.initUI();
 	}

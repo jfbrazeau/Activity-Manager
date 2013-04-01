@@ -1,12 +1,9 @@
 package org.activitymgr.ui.rcp;
 
-import java.io.IOException;
-
 import org.activitymgr.core.ModelMgr;
 import org.activitymgr.ui.rcp.util.CfgMgr;
 import org.activitymgr.ui.rcp.util.SafeRunner;
 import org.apache.log4j.PropertyConfigurator;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.ActionBarAdvisor;
@@ -29,7 +26,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		configurer.setInitialSize(new Point(400, 300));
 		configurer.setShowCoolBar(false);
-		configurer.setShowStatusLine(false);
+		configurer.setShowStatusLine(true);
 	}
 	
 	@Override
@@ -43,6 +40,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				return null;
 			}
 		}.run(PlatformUI.getWorkbench().getDisplay().getActiveShell());
+		super.postWindowOpen();
 	}
 	
 	@Override

@@ -57,8 +57,8 @@
          id="product"
          point="org.eclipse.core.runtime.products">
       <product
-            application="org.activitymgr.ui.application"
-            name="Activity Manager v1.0.0">
+            application="org.activitymgr.ui.rcp.application"
+            name="Activity Manager (RCP) v1.0.0">
          <property
                name="windowImages"
                value="icons/alt_window_16.gif,icons/alt_window_32.gif">

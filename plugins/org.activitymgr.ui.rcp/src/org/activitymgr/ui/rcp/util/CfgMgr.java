@@ -111,7 +111,7 @@ public class CfgMgr {
 	}
 
 	/**
-	 * Initie la configuration à partir d'un dioctionnaire spécifique.
+	 * Initie la configuration à partir d'un dictionnaire spécifique.
 	 * 
 	 * @param props
 	 *            le dictionnaire de propriétés.
