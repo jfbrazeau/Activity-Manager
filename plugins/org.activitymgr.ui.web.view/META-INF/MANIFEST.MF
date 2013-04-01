@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Activity Manager Web UI View
+Bundle-SymbolicName: org.activitymgr.ui.web.view;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Jean-Francois Brazeau
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.vaadin.osgiappcontainer,
+ org.activitymgr.ui.web.logic,
+ org.eclipse.equinox.app
