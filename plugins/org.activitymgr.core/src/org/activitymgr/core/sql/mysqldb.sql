@@ -14,7 +14,7 @@ create table COLLABORATOR (
  	CLB_IS_ACTIVE  integer( 1) not null,
     index CLB_LOGIN_IDX (CLB_LOGIN),
     constraint CLB_PK primary key (CLB_ID) 
-) type=innodb;
+) engine=innodb;
 
 --------------------------------------------------------------
 -- Taches
@@ -37,7 +37,7 @@ create table TASK (
     	unique (TSK_PATH, TSK_NUMBER),
     constraint TSK_UNIQUE_PATH_CODE
     	unique (TSK_PATH, TSK_CODE) 
-) type=innodb;
+) engine=innodb;
 
 --------------------------------------------------------------
 -- Dur�es
@@ -46,7 +46,7 @@ create table DURATION (
 	DUR_ID         integer(3) not null,
 	DUR_IS_ACTIVE  integer(1) not null,
     constraint DUR_PK primary key (DUR_ID)
-) type=innodb;
+) engine=innodb;
 
 --------------------------------------------------------------
 -- Taches
@@ -65,7 +65,7 @@ create table CONTRIBUTION (
     constraint CTB_CONTRIBUTOR_FK foreign key (CTB_CONTRIBUTOR) references COLLABORATOR (CLB_ID),
     constraint CTB_TASK_FK foreign key (CTB_TASK) references TASK (TSK_ID),
     constraint CTB_DURATION_FK foreign key (CTB_DURATION) references DURATION (DUR_ID)
-) type=innodb;
+) engine=innodb;
 
 -- R�f�rentiel des dur�es
 -- delete from DURATION;
