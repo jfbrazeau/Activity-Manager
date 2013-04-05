@@ -1,0 +1,21 @@
+@import "../runo/legacy-styles.css";
+
+.red {
+	background-color: #FAA;
+}
+
+.red:hover {
+	background-color: #F00;
+}
+
+.green {
+	background-color: #AFA;
+}
+
+.green:hover {
+	background-color: #0F0;
+}
+
+.mondayDateField.v-datefield-parseerror .v-textfield {
+    background: pink;
+}	

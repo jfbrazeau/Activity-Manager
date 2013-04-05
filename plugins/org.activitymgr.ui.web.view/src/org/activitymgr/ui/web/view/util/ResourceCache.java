@@ -9,7 +9,7 @@ import com.vaadin.server.ThemeResource;
 
 public class ResourceCache {
 	
-	public static final String TODO_ICON = "todo.gif";
+	public static final String ONE_PIXEL_ICON = "one-pixel.gif";
 
 	private Map<String, Resource> cache = new HashMap<String, Resource>();
 	

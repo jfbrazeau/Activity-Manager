@@ -24,10 +24,16 @@
 
    <plugins>
       <plugin id="javax.servlet"/>
+      <plugin id="org.activitymgr.core"/>
+      <plugin id="org.activitymgr.core.hsqldbfragment" fragment="true"/>
+      <plugin id="org.activitymgr.core.mysqlfragment" fragment="true"/>
       <plugin id="org.activitymgr.ui.web.logic"/>
       <plugin id="org.activitymgr.ui.web.view"/>
+      <plugin id="org.apache.commons.dbcp"/>
+      <plugin id="org.apache.commons.pool"/>
       <plugin id="org.apache.felix.gogo.runtime"/>
       <plugin id="org.apache.felix.gogo.shell"/>
+      <plugin id="org.apache.log4j"/>
       <plugin id="org.eclipse.core.contenttype"/>
       <plugin id="org.eclipse.core.jobs"/>
       <plugin id="org.eclipse.core.runtime"/>
@@ -49,6 +55,7 @@
       <plugin id="org.eclipse.jetty.util"/>
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.osgi.services"/>
+      <plugin id="org.eclipse.xtext.logging" fragment="true"/>
       <plugin id="org.vaadin.osgiappcontainer"/>
    </plugins>
 

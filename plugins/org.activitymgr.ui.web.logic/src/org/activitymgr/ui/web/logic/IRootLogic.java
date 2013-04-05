@@ -12,6 +12,10 @@ public interface IRootLogic extends ILogic<IRootLogic.View> {
 		
 		void showConfirm(String message, IGenericCallback<Boolean> callback);
 
+		void showAuthenticationForm();
+
+		void showContributionsForm();
+
 	}
 
 }
