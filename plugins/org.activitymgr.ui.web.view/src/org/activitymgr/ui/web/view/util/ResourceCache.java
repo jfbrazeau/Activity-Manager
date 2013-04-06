@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.activitymgr.ui.web.logic.ILabelProviderCallback.Icon;
+
 import com.vaadin.server.Resource;
 import com.vaadin.server.ThemeResource;
 

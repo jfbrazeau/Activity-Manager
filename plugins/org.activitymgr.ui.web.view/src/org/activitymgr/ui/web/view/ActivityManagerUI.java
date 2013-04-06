@@ -18,7 +18,8 @@ import com.vaadin.ui.UI;
 
 @Theme("activitymgr")
 @SuppressWarnings("serial")
-public class ActivityManagerUI extends UI implements IViewFactory, IRootLogic.View {
+public class ActivityManagerUI extends UI implements IViewFactory,
+		IRootLogic.View {
 
 	private ResourceCache resourceCache;
 	@SuppressWarnings("unused")
@@ -31,9 +32,9 @@ public class ActivityManagerUI extends UI implements IViewFactory, IRootLogic.Vi
 		resourceCache = new ResourceCache();
 
 		// Default panels
-		authenticationPanel = new AuthenticationPanel(resourceCache);
+		authenticationPanel = new AuthenticationPanel(resourceCache, request);
 		contributionsPanel = new ContributionsPanel(resourceCache);
-		
+
 		// Create the logic
 		new ActivityManagerLogic(this);
 	}
@@ -42,15 +43,13 @@ public class ActivityManagerUI extends UI implements IViewFactory, IRootLogic.Vi
 	public IView<?> createView(Class<?> logicType, Object... parameters) {
 		if (IRootLogic.class.isAssignableFrom(logicType)) {
 			return this;
-		}
-		else if (IAuthenticationLogic.class.isAssignableFrom(logicType)) {
+		} else if (IAuthenticationLogic.class.isAssignableFrom(logicType)) {
 			return authenticationPanel;
-		}
-		else if (IContributionsLogic.class.isAssignableFrom(logicType)) {
+		} else if (IContributionsLogic.class.isAssignableFrom(logicType)) {
 			return contributionsPanel;
-		}
-		else {
-			throw new IllegalStateException("Unexpected logic type '" + logicType + "'");
+		} else {
+			throw new IllegalStateException("Unexpected logic type '"
+					+ logicType + "'");
 		}
 	}
 
@@ -67,7 +66,8 @@ public class ActivityManagerUI extends UI implements IViewFactory, IRootLogic.Vi
 
 	@Override
 	public void showErrorNotification(String message, String description) {
-		Notification.show(message, description != null ? "<br>" + description : null, Type.ERROR_MESSAGE);
+		Notification.show(message, description != null ? "<br>" + description
+				: null, Type.ERROR_MESSAGE);
 	}
 
 	@Override
@@ -86,4 +86,3 @@ public class ActivityManagerUI extends UI implements IViewFactory, IRootLogic.Vi
 	}
 
 }
-
