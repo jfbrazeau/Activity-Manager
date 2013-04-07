@@ -38,6 +38,12 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 
 	private Button nextYearButton;
 
+	private String[] durationLabels;
+
+	private Label[] dayLabels;
+
+	private GridLayout contributionsContainer;
+
 	public ContributionsPanel(ResourceCache resourceCache) {
 		this.resourceCache = resourceCache;
 
@@ -48,71 +54,83 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		/*
 		 * Controls
 		 */
-		GridLayout controlsLayout = new GridLayout(7, 1);
-		addComponent(controlsLayout);
+		GridLayout controlsContainer = new GridLayout(7, 1);
+		addComponent(controlsContainer);
 		previousYearButton = new Button("<<< Year");
-		controlsLayout.addComponent(previousYearButton);
+		controlsContainer.addComponent(previousYearButton);
 		previousMonthButton = new Button("<< Month");
-		controlsLayout.addComponent(previousMonthButton);
+		controlsContainer.addComponent(previousMonthButton);
 		previousWeekButton = new Button("< Week");
-		controlsLayout.addComponent(previousWeekButton);
+		controlsContainer.addComponent(previousWeekButton);
 		
 		dateField = new DateField();
 		dateField.setDateFormat("EEE dd/MM/yyyy");
 		dateField.setStyleName("mondayDateField");
-		controlsLayout.addComponent(dateField);
+		controlsContainer.addComponent(dateField);
 		
 		nextWeekButton = new Button("Week >");
-		controlsLayout.addComponent(nextWeekButton);
+		controlsContainer.addComponent(nextWeekButton);
 		nextMonthButton = new Button("Month >>");
-		controlsLayout.addComponent(nextMonthButton);
+		controlsContainer.addComponent(nextMonthButton);
 		nextYearButton = new Button("Year >>>");
-		controlsLayout.addComponent(nextYearButton);
+		controlsContainer.addComponent(nextYearButton);
 
 		/*
-		 * Table
+		 * Contributions table
 		 */
-		GridLayout contributionsLayout = new GridLayout(10, 2);
-		addComponent(contributionsLayout);
-		
+		contributionsContainer = new GridLayout(10, 2);
+		addComponent(contributionsContainer);
+
 		// First line
-		contributionsLayout.addComponent(new Label("Path"));
-		contributionsLayout.addComponent(new Label("Task"));
+		Label pathLabel = new Label("Path");
+		pathLabel.setWidth(200, Unit.PIXELS);
+		contributionsContainer.addComponent(pathLabel);
+		Label taskNameLabel = new Label("Task");
+		taskNameLabel.setWidth(200, Unit.PIXELS);
+		contributionsContainer.addComponent(taskNameLabel);
 		Label day1Label = new Label("D1");
-		contributionsLayout.addComponent(day1Label);
+		day1Label.setWidth(80, Unit.PIXELS);
+		contributionsContainer.addComponent(day1Label);
 		Label day2Label = new Label("D2");
-		contributionsLayout.addComponent(day2Label);
+		contributionsContainer.addComponent(day2Label);
 		Label day3Label = new Label("D3");
-		contributionsLayout.addComponent(day3Label);
+		contributionsContainer.addComponent(day3Label);
 		Label day4Label = new Label("D4");
-		contributionsLayout.addComponent(day4Label);
+		contributionsContainer.addComponent(day4Label);
 		Label day5Label = new Label("D5");
-		contributionsLayout.addComponent(day5Label);
+		contributionsContainer.addComponent(day5Label);
 		Label day6Label = new Label("D6");
-		contributionsLayout.addComponent(day6Label);
+		contributionsContainer.addComponent(day6Label);
 		Label day7Label = new Label("D7");
-		contributionsLayout.addComponent(day7Label);
-		contributionsLayout.addComponent(new Label("Total"));
+		contributionsContainer.addComponent(day7Label);
+		contributionsContainer.addComponent(new Label("Total"));
+		dayLabels = new Label[] { day1Label, day2Label, day3Label,
+				day4Label, day5Label, day6Label, day7Label };
+		for (Label dayLabel : dayLabels) {
+			dayLabel.setWidth(80, Unit.PIXELS);
+		}
 		
 		// Last line
-		Button addTaskButton = new Button("Add");
-		contributionsLayout.addComponent(addTaskButton, 0, 1, 1, 1);
+		//Button addTaskButton = new Button("Add");
+		//contributionsContainer.addComponent(addTaskButton, 0, 1, 1, 1);
+		contributionsContainer.addComponent(new Label(""), 0, 1, 1, 1);
+
 		Label day1TotalLabel = new Label("T1");
-		contributionsLayout.addComponent(day1TotalLabel);
+		contributionsContainer.addComponent(day1TotalLabel);
 		Label day2TotalLabel = new Label("T2");
-		contributionsLayout.addComponent(day2TotalLabel);
+		contributionsContainer.addComponent(day2TotalLabel);
 		Label day3TotalLabel = new Label("T3");
-		contributionsLayout.addComponent(day3TotalLabel);
+		contributionsContainer.addComponent(day3TotalLabel);
 		Label day4TotalLabel = new Label("T4");
-		contributionsLayout.addComponent(day4TotalLabel);
+		contributionsContainer.addComponent(day4TotalLabel);
 		Label day5TotalLabel = new Label("T5");
-		contributionsLayout.addComponent(day5TotalLabel);
+		contributionsContainer.addComponent(day5TotalLabel);
 		Label day6TotalLabel = new Label("T6");
-		contributionsLayout.addComponent(day6TotalLabel);
+		contributionsContainer.addComponent(day6TotalLabel);
 		Label day7TotalLabel = new Label("T7");
-		contributionsLayout.addComponent(day7TotalLabel);
+		contributionsContainer.addComponent(day7TotalLabel);
 		Label totalLabel = new Label("TT");
-		contributionsLayout.addComponent(totalLabel);
+		contributionsContainer.addComponent(totalLabel);
 		
 		// Register listeners
 		previousYearButton.addClickListener(this);
@@ -126,9 +144,6 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 //		VerticalSplitPanel vl = new VerticalSplitPanel();
 //		addComponent(vl);
 
-		
-		contributionsLayout.insertRow(1);
-		contributionsLayout.addComponent(new Label("Hoho"), 0, 1);
 		
 		HorizontalLayout hl = new HorizontalLayout();
 		addComponent(hl);
@@ -171,8 +186,87 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	}
 
 	@Override
-	public void setDate(Calendar monday) {
-		dateField.setValue(monday.getTime());
+	public void setDate(Calendar date) {
+		dateField.setValue(date.getTime());
+	}
+
+	@Override
+	public void setDurationLabels(String[] durationLabels) {
+		this.durationLabels = durationLabels;
+	}
+
+	@Override
+	public void setDayLabels(String[] dayLabels) {
+		for (int i=0; i<dayLabels.length ; i++) {
+			this.dayLabels[i].setValue(dayLabels[i]);
+		}
+	}
+
+	@Override
+	public void addWeekContribution(final String taskCodePath, String name,
+			int[] durationIndexes) {
+		int row = contributionsContainer.getRows() - 1;
+		System.out.println("Total rows = " + contributionsContainer.getRows());
+		contributionsContainer.insertRow(row);
+
+		// Task path & name
+		contributionsContainer.addComponent(new Label(taskCodePath), 0, row);
+		contributionsContainer.addComponent(new Label(name), 1, row);
+		
+		// Duration forms
+		for (int i=0; i<durationIndexes.length; i++) {
+			int durationIndex = durationIndexes[i];
+			HorizontalLayout hl = new HorizontalLayout();
+			contributionsContainer.addComponent(hl, i+2, row);
+			// Add clickable images
+			for (int j=0; j<durationLabels.length; j++) {
+				final Image image = new Image();
+				image.setSource(resourceCache.getResource(ResourceCache.ONE_PIXEL_ICON));
+				image.setHeight("16px");
+				image.setWidth("7px");
+				image.setStyleName(durationIndex >= j ? "green" : "red");
+				image.setDescription(durationLabels[j]);
+				hl.addComponent(image);
+				// Separator
+				Image sep = new Image();
+				sep.setSource(resourceCache.getResource(ResourceCache.ONE_PIXEL_ICON));
+				hl.addComponent(sep);
+				// Register listener
+				final int durationIdx = j;
+				final int dayOfWeek = i;
+				image.addClickListener(new MouseEvents.ClickListener() {
+					@Override
+					public void click(com.vaadin.event.MouseEvents.ClickEvent event) {
+						logic.onDurationClicked(taskCodePath, dayOfWeek, durationIdx);
+					}
+				});
+			}
+			// TODO factoriser
+			hl.addComponent(new Label(durationIndex >= 0 ? durationLabels[durationIndex] : ""));
+		}
+	}
+
+	@Override
+	public void updateDurationIndex(String taskCodePath, int dayOfWeek,
+			int durationIdx) {
+		int row = 1;
+		// Retrieve row index
+		while (row < contributionsContainer.getRows() - 1) {
+			Label pathLabel = (Label) contributionsContainer.getComponent(0, row);
+			if (taskCodePath.equals(pathLabel.getValue())) {
+				break;
+			}
+			row ++;
+		}
+		// Retrieve clickable images container
+		HorizontalLayout hl = (HorizontalLayout) contributionsContainer.getComponent(2+dayOfWeek, row);
+		for (int j=0; j<durationLabels.length; j++) {
+			Image image = (Image) hl.getComponent(j*2);
+			image.setStyleName(durationIdx >= j ? "green" : "red");
+		}
+		// TODO factoriser
+		Label label = (Label) hl.getComponent(hl.getComponentCount()-1);
+		label.setValue(durationIdx >= 0 ? durationLabels[durationIdx] : "");
 	}
 
 	@Override
@@ -189,6 +283,9 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 			logic.onNextMonth();
 		} else if (event.getSource() == nextYearButton) {
 			logic.onNextYear();
+		}
+		else {
+			throw new IllegalArgumentException("Unexpected button click");
 		}
 	}
 
