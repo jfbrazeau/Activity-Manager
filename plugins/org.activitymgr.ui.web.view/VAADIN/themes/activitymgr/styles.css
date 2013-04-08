@@ -1,21 +1,29 @@
 @import "../runo/legacy-styles.css";
 
-.red {
-	background-color: #FAA;
+.duration-off {
+	background-color: #c6d5dc;
 }
 
-.red:hover {
-	background-color: #F00;
+.duration-off:hover {
+	background-color: #9acae3;
 }
 
-.green {
-	background-color: #AFA;
+.duration-on {
+	background-color: #5ff358;
 }
 
-.green:hover {
-	background-color: #0F0;
+.duration-on:hover {
+	background-color: #a4f1a1;
 }
 
 .mondayDateField.v-datefield-parseerror .v-textfield {
     background: pink;
+}
+
+.amount {
+	text-align: right;
+}
+
+.day-labels {
+	text-align: center;
 }

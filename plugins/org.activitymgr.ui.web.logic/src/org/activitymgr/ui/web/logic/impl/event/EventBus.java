@@ -21,7 +21,6 @@ public class EventBus {
 	}
 
 	public void fire(Event event) {
-		System.out.println("Event : " + event);
 		if (event != null) {
 			Collection<IEventListener> eventTypeListeners = listeners.get(event
 					.getClass());

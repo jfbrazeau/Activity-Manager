@@ -19,6 +19,14 @@ public interface IContributionsLogic extends ILogic<IContributionsLogic.View> {
 
 		void updateDurationIndex(String taskCodePath, int dayOfWeek,
 				int durationIdx);
+
+		void removeAllWeekContributions();
+
+		void setDayTotal(int dayOfWeek, String total);
+
+		void setTotal(String total);
+
+		void setTaskTotal(String taskCodePath, String total);
 		
 	}
 
@@ -35,5 +43,7 @@ public interface IContributionsLogic extends ILogic<IContributionsLogic.View> {
 	void onNextYear();
 
 	void onDurationClicked(String taskCodePath, int dayOfWeek, int durationIdx);
+
+	void onDateChange(Calendar value);
 
 }

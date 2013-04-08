@@ -75,13 +75,7 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 	@Override
 	public void onDurationClicked(String taskCodePath, int dayOfWeek, int durationIdx) {
 		try {
-			TaskContributions tc = null;
-			for (TaskContributions cursor : weekContributions) {
-				if (cursor.getTaskCodePath().equals(taskCodePath)) {
-					tc = cursor;
-					break;
-				}
-			}
+			TaskContributions tc = getTaskContributions(taskCodePath);
 			Contribution contribution = tc.getContributions()[dayOfWeek];
 			// First case : the contribution must be created
 			if (contribution == null) {
@@ -114,6 +108,8 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 					getView().updateDurationIndex(taskCodePath, dayOfWeek, durationIdx);
 				}
 			}
+			// Update totals
+			updateTotals();
 		}
 		catch (DbException e) {
 			handleError(e);
@@ -121,6 +117,51 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 		catch (ModelException e) {
 			handleError(e);
 		}
+	}
+
+	@Override
+	public void onDateChange(Calendar value) {
+		date = value;
+		changeMondayAndUpdateView(Calendar.DATE, 0);
+	}
+
+	private void updateTotals() {
+		long total = 0;
+		for (int dayOfWeek=0; dayOfWeek<7; dayOfWeek++) {
+			long dayTotal = 0;
+			for (TaskContributions tc : weekContributions) {
+				Contribution c = tc.getContributions()[dayOfWeek];
+				if (c != null) {
+					dayTotal += c.getDurationId();
+					total += c.getDurationId();
+				}
+			}
+			getView().setDayTotal(dayOfWeek, StringHelper
+					.hundredthToEntry(dayTotal));
+		}
+		getView().setTotal(StringHelper
+				.hundredthToEntry(total));
+		for (TaskContributions tc : weekContributions) {
+			long taskTotal = 0;
+			for (int dayOfWeek=0; dayOfWeek<7; dayOfWeek++) {
+				Contribution c = tc.getContributions()[dayOfWeek];
+				if (c != null) {
+					taskTotal += c.getDurationId();
+				}
+			}
+			getView().setTaskTotal(tc.getTaskCodePath(), StringHelper
+					.hundredthToEntry(taskTotal));
+		}
+		
+	}
+
+	private TaskContributions getTaskContributions(String taskCodePath) {
+		for (TaskContributions cursor : weekContributions) {
+			if (cursor.getTaskCodePath().equals(taskCodePath)) {
+				return cursor;
+			}
+		}
+		return null;
 	}
 
 	private void changeMondayAndUpdateView(int amountType, int amount) {
@@ -161,6 +202,7 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 		// The result contains the contributions of the previous
 		// week
 		// We truncate it before proceeding.
+		getView().removeAllWeekContributions();
 		for (TaskContributions tc : weekContributions) {
 			Contribution[] newContribs = new Contribution[7];
 			System.arraycopy(tc.getContributions(), 7,
@@ -175,6 +217,9 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 			}
 			getView().addWeekContribution(tc.getTaskCodePath(), tc.getTask().getName(), durationIndexes);
 		}
+		
+		// Update totals
+		updateTotals();
 	}
 
 	private int indexOfDuration(long durationId) {
