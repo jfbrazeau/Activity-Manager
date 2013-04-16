@@ -10,3 +10,5 @@ Require-Bundle: org.eclipse.osgi,
 Export-Package: org.activitymgr.ui.web.logic
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.activitymgr.ui.web.logic.impl.Activator
+Bundle-ClassPath: lib/poi-2.5.1-final-20040804.jar,
+ .

@@ -10,15 +10,13 @@ public interface IContributionsLogic extends ILogic<IContributionsLogic.View> {
 
 		void setDate(Calendar lastMonday);
 
-		void setDurationLabels(String[] durationsStr);
-
 		void setDayLabels(String[] dayLabels);
 
 		void addWeekContribution(String taskCodePath, String name,
-				int[] durationIndexes);
+				String[] durations);
 
-		void updateDurationIndex(String taskCodePath, int dayOfWeek,
-				int durationIdx);
+		void updateDuration(String taskCodePath, int dayOfWeek,
+				String duration);
 
 		void removeAllWeekContributions();
 
@@ -27,6 +25,11 @@ public interface IContributionsLogic extends ILogic<IContributionsLogic.View> {
 		void setTotal(String total);
 
 		void setTaskTotal(String taskCodePath, String total);
+
+		void focusOnCell(String taskCodePath, int dayOfWeek);
+
+		// TODO externalize ?
+		void setTaskWeekPrevision(String taskCodePath, String previsionalWeekDuration);
 		
 	}
 
@@ -42,7 +45,7 @@ public interface IContributionsLogic extends ILogic<IContributionsLogic.View> {
 
 	void onNextYear();
 
-	void onDurationClicked(String taskCodePath, int dayOfWeek, int durationIdx);
+	void onDurationChanged(String taskCodePath, int dayOfWeek, String duration);
 
 	void onDateChange(Calendar value);
 

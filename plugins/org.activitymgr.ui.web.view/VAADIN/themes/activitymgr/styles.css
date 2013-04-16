@@ -16,7 +16,7 @@
 	background-color: #a4f1a1;
 }
 
-.mondayDateField.v-datefield-parseerror .v-textfield {
+.monday-date-field.v-datefield-parseerror .v-textfield {
     background: pink;
 }
 
@@ -27,3 +27,4 @@
 .day-labels {
 	text-align: center;
 }
+

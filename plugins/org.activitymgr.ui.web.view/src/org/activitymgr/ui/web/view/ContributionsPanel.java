@@ -8,15 +8,12 @@ import org.activitymgr.ui.web.view.util.ResourceCache;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.event.MouseEvents;
-import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.GridLayout;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Image;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
@@ -24,6 +21,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 
 	private IContributionsLogic logic;
 	
+	@SuppressWarnings("unused")
 	private ResourceCache resourceCache;
 
 	private DateField dateField;
@@ -40,8 +38,6 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 
 	private Button nextYearButton;
 
-	private String[] durationLabels;
-
 	private Label[] dayLabels;
 
 	private GridLayout contributionsContainer;
@@ -49,7 +45,6 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	public ContributionsPanel(ResourceCache resourceCache) {
 		this.resourceCache = resourceCache;
 
-		//setSizeFull();
 		setSpacing(true);
 		setMargin(true);
 		
@@ -59,7 +54,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		GridLayout controlsContainer = new GridLayout(8, 1);
 		addComponent(controlsContainer);
 		Label emptyLabel = new Label();
-		emptyLabel.setWidth(330, Unit.PIXELS);
+		emptyLabel.setWidth(250, Unit.PIXELS);
 		controlsContainer.addComponent(emptyLabel);
 		previousYearButton = new Button("<<< Year");
 		controlsContainer.addComponent(previousYearButton);
@@ -70,7 +65,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		
 		dateField = new DateField();
 		dateField.setDateFormat("EEE dd/MM/yyyy");
-		dateField.setStyleName("mondayDateField");
+		dateField.setStyleName("monday-date-field");
 		controlsContainer.addComponent(dateField);
 		
 		nextWeekButton = new Button("Week >");
@@ -83,7 +78,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		/*
 		 * Contributions table
 		 */
-		contributionsContainer = new GridLayout(10, 2);
+		contributionsContainer = new GridLayout(11, 2);
 		contributionsContainer.addStyleName("contribution-table");
 		contributionsContainer.setSpacing(true);
 		addComponent(contributionsContainer);
@@ -100,28 +95,27 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 			Label dayLabel = new Label("D" + (i+1));
 			dayLabel.addStyleName("day-labels");
 			contributionsContainer.addComponent(dayLabel);
-			contributionsContainer.setComponentAlignment(dayLabel, Alignment.MIDDLE_RIGHT);
-			dayLabel.setWidth(80, Unit.PIXELS);
 			dayLabels[i] = dayLabel;
 		}
 		Label totalColumnLabel = new Label("Total");
 		totalColumnLabel.addStyleName("day-labels");
 		contributionsContainer.addComponent(totalColumnLabel);
-		contributionsContainer.setComponentAlignment(totalColumnLabel, Alignment.MIDDLE_RIGHT);
+		
+		// TODO externalize ? (last column)
+		Label previsionnalColumnLabel = new Label("Prev");
+		previsionnalColumnLabel.addStyleName("day-labels");
+		contributionsContainer.addComponent(previsionnalColumnLabel);
 
 		// Last line
 		Button addTaskButton = new Button("Add");
 		contributionsContainer.addComponent(addTaskButton, 0, 1, 1, 1);
-		//contributionsContainer.addComponent(new Label(""), 0, 1, 1, 1);
 		for (int i=0; i<7; i++) {
 			Label totalLabel = newAmountLabel("T" + (i+1));
 			contributionsContainer.addComponent(totalLabel);
-			contributionsContainer.setComponentAlignment(totalLabel, Alignment.MIDDLE_RIGHT);
 		}
 		Label totalLabel = newAmountLabel("TT");
 		contributionsContainer.addComponent(totalLabel);
-		contributionsContainer.setComponentAlignment(totalLabel, Alignment.MIDDLE_RIGHT);
-		
+
 		// Register listeners
 		previousYearButton.addClickListener(this);
 		previousMonthButton.addClickListener(this);
@@ -143,7 +137,6 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	private static Label newAmountLabel(String caption) {
 		Label amountLabel = new Label(caption);
 		amountLabel.setStyleName("amount");
-		amountLabel.setWidth(40, Unit.PIXELS);
 		return amountLabel;
 	}
 
@@ -158,11 +151,6 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	}
 
 	@Override
-	public void setDurationLabels(String[] durationLabels) {
-		this.durationLabels = durationLabels;
-	}
-
-	@Override
 	public void setDayLabels(String[] dayLabels) {
 		for (int i=0; i<dayLabels.length ; i++) {
 			this.dayLabels[i].setValue(dayLabels[i]);
@@ -171,7 +159,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 
 	@Override
 	public void addWeekContribution(final String taskCodePath, String name,
-			int[] durationIndexes) {
+			String[] durations) {
 		int row = contributionsContainer.getRows() - 1;
 		contributionsContainer.insertRow(row);
 
@@ -180,40 +168,32 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		contributionsContainer.addComponent(new Label(name), 1, row);
 		
 		// Duration forms
-		for (int i=0; i<durationIndexes.length; i++) {
-			int durationIndex = durationIndexes[i];
-			HorizontalLayout hl = new HorizontalLayout();
-			contributionsContainer.addComponent(hl, i+2, row);
-			contributionsContainer.setComponentAlignment(hl, Alignment.MIDDLE_RIGHT);
-			// Add clickable images
-			for (int j=0; j<durationLabels.length; j++) {
-				final Image image = new Image();
-				image.setSource(resourceCache.getResource(ResourceCache.ONE_PIXEL_ICON));
-				image.setHeight("16px");
-				image.setWidth("7px");
-				image.setStyleName(durationIndex >= j ? "duration-on" : "duration-off");
-				image.setDescription(durationLabels[j]);
-				hl.addComponent(image);
-				// Separator
-				Image sep = new Image();
-				sep.setSource(resourceCache.getResource(ResourceCache.ONE_PIXEL_ICON));
-				hl.addComponent(sep);
-				// Register listener
-				final int durationIdx = j;
-				final int dayOfWeek = i;
-				image.addClickListener(new MouseEvents.ClickListener() {
-					@Override
-					public void click(com.vaadin.event.MouseEvents.ClickEvent event) {
-						logic.onDurationClicked(taskCodePath, dayOfWeek, durationIdx);
-					}
-				});
-			}
-			// TODO factoriser
-			hl.addComponent(newAmountLabel(durationIndex >= 0 ? durationLabels[durationIndex] : ""));
+		for (int i=0; i<durations.length; i++) {
+			final TextField durationTextField = new TextField();
+			durationTextField.addStyleName("amount");
+			durationTextField.setWidth(60, Unit.PIXELS);
+			durationTextField.setImmediate(true);
+			durationTextField.setValue(durations[i]);
+			contributionsContainer.addComponent(durationTextField, 2+i, row);
+			// Register listener
+			final int dayOfWeek = i;
+			durationTextField.addValueChangeListener(new Property.ValueChangeListener() {
+				@Override
+				public void valueChange(ValueChangeEvent event) {
+					System.out.println("** valueChanged");
+					logic.onDurationChanged(
+							taskCodePath,
+							dayOfWeek,
+							durationTextField.getValue());
+				}
+			});
 		}
 		Label totalLabel = newAmountLabel("TT");
 		contributionsContainer.addComponent(totalLabel, 9, row);
-		contributionsContainer.setComponentAlignment(totalLabel, Alignment.MIDDLE_RIGHT);
+		
+		// TODO externalize ? 
+		Label prevLabel = newAmountLabel("");
+		contributionsContainer.addComponent(prevLabel, 10, row);
 	}
 
 	@Override
@@ -224,18 +204,12 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	}
 
 	@Override
-	public void updateDurationIndex(String taskCodePath, int dayOfWeek,
-			int durationIdx) {
+	public void updateDuration(String taskCodePath, int dayOfWeek,
+			String duration) {
 		int row = findRow(taskCodePath);
 		// Retrieve clickable images container
-		HorizontalLayout hl = (HorizontalLayout) contributionsContainer.getComponent(2+dayOfWeek, row);
-		for (int j=0; j<durationLabels.length; j++) {
-			Image image = (Image) hl.getComponent(j*2);
-			image.setStyleName(durationIdx >= j ? "duration-on" : "duration-off");
-		}
-		// TODO factoriser
-		Label label = (Label) hl.getComponent(hl.getComponentCount()-1);
-		label.setValue(durationIdx >= 0 ? durationLabels[durationIdx] : "");
+		TextField durationTextField = (TextField) contributionsContainer.getComponent(2+dayOfWeek, row);
+		durationTextField.setValue(duration);
 	}
 
 	@Override
@@ -255,6 +229,21 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		int row = findRow(taskCodePath);
 		Label label = (Label) contributionsContainer.getComponent(9, row);
 		label.setValue(total);
+	}
+
+	@Override
+	public void focusOnCell(String taskCodePath, int dayOfWeek) {
+		int row = findRow(taskCodePath);
+		TextField durationTextField = (TextField) contributionsContainer.getComponent(2+dayOfWeek, row);
+		durationTextField.focus();
+		durationTextField.selectAll();
+	}
+
+	@Override
+	public void setTaskWeekPrevision(String taskCodePath, String previsionalWeekDuration) {
+		int row = findRow(taskCodePath);
+		Label label = (Label) contributionsContainer.getComponent(10, row);
+		label.setValue(previsionalWeekDuration);
 	}
 
 	@Override
@@ -289,5 +278,6 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		}
 		return row;
 	}
+
 
 }

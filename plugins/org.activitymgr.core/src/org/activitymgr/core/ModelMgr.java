@@ -492,6 +492,12 @@ public class ModelMgr {
 			throw new ModelException(
 					Strings.getString("ModelMgr.errors.TASK_WITH_AT_LEAST_ONE_SUBTASK_CANNOT_ACCEPT_CONTRIBUTIONS")); //$NON-NLS-1$
 
+		// La durée existe-t-elle ?
+		if (DbMgr.getDuration(tx, contribution.getDurationId()) == null) {
+			throw new ModelException(
+					Strings.getString("ModelMgr.errors.INVALID_DURATION")); //$NON-NLS-1$
+		}
+
 		// Création de la contribution
 		contribution = DbMgr.createContribution(tx, contribution);
 
@@ -3102,6 +3108,12 @@ System.out.println("daysCount= "+ daysCount);
 			// Ouverture de la transaction
 			tx = DbMgr.beginTransaction();
 
+			// La durée existe-t-elle ?
+			if (DbMgr.getDuration(tx, contribution.getDurationId()) == null) {
+				throw new ModelException(
+						Strings.getString("ModelMgr.errors.INVALID_DURATION")); //$NON-NLS-1$
+			}
+			
 			Contribution result = null;
 			// Faut-il mettre à jour automatiquement le RAF de la tache ?
 			if (!updateEstimatedTimeToComlete) {
@@ -3127,7 +3139,7 @@ System.out.println("daysCount= "+ daysCount);
 					long oldDuration = contributions[0].getDurationId();
 					long newDuration = contribution.getDurationId();
 
-					// Suppression de la contribution
+					// Mise à jour de la contribution
 					DbMgr.updateContribution(tx, contribution);
 
 					// Mise à jour du RAF de la tache
