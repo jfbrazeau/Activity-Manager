@@ -24,7 +24,7 @@ public class ResourceCache {
 	}
 
 	public Resource getIconResource(Icon icon) {
-		return getResource(icon.toString().toLowerCase().replaceAll("_",  "-") + ".gif");
+		return icon == null ? null : getResource(icon.toString().toLowerCase().replaceAll("_",  "-") + ".gif");
 	}
 
 }

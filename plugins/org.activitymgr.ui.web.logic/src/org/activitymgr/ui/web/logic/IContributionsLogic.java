@@ -49,4 +49,6 @@ public interface IContributionsLogic extends ILogic<IContributionsLogic.View> {
 
 	void onDateChange(Calendar value);
 
+	void onTaskButtonClicked();
+
 }

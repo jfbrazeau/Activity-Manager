@@ -18,10 +18,12 @@ import org.activitymgr.core.ModelException;
 import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Contribution;
 import org.activitymgr.core.beans.IntervalContributions;
+import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskContributions;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.IContributionsLogic;
+import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -174,6 +176,15 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 		changeMondayAndUpdateView(Calendar.DATE, 0);
 	}
 
+	@Override
+	public void onTaskButtonClicked() {
+		List<Long> selectedTaskIds = new ArrayList<Long>();
+		for (TaskContributions tc : weekContributions) {
+			selectedTaskIds.add(tc.getTask().getId());
+		}
+		new TaskChooserLogicImpl(getContext(), this, selectedTaskIds);
+	}
+	
 	private void updateTotals() {
 		long total = 0;
 		for (int dayOfWeek=0; dayOfWeek<7; dayOfWeek++) {
@@ -312,6 +323,26 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 		while (dateCursor.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY)
 			dateCursor.add(Calendar.DATE, -1);
 		return dateCursor;
+	}
+
+	public void addTask(long taskId) {
+		try {
+			Task task = ModelMgr.getTask(taskId);
+			TaskContributions tc = new TaskContributions();
+			tc.setTaskCodePath(ModelMgr.getTaskCodePath(task));
+			tc.setTask(task);
+			tc.setContributions(new Contribution[14]);
+			weekContributions.add(tc);
+			getView().addWeekContribution(tc.getTaskCodePath(), tc.getTask().getName(), null);
+			// Update totals
+			updateTotals();
+		}
+		catch (DbException e) {
+			handleError(e);
+		}
+		catch (ModelException e) {
+			handleError(e);
+		}
 	}
 
 }

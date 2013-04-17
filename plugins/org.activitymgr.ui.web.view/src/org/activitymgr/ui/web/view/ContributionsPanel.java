@@ -132,6 +132,13 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 				logic.onDateChange(cal);
 			}
 		});
+		addTaskButton.addClickListener(new Button.ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				System.out.println("addTaskButton");
+				logic.onTaskButtonClicked();
+			}
+		});
 	}
 
 	private static Label newAmountLabel(String caption) {
@@ -168,12 +175,12 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		contributionsContainer.addComponent(new Label(name), 1, row);
 		
 		// Duration forms
-		for (int i=0; i<durations.length; i++) {
+		for (int i=0; i<7; i++) {
 			final TextField durationTextField = new TextField();
 			durationTextField.addStyleName("amount");
 			durationTextField.setWidth(60, Unit.PIXELS);
 			durationTextField.setImmediate(true);
-			durationTextField.setValue(durations[i]);
+			durationTextField.setValue(durations != null ? durations[i] : "");
 			contributionsContainer.addComponent(durationTextField, 2+i, row);
 			// Register listener
 			final int dayOfWeek = i;

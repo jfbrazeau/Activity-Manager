@@ -4,9 +4,11 @@ import org.activitymgr.ui.web.logic.ActivityManagerLogic;
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
 import org.activitymgr.ui.web.logic.IContributionsLogic;
 import org.activitymgr.ui.web.logic.IGenericCallback;
+import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.IRootLogic;
 import org.activitymgr.ui.web.logic.IViewFactory;
+import org.activitymgr.ui.web.view.dialogs.TaskChooserDialog;
 import org.activitymgr.ui.web.view.dialogs.YesNoDialog;
 import org.activitymgr.ui.web.view.util.ResourceCache;
 
@@ -47,6 +49,10 @@ public class ActivityManagerUI extends UI implements IViewFactory,
 			return authenticationPanel;
 		} else if (IContributionsLogic.class.isAssignableFrom(logicType)) {
 			return contributionsPanel;
+		} else if (ITaskChooserLogic.class.isAssignableFrom(logicType)) {
+			TaskChooserDialog dialog = new TaskChooserDialog(resourceCache);
+			getUI().addWindow(dialog);
+			return dialog;
 		} else {
 			throw new IllegalStateException("Unexpected logic type '"
 					+ logicType + "'");
