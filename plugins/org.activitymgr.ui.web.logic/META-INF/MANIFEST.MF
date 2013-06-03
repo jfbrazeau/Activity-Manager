@@ -1,12 +1,13 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Activity Manager Wrb UI Logic
-Bundle-SymbolicName: org.activitymgr.ui.web.logic
+Bundle-SymbolicName: org.activitymgr.ui.web.logic;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jean-Francois Brazeau
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.eclipse.osgi,
- org.activitymgr.core
+ org.activitymgr.core,
+ org.eclipse.equinox.registry
 Export-Package: org.activitymgr.ui.web.logic
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.activitymgr.ui.web.logic.impl.Activator

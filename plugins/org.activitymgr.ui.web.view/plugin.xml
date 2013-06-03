@@ -35,5 +35,4 @@
          </bundle-to-reload>
       </vaadin-ui>
    </extension>
-
 </plugin>

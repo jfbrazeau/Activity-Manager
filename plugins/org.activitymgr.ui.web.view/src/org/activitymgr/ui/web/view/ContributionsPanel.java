@@ -8,6 +8,8 @@ import org.activitymgr.ui.web.view.util.ResourceCache;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.event.FieldEvents;
+import com.vaadin.event.FieldEvents.BlurEvent;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.DateField;
@@ -184,9 +186,9 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 			contributionsContainer.addComponent(durationTextField, 2+i, row);
 			// Register listener
 			final int dayOfWeek = i;
-			durationTextField.addValueChangeListener(new Property.ValueChangeListener() {
+			durationTextField.addBlurListener(new FieldEvents.BlurListener() {
 				@Override
-				public void valueChange(ValueChangeEvent event) {
+				public void blur(BlurEvent event) {
 					System.out.println("** valueChanged");
 					logic.onDurationChanged(
 							taskCodePath,
@@ -194,6 +196,11 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 							durationTextField.getValue());
 				}
 			});
+//			durationTextField.addValueChangeListener(new Property.ValueChangeListener() {
+//				@Override
+//				public void valueChange(ValueChangeEvent event) {
+//				}
+//			});
 		}
 		Label totalLabel = newAmountLabel("TT");
 		contributionsContainer.addComponent(totalLabel, 9, row);

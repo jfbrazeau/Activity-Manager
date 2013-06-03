@@ -30,6 +30,8 @@ public class TaskChooserDialog extends Window implements Button.ClickListener, I
         super("Choose a task");
         setModal(true);
 
+        setHeight(450, Unit.PIXELS);
+
         this.resourceCache = resourceCache;
         
         VerticalLayout vl = new VerticalLayout();
@@ -39,19 +41,18 @@ public class TaskChooserDialog extends Window implements Button.ClickListener, I
         vl.addComponent(statusLabel);
         
         taskTree = new Tree();
-        taskTree.setWidth(400, Unit.PIXELS);
-        taskTree.setHeight(300, Unit.PIXELS);
-        taskTree.setImmediate(true);
         vl.addComponent(taskTree);
+        taskTree.setWidth(400, Unit.PIXELS);
+        taskTree.setImmediate(true);
 
         HorizontalLayout hl = new HorizontalLayout();
+        vl.addComponent(hl);
+        vl.setComponentAlignment(hl, Alignment.MIDDLE_RIGHT);
         hl.addComponent(ok);
         hl.setExpandRatio(ok, 1);
         hl.addComponent(cancel);
         hl.setComponentAlignment(cancel, Alignment.MIDDLE_RIGHT);
         hl.setExpandRatio(cancel, 1);
-        vl.addComponent(hl);
-        vl.setComponentAlignment(hl, Alignment.MIDDLE_RIGHT);
         
         // Register listeners
         taskTree.addValueChangeListener(new Property.ValueChangeListener() {

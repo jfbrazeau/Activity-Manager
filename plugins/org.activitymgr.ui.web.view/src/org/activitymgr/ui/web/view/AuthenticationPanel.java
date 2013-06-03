@@ -5,6 +5,7 @@ import javax.servlet.http.Cookie;
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
 import org.activitymgr.ui.web.view.util.ResourceCache;
 
+import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.ui.Alignment;
@@ -69,6 +70,13 @@ public class AuthenticationPanel extends GridLayout implements
 		formPanel.addComponent(passwordLabel);
 		formPanel.setComponentAlignment(passwordLabel, Alignment.MIDDLE_RIGHT);
 		final PasswordField passwordField = new PasswordField();
+		passwordField.addShortcutListener(new ShortcutListener("Authenticate", 13, null) {
+			@Override
+			public void handleAction(Object sender, Object target) {
+				logic.onAuthenticate(userField.getValue(),
+						passwordField.getValue());
+			}
+		});
 		formPanel.addComponent(passwordField);
 
 		// Button
