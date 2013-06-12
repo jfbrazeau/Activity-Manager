@@ -1,5 +1,6 @@
 package org.activitymgr.ui.web.logic.impl.event;
 
+import org.activitymgr.ui.web.logic.AbstractEvent;
 import org.activitymgr.ui.web.logic.ILogic;
 
 /**
@@ -8,7 +9,7 @@ import org.activitymgr.ui.web.logic.ILogic;
  * 
  * @author Jean-Francois Brazeau
  */
-public class CallbackExceptionEvent extends Event {
+public class CallbackExceptionEvent extends AbstractEvent {
 
 	/** The exception that has been thrown */
 	private Throwable exception;

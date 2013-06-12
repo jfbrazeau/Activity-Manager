@@ -1,4 +1,4 @@
-package org.activitymgr.ui.web.view.dialogs;
+package org.activitymgr.ui.web.view.impl.dialogs;
 
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
@@ -12,6 +12,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Panel;
 import com.vaadin.ui.Tree;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
@@ -27,32 +28,41 @@ public class TaskChooserDialog extends Window implements Button.ClickListener, I
 	private Label statusLabel;
 
 	public TaskChooserDialog(ResourceCache resourceCache) {
-        super("Choose a task");
+        super("Select a task");
         setModal(true);
 
-        setHeight(450, Unit.PIXELS);
+        setWidth(400, Unit.PIXELS);
 
         this.resourceCache = resourceCache;
         
         VerticalLayout vl = new VerticalLayout();
         setContent(vl);
         
-        statusLabel = new Label("Select a task");
-        vl.addComponent(statusLabel);
+//        statusLabel = new Label("Select a task");
+//        vl.addComponent(statusLabel);
         
         taskTree = new Tree();
-        vl.addComponent(taskTree);
-        taskTree.setWidth(400, Unit.PIXELS);
+        //taskTree.setWidth(400, Unit.PIXELS);
+        taskTree.setSizeUndefined();
         taskTree.setImmediate(true);
 
+        Panel containerPanel = new Panel();
+        vl.addComponent(containerPanel);
+        containerPanel.setContent(taskTree);
+        containerPanel.setHeight(350, Unit.PIXELS);
+        
         HorizontalLayout hl = new HorizontalLayout();
+        hl.setSizeFull();
         vl.addComponent(hl);
-        vl.setComponentAlignment(hl, Alignment.MIDDLE_RIGHT);
+        //vl.setComponentAlignment(hl, Alignment.MIDDLE_RIGHT);
+        statusLabel = new Label();
+        hl.addComponent(statusLabel);
+        hl.setExpandRatio(statusLabel, 1);
         hl.addComponent(ok);
-        hl.setExpandRatio(ok, 1);
+        hl.setExpandRatio(ok, 0);
         hl.addComponent(cancel);
         hl.setComponentAlignment(cancel, Alignment.MIDDLE_RIGHT);
-        hl.setExpandRatio(cancel, 1);
+        hl.setExpandRatio(cancel, 0);
         
         // Register listeners
         taskTree.addValueChangeListener(new Property.ValueChangeListener() {

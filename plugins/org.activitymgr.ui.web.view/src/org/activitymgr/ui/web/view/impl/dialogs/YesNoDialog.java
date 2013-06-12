@@ -1,4 +1,4 @@
-package org.activitymgr.ui.web.view.dialogs;
+package org.activitymgr.ui.web.view.impl.dialogs;
 
 import org.activitymgr.ui.web.logic.IGenericCallback;
 

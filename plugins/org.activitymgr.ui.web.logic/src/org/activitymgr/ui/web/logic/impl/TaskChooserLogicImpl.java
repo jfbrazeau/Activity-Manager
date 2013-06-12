@@ -7,19 +7,21 @@ import java.util.List;
 import org.activitymgr.core.DbException;
 import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Task;
+import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILabelProviderCallback;
+import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 
 public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.View> implements ITaskChooserLogic {
 	
 	private List<Long> selectedTaskIds;
 
-	public TaskChooserLogicImpl(Context context, AbstractLogicImpl<?> parent, List<Long> selectedTaskIds) {
-		super(context, parent);
+	public TaskChooserLogicImpl(ILogic<?> parent, List<Long> selectedTaskIds) {
+		super(parent);
 		// Remember already selected task ids
 		this.selectedTaskIds = selectedTaskIds;
 		// Register the tree content provider
-		getView().setTreeContentProviderCallback(new TaskTreeContentProvider(this));
+		getView().setTreeContentProviderCallback(new TaskTreeContentProvider(this, getEventBus()));
 		// Update button state & status label
 		onSelectionChanged(null);
 		
@@ -28,23 +30,23 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 	@Override
 	public void onSelectionChanged(Long taskId) {
 		try {
-			getView().setStatus("Please select a task...");
-			if (taskId == null) {
-				getView().setOkButtonEnabled(false);
-			}
-			else if (selectedTaskIds.contains(taskId)) {
-				getView().setOkButtonEnabled(false);
-				getView().setStatus("This task is already selected");
-			} else {
-				Task task = ModelMgr.getTask(taskId);
-				if (task.getSubTasksCount() != 0) {
-					getView().setOkButtonEnabled(false);
-					getView().setStatus("You cannot select a parent task");
-				}
-				else {
-					getView().setOkButtonEnabled(true);
+			String newStatus = "";
+			boolean okButtonEnabled = false;
+			if (taskId != null) {
+				if (selectedTaskIds.contains(taskId)) {
+					newStatus = "This task is already selected";
+				} else {
+					Task task = ModelMgr.getTask(taskId);
+					if (task.getSubTasksCount() != 0) {
+						newStatus = "You cannot select a container task";
+					}
+					else {
+						okButtonEnabled = true;
+					}
 				}
 			}
+			getView().setStatus(newStatus);
+			getView().setOkButtonEnabled(okButtonEnabled);
 		}
 		catch (DbException e) {
 			handleError(e);
@@ -60,14 +62,14 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 
 class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback {
 
-	public TaskTreeContentProvider(AbstractLogicImpl<?> callbackProvider) {
-		super(callbackProvider);
+	public TaskTreeContentProvider(ILogic<?> source, IEventBus eventBus) {
+		super(source, eventBus);
 	}
 
 	@Override
 	protected ILabelProviderCallback unsafeGetLabelProvider(final String itemId)
 			throws Exception {
-		return new AbstractSafeLabelProviderCallback(getCallbackProvider()) {
+		return new AbstractSafeLabelProviderCallback(getSource(), getEventBus()) {
 			
 			@Override
 			protected String unsafeGetText() throws Exception {

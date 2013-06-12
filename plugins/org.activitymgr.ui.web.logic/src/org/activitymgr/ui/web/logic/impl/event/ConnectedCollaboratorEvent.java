@@ -1,6 +1,7 @@
 package org.activitymgr.ui.web.logic.impl.event;
 
 import org.activitymgr.core.beans.Collaborator;
+import org.activitymgr.ui.web.logic.AbstractEvent;
 import org.activitymgr.ui.web.logic.ILogic;
 
 /**
@@ -8,7 +9,7 @@ import org.activitymgr.ui.web.logic.ILogic;
  * 
  * @author Jean-Francois Brazeau
  */
-public class ConnectedCollaboratorEvent extends Event {
+public class ConnectedCollaboratorEvent extends AbstractEvent {
 
 	/** The collaborator that is connected */
 	private Collaborator connectedCollaborator;

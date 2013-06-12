@@ -1,13 +1,15 @@
 package org.activitymgr.ui.web.logic.impl;
 
+import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILabelProviderCallback;
+import org.activitymgr.ui.web.logic.ILogic;
 
 public abstract class AbstractSafeLabelProviderCallback extends AbstractSafeCallback implements ILabelProviderCallback {
 	
 	public static final String ERROR = "<UNREACHABLE LABEL>";
 
-	public AbstractSafeLabelProviderCallback(AbstractLogicImpl<?> callbackProvider) {
-		super(callbackProvider);
+	public AbstractSafeLabelProviderCallback(ILogic<?> source, IEventBus eventBus) {
+		super(source, eventBus);
 	}
 
 	@Override

@@ -26,7 +26,7 @@
          point="org.vaadin.application">
       <vaadin-ui
             productionMode="false"
-            ui="org.activitymgr.ui.web.view.ActivityManagerUI">
+            ui="org.activitymgr.ui.web.view.impl.ActivityManagerUI">
          <bundle-to-reload
                id="org.activitymgr.core">
          </bundle-to-reload>

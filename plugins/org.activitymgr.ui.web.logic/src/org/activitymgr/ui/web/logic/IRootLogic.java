@@ -12,10 +12,13 @@ public interface IRootLogic extends ILogic<IRootLogic.View> {
 		
 		void showConfirm(String message, IGenericCallback<Boolean> callback);
 
-		void showAuthenticationForm();
+		void show(IView<?> view);
 
-		void showContributionsForm();
+		String getCookie(String name);
+		
+		void setCookie(String name, String value);
 
+		void removeCookie(String name);
 	}
 
 }

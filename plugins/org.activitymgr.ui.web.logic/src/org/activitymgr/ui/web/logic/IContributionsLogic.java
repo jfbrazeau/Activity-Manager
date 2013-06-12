@@ -1,38 +1,11 @@
 package org.activitymgr.ui.web.logic;
 
 import java.util.Calendar;
+import java.util.List;
 
-import org.activitymgr.ui.web.logic.ILogic.IView;
-
+// TODO clear
 public interface IContributionsLogic extends ILogic<IContributionsLogic.View> {
 	
-	public interface View extends IView<IContributionsLogic> {
-
-		void setDate(Calendar lastMonday);
-
-		void setDayLabels(String[] dayLabels);
-
-		void addWeekContribution(String taskCodePath, String name,
-				String[] durations);
-
-		void updateDuration(String taskCodePath, int dayOfWeek,
-				String duration);
-
-		void removeAllWeekContributions();
-
-		void setDayTotal(int dayOfWeek, String total);
-
-		void setTotal(String total);
-
-		void setTaskTotal(String taskCodePath, String total);
-
-		void focusOnCell(String taskCodePath, int dayOfWeek);
-
-		// TODO externalize ?
-		void setTaskWeekPrevision(String taskCodePath, String previsionalWeekDuration);
-		
-	}
-
 	void onPreviousYear();
 
 	void onPreviousMonth();
@@ -45,10 +18,22 @@ public interface IContributionsLogic extends ILogic<IContributionsLogic.View> {
 
 	void onNextYear();
 
-	void onDurationChanged(String taskCodePath, int dayOfWeek, String duration);
-
 	void onDateChange(Calendar value);
 
-	void onTaskButtonClicked();
+	public interface View extends ILogic.IView<IContributionsLogic> {
+		
+		void setColumnIdentifiers(List<String> ids);
+		
+		void setDate(Calendar lastMonday);
+
+		void removeAllWeekContributions();
+
+		void addWeekContribution(long taskId, List<ILogic.IView<?>> cellViews);
+		
+		void setColumnFooter(String id, String value);
+		
+		void addAction(IActionLogic.View actionView);
+
+	}
 
 }

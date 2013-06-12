@@ -5,16 +5,19 @@ import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
 import org.activitymgr.ui.web.logic.IAuthenticatorExtension;
+import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.impl.event.ConnectedCollaboratorEvent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 
 public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLogic.View> implements IAuthenticationLogic {
 	
+	private static final String NAME_COOKIE = "name";
+
 	private IAuthenticatorExtension authenticator;
 	
-	public AuthenticationLogicImpl(Context context, AbstractLogicImpl<?> parent) {
-		super(context, parent);
+	public AuthenticationLogicImpl(ILogic<?> parent) {
+		super(parent);
 		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.authenticator");
 
 		// Authenticator retrieval
@@ -41,11 +44,24 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 	}
 
 	@Override
-	public void onAuthenticate(String login, String password) {
+	protected Object[] getViewParameters() {
+		return new String[] { getRoot().getView().getCookie(NAME_COOKIE) };
+	}
+
+	@Override
+	public void onAuthenticate(String login, String password, boolean rememberMe) {
 		try {
+			// Cookie management
+			if (rememberMe) {
+				getRoot().getView().setCookie(NAME_COOKIE, login);
+			}
+			else {
+				getRoot().getView().removeCookie(NAME_COOKIE);
+			}
+			// Authentication
 			if (authenticator.authenticate(login, password)) {
 				Collaborator collaborator = ModelMgr.getCollaborator(login);
-				getContext().setConnectedCollaborator(collaborator);
+				((LogicContextImpl)getContext()).setConnectedCollaborator(collaborator);
 				getEventBus().fire(new ConnectedCollaboratorEvent(this, collaborator));
 			}
 			else {
@@ -56,6 +72,12 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 			handleError(e);
 		}
 		
+	}
+
+	@Override
+	protected void handleError(Throwable error) {
+		// TODO Auto-generated method stub
+		super.handleError(error);
 	}
 
 }

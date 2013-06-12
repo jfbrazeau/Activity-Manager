@@ -1,20 +1,29 @@
 package org.activitymgr.ui.web.logic.impl;
 
+import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILogic;
-import org.activitymgr.ui.web.logic.ILogic.IView;
-import org.activitymgr.ui.web.logic.impl.event.EventBus;
+import org.activitymgr.ui.web.logic.ILogicContext;
+
 
 @SuppressWarnings("rawtypes")
-public abstract class AbstractLogicImpl<VIEW extends IView> implements ILogic<VIEW> {
+public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements ILogic<VIEW> {
 
 	private Object[] EMPTY_ARRAY = new Object[0];
-	private Context context;
-	private AbstractLogicImpl parent;
+	private ILogicContext context;
+	private ILogic<?> parent;
 
 	private VIEW view;
 
+	public AbstractLogicImpl(ILogicContext context) {
+		this(context, null);
+	}
+
+	public AbstractLogicImpl(ILogic<?> parent) {
+		this(parent.getContext(), parent);
+	}
+
 	@SuppressWarnings("unchecked")
-	public AbstractLogicImpl(Context context, AbstractLogicImpl parent) {
+	private AbstractLogicImpl(ILogicContext context, ILogic<?> parent) {
 		this.context = context;
 		this.parent = parent;
 		view = (VIEW) context.getViewFactory().createView(getClass(), getViewParameters());
@@ -30,20 +39,24 @@ public abstract class AbstractLogicImpl<VIEW extends IView> implements ILogic<VI
 		return view;
 	}
 
-	protected Context getContext() {
+	public ILogicContext getContext() {
 		return context;
 	}
 	
-	protected EventBus getEventBus() {
+	protected IEventBus getEventBus() {
 		return context != null ? context.getEventBus() : null;
 	}
 	
-	protected AbstractLogicImpl getParent() {
+	public ILogic<?> getParent() {
 		return parent;
 	}
 
 	protected RootLogicImpl getRoot() {
-		return (parent != null) ? parent.getRoot() : (RootLogicImpl) this;
+		ILogic<?> cursor = this;
+		while (cursor.getParent() != null) {
+			cursor = cursor.getParent();
+		}
+		return (RootLogicImpl) cursor;
 	}
 
 	protected void handleError(Throwable error) {
@@ -62,4 +75,5 @@ public abstract class AbstractLogicImpl<VIEW extends IView> implements ILogic<VI
 		// FIXME transport the error on the event bus ?
 		getRoot().getView().showErrorNotification(message, details);
 	}
+
 }

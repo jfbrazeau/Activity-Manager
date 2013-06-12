@@ -3,13 +3,15 @@ package org.activitymgr.ui.web.logic.impl;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILabelProviderCallback;
+import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 
 public abstract class AbstractSafeTreeContentProviderCallback extends AbstractSafeCallback implements ITreeContentProviderCallback {
 	
-	public AbstractSafeTreeContentProviderCallback(AbstractLogicImpl<?> callbackProvider) {
-		super(callbackProvider);
+	public AbstractSafeTreeContentProviderCallback(ILogic<?> source, IEventBus eventBus) {
+		super(source, eventBus);
 	}
 
 	@Override

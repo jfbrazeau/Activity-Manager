@@ -1,21 +1,29 @@
 package org.activitymgr.ui.web.logic.impl;
 
+import org.activitymgr.ui.web.logic.IEventBus;
+import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.impl.event.CallbackExceptionEvent;
 
 public abstract class AbstractSafeCallback {
 	
-	private AbstractLogicImpl<?> callbackProvider;
+	private ILogic<?> source;
+	private IEventBus eventBus;
 
-	public AbstractSafeCallback(AbstractLogicImpl<?> callbackProvider) {
-		this.callbackProvider = callbackProvider;
+	public AbstractSafeCallback(ILogic<?> source, IEventBus eventBus) {
+		this.source = source;
+		this.eventBus = eventBus;
 	}
 
 	protected void fireCallbackExceptionEvent(Throwable error) {
-		callbackProvider.getEventBus().fire(new CallbackExceptionEvent(callbackProvider, error));
+		eventBus.fire(new CallbackExceptionEvent(source, error));
 	}
 
-	protected AbstractLogicImpl<?> getCallbackProvider() {
-		return callbackProvider;
+	protected ILogic<?> getSource() {
+		return source;
+	}
+
+	protected IEventBus getEventBus() {
+		return eventBus;
 	}
 
 }

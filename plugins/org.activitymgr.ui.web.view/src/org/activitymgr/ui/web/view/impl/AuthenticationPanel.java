@@ -1,13 +1,9 @@
-package org.activitymgr.ui.web.view;
-
-import javax.servlet.http.Cookie;
+package org.activitymgr.ui.web.view.impl;
 
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
 import org.activitymgr.ui.web.view.util.ResourceCache;
 
 import com.vaadin.event.ShortcutListener;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinService;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CheckBox;
@@ -20,14 +16,12 @@ import com.vaadin.ui.TextField;
 public class AuthenticationPanel extends GridLayout implements
 		IAuthenticationLogic.View {
 
-	private static final String NAME_COOKIE = "name";
-
 	private IAuthenticationLogic logic;
 
 	@SuppressWarnings("unused")
 	private ResourceCache resourceCache;
 
-	public AuthenticationPanel(ResourceCache resourceCache, VaadinRequest request) {
+	public AuthenticationPanel(ResourceCache resourceCache, String defaultUser) {
 		super(1, 1);
 		this.resourceCache = resourceCache;
 
@@ -35,14 +29,6 @@ public class AuthenticationPanel extends GridLayout implements
 		setSpacing(true);
 		setMargin(true);
 
-		// Cookie retrieval
-		String defaultUser = null;
-		Cookie nameCookie = getCookieByName(request, NAME_COOKIE);
-		if (nameCookie != null) {
-			defaultUser = nameCookie.getValue();
-		}
-		
-		
 		// Form panel
 		GridLayout formPanel = new GridLayout(3, 4);
 		formPanel.setMargin(true);
@@ -57,10 +43,10 @@ public class AuthenticationPanel extends GridLayout implements
 		formPanel.addComponent(userLabel);
 		formPanel.setComponentAlignment(userLabel, Alignment.MIDDLE_RIGHT);
 		final TextField userField = new TextField();
+		formPanel.addComponent(userField);
 		if (defaultUser != null) {
 			userField.setValue(defaultUser);
 		}
-		formPanel.addComponent(userField);
 		formPanel.addComponent(new Label(""));
 		
 		/* Line 2 */
@@ -70,13 +56,6 @@ public class AuthenticationPanel extends GridLayout implements
 		formPanel.addComponent(passwordLabel);
 		formPanel.setComponentAlignment(passwordLabel, Alignment.MIDDLE_RIGHT);
 		final PasswordField passwordField = new PasswordField();
-		passwordField.addShortcutListener(new ShortcutListener("Authenticate", 13, null) {
-			@Override
-			public void handleAction(Object sender, Object target) {
-				logic.onAuthenticate(userField.getValue(),
-						passwordField.getValue());
-			}
-		});
 		formPanel.addComponent(passwordField);
 
 		// Button
@@ -95,19 +74,16 @@ public class AuthenticationPanel extends GridLayout implements
 		validateButton.addClickListener(new Button.ClickListener() {
 			@Override
 			public void buttonClick(com.vaadin.ui.Button.ClickEvent event) {
-				// Cookie management
-				Cookie cookie = new Cookie(NAME_COOKIE, userField.getValue());
-				String contextPath = VaadinService.getCurrentRequest().getContextPath();
-				if (contextPath == null || "".equals(contextPath)) {
-					contextPath = "/";
-				}
-				cookie.setPath(contextPath);
-				cookie.setMaxAge(rememberMeCheckBox.getValue() ? Integer.MAX_VALUE : 0);
-				VaadinService.getCurrentResponse().addCookie(cookie);
-				
 				// Authentication
 				logic.onAuthenticate(userField.getValue(),
-						passwordField.getValue());
+						passwordField.getValue(), rememberMeCheckBox.getValue());
+			}
+		});
+		passwordField.addShortcutListener(new ShortcutListener("Authenticate", 13, null) {
+			@Override
+			public void handleAction(Object sender, Object target) {
+				logic.onAuthenticate(userField.getValue(),
+						passwordField.getValue(), rememberMeCheckBox.getValue());
 			}
 		});
 		
@@ -125,19 +101,4 @@ public class AuthenticationPanel extends GridLayout implements
 		this.logic = logic;
 	}
 
-	private Cookie getCookieByName(VaadinRequest request, String name) {
-		System.out.println("getCookieByName");
-		// Fetch all cookies from the request
-		Cookie[] cookies = request.getCookies();
-
-		// Iterate to find cookie by its name
-		for (Cookie cookie : cookies) {
-			System.out.println("** cookie : " + cookie.getName() + "-" + cookie.getValue() + "-" + cookie.getPath());
-			if (name.equals(cookie.getName())) {
-				return cookie;
-			}
-		}
-
-		return null;
-	}
 }
