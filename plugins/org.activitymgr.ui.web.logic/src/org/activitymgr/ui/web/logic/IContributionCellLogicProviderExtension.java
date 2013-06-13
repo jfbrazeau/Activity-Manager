@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.activitymgr.core.beans.TaskContributions;
 
-public interface IContributionCellLogicProvider {
+public interface IContributionCellLogicProviderExtension {
 
 	public static final String PATH_COLUMN_ID = "PATH";
 	public static final String NAME_COLUMN_ID = "NAME";

@@ -7,4 +7,7 @@ Bundle-Vendor: Jean-Francois Brazeau
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.vaadin.osgiappcontainer,
  org.activitymgr.ui.web.logic,
- org.eclipse.equinox.app
+ org.eclipse.equinox.app,
+ org.eclipse.core.runtime
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.activitymgr.ui.web.view.impl.Activator

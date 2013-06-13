@@ -1,6 +1,6 @@
 package org.activitymgr.ui.web.view;
 
-public interface IContributionColumnViewProvider {
+public interface IContributionColumnViewProviderExtension {
 	
 	boolean isProviderFor(String columnId);
 	

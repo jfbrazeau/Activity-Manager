@@ -2,4 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="org.activitymgr.ui.web.logic.authenticator" name="Authenticator Extension" schema="schema/org.activitymgr.ui.web.logic.authenticator.exsd"/>
+   <extension-point id="org.activitymgr.ui.web.logic.contributionColumns" name="Contribution Columns" schema="schema/org.activitymgr.ui.web.logic.contributionColumns.exsd"/>
+   <extension-point id="org.activitymgr.ui.web.logic.contributionCellLogicProvider" name="Contribution Cell Logic Provider" schema="schema/org.activitymgr.ui.web.logic.contributionCellLogicProvider.exsd"/>
 </plugin>

@@ -4,16 +4,20 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.activitymgr.ui.web.logic.IActionLogic.View;
-import org.activitymgr.ui.web.logic.IContributionCellLogicProvider;
+import org.activitymgr.ui.web.logic.IContributionCellLogicProviderExtension;
 import org.activitymgr.ui.web.logic.IContributionsLogic;
 import org.activitymgr.ui.web.logic.ILogic;
-import org.activitymgr.ui.web.view.IContributionColumnViewProvider;
+import org.activitymgr.ui.web.view.IContributionColumnViewProviderExtension;
 import org.activitymgr.ui.web.view.util.ActionView;
 import org.activitymgr.ui.web.view.util.ResourceCache;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -49,7 +53,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 
 	private Button nextYearButton;
 
-	private List<IContributionColumnViewProvider> viewProviders = new ArrayList<IContributionColumnViewProvider>();;
+	private List<IContributionColumnViewProviderExtension> viewProviders = new ArrayList<IContributionColumnViewProviderExtension>();;
 
 	private Table contributionsTable;
 
@@ -109,7 +113,14 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		
 		// Register the default column view provider
 		viewProviders.add(new DefaultColumnProvider());
-		// TODO add extension point
+		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.view.contributionColumnViewProvider");
+		for (IConfigurationElement cfg : cfgs) {
+			try {
+				viewProviders.add((IContributionColumnViewProviderExtension) cfg.createExecutableExtension("class"));
+			} catch (CoreException e) {
+				throw new IllegalStateException("Unable to load view provider '" + cfg.getAttribute("class") + "'", e);
+			}
+		}
 
 		// Register listeners
 		previousYearButton.addClickListener(this);
@@ -183,20 +194,20 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 			throw new IllegalStateException("The contribution table cannot be initialized more than once");
 		}
 		for (String id : ids) {
-			IContributionColumnViewProvider provider = getProvider(id);
+			IContributionColumnViewProviderExtension provider = getProvider(id);
 			contributionsTable.addContainerProperty(id, provider.getColumnType(id), null);
 			contributionsTable.setColumnHeader(id, provider.getLabel(id));
 			contributionsTable.setColumnWidth(id, provider.getColumnWidth(id));
 		}
 	}
 	
-	private IContributionColumnViewProvider getProvider(String columnId) {
-		for (IContributionColumnViewProvider provider : viewProviders) {
+	private IContributionColumnViewProviderExtension getProvider(String columnId) {
+		for (IContributionColumnViewProviderExtension provider : viewProviders) {
 			if (provider.isProviderFor(columnId)) {
 				return provider;
 			}
 		}
-		throw new IllegalStateException("No provider for column '" + columnId + "'");
+		throw new IllegalStateException("No view provider for column '" + columnId + "'");
 	}
 
 	@Override
@@ -210,41 +221,41 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	}
 }
 
-class DefaultColumnProvider implements IContributionColumnViewProvider {
+class DefaultColumnProvider implements IContributionColumnViewProviderExtension {
 
 	private static final Map<String, String> DEFAULT_COLUMN_NAMES = new HashMap<String, String>();
 	static {
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProvider.PATH_COLUMN_ID, "Path");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProvider.NAME_COLUMN_ID, "Name");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProvider.MON_COLUMN_ID, "MON");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProvider.TUE_COLUMN_ID, "TUE");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProvider.WED_COLUMN_ID, "WED");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProvider.THU_COLUMN_ID, "THU");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProvider.FRI_COLUMN_ID, "FRI");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProvider.SAT_COLUMN_ID, "SAT");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProvider.SUN_COLUMN_ID, "SUN");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProvider.TOTAL_COLUMN_ID, "Total");
+		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.PATH_COLUMN_ID, "Path");
+		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.NAME_COLUMN_ID, "Name");
+		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.MON_COLUMN_ID, "MON");
+		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.TUE_COLUMN_ID, "TUE");
+		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.WED_COLUMN_ID, "WED");
+		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.THU_COLUMN_ID, "THU");
+		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.FRI_COLUMN_ID, "FRI");
+		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.SAT_COLUMN_ID, "SAT");
+		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.SUN_COLUMN_ID, "SUN");
+		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.TOTAL_COLUMN_ID, "Total");
 	}
 	
 	private static final Map<String, Class<?>> DEFAULT_COLUMN_TYPES = new HashMap<String, Class<?>>();
 	static {
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProvider.PATH_COLUMN_ID, Label.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProvider.NAME_COLUMN_ID, Label.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProvider.MON_COLUMN_ID, TextField.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProvider.TUE_COLUMN_ID, TextField.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProvider.WED_COLUMN_ID, TextField.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProvider.THU_COLUMN_ID, TextField.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProvider.FRI_COLUMN_ID, TextField.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProvider.SAT_COLUMN_ID, TextField.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProvider.SUN_COLUMN_ID, TextField.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProvider.TOTAL_COLUMN_ID, Label.class);
+		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.PATH_COLUMN_ID, Label.class);
+		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.NAME_COLUMN_ID, Label.class);
+		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.MON_COLUMN_ID, TextField.class);
+		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.TUE_COLUMN_ID, TextField.class);
+		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.WED_COLUMN_ID, TextField.class);
+		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.THU_COLUMN_ID, TextField.class);
+		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.FRI_COLUMN_ID, TextField.class);
+		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.SAT_COLUMN_ID, TextField.class);
+		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.SUN_COLUMN_ID, TextField.class);
+		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.TOTAL_COLUMN_ID, Label.class);
 	}
 
 	private static final int DAY_COLUMN_WIDTH = 50;
 	private static final Map<String, Integer> DEFAULT_COLUMN_WIDTHS = new HashMap<String, Integer>();
 	static {
-		DEFAULT_COLUMN_WIDTHS.put(IContributionCellLogicProvider.PATH_COLUMN_ID, 250);
-		DEFAULT_COLUMN_WIDTHS.put(IContributionCellLogicProvider.NAME_COLUMN_ID, 250);
+		DEFAULT_COLUMN_WIDTHS.put(IContributionCellLogicProviderExtension.PATH_COLUMN_ID, 250);
+		DEFAULT_COLUMN_WIDTHS.put(IContributionCellLogicProviderExtension.NAME_COLUMN_ID, 250);
 	}
 
 	@Override

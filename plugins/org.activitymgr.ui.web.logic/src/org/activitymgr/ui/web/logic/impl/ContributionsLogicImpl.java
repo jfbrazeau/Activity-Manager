@@ -7,8 +7,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.activitymgr.core.DbException;
 import org.activitymgr.core.ModelException;
@@ -20,51 +22,55 @@ import org.activitymgr.core.beans.TaskContributions;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.IActionLogic;
-import org.activitymgr.ui.web.logic.IContributionCellLogicProvider;
+import org.activitymgr.ui.web.logic.IContributionCellLogicProviderExtension;
 import org.activitymgr.ui.web.logic.IContributionsLogic;
 import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
 
 public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogic.View> implements IContributionsLogic {
 	
 	private static final List<String> DEFAULT_COLUMN_IDENTIFIERS = Collections
 			.unmodifiableList(Arrays.asList(new String[] {
-					IContributionCellLogicProvider.PATH_COLUMN_ID,
-					IContributionCellLogicProvider.NAME_COLUMN_ID,
-					IContributionCellLogicProvider.MON_COLUMN_ID,
-					IContributionCellLogicProvider.TUE_COLUMN_ID,
-					IContributionCellLogicProvider.WED_COLUMN_ID,
-					IContributionCellLogicProvider.THU_COLUMN_ID,
-					IContributionCellLogicProvider.FRI_COLUMN_ID,
-					IContributionCellLogicProvider.SAT_COLUMN_ID,
-					IContributionCellLogicProvider.SUN_COLUMN_ID,
-					IContributionCellLogicProvider.TOTAL_COLUMN_ID }));
+					IContributionCellLogicProviderExtension.PATH_COLUMN_ID,
+					IContributionCellLogicProviderExtension.NAME_COLUMN_ID,
+					IContributionCellLogicProviderExtension.MON_COLUMN_ID,
+					IContributionCellLogicProviderExtension.TUE_COLUMN_ID,
+					IContributionCellLogicProviderExtension.WED_COLUMN_ID,
+					IContributionCellLogicProviderExtension.THU_COLUMN_ID,
+					IContributionCellLogicProviderExtension.FRI_COLUMN_ID,
+					IContributionCellLogicProviderExtension.SAT_COLUMN_ID,
+					IContributionCellLogicProviderExtension.SUN_COLUMN_ID,
+					IContributionCellLogicProviderExtension.TOTAL_COLUMN_ID }));
+	
+	public static final IContributionCellLogicProviderExtension DEFAULT_CONTRIBUTION_CELL_LOGIC_PROVIDER = new DefaultContributionCellLogicProvider();
 	
 	private Calendar date;
 	private List<TaskContributions> weekContributions = new ArrayList<TaskContributions>();
 	private List<String> columnIdentifiers;
-	private IContributionCellLogicProvider cellLogicProvider;
+	private IContributionCellLogicProviderExtension cellLogicProvider;
 	private Map<TaskContributions, Map<String, ILogic<?>>> cellLogics = new HashMap<TaskContributions, Map<String, ILogic<?>>>();
-
-	//private HSSFSheet prevSheet; // TODO remove
 
 	public ContributionsLogicImpl(ILogic<?> parent) {
 		super(parent);
 
 		// TODO put in an extension point
-		columnIdentifiers = DEFAULT_COLUMN_IDENTIFIERS;
+		columnIdentifiers = getColumnIdentifiers();
 		getView().setColumnIdentifiers(columnIdentifiers);
-		cellLogicProvider = new DefaultContributionCellLogicProvider();
-		
-		// TODO remove
-//		try {
-//			HSSFWorkbook wb = new HSSFWorkbook(ContributionsLogicImpl.class.getClassLoader().getResourceAsStream("/prev.xls"));
-//			prevSheet = wb.getSheetAt(0);
-//		}
-//		catch (IOException e) {
-//			e.printStackTrace();
-//		}
+		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.contributionCellLogicProvider");
+		if (cfgs.length == 0) {
+			cellLogicProvider = DEFAULT_CONTRIBUTION_CELL_LOGIC_PROVIDER;
+		}
+		else {
+			try {
+				cellLogicProvider = ((IContributionCellLogicProviderExtension) cfgs[0].createExecutableExtension("class"));
+			} catch (CoreException e) {
+				throw new IllegalStateException("Unable to load cell logic provider '" + cfgs[0].getAttribute("class") + "'", e);
+			}
+		}
+			
 		// Add actions
 		IActionLogic newTaskActionLogic = new AbstractActionLogicImpl(this, "New task") {
 			@Override
@@ -84,37 +90,22 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 		changeFirstDayOfWeekAndUpdateView(Calendar.YEAR, 0);
 	}
 
-// TODO remove
-//	private Map<String, Long> collectPrev() {
-//		Map<String, Long> result = new HashMap<String, Long>();
-//		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-//		long expectedMonday = Long.parseLong(sdf.format(date.getTime()));
-//		System.out.println("Collectiong for " + expectedMonday);
-//		String expectedUserId = getContext().getConnectedCollaborator().getLogin();
-//		Iterator<?> it = prevSheet.rowIterator();
-//		it.next(); // First line ignored
-//		while (it.hasNext()) {
-//			HSSFRow row = (HSSFRow) it.next();
-//			String user = row.getCell((short) 0).getStringCellValue();
-//			System.out.println("user = " + user);
-//			if (!expectedUserId.equals(user)) {
-//				System.out.println("ignoring line");
-//			}
-//			else {
-//				long monday = (long) row.getCell((short) 1).getNumericCellValue();
-//				System.out.println("monday = " + monday);
-//				if (expectedMonday != monday) {
-//					System.out.println("ignoring line");
-//				}
-//				else {
-//					String taskPath = row.getCell((short) 2).getStringCellValue();
-//					System.out.println("taskPath = " + taskPath);
-//					result.put(taskPath, (long) (row.getCell((short) 3).getNumericCellValue() * 100));
-//				}
-//			}
-//		}
-//		return result;
-//	}
+	private List<String> getColumnIdentifiers() {
+		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.contributionColumns");
+		if (cfgs.length == 0) {
+			return DEFAULT_COLUMN_IDENTIFIERS;
+		}
+		else {
+			Set<String> set = new LinkedHashSet<String>();
+			for (IConfigurationElement cfg : cfgs) {
+				String column = cfg.getAttribute("id");
+System.out.println("Register contribution column : " + column);
+				set.add(column);
+			}
+			System.out.println("Result : " + set);
+			return new ArrayList<String>(set);
+		}
+	}
 	
 	@Override
 	public void onPreviousYear() {
@@ -163,10 +154,10 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 					total += c.getDurationId();
 				}
 			}
-			getView().setColumnFooter(IContributionCellLogicProvider.DAY_COLUMNS_IDENTIFIERS.get(dayOfWeek), StringHelper
+			getView().setColumnFooter(IContributionCellLogicProviderExtension.DAY_COLUMNS_IDENTIFIERS.get(dayOfWeek), StringHelper
 					.hundredthToEntry(dayTotal));
 		}
-		getView().setColumnFooter(IContributionCellLogicProvider.TOTAL_COLUMN_ID, StringHelper
+		getView().setColumnFooter(IContributionCellLogicProviderExtension.TOTAL_COLUMN_ID, StringHelper
 				.hundredthToEntry(total));
 		// Update the week contributions total
 		for (TaskContributions tc : weekContributions) {
@@ -178,7 +169,7 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 				}
 			}
 			Map<String, ILogic<?>> rowLogics = cellLogics.get(tc);
-			ILabelLogic totalLogic = (ILabelLogic) rowLogics.get(IContributionCellLogicProvider.TOTAL_COLUMN_ID);
+			ILabelLogic totalLogic = (ILabelLogic) rowLogics.get(IContributionCellLogicProviderExtension.TOTAL_COLUMN_ID);
 			if (totalLogic != null) {
 				totalLogic.getView().setLabel(taskTotal != 0 ? 
 						StringHelper.hundredthToEntry(taskTotal) : "");
@@ -186,15 +177,6 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 		}
 		
 	}
-
-//	private TaskContributions getTaskContributions(String taskCodePath) {
-//		for (TaskContributions cursor : weekContributions) {
-//			if (cursor.getTaskCodePath().equals(taskCodePath)) {
-//				return cursor;
-//			}
-//		}
-//		return null;
-//	}
 
 	private void changeFirstDayOfWeekAndUpdateView(int amountType, int amount) {
 		// Update date
@@ -224,25 +206,7 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 			throw new IllegalStateException("Unexpected error while retrieving contributions", e);
 		}
 
-		// TODO externalize / remove
-		// Inject previsional tasks
-//		Map<String, Long> prev = collectPrev();
-//		try {
-//			for (String taskPath : prev.keySet()) {
-//				if (getTaskContributions(taskPath) == null) {
-//					TaskContributions tc = new TaskContributions();
-//					tc.setTaskCodePath(taskPath);
-//					tc.setTask(ModelMgr.getTaskByCodePath(taskPath));
-//					tc.setContributions(new Contribution[14]);
-//					weekContributions.add(tc);
-//				}
-//			}
-//		} catch (DbException e) {
-//			throw new IllegalStateException("Unexpected error while retrieving contributions", e);
-//		} catch (ModelException e) {
-//			throw new IllegalStateException("Unexpected error while retrieving contributions", e);
-//		}
-		
+	
 		// The result contains the contributions of the previous
 		// week. We truncate it before proceeding.
 		getView().removeAllWeekContributions();
@@ -262,12 +226,7 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 			addWeekContributions(tc);
 		}
 		
-		// TODO externalize : Update prev
-////		for (String taskPath : prev.keySet()) {
-////			getView().setTaskWeekPrevision(taskPath, StringHelper.hundredthToEntry(prev.get(taskPath)));
-////		}
-//		
-//		// Update totals
+		// Update totals
 		updateTotals();
 	}
 
@@ -300,11 +259,8 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 
 			Contribution contribution = weekContributions.getContributions()[dayOfWeek];
 			// First case : the contribution must be created
-			long durationDelta = 0;
 			if (contribution == null) {
 				if (durationId != 0) {
-					// If the duration is added, the delta is positive
-					durationDelta = durationId;
 					// Let's create the new contribution
 					contribution = new Contribution();
 					contribution.setContributorId(getContext().getConnectedCollaborator().getId());
@@ -319,16 +275,12 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 			}
 			// Second case : the contribution must be removed
 			else if (durationId == 0) {
-				// If the duration is removed, the delta is negative
-				durationDelta = durationId;
 				// Let's remove the duration
 				ModelMgr.removeContribution(contribution, true);
 				weekContributions.getContributions()[dayOfWeek] = null;
 			}
 			// Third case : the contribution must be updated
 			else {
-				// delta computation
-				durationDelta = durationId - contribution.getDurationId();
 				// contribution update
 				contribution.setDurationId(durationId);
 				ModelMgr.updateContribution(contribution, true);
@@ -376,7 +328,7 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 
 }
 
-class DefaultContributionCellLogicProvider implements IContributionCellLogicProvider {
+class DefaultContributionCellLogicProvider implements IContributionCellLogicProviderExtension {
 	
 	@Override
 	public ILogic<?> getCellLogic(final IContributionsLogic parent, final String columnId,
@@ -393,13 +345,13 @@ class DefaultContributionCellLogicProvider implements IContributionCellLogicProv
 			};
 			return textFieldLogic;
 		}
-		else if (IContributionCellLogicProvider.PATH_COLUMN_ID.equals(columnId)) {
+		else if (IContributionCellLogicProviderExtension.PATH_COLUMN_ID.equals(columnId)) {
 			return new LabelLogicImpl(parent, weekContributions.getTaskCodePath());
 		}
-		else if (IContributionCellLogicProvider.NAME_COLUMN_ID.equals(columnId)) {
+		else if (IContributionCellLogicProviderExtension.NAME_COLUMN_ID.equals(columnId)) {
 			return new LabelLogicImpl(parent, weekContributions.getTask().getName());
 		}
-		else if (IContributionCellLogicProvider.TOTAL_COLUMN_ID.equals(columnId)) {
+		else if (IContributionCellLogicProviderExtension.TOTAL_COLUMN_ID.equals(columnId)) {
 			return new LabelLogicImpl(parent, "");
 		}
 		else {
