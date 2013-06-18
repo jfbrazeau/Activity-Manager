@@ -129,6 +129,9 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 
 	}
 
+	/** Model manager */
+	private ModelMgr modelMgr;
+	
 	/** Listeners */
 	private List<ICollaboratorListener> listeners = new ArrayList<ICollaboratorListener>();
 
@@ -161,10 +164,15 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 	 * 
 	 * @param tabItem
 	 *            item parent.
+	 * @param modelMgr
+	 *            the model manager instance.
+	 * @param modelMgr
+	 *            the model manager.
 	 */
-	public CollaboratorsUI(TabItem tabItem) {
+	public CollaboratorsUI(TabItem tabItem, ModelMgr modelMgr) {
 		this(tabItem.getParent());
 		tabItem.setControl(parent);
+		this.modelMgr = modelMgr;
 	}
 
 	/**
@@ -251,7 +259,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 		tableViewer.setCellEditors(editors);
 
 		// Initialisation des popups
-		contribsViewerDialog = new ContributionsViewerDialog(parent.getShell());
+		contribsViewerDialog = new ContributionsViewerDialog(parent.getShell(), modelMgr);
 
 		// Configuration du menu popup
 		final Menu menu = new Menu(table);
@@ -309,7 +317,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 					break;
 				}
 				// Récupération
-				return ModelMgr.getCollaborators(orderByFieldIndex, tableViewer
+				return modelMgr.getCollaborators(orderByFieldIndex, tableViewer
 						.getTable().getSortDirection() == SWT.UP);
 			}
 		};
@@ -411,7 +419,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 							Strings.getString("CollaboratorsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
 				// Mise à jour en base
-				ModelMgr.updateCollaborator(collaborator);
+				modelMgr.updateCollaborator(collaborator);
 				// Notification des listeners
 				notifyLabelProviderListener(new LabelProviderChangedEvent(
 						labelProvider, collaborator));
@@ -513,7 +521,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 				TableItem[] selection = tableViewer.getTable().getSelection();
 				// Cas d'une création
 				if (newItem.equals(source)) {
-					Collaborator newCollaborator = ModelMgr
+					Collaborator newCollaborator = modelMgr
 							.createNewCollaborator();
 					newLine(newCollaborator);
 					// Notification des listeners
@@ -526,7 +534,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 						TableItem item = items[i];
 						Collaborator collaborator = (Collaborator) item
 								.getData();
-						ModelMgr.removeCollaborator(collaborator);
+						modelMgr.removeCollaborator(collaborator);
 						item.dispose();
 						// Notification des listeners
 						notifyCollaboratorRemoved(collaborator);

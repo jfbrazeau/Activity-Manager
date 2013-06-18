@@ -15,7 +15,6 @@ public class TextFieldView extends TextField implements ITextFieldLogic.View {
 	public void registerLogic(ITextFieldLogic newLogic) {
 		this.logic = newLogic;
 		setImmediate(true);
-		addStyleName("amount");
 		addBlurListener(new FieldEvents.BlurListener() {
 			@Override
 			public void blur(BlurEvent event) {
@@ -23,5 +22,15 @@ public class TextFieldView extends TextField implements ITextFieldLogic.View {
 			}
 		});
 	}
+
+	@Override
+	public void setNumericFieldStyle() {
+		addStyleName("amount");
+	}
 	
+	@Override
+	public void setValue(String newValue)
+			throws com.vaadin.data.Property.ReadOnlyException {
+		super.setValue(newValue != null ? newValue : "");
+	}
 }

@@ -77,17 +77,23 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 	/** Liste des sélections précédentes */
 	private List<Task> previouslySelectedTasks = new ArrayList<Task>();
 
+	/** Model manager */
+	private ModelMgr modelMgr;
+
 	/**
 	 * Constructeur par défaut.
 	 * 
 	 * @param parentShell
 	 *            shell parent.
+	 * @param modelMgr
+	 *            the model manager.
 	 */
-	public TaskChooserTreeWithHistoryDialog(Shell parentShell) {
+	public TaskChooserTreeWithHistoryDialog(Shell parentShell, ModelMgr modelMgr) {
 		super(
 				parentShell,
 				Strings.getString("TaskChooserTreeWithHistoryDialog.texts.TITLE"), null, null); //$NON-NLS-1$
 		setShellStyle(SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+		this.modelMgr = modelMgr;
 	}
 
 	/*
@@ -132,7 +138,7 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 		Composite parentComposite = (Composite) super.createDialogArea(parent);
 
 		// Panneau permettant de recherche une tache
-		taskFinderPanel = new TaskFinderPanel(parentComposite);
+		taskFinderPanel = new TaskFinderPanel(parentComposite, modelMgr);
 		GridData gridData = new GridData(SWT.FILL, SWT.NONE, true, false);
 		gridData.horizontalSpan = 2;
 		taskFinderPanel.setLayoutData(gridData);
@@ -155,7 +161,7 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 						.getString("TaskChooserTreeWithHistoryDialog.labels.TASK_TREE")); //$NON-NLS-1$
 		taskTreeGroup.setLayoutData(gridData);
 		taskTreeGroup.setLayout(new FillLayout());
-		tasksTree = new TaskChooserTree(taskTreeGroup, null);
+		tasksTree = new TaskChooserTree(taskTreeGroup, null, modelMgr);
 		TreeViewer viewer = tasksTree.getTreeViewer();
 		viewer.getTree().addMouseListener(new MouseAdapter() {
 			public void mouseDoubleClick(MouseEvent e) {
@@ -184,7 +190,7 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 			for (int i = 0; i < history.length; i++)
 				_history[history.length - i - 1] = history[i];
 			previouslySelectedTasksTable = new TaskChooserTable(
-					lastSelectionsGroup, null, _history);
+					lastSelectionsGroup, null, _history, modelMgr);
 			final Table table = previouslySelectedTasksTable.getTableViewer()
 					.getTable();
 			table.addMouseListener(new MouseAdapter() {
@@ -284,7 +290,7 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 								.compareTo(removedTaskFullpath) > 0) {
 							// Dans ce cas il faut mettre à jour le chemin de la
 							// tache
-							currentTask = ModelMgr.getTask(currentTask.getId());
+							currentTask = modelMgr.getTask(currentTask.getId());
 							previouslySelectedTasks.set(i, currentTask);
 						}
 					}
@@ -336,14 +342,14 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 					// Autre cas : la tache a déplacée est une tache
 					// parent de la tache en cours
 					else if (currentTask.getPath().startsWith(oldTaskFullpath)) {
-						currentTask = ModelMgr.getTask(currentTask.getId());
+						currentTask = modelMgr.getTask(currentTask.getId());
 						previouslySelectedTasks.set(i, currentTask);
 					}
 					// Autre cas : la tache déplacée est la soeur d'une des
 					// taches parent
 					// de la tache en cours
 					else if (currentTask.getPath().startsWith(oldTaskPath)) {
-						currentTask = ModelMgr.getTask(currentTask.getId());
+						currentTask = modelMgr.getTask(currentTask.getId());
 						previouslySelectedTasks.set(i, currentTask);
 					}
 				}

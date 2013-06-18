@@ -62,6 +62,8 @@ public class TaskChooserTable extends AbstractTableMgr {
 	/** Composant parent */
 	private Composite parent;
 
+	private ModelMgr modelMgr;
+
 	/**
 	 * Constructeur par défaut.
 	 * 
@@ -71,9 +73,12 @@ public class TaskChooserTable extends AbstractTableMgr {
 	 *            données du layout.
 	 * @param tasks
 	 *            la liste des taches à afficher.
+	 * @param modelMgr
+	 *            the model manager.
 	 */
 	public TaskChooserTable(Composite parentComposite, Object layoutData,
-			Task[] tasks) {
+			Task[] tasks, ModelMgr modelMgr) {
+		this.modelMgr = modelMgr;
 		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayoutData(layoutData);
@@ -123,7 +128,7 @@ public class TaskChooserTable extends AbstractTableMgr {
 				String text = null;
 				switch (columnIndex) {
 				case (TASK_PATH_COLUMN_IDX):
-					text = ModelMgr.getTaskCodePath(task);
+					text = modelMgr.getTaskCodePath(task);
 					break;
 				case (TASK_COLUMN_IDX):
 					text = task.getName();

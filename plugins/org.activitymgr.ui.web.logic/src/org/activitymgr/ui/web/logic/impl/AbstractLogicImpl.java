@@ -1,31 +1,33 @@
 package org.activitymgr.ui.web.logic.impl;
 
+import org.activitymgr.core.ModelMgr;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILogic;
-import org.activitymgr.ui.web.logic.ILogicContext;
+import org.activitymgr.ui.web.logic.IRootLogic;
+import org.activitymgr.ui.web.logic.impl.internal.RootLogicImpl;
 
 
 @SuppressWarnings("rawtypes")
 public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements ILogic<VIEW> {
 
 	private Object[] EMPTY_ARRAY = new Object[0];
-	private ILogicContext context;
+	private LogicContext context;
 	private ILogic<?> parent;
 
 	private VIEW view;
 
-	public AbstractLogicImpl(ILogicContext context) {
-		this(context, null);
+	public AbstractLogicImpl(AbstractLogicImpl<?> parent) {
+		this(parent, parent.getContext());
 	}
 
-	public AbstractLogicImpl(ILogic<?> parent) {
-		this(parent.getContext(), parent);
+	public AbstractLogicImpl(RootLogicImpl parent) {
+		this(parent, parent.getContext());
 	}
 
 	@SuppressWarnings("unchecked")
-	private AbstractLogicImpl(ILogicContext context, ILogic<?> parent) {
-		this.context = context;
+	private AbstractLogicImpl(ILogic<?> parent, LogicContext context) {
 		this.parent = parent;
+		this.context = context;
 		view = (VIEW) context.getViewFactory().createView(getClass(), getViewParameters());
 		view.registerLogic(this);
 	}
@@ -39,7 +41,7 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 		return view;
 	}
 
-	public ILogicContext getContext() {
+	public LogicContext getContext() {
 		return context;
 	}
 	
@@ -47,33 +49,24 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 		return context != null ? context.getEventBus() : null;
 	}
 	
+	protected ModelMgr getModelMgr() {
+		return context != null ? context.getModelMgr() : null;
+	}
+	
 	public ILogic<?> getParent() {
 		return parent;
 	}
 
-	protected RootLogicImpl getRoot() {
+	protected IRootLogic getRoot() {
 		ILogic<?> cursor = this;
-		while (cursor.getParent() != null) {
+		while (cursor != null && !(cursor instanceof IRootLogic))  {
 			cursor = cursor.getParent();
 		}
-		return (RootLogicImpl) cursor;
+		return (IRootLogic) cursor;
 	}
 
 	protected void handleError(Throwable error) {
-		error.printStackTrace();
-		// Building message
-		String message = error.getMessage();
-		if (message == null || "".equals(message.trim())) {
-			message = error.getClass().getSimpleName();
-		}
-		// Generating details
-		String details = null;
-		Throwable cause = error;
-		while ((cause = cause.getCause()) != null) {
-			details = cause.getClass().getSimpleName() + " : " + cause.getMessage() + "\n";
-		}
-		// FIXME transport the error on the event bus ?
-		getRoot().getView().showErrorNotification(message, details);
+		RootLogicImpl.handleError(getRoot().getView(), error);
 	}
 
 }

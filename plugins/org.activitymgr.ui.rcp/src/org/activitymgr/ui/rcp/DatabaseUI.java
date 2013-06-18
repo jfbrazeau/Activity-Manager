@@ -100,6 +100,9 @@ public class DatabaseUI implements ModifyListener {
 	public static final int MYSQL_SERVER_MODE = 1;
 	public static final int USER_DEFINED_MODE = 2;
 
+	/** Model manager */
+	private ModelMgr modelMgr;
+	
 	/** Listener */
 	private List<IDbStatusListener> listeners = new ArrayList<IDbStatusListener>();
 
@@ -146,10 +149,13 @@ public class DatabaseUI implements ModifyListener {
 	 * 
 	 * @param tabItem
 	 *            item parent.
+	 * @param modelMgr
+	 *            the model manager instance.
 	 */
-	public DatabaseUI(TabItem tabItem) {
+	public DatabaseUI(TabItem tabItem, ModelMgr modelMgr) {
 		this(tabItem.getParent());
 		tabItem.setControl(parent);
+		this.modelMgr = modelMgr;
 	}
 
 	/**
@@ -706,10 +712,10 @@ public class DatabaseUI implements ModifyListener {
 		CfgMgr.save();
 
 		// Changement des paramétres de connexion
-		ModelMgr.initDatabaseAccess(jdbcDriver, jdbcUrl, jdbcUser, jdbcPassword);
+		modelMgr.initialize(jdbcDriver, jdbcUrl, jdbcUser, jdbcPassword);
 
 		// Test de l'existence du modèle en base
-		boolean dbModelOk = ModelMgr.tablesExist();
+		boolean dbModelOk = modelMgr.tablesExist();
 		// Si le modèle n'est pas installé et que l'utilisateur
 		// le désire, l'application créée automatiquement les tables
 		if (!dbModelOk) {
@@ -775,7 +781,7 @@ public class DatabaseUI implements ModifyListener {
 	 */
 	private void closeDatabase() throws DbException {
 		// Changement des paramétres de connexion
-		ModelMgr.closeDatabaseAccess();
+		modelMgr.closeDatabaseAccess();
 		// Activation/désactivation des boutons et des champs
 		openDbButton.setEnabled(true);
 		closeDbButton.setEnabled(false);
@@ -806,7 +812,7 @@ public class DatabaseUI implements ModifyListener {
 	 */
 	private void reinstallDatabase() throws DbException, UITechException {
 		// Suppression et recréation des tables
-		ModelMgr.createTables();
+		modelMgr.createTables();
 		// Question concernant le référentiel de durées par défaut
 		if (MessageDialog
 				.openQuestion(parent.getShell(),
@@ -815,13 +821,13 @@ public class DatabaseUI implements ModifyListener {
 			try {
 				Duration duration = new Duration();
 				duration.setId(25);
-				ModelMgr.createDuration(duration);
+				modelMgr.createDuration(duration);
 				duration.setId(50);
-				ModelMgr.createDuration(duration);
+				modelMgr.createDuration(duration);
 				duration.setId(75);
-				ModelMgr.createDuration(duration);
+				modelMgr.createDuration(duration);
 				duration.setId(100);
-				ModelMgr.createDuration(duration);
+				modelMgr.createDuration(duration);
 			} catch (ModelException e) {
 				log.error(
 						"Unexpected error while creating default durations", e); //$NON-NLS-1$
@@ -887,7 +893,7 @@ public class DatabaseUI implements ModifyListener {
 									Strings.getString("DatabaseUI.labels.CONFIRMATION"), //$NON-NLS-1$
 									Strings.getString("DatabaseUI.questions.OVERWRITE_CONFIRMATION"))) { //$NON-NLS-1$
 				FileOutputStream out = new FileOutputStream(xmlFile);
-				ModelMgr.exportToXML(out);
+				modelMgr.exportToXML(out);
 				out.close();
 				// Popup d'info de fin de traitement
 				MessageDialog
@@ -948,7 +954,7 @@ public class DatabaseUI implements ModifyListener {
 				}
 				// Importation des données
 				FileInputStream in = new FileInputStream(xmlFile);
-				ModelMgr.importFromXML(in);
+				modelMgr.importFromXML(in);
 				in.close();
 				// Notification de fikn de chargement (équivalent ouverture BDD)
 				Iterator<IDbStatusListener> it = listeners.iterator();

@@ -14,9 +14,8 @@ public abstract class AbstractModelTestCase extends TestCase {
 	/** Logger */
 	private static Logger log = Logger.getLogger(AbstractModelTestCase.class);
 
-	public static void main(String[] args) {
-		junit.swingui.TestRunner.run(TaskTest.class);
-	}
+	/** Model manager */
+	private ModelMgr modelMgr;
 
 	protected void setUp() throws Exception {
 		// Initialisation des logs et chargement de la config
@@ -33,7 +32,8 @@ public abstract class AbstractModelTestCase extends TestCase {
 		String jdbcUrl = props.getProperty(cfg + "." + "url");
 		String jdbcUser = props.getProperty(cfg + "." + "user");
 		String jdbcPassword = props.getProperty(cfg + "." + "password");
-		ModelMgr.initDatabaseAccess(
+		modelMgr = new ModelMgr();
+		modelMgr.initialize(
 				jdbcDriver,
 				jdbcUrl,
 				jdbcUser,
@@ -60,7 +60,10 @@ public abstract class AbstractModelTestCase extends TestCase {
     }
 
 	protected void tearDown() throws Exception {
-		ModelMgr.closeDatabaseAccess();
+		modelMgr.closeDatabaseAccess();
 	}
 
+	protected ModelMgr getModelMgr() {
+		return modelMgr;
+	}
 }

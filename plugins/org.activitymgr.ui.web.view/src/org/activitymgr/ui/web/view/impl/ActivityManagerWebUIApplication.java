@@ -1,4 +1,4 @@
-package org.activitymgr.ui.web.view;
+package org.activitymgr.ui.web.view.impl;
 
 import java.util.concurrent.CountDownLatch;
 

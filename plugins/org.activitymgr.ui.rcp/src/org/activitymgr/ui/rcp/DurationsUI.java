@@ -129,6 +129,9 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 		public void durationActivationStatusChanged(Duration duration);
 	}
 
+	/** Model manager */
+	private ModelMgr modelMgr;
+	
 	/** Viewer */
 	private TableViewer tableViewer;
 
@@ -154,10 +157,13 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	 * 
 	 * @param tabItem
 	 *            item parent.
+	 * @param modelMgr
+	 *            the model manager instance.
 	 */
-	public DurationsUI(TabItem tabItem) {
+	public DurationsUI(TabItem tabItem, ModelMgr modelMgr) {
 		this(tabItem.getParent());
 		tabItem.setControl(parent);
+		this.modelMgr = modelMgr;
 	}
 
 	/**
@@ -234,7 +240,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 		// Chargement des données
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				return ModelMgr.getDurations();
+				return modelMgr.getDurations();
 			}
 		};
 		// Exécution
@@ -311,7 +317,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 				case (IS_ACTIVE_COLUMN_IDX):
 					Boolean isActive = (Boolean) value;
 					duration.setIsActive(isActive.booleanValue());
-					ModelMgr.updateDuration(duration);
+					modelMgr.updateDuration(duration);
 					mustNotifyActivationStatusChangeEvent = true;
 					break;
 				case (DURATION_COLUMN_IDX):
@@ -320,7 +326,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 					newDuration.setId(StringHelper
 							.entryToHundredth((String) value));
 					newDuration.setIsActive(duration.getIsActive());
-					newDuration = ModelMgr.updateDuration(oldDuration,
+					newDuration = modelMgr.updateDuration(oldDuration,
 							newDuration);
 					// Mise à jour dans le modèle
 					duration.setId(newDuration.getId());
@@ -442,7 +448,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 												.entryToHundredth(newText));
 										// Vérification de la non existence de
 										// la durée
-										if (ModelMgr.durationExists(duration))
+										if (modelMgr.durationExists(duration))
 											errorMsg = Strings
 													.getString("DurationsUI.errors.DURATION_ALREADY_EXIST"); //$NON-NLS-1$
 									} catch (StringFormatException e) {
@@ -460,7 +466,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 						Duration newDuration = new Duration();
 						newDuration.setId(StringHelper.entryToHundredth(dialog
 								.getValue()));
-						ModelMgr.createDuration(newDuration);
+						modelMgr.createDuration(newDuration);
 						newLine(newDuration);
 						// Notification des listeners
 						notifyDurationAdded(newDuration);
@@ -474,7 +480,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 					for (int i = 0; i < items.length; i++) {
 						TableItem item = items[i];
 						Duration duration = (Duration) item.getData();
-						ModelMgr.removeDuration(duration);
+						modelMgr.removeDuration(duration);
 						item.dispose();
 						// Notification des listeners
 						notifyDurationRemoved(duration);

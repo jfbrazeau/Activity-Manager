@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Activity Manager Core
-Bundle-SymbolicName: org.activitymgr.core
+Bundle-SymbolicName: org.activitymgr.core;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jean-Francois Brazeau
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

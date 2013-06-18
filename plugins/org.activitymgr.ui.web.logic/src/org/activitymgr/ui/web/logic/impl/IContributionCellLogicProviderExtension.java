@@ -1,10 +1,11 @@
-package org.activitymgr.ui.web.logic;
+package org.activitymgr.ui.web.logic.impl;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import org.activitymgr.core.beans.TaskContributions;
+import org.activitymgr.ui.web.logic.ILogic;
 
 public interface IContributionCellLogicProviderExtension {
 
@@ -28,7 +29,10 @@ public interface IContributionCellLogicProviderExtension {
 					SAT_COLUMN_ID,
 					SUN_COLUMN_ID }));
 
-	ILogic<?> getCellLogic(IContributionsLogic parent,
+	ILogic<?> getCellLogic(AbstractContributionLogicImpl parent,
 			String columnId, TaskContributions weekContributions);
 	
+	void setDefaultProvider(
+			IContributionCellLogicProviderExtension defaultProvider);
+
 }

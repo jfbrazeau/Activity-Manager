@@ -27,6 +27,7 @@
  */
 package org.activitymgr.ui.rcp.dialogs;
 
+import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Task;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -50,15 +51,21 @@ public class TasksChooserDialog extends AbstractDialog implements MouseListener 
 	/** Valideur */
 	private ITaskChooserValidator validator;
 
+	/** Model manager */
+	private ModelMgr modelMgr;
+
 	/**
 	 * Constructeur par défaut.
 	 * 
 	 * @param parentShell
 	 *            shell parent.
+	 * @param modelMgr
+	 *            the model manager.
 	 */
-	public TasksChooserDialog(Shell parentShell) {
+	public TasksChooserDialog(Shell parentShell, ModelMgr modelMgr) {
 		super(parentShell, "Choose a task", null, null);
 		setShellStyle(SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+		this.modelMgr = modelMgr;
 	}
 
 	/*
@@ -91,7 +98,7 @@ public class TasksChooserDialog extends AbstractDialog implements MouseListener 
 	 */
 	protected Control createDialogArea(Composite parent) {
 		Composite c = (Composite) super.createDialogArea(parent);
-		tasksTree = new TasksChooserTree(c);
+		tasksTree = new TasksChooserTree(c, modelMgr);
 		TreeViewer viewer = tasksTree.getTreeViewer();
 		viewer.getTree().addMouseListener(this);
 		Task lastValue = (Task) getValue();

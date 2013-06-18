@@ -42,29 +42,29 @@ public class XmlTest extends AbstractModelTestCase {
 
 	public void testCreateDurations() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de durées
-		Duration[] initialDurations = ModelMgr.getDurations();
+		Duration[] initialDurations = getModelMgr().getDurations();
 
 		// Import du fichier associé au test
 		importTestFile();
 		
 		// Vérification du nombre de durées après import
-		Duration[] durations = ModelMgr.getDurations();
+		Duration[] durations = getModelMgr().getDurations();
 		assertNotNull(durations);
 		assertEquals(initialDurations.length + 3, durations.length);
 
 		// Suppression des durées
 		Duration duration = new Duration();
 		duration.setId(200);
-		ModelMgr.removeDuration(duration);
+		getModelMgr().removeDuration(duration);
 		duration.setId(300);
-		ModelMgr.removeDuration(duration);
+		getModelMgr().removeDuration(duration);
 		duration.setId(400);
-		ModelMgr.removeDuration(duration);
+		getModelMgr().removeDuration(duration);
 	}
 	
 	public void testCreateCollaborators() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de durées
-		Collaborator[] initialCollaborators = ModelMgr.getCollaborators();
+		Collaborator[] initialCollaborators = getModelMgr().getCollaborators();
 		assertNotNull(initialCollaborators);
 		assertEquals(0, initialCollaborators.length);
 
@@ -72,18 +72,18 @@ public class XmlTest extends AbstractModelTestCase {
 		importTestFile();
 		
 		// Vérification du nombre de durées après import
-		Collaborator[] collaborators = ModelMgr.getCollaborators();
+		Collaborator[] collaborators = getModelMgr().getCollaborators();
 		assertNotNull(collaborators);
 		assertEquals(2, collaborators.length);
 
 		// Suppression des durées
-		ModelMgr.removeCollaborator(collaborators[0]);
-		ModelMgr.removeCollaborator(collaborators[1]);
+		getModelMgr().removeCollaborator(collaborators[0]);
+		getModelMgr().removeCollaborator(collaborators[1]);
 	}
 	
 	public void testDuplicateCollaboratorLogin() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de collaborateurs
-		Collaborator[] initialCollaborators = ModelMgr.getCollaborators();
+		Collaborator[] initialCollaborators = getModelMgr().getCollaborators();
 		assertNotNull(initialCollaborators);
 		assertEquals(0, initialCollaborators.length);
 
@@ -99,7 +99,7 @@ public class XmlTest extends AbstractModelTestCase {
 
 	public void testCreateTasks() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de taches
-		Task[] initialTasks = ModelMgr.getSubtasks((Task) null);
+		Task[] initialTasks = getModelMgr().getSubtasks((Task) null);
 		assertNotNull(initialTasks);
 		assertEquals(0, initialTasks.length);
 
@@ -107,17 +107,17 @@ public class XmlTest extends AbstractModelTestCase {
 		importTestFile();
 		
 		// Vérification du nombre de durées après import
-		Task[] tasks = ModelMgr.getSubtasks((Task) null);
+		Task[] tasks = getModelMgr().getSubtasks((Task) null);
 		assertNotNull(tasks);
 		assertEquals(1, tasks.length);
 
 		// Suppression des durées
-		ModelMgr.removeTask(tasks[0]);
+		getModelMgr().removeTask(tasks[0]);
 	}
 	
 	public void testCreateContributions() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de taches
-		Contribution[] initialContributions = ModelMgr.getContributions(null, null, null, null, null);
+		Contribution[] initialContributions = getModelMgr().getContributions(null, null, null, null, null);
 		assertNotNull(initialContributions);
 		assertEquals(0, initialContributions.length);
 
@@ -125,22 +125,22 @@ public class XmlTest extends AbstractModelTestCase {
 		importTestFile();
 		
 		// Vérification du nombre de durées après import
-		Contribution[] contributions = ModelMgr.getContributions(null, null, null, null, null);
+		Contribution[] contributions = getModelMgr().getContributions(null, null, null, null, null);
 		assertNotNull(contributions);
 		assertEquals(2, contributions.length);
 
 		// Suppression des données
-		ModelMgr.removeContribution(contributions[0], false);
-		ModelMgr.removeContribution(contributions[1], false);
-		Task[] tasks = ModelMgr.getSubtasks((Task) null);
-		ModelMgr.removeTask(tasks[1]);
-		ModelMgr.removeTask(tasks[0]);
-		Collaborator[] collaborators = ModelMgr.getCollaborators();
-		ModelMgr.removeCollaborator(collaborators[0]);
-		ModelMgr.removeCollaborator(collaborators[1]);
-		Duration durations[] = ModelMgr.getDurations();
+		getModelMgr().removeContribution(contributions[0], false);
+		getModelMgr().removeContribution(contributions[1], false);
+		Task[] tasks = getModelMgr().getSubtasks((Task) null);
+		getModelMgr().removeTask(tasks[1]);
+		getModelMgr().removeTask(tasks[0]);
+		Collaborator[] collaborators = getModelMgr().getCollaborators();
+		getModelMgr().removeCollaborator(collaborators[0]);
+		getModelMgr().removeCollaborator(collaborators[1]);
+		Duration durations[] = getModelMgr().getDurations();
 		for (int i=0; i<durations.length; i++)
-			ModelMgr.removeDuration(durations[i]);
+			getModelMgr().removeDuration(durations[i]);
 		
 	}
 	
@@ -148,23 +148,23 @@ public class XmlTest extends AbstractModelTestCase {
 		// Création des objets de test
 		Duration duration = new Duration();
 		duration.setId(100);
-		duration = ModelMgr.createDuration(duration);
+		duration = getModelMgr().createDuration(duration);
 		Collaborator collaborator = new Collaborator();
 		collaborator.setLogin("login");
 		collaborator.setFirstName("FirstName");
 		collaborator.setLastName("LastName");
-		collaborator = ModelMgr.createCollaborator(collaborator);
+		collaborator = getModelMgr().createCollaborator(collaborator);
 		Task parentTask = new Task();
 		parentTask.setCode("Par");
 		parentTask.setName("Parent name");
-		parentTask = ModelMgr.createTask(null, parentTask);
+		parentTask = getModelMgr().createTask(null, parentTask);
 		Task task = new Task();
 		task.setCode("Code");
 		task.setName("Name");
 		task.setBudget(1);
 		task.setInitiallyConsumed(2);
 		task.setTodo(3);
-		task = ModelMgr.createTask(parentTask, task);
+		task = getModelMgr().createTask(parentTask, task);
 		Contribution contribution = new Contribution();
 		contribution.setYear(2006);
 		contribution.setMonth(01);
@@ -172,29 +172,29 @@ public class XmlTest extends AbstractModelTestCase {
 		contribution.setContributorId(collaborator.getId());
 		contribution.setTaskId(task.getId());
 		contribution.setDurationId(duration.getId());
-		contribution = ModelMgr.createContribution(contribution, false);
+		contribution = getModelMgr().createContribution(contribution, false);
 
 		// Export
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		ModelMgr.exportToXML(out);
+		getModelMgr().exportToXML(out);
 		out.close();
 		String export = out.toString();
 		log.debug("export :");
 		log.debug(export);
 
 		// Supression des objets de test
-		ModelMgr.removeContribution(contribution, true);
-		ModelMgr.removeTask(task);
-		ModelMgr.removeTask(parentTask);
-		ModelMgr.removeCollaborator(collaborator);
-		ModelMgr.removeDuration(duration);
+		getModelMgr().removeContribution(contribution, true);
+		getModelMgr().removeTask(task);
+		getModelMgr().removeTask(parentTask);
+		getModelMgr().removeCollaborator(collaborator);
+		getModelMgr().removeDuration(duration);
 
 		// Réimportation
-		ModelMgr.importFromXML(new ByteArrayInputStream(out.toByteArray()));
+		getModelMgr().importFromXML(new ByteArrayInputStream(out.toByteArray()));
 		
 		// Nouvel export puis comparaison
 		out = new ByteArrayOutputStream();
-		ModelMgr.exportToXML(out);
+		getModelMgr().exportToXML(out);
 		out.close();
 		String export2 = out.toString();
 		log.debug("export2 :");
@@ -204,15 +204,15 @@ public class XmlTest extends AbstractModelTestCase {
 		assertEquals(export, export2);
 
 		// Supression des objets de test ayant été réimportés
-		contribution = ModelMgr.getContributions(null, null, null, null, null)[0];
-		ModelMgr.removeContribution(contribution, false);
-		task = ModelMgr.getTaskByCodePath("/Par/Code");
-		ModelMgr.removeTask(task);
-		parentTask = ModelMgr.getTaskByCodePath("/Par");
-		ModelMgr.removeTask(parentTask);
-		collaborator = ModelMgr.getCollaborators()[0];
-		ModelMgr.removeCollaborator(collaborator);
-		ModelMgr.removeDuration(duration);
+		contribution = getModelMgr().getContributions(null, null, null, null, null)[0];
+		getModelMgr().removeContribution(contribution, false);
+		task = getModelMgr().getTaskByCodePath("/Par/Code");
+		getModelMgr().removeTask(task);
+		parentTask = getModelMgr().getTaskByCodePath("/Par");
+		getModelMgr().removeTask(parentTask);
+		collaborator = getModelMgr().getCollaborators()[0];
+		getModelMgr().removeCollaborator(collaborator);
+		getModelMgr().removeDuration(duration);
 	}
 	
 	/*
@@ -242,7 +242,7 @@ public class XmlTest extends AbstractModelTestCase {
 			throw new FileNotFoundException(fileName);
 		}
 		// Importation des données
-		ModelMgr.importFromXML(in);
+		getModelMgr().importFromXML(in);
 		// Fermeture du flux
 		in.close();
 	}

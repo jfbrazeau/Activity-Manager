@@ -27,6 +27,7 @@
  */
 package org.activitymgr.ui.rcp.dialogs;
 
+import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.util.Strings;
 import org.apache.log4j.Logger;
@@ -52,16 +53,22 @@ public class TaskChooserDialog extends AbstractDialog {
 	/** Liste des taches à afficher */
 	private Task[] tasks;
 
+	/** Model manager */
+	private ModelMgr modelMgr;
+
 	/**
 	 * Constructeur par défaut.
 	 * 
 	 * @param parentShell
 	 *            shell parent.
+	 * @param modelMgr
+	 *            the model manager.
 	 */
-	public TaskChooserDialog(Shell parentShell) {
+	public TaskChooserDialog(Shell parentShell, ModelMgr modelMgr) {
 		super(parentShell,
 				Strings.getString("TaskChooserDialog.texts.TITLE"), null, null); //$NON-NLS-1$
 		setShellStyle(SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+		this.modelMgr = modelMgr;
 	}
 
 	/*
@@ -98,7 +105,7 @@ public class TaskChooserDialog extends AbstractDialog {
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData.horizontalSpan = 2;
 		gridData.heightHint = 300;
-		tasksTable = new TaskChooserTable(parentComposite, gridData, tasks);
+		tasksTable = new TaskChooserTable(parentComposite, gridData, tasks, modelMgr);
 		final Table table = tasksTable.getTableViewer().getTable();
 		table.addMouseListener(new MouseAdapter() {
 			public void mouseDoubleClick(MouseEvent e) {

@@ -1,11 +1,14 @@
-package org.activitymgr.ui.web.logic.impl;
+package org.activitymgr.ui.web.logic.impl.internal;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.activitymgr.core.DbException;
 import org.activitymgr.core.ModelMgr;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -25,6 +28,8 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer {
 
 	private IExtensionRegistry extensionRegistryService;
 
+	private ModelMgr modelMgr;
+
 	private static Activator singleton = null;
 	
 	public Activator() {
@@ -38,19 +43,16 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer {
 	@Override
 	public void start(BundleContext context) throws Exception {
 		this.context = context;
-		// TODO externalize connection parameters
-		ModelMgr.initDatabaseAccess("com.mysql.jdbc.Driver",
-				"jdbc:mysql://localhost:3306/taskmgr_db", "taskmgr_user",
-				"secret");
-		// ModelMgr.initDatabaseAccess("org.hsqldb.jdbcDriver",
-		// "jdbc:hsqldb:file:activitymgr", "sa",
-		// "");
 		for (Class<?> cl : SERVICE_CLASSES) {
 			@SuppressWarnings({ "unchecked" })
 			ServiceTracker st = new ServiceTracker(context, cl.getName(), this);
 			serviceTrackers.put(cl, st);
 			st.open();
 		}
+	}
+
+	protected ModelMgr getModelMgr() {
+		return modelMgr;
 	}
 
 	@Override
@@ -67,11 +69,37 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer {
 		Object service = context.getService(reference);
 		if (service instanceof IExtensionRegistry
 				&& extensionRegistryService == null) {
-			extensionRegistryService = (IExtensionRegistry) service;
+			registerExtensionRegistryService((IExtensionRegistry) service);
 		}
 		return null;
 	}
 
+	private void registerExtensionRegistryService(IExtensionRegistry registry) {
+		extensionRegistryService = registry;
+		// Once the registry is registered, ModelMgr implementation 
+		// can be created
+		// TODO externalize connection parameters
+		try {
+			IConfigurationElement[] cfgs = registry.getConfigurationElementsFor("org.activitymgr.ui.web.logic.modelMgrImpl");
+			ModelMgr modelMgr = 
+					cfgs.length > 0 ? 
+							(ModelMgr) cfgs[0].createExecutableExtension("class") 
+							: new ModelMgr();
+			modelMgr.initialize("com.mysql.jdbc.Driver",
+					"jdbc:mysql://localhost:3306/taskmgr_db", "taskmgr_user",
+					"secret");
+			// If model manager intializaation is successful, the instance is kept
+			this.modelMgr = modelMgr;
+		}
+		catch (DbException e) {
+			// TODO create a log
+			e.printStackTrace();
+		} catch (CoreException e) {
+			// TODO create a log
+			e.printStackTrace();
+		}
+	}
+	
 	@Override
 	public void modifiedService(ServiceReference reference,
 			Object service) {

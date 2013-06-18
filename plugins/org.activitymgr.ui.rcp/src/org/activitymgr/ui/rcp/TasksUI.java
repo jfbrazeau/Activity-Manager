@@ -154,6 +154,9 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		public void taskMoved(String oldTaskFullpath, Task task);
 	}
 
+	/** Model manager */
+	private ModelMgr modelMgr;
+	
 	/** Listeners */
 	private List<ITaskListener> listeners = new ArrayList<ITaskListener>();
 
@@ -209,10 +212,13 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 * 
 	 * @param tabItem
 	 *            item parent.
+	 * @param modelMgr
+	 *            the model manager instance.
 	 */
-	public TasksUI(TabItem tabItem) {
+	public TasksUI(TabItem tabItem, ModelMgr modelMgr) {
 		this(tabItem.getParent());
 		tabItem.setControl(parent);
+		this.modelMgr = modelMgr;
 	}
 
 	/**
@@ -227,7 +233,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		parent.setLayout(new GridLayout(1, false));
 
 		// Panneau permettant de recherche une tache
-		taskFinderPanel = new TaskFinderPanel(parent);
+		taskFinderPanel = new TaskFinderPanel(parent, modelMgr);
 		GridData gridData = new GridData(SWT.FILL, SWT.NONE, true, false);
 		taskFinderPanel.setLayoutData(gridData);
 		taskFinderPanel.addTaskListener(new ITaskSelectionListener() {
@@ -301,8 +307,8 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 
 		// Initialisation des popups
 		taskChooserDialog = new TaskChooserTreeWithHistoryDialog(
-				parent.getShell());
-		contribsViewerDialog = new ContributionsViewerDialog(parent.getShell());
+				parent.getShell(), modelMgr);
+		contribsViewerDialog = new ContributionsViewerDialog(parent.getShell(), modelMgr);
 
 		// Configuration du menu popup
 		final Menu menu = new Menu(tree);
@@ -441,7 +447,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				// 2° lecture dans le cache (synchronisé)
 				taskSums = (TaskSums) tasksSums.get(task);
 				if (taskSums == null) {
-					taskSums = ModelMgr.getTaskSums(task, null, null);
+					taskSums = modelMgr.getTaskSums(task, null, null);
 					// Dépot dans le cache
 					tasksSums.put(task, taskSums);
 				}
@@ -611,7 +617,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 							Strings.getString("TasksUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
 				}
 				// Mise à jour en base
-				ModelMgr.updateTask(task);
+				modelMgr.updateTask(task);
 				// Mise à jour des labels
 				if (parentsMustBeRefreshed) {
 					// Mise à jour des sommes des taches parentes
@@ -684,7 +690,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		final Task parentTask = (Task) parentElement;
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				Task[] subTasks = ModelMgr.getSubtasks(parentTask);
+				Task[] subTasks = modelMgr.getSubtasks(parentTask);
 				return subTasks;
 			}
 		};
@@ -705,7 +711,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		final Task task = (Task) element;
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				Task parentTask = ModelMgr.getParentTask(task);
+				Task parentTask = modelMgr.getParentTask(task);
 				return parentTask == null ? treeViewer.getInput() : parentTask;
 			}
 		};
@@ -787,7 +793,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				else if (moveUpItem.equals(source)) {
 					Task selectedTask = (Task) selection[0].getData();
 					String oldTaskFullpath = selectedTask.getFullPath();
-					ModelMgr.moveUpTask(selectedTask);
+					modelMgr.moveUpTask(selectedTask);
 					// Mise à jour de l'IHM
 					treeViewer.refresh(selection[0].getParent().getData(),
 							false);
@@ -798,7 +804,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				else if (moveDownItem.equals(source)) {
 					Task selectedTask = (Task) selection[0].getData();
 					String oldTaskFullpath = selectedTask.getFullPath();
-					ModelMgr.moveDownTask(selectedTask);
+					modelMgr.moveDownTask(selectedTask);
 					// Mise à jour de l'IHM
 					treeViewer.refresh(selection[0].getParent().getData(),
 							false);
@@ -828,9 +834,9 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 						if (!chosenTask.getPath()
 								.equals(selectedTask.getPath())) {
 							// Déplacement
-							ModelMgr.moveTask(selectedTask, chosenTask);
+							modelMgr.moveTask(selectedTask, chosenTask);
 							// Rafraichissement de la tache
-							selectedTask = ModelMgr.getTask(selectedTask
+							selectedTask = modelMgr.getTask(selectedTask
 									.getId());
 						}
 						// Déplacement de la tache
@@ -841,7 +847,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 						else if (moveAfterAnotherTaskItem.equals(source)
 								&& targetNumber < selectedTask.getNumber())
 							targetNumber++;
-						ModelMgr.moveTaskUpOrDown(selectedTask, targetNumber);
+						modelMgr.moveTaskUpOrDown(selectedTask, targetNumber);
 						// Notification des listeners
 						notifyTaskMoved(oldTaskFullpath, selectedTask);
 						// Mise à jour de l'IHM
@@ -864,7 +870,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 								throw new DialogException(
 										Strings.getString("TasksUI.errors.MOVE_TO_SAME_PARENT"), null); //$NON-NLS-1$
 							try {
-								ModelMgr.checkAcceptsSubtasks(selectedTask);
+								modelMgr.checkAcceptsSubtasks(selectedTask);
 							} catch (ModelException e) {
 								throw new DialogException(e.getMessage(), null);
 							}
@@ -884,7 +890,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 						newParentTask = (Task) taskChooserDialog.getValue();
 						log.debug("Selected parent task=" + newParentTask); //$NON-NLS-1$
 						String oldTaskFullpath = taskToMove.getFullPath();
-						ModelMgr.moveTask(taskToMove, newParentTask);
+						modelMgr.moveTask(taskToMove, newParentTask);
 						// Rafraichir l'ancien et le nouveau parent ne suffit
 						// pas
 						// dans le cas ou le parent destination change de numéro
@@ -903,7 +909,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 					Task taskToMove = (Task) selectedItem.getData();
 					String oldTaskFullpath = taskToMove.getFullPath();
 					// Déplacement
-					ModelMgr.moveTask(taskToMove, null);
+					modelMgr.moveTask(taskToMove, null);
 					treeViewer.refresh();
 					// Notification des listeners
 					notifyTaskMoved(oldTaskFullpath, taskToMove);
@@ -923,7 +929,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 					// Transfer[selectedItems.length];
 					// for (int i=0; i<selectedItems.length; i++) {
 					// Task task = (Task) selectedItems[i].getData();
-					// taskCodePaths[i] = ModelMgr.getTaskCodePath(task);
+					// taskCodePaths[i] = modelMgr.getTaskCodePath(task);
 					// transfers[i] = TextTransfer.getInstance();
 					// }
 					// clipboard.setContents(taskCodePaths, transfers);
@@ -934,7 +940,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 						TreeItem selectedItem = selection[0];
 						Clipboard clipboard = new Clipboard(parent.getDisplay());
 						Task task = (Task) selectedItem.getData();
-						String taskCodePath = ModelMgr.getTaskCodePath(task);
+						String taskCodePath = modelMgr.getTaskCodePath(task);
 						clipboard.setContents(new String[] { taskCodePath },
 								new Transfer[] { TextTransfer.getInstance() });
 						clipboard.dispose();
@@ -948,7 +954,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 					Task parentTask = (parentItem != null) ? (Task) parentItem
 							.getData() : null;
 					// Suppression
-					ModelMgr.removeTask(selectedTask);
+					modelMgr.removeTask(selectedTask);
 					// Suppression dans l'arbre
 					treeViewer.remove(selectedTask);
 					// Mise à jour des sommes des taches parentes
@@ -1032,7 +1038,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	private Task newTask(Task parentTask) throws DbException, ModelException {
 		log.debug("newTask(" + parentTask + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		// Création de la nouvelle tache
-		Task newTask = ModelMgr.createNewTask(parentTask);
+		Task newTask = modelMgr.createNewTask(parentTask);
 		// Ajout dans l'arbre et création en base
 		treeViewer.add(parentTask == null ? treeViewer.getInput() : parentTask,
 				newTask);

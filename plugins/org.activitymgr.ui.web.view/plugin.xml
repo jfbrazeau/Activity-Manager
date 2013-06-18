@@ -7,7 +7,7 @@
          point="org.eclipse.core.runtime.applications">
       <application>
          <run
-               class="org.activitymgr.ui.web.view.ActivityManagerWebUIApplication">
+               class="org.activitymgr.ui.web.view.impl.ActivityManagerWebUIApplication">
          </run>
       </application>
    </extension>

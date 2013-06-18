@@ -27,6 +27,7 @@
  */
 package org.activitymgr.ui.rcp.dialogs;
 
+import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.util.Strings;
@@ -59,16 +60,22 @@ public class ContributionsViewerDialog extends AbstractDialog {
 	private Integer month;
 	private Integer year;
 
+	/** Model manager */
+	private ModelMgr modelMgr;
+
 	/**
 	 * Constructeur par défaut.
 	 * 
 	 * @param parentShell
 	 *            shell parent.
+	 * @param modelMgr
+	 *            the model manager.
 	 */
-	public ContributionsViewerDialog(Shell parentShell) {
+	public ContributionsViewerDialog(Shell parentShell, ModelMgr modelMgr) {
 		super(parentShell, Strings
 				.getString("ContributionsViewerDialog.texts.TITLE"), null, null); //$NON-NLS-1$
 		setShellStyle(SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+		this.modelMgr = modelMgr;
 	}
 
 	/*
@@ -82,7 +89,7 @@ public class ContributionsViewerDialog extends AbstractDialog {
 		log.debug("createDialogArea"); //$NON-NLS-1$
 		Composite c = (Composite) super.createDialogArea(parent);
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-		contributionsTable = new ContributionsViewerTable(c, gridData);
+		contributionsTable = new ContributionsViewerTable(c, gridData, modelMgr);
 		contributionsTable.setFilter(task, contributor, year, month, day);
 		return c;
 	}

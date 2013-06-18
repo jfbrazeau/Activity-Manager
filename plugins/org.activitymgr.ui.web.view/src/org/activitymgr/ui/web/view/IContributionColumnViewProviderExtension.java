@@ -8,6 +8,6 @@ public interface IContributionColumnViewProviderExtension {
 	
 	Class<?> getColumnType(String columnId);
 
-	int getColumnWidth(String id);
+	int getColumnWidth(String columnId);
 
 }

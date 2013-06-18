@@ -1,41 +1,35 @@
 package org.activitymgr.ui.web.logic.impl;
 
+import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.ui.web.logic.IEventBus;
-import org.activitymgr.ui.web.logic.ILogicContext;
 import org.activitymgr.ui.web.logic.IViewFactory;
 
-public class LogicContextImpl implements ILogicContext {
+public class LogicContext {
 
 	private IViewFactory viewFactory;
 	private IEventBus eventBus;
 	private Collaborator connectedCollaborator;
+	private ModelMgr modelMgr;
 
-	public LogicContextImpl(IViewFactory viewFactory, IEventBus eventBus) {
+	public LogicContext(IViewFactory viewFactory, IEventBus eventBus, ModelMgr modelMgr) {
 		this.viewFactory = viewFactory;
 		this.eventBus = eventBus;
+		this.modelMgr = modelMgr;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.activitymgr.ui.web.logic.ILogicContext#getViewFactory()
-	 */
-	@Override
+	public ModelMgr getModelMgr() {
+		return modelMgr;
+	}
+	
 	public IViewFactory getViewFactory() {
 		return viewFactory;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.activitymgr.ui.web.logic.ILogicContext#getEventBus()
-	 */
-	@Override
 	public IEventBus getEventBus() {
 		return eventBus;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.activitymgr.ui.web.logic.ILogicContext#getConnectedCollaborator()
-	 */
-	@Override
 	public Collaborator getConnectedCollaborator() {
 		return connectedCollaborator;
 	}

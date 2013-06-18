@@ -1,4 +1,4 @@
-package org.activitymgr.ui.web.logic.impl;
+package org.activitymgr.ui.web.logic.impl.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,17 +11,20 @@ import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILabelProviderCallback;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
+import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
+import org.activitymgr.ui.web.logic.impl.AbstractSafeLabelProviderCallback;
+import org.activitymgr.ui.web.logic.impl.AbstractSafeTreeContentProviderCallback;
 
 public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.View> implements ITaskChooserLogic {
 	
 	private List<Long> selectedTaskIds;
 
-	public TaskChooserLogicImpl(ILogic<?> parent, List<Long> selectedTaskIds) {
+	public TaskChooserLogicImpl(AbstractLogicImpl<?> parent, List<Long> selectedTaskIds) {
 		super(parent);
 		// Remember already selected task ids
 		this.selectedTaskIds = selectedTaskIds;
 		// Register the tree content provider
-		getView().setTreeContentProviderCallback(new TaskTreeContentProvider(this, getEventBus()));
+		getView().setTreeContentProviderCallback(new TaskTreeContentProvider(this, getEventBus(), getModelMgr()));
 		// Update button state & status label
 		onSelectionChanged(null);
 		
@@ -36,7 +39,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				if (selectedTaskIds.contains(taskId)) {
 					newStatus = "This task is already selected";
 				} else {
-					Task task = ModelMgr.getTask(taskId);
+					Task task = getModelMgr().getTask(taskId);
 					if (task.getSubTasksCount() != 0) {
 						newStatus = "You cannot select a container task";
 					}
@@ -62,8 +65,11 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 
 class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback {
 
-	public TaskTreeContentProvider(ILogic<?> source, IEventBus eventBus) {
+	private ModelMgr modelMgr;
+
+	public TaskTreeContentProvider(ILogic<?> source, IEventBus eventBus, ModelMgr modelMgr) {
 		super(source, eventBus);
+		this.modelMgr = modelMgr;
 	}
 
 	@Override
@@ -73,7 +79,7 @@ class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback {
 			
 			@Override
 			protected String unsafeGetText() throws Exception {
-				return ModelMgr.getTask(Long.parseLong(itemId)).getName();
+				return modelMgr.getTask(Long.parseLong(itemId)).getName();
 			}
 			
 			@Override
@@ -86,7 +92,7 @@ class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback {
 	@Override
 	protected Collection<String> unsafeGetChildren(String itemId)
 			throws Exception {
-		Task[] subTasks = ModelMgr.getSubtasks(itemId == null ? null : Long.parseLong(itemId));
+		Task[] subTasks = modelMgr.getSubtasks(itemId == null ? null : Long.parseLong(itemId));
 		Collection<String> result = new ArrayList<String>();
 		for (Task subTask : subTasks) {
 			result.add(String.valueOf(subTask.getId()));

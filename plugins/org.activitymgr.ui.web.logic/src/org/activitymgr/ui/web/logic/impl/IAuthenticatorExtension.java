@@ -1,4 +1,4 @@
-package org.activitymgr.ui.web.logic;
+package org.activitymgr.ui.web.logic.impl;
 
 public interface IAuthenticatorExtension {
 

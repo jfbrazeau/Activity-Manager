@@ -101,6 +101,9 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	/** Cache de collaborateurs */
 	private Map<Long, Collaborator> collaboratorsCache = new HashMap<Long, Collaborator>();
 
+	/** Model manager */
+	private ModelMgr modelMgr;
+
 	/**
 	 * Constructeur par défaut.
 	 * 
@@ -108,9 +111,12 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	 *            composant parent.
 	 * @param layoutData
 	 *            données associées au layout.
+	 * @param modelMgr
+	 *            the model manager.
 	 */
-	public ContributionsViewerTable(Composite parentComposite, Object layoutData) {
+	public ContributionsViewerTable(Composite parentComposite, Object layoutData, ModelMgr modelMgr) {
 		log.debug("new ContributionsViewerTable()"); //$NON-NLS-1$
+		this.modelMgr = modelMgr;
 		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayoutData(layoutData);
@@ -198,7 +204,7 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				// Recherche des collaborateurs
-				return ModelMgr.getContributions(task, contributor, year,
+				return modelMgr.getContributions(task, contributor, year,
 						month, day);
 			}
 		};
@@ -269,7 +275,7 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 		if (taskCodePath == null) {
 			log.debug("Registering in cache task code path for taskId=" + taskId); //$NON-NLS-1$
 			Task task = getCachedTask(taskId);
-			taskCodePath = ModelMgr.getTaskCodePath(task);
+			taskCodePath = modelMgr.getTaskCodePath(task);
 			taskCodePathsCache.put(_taskId, taskCodePath);
 		}
 		return taskCodePath;
@@ -290,7 +296,7 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 		Task task = (Task) tasksCache.get(_taskId);
 		if (task == null) {
 			log.debug("Registering in cache task for taskId=" + taskId); //$NON-NLS-1$
-			task = ModelMgr.getTask(taskId);
+			task = modelMgr.getTask(taskId);
 			tasksCache.put(_taskId, task);
 		}
 		return task;
@@ -313,7 +319,7 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 				.get(_collaboratorId);
 		if (collaborator == null) {
 			log.debug("Registering in cache collaborator for collaboratorId=" + collaboratorId); //$NON-NLS-1$
-			collaborator = ModelMgr.getCollaborator(collaboratorId);
+			collaborator = modelMgr.getCollaborator(collaboratorId);
 			collaboratorsCache.put(_collaboratorId, collaborator);
 		}
 		return collaborator;

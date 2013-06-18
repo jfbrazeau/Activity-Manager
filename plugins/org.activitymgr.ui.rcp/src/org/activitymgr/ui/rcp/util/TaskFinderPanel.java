@@ -99,15 +99,19 @@ public class TaskFinderPanel extends Composite {
 
 	/** Dialogue permettant de sélectionner une tache parmi une liste */
 	private TaskChooserDialog taskChooserDialog = null;
+	private ModelMgr modelMgr;
 
 	/**
 	 * Constructeur par défaut.
 	 * 
 	 * @param parent
 	 *            le composant parent.
+	 * @param modelMgr
+	 *            the model manager.
 	 */
-	public TaskFinderPanel(Composite parent) {
+	public TaskFinderPanel(Composite parent, ModelMgr modelMgr) {
 		this(parent, SWT.NONE);
+		this.modelMgr = modelMgr;
 	}
 
 	/**
@@ -154,7 +158,7 @@ public class TaskFinderPanel extends Composite {
 		searchText.addKeyListener(listener);
 
 		// Initialisation du dialogue de coix de tache
-		taskChooserDialog = new TaskChooserDialog(getShell());
+		taskChooserDialog = new TaskChooserDialog(getShell(), modelMgr);
 
 	}
 
@@ -179,7 +183,7 @@ public class TaskFinderPanel extends Composite {
 				filter.setFieldIndex(searchFieldCombo.getSelectionIndex());
 				filter.setCriteriaIndex(searchCriteriaCombo.getSelectionIndex());
 				filter.setFieldValue(searchText.getText());
-				Task[] tasks = ModelMgr.getTasks(filter);
+				Task[] tasks = modelMgr.getTasks(filter);
 
 				// Traitement du résultat
 				Task selectedTask = null;

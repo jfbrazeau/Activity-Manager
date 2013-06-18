@@ -5,6 +5,7 @@ import org.activitymgr.ui.rcp.util.CfgMgr;
 import org.activitymgr.ui.rcp.util.SafeRunner;
 import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
@@ -47,7 +48,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	public boolean preWindowShellClose() {
 		new SafeRunner() {
 			protected Object runUnsafe() throws Exception {
-				ModelMgr.closeDatabaseAccess();
+				MainView mainView = (MainView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getViewReferences()[0].getView(true);
+				mainView.getModelMgr().closeDatabaseAccess();
 				return null;
 			}
 		}.run(PlatformUI.getWorkbench().getDisplay().getActiveShell());

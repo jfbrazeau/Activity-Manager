@@ -60,6 +60,9 @@ public class TaskChooserTree extends AbstractTableMgr implements
 	/** Composant parent */
 	private Composite parent;
 
+	/** Model manager */
+	private ModelMgr modelMgr;
+
 	/**
 	 * Constructeur par défaut.
 	 * 
@@ -67,8 +70,11 @@ public class TaskChooserTree extends AbstractTableMgr implements
 	 *            composant parent.
 	 * @param layoutData
 	 *            données du layout.
+	 * @param modelMgr
+	 *            the model manager.
 	 */
-	public TaskChooserTree(Composite parentComposite, Object layoutData) {
+	public TaskChooserTree(Composite parentComposite, Object layoutData, ModelMgr modelMgr) {
+		this.modelMgr = modelMgr;
 		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayoutData(layoutData);
@@ -164,7 +170,7 @@ public class TaskChooserTree extends AbstractTableMgr implements
 		final Task parentTask = (Task) parentElement;
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				return ModelMgr.getSubtasks(parentTask);
+				return modelMgr.getSubtasks(parentTask);
 			}
 		};
 		Object[] result = (Object[]) safeRunner.run(parent.getShell(),
@@ -184,7 +190,7 @@ public class TaskChooserTree extends AbstractTableMgr implements
 		final Task task = (Task) element;
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				Task parentTask = ModelMgr.getParentTask(task);
+				Task parentTask = modelMgr.getParentTask(task);
 				return parentTask == null ? treeViewer.getInput() : parentTask;
 			}
 		};

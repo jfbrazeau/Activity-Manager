@@ -5,9 +5,10 @@ Bundle-SymbolicName: org.activitymgr.ui.web.view;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jean-Francois Brazeau
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.vaadin.osgiappcontainer,
+Require-Bundle: org.vaadin.osgiappcontainer;visibility:=reexport,
  org.activitymgr.ui.web.logic,
  org.eclipse.equinox.app,
  org.eclipse.core.runtime
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.activitymgr.ui.web.view.impl.Activator
+Export-Package: org.activitymgr.ui.web.view

@@ -4,13 +4,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.activitymgr.ui.web.logic.IActionLogic.View;
-import org.activitymgr.ui.web.logic.IContributionCellLogicProviderExtension;
+import org.activitymgr.ui.web.logic.impl.IContributionCellLogicProviderExtension;
 import org.activitymgr.ui.web.logic.IContributionsLogic;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.view.IContributionColumnViewProviderExtension;
@@ -159,14 +157,6 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	public void removeAllWeekContributions() {
 		contributionsTable.removeAllItems();
 	}
-
-// TODO delete
-//	@Override
-//	public void setTaskWeekPrevision(String taskCodePath, String previsionalWeekDuration) {
-//		int row = findRow(taskCodePath);
-//		Label label = (Label) contributionsContainer.getComponent(10, row);
-//		label.setValue(previsionalWeekDuration);
-//	}
 
 	@Override
 	public void buttonClick(ClickEvent event) {

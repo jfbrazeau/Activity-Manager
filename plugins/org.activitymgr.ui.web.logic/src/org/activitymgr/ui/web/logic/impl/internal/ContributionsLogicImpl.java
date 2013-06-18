@@ -1,4 +1,4 @@
-package org.activitymgr.ui.web.logic.impl;
+package org.activitymgr.ui.web.logic.impl.internal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +15,7 @@ import java.util.Set;
 import org.activitymgr.core.DbException;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.ModelMgr;
+import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Contribution;
 import org.activitymgr.core.beans.IntervalContributions;
 import org.activitymgr.core.beans.Task;
@@ -22,15 +23,20 @@ import org.activitymgr.core.beans.TaskContributions;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.IActionLogic;
-import org.activitymgr.ui.web.logic.IContributionCellLogicProviderExtension;
 import org.activitymgr.ui.web.logic.IContributionsLogic;
 import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
+import org.activitymgr.ui.web.logic.impl.AbstractActionLogicImpl;
+import org.activitymgr.ui.web.logic.impl.AbstractContributionLogicImpl;
+import org.activitymgr.ui.web.logic.impl.AbstractTextFieldLogicImpl;
+import org.activitymgr.ui.web.logic.impl.IContributionCellLogicProviderExtension;
+import org.activitymgr.ui.web.logic.impl.LabelLogicImpl;
+import org.activitymgr.ui.web.logic.impl.AbstractWeekContributionsProviderExtension;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 
-public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogic.View> implements IContributionsLogic {
+public class ContributionsLogicImpl extends AbstractContributionLogicImpl implements IContributionsLogic {
 	
 	private static final List<String> DEFAULT_COLUMN_IDENTIFIERS = Collections
 			.unmodifiableList(Arrays.asList(new String[] {
@@ -46,14 +52,16 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 					IContributionCellLogicProviderExtension.TOTAL_COLUMN_ID }));
 	
 	public static final IContributionCellLogicProviderExtension DEFAULT_CONTRIBUTION_CELL_LOGIC_PROVIDER = new DefaultContributionCellLogicProvider();
-	
-	private Calendar date;
+	public static final AbstractWeekContributionsProviderExtension DEFAULT_WEEK_CONTRIBUTIONS_PROVIDER = new DefaultWeekContributionsProvider();
+
+	private Calendar firstDayOfWeek;
 	private List<TaskContributions> weekContributions = new ArrayList<TaskContributions>();
 	private List<String> columnIdentifiers;
 	private IContributionCellLogicProviderExtension cellLogicProvider;
+	private AbstractWeekContributionsProviderExtension weekContributionsProvider;
 	private Map<TaskContributions, Map<String, ILogic<?>>> cellLogics = new HashMap<TaskContributions, Map<String, ILogic<?>>>();
 
-	public ContributionsLogicImpl(ILogic<?> parent) {
+	public ContributionsLogicImpl(RootLogicImpl parent) {
 		super(parent);
 
 		// TODO put in an extension point
@@ -66,8 +74,23 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 		else {
 			try {
 				cellLogicProvider = ((IContributionCellLogicProviderExtension) cfgs[0].createExecutableExtension("class"));
+				cellLogicProvider.setDefaultProvider(DEFAULT_CONTRIBUTION_CELL_LOGIC_PROVIDER);
 			} catch (CoreException e) {
 				throw new IllegalStateException("Unable to load cell logic provider '" + cfgs[0].getAttribute("class") + "'", e);
+			}
+		}
+		
+		// REtrieve week contributions provider
+		// TODO factorize all extension points with class attribute
+		cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.weekContributionsProvider");
+		if (cfgs.length == 0) {
+			weekContributionsProvider = DEFAULT_WEEK_CONTRIBUTIONS_PROVIDER;
+		}
+		else {
+			try {
+				weekContributionsProvider = ((AbstractWeekContributionsProviderExtension) cfgs[0].createExecutableExtension("class"));
+			} catch (CoreException e) {
+				throw new IllegalStateException("Unable to load week contribution provider '" + cfgs[0].getAttribute("class") + "'", e);
 			}
 		}
 			
@@ -85,7 +108,7 @@ public class ContributionsLogicImpl extends AbstractLogicImpl<IContributionsLogi
 		getView().addAction(newTaskActionLogic.getView());
 
 		// Initialization
-		date = new GregorianCalendar();
+		firstDayOfWeek = new GregorianCalendar();
 		// Fake change : add 0 year and update date in the view
 		changeFirstDayOfWeekAndUpdateView(Calendar.YEAR, 0);
 	}
@@ -139,7 +162,7 @@ System.out.println("Register contribution column : " + column);
 
 	@Override
 	public void onDateChange(Calendar value) {
-		date = value;
+		firstDayOfWeek = value;
 		changeFirstDayOfWeekAndUpdateView(Calendar.DATE, 0);
 	}
 
@@ -180,37 +203,15 @@ System.out.println("Register contribution column : " + column);
 
 	private void changeFirstDayOfWeekAndUpdateView(int amountType, int amount) {
 		// Update date
-		date.add(amountType, amount);
-		date = getMondayBefore(date);
-		getView().setDate(date);
+		firstDayOfWeek.add(amountType, amount);
+		firstDayOfWeek = moveToFirstDayOfWeek(firstDayOfWeek);
+		getView().setDate(firstDayOfWeek);
 
-		// Recherche des taches déclarées pour cet utilisateur
-		// pour la semaine courante (et la semaine passée pour
-		// réafficher automatiquement les taches de la semaine
-		// passée)
-		Calendar fromDate = (Calendar) date.clone();
-		fromDate.add(Calendar.DATE, -7);
-		Calendar toDate = (Calendar) date.clone();
-		toDate.add(Calendar.DATE, 6);
+		// Load contributions
+		TaskContributions[] tcs = weekContributionsProvider.getWeekContributions(getModelMgr(), getContext().getConnectedCollaborator(), firstDayOfWeek);
 		weekContributions.clear();
-		try {
-			IntervalContributions intervalContributions = ModelMgr
-					.getIntervalContributions(getContext().getConnectedCollaborator(),
-							null, fromDate, toDate);
-			TaskContributions[] weekContributionsArray = intervalContributions.getTaskContributions();
-			weekContributions.addAll(Arrays.asList(weekContributionsArray));
-			
-		} catch (DbException e) {
-			throw new IllegalStateException("Unexpected error while retrieving contributions", e);
-		} catch (ModelException e) {
-			throw new IllegalStateException("Unexpected error while retrieving contributions", e);
-		}
-
+		weekContributions.addAll(Arrays.asList(tcs));
 	
-		// The result contains the contributions of the previous
-		// week. We truncate it before proceeding.
-		getView().removeAllWeekContributions();
-		cellLogics.clear();
 		// TODO comparator as constant
 		Collections.sort(weekContributions, new Comparator<TaskContributions>() {
 			@Override
@@ -218,14 +219,12 @@ System.out.println("Register contribution column : " + column);
 				return tc1.getTask().getFullPath().compareTo(tc2.getTask().getFullPath());
 			}
 		});
+		// Update the view
+		getView().removeAllWeekContributions();
+		cellLogics.clear();
 		for (TaskContributions tc : weekContributions) {
-			Contribution[] newContribs = new Contribution[7];
-			System.arraycopy(tc.getContributions(), 7,
-					newContribs, 0, 7);
-			tc.setContributions(newContribs);
 			addWeekContributions(tc);
 		}
-		
 		// Update totals
 		updateTotals();
 	}
@@ -242,7 +241,7 @@ System.out.println("Register contribution column : " + column);
 		getView().addWeekContribution(tc.getTask().getId(), cellViews);
 	}
 
-	private static Calendar getMondayBefore(Calendar date) {
+	private static Calendar moveToFirstDayOfWeek(Calendar date) {
 		Calendar dateCursor = (Calendar) date.clone();
 		while (dateCursor.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY)
 			dateCursor.add(Calendar.DATE, -1);
@@ -266,24 +265,24 @@ System.out.println("Register contribution column : " + column);
 					contribution.setContributorId(getContext().getConnectedCollaborator().getId());
 					contribution.setDurationId(durationId);
 					contribution.setTaskId(weekContributions.getTask().getId());
-					Calendar clone = (Calendar) date.clone();
+					Calendar clone = (Calendar) firstDayOfWeek.clone();
 					clone.add(Calendar.DATE, dayOfWeek);
 					contribution.setDate(clone);
-					ModelMgr.createContribution(contribution, true);
+					getModelMgr().createContribution(contribution, true);
 					weekContributions.getContributions()[dayOfWeek] = contribution;
 				}
 			}
 			// Second case : the contribution must be removed
 			else if (durationId == 0) {
 				// Let's remove the duration
-				ModelMgr.removeContribution(contribution, true);
+				getModelMgr().removeContribution(contribution, true);
 				weekContributions.getContributions()[dayOfWeek] = null;
 			}
 			// Third case : the contribution must be updated
 			else {
 				// contribution update
 				contribution.setDurationId(durationId);
-				ModelMgr.updateContribution(contribution, true);
+				getModelMgr().updateContribution(contribution, true);
 			}
 			
 			// Update the view
@@ -306,13 +305,20 @@ System.out.println("Register contribution column : " + column);
 		}
 	}
 
+	@Override
 	public void addTask(long taskId) {
 		try {
-			Task task = ModelMgr.getTask(taskId);
-			TaskContributions tc = new TaskContributions();
-			tc.setTaskCodePath(ModelMgr.getTaskCodePath(task));
-			tc.setTask(task);
-			tc.setContributions(new Contribution[14]);
+			Task task = getModelMgr().getTask(taskId);
+			TaskContributions tc = weekContributionsProvider.newTaskContributions(task, getModelMgr().getTaskCodePath(task));
+			if (tc.getContributions() == null) {
+				tc.setContributions(new Contribution[7]);
+			}
+			if (tc.getTask() == null) {
+				throw new IllegalStateException("Week contribution is not associated to any task");
+			}
+			if (tc.getTaskCodePath() == null) {
+				tc.setTaskCodePath(getModelMgr().getTaskCodePath(tc.getTask()));
+			}
 			weekContributions.add(tc);
 			addWeekContributions(tc);
 			// No need to update totals, the new line has no contribution
@@ -326,38 +332,85 @@ System.out.println("Register contribution column : " + column);
 		}
 	}
 
+	@Override
+	public Calendar getFirstDayOfWeek() {
+		return firstDayOfWeek;
+	}
+
 }
 
 class DefaultContributionCellLogicProvider implements IContributionCellLogicProviderExtension {
 	
 	@Override
-	public ILogic<?> getCellLogic(final IContributionsLogic parent, final String columnId,
+	public ILogic<?> getCellLogic(final AbstractContributionLogicImpl parent, final String columnId,
 			final TaskContributions weekContributions) {
 		if (DAY_COLUMNS_IDENTIFIERS.contains(columnId)) {
 			final int dayOfWeek = DAY_COLUMNS_IDENTIFIERS.indexOf(columnId);
 			Contribution c = weekContributions.getContributions()[dayOfWeek];
 			String duration = (c == null) ? "" : StringHelper.hundredthToEntry(c.getDurationId());
-			ITextFieldLogic textFieldLogic = new AbstractTextFieldLogicImpl(parent, duration) {
+			ITextFieldLogic textFieldLogic = new AbstractTextFieldLogicImpl((ContributionsLogicImpl) parent, duration) {
 				@Override
 				public void onValueChanged(String newValue) {
 					((ContributionsLogicImpl) parent).onDurationChanged(weekContributions, dayOfWeek, newValue, this);
 				}
 			};
+			textFieldLogic.getView().setNumericFieldStyle();
 			return textFieldLogic;
 		}
 		else if (IContributionCellLogicProviderExtension.PATH_COLUMN_ID.equals(columnId)) {
-			return new LabelLogicImpl(parent, weekContributions.getTaskCodePath());
+			return new LabelLogicImpl((ContributionsLogicImpl) parent, weekContributions.getTaskCodePath());
 		}
 		else if (IContributionCellLogicProviderExtension.NAME_COLUMN_ID.equals(columnId)) {
-			return new LabelLogicImpl(parent, weekContributions.getTask().getName());
+			return new LabelLogicImpl((ContributionsLogicImpl) parent, weekContributions.getTask().getName());
 		}
 		else if (IContributionCellLogicProviderExtension.TOTAL_COLUMN_ID.equals(columnId)) {
-			return new LabelLogicImpl(parent, "");
+			return new LabelLogicImpl((ContributionsLogicImpl) parent, "");
 		}
 		else {
 			throw new IllegalArgumentException("Unexpected column identifier '" + columnId + "'");
 		}
 	}
 
+	@Override
+	public void setDefaultProvider(
+			IContributionCellLogicProviderExtension defaultProvider) {
+	}
+
 }
 
+class DefaultWeekContributionsProvider extends AbstractWeekContributionsProviderExtension {
+	
+	@Override
+	public TaskContributions[] getWeekContributions(ModelMgr modelMgr,
+			Collaborator contributor, Calendar firstDayOfWeek) {
+		// Recherche des taches déclarées pour cet utilisateur
+		// pour la semaine courante (et la semaine passée pour
+		// réafficher automatiquement les taches de la semaine
+		// passée)
+		Calendar fromDate = (Calendar) firstDayOfWeek.clone();
+		fromDate.add(Calendar.DATE, -7);
+		Calendar toDate = (Calendar) firstDayOfWeek.clone();
+		toDate.add(Calendar.DATE, 6);
+		try {
+			IntervalContributions intervalContributions = modelMgr
+					.getIntervalContributions(contributor, null, fromDate,
+							toDate);
+			TaskContributions[] weekContributions = intervalContributions.getTaskContributions();
+			
+			// The result contains the contributions of the previous
+			// week. We truncate it before proceeding.
+			for (TaskContributions tc : weekContributions) {
+				Contribution[] newContribs = new Contribution[7];
+				System.arraycopy(tc.getContributions(), 7,
+						newContribs, 0, 7);
+				tc.setContributions(newContribs);
+			}
+			return weekContributions;
+		} catch (DbException e) {
+			throw new IllegalStateException("Unexpected error while retrieving contributions", e);
+		} catch (ModelException e) {
+			throw new IllegalStateException("Unexpected error while retrieving contributions", e);
+		}
+	}
+
+}

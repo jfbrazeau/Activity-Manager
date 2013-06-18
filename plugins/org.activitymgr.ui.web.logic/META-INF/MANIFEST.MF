@@ -8,8 +8,10 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.eclipse.osgi,
  org.activitymgr.core,
  org.eclipse.equinox.registry
-Export-Package: org.activitymgr.ui.web.logic
+Export-Package: org.activitymgr.ui.web.logic,
+ org.activitymgr.ui.web.logic.impl,
+ org.activitymgr.ui.web.logic.impl.event
 Bundle-ActivationPolicy: lazy
-Bundle-Activator: org.activitymgr.ui.web.logic.impl.Activator
+Bundle-Activator: org.activitymgr.ui.web.logic.impl.internal.Activator
 Bundle-ClassPath: lib/poi-2.5.1-final-20040804.jar,
  .

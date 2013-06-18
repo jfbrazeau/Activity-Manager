@@ -89,15 +89,20 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 	/** Collaborateur sélectionné */
 	private Collaborator selectedCollaborator;
 
+	private ModelMgr modelMgr;
+
 	/**
 	 * Constructeur par défaut.
 	 * 
 	 * @param parentComposite
 	 *            composant parent.
+	 * @param modelMgr
+	 *            the model manager.
 	 */
 	public SelectableCollaboratorPanel(Composite parentComposite,
-			Object layoutData) {
+			Object layoutData, ModelMgr modelMgr) {
 		parent = parentComposite;
+		this.modelMgr = modelMgr;
 
 		// Table
 		final Table table = new Table(parent, SWT.MULTI | SWT.FULL_SELECTION
@@ -250,7 +255,7 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 					break;
 				}
 				// Récupération
-				return ModelMgr.getActiveCollaborators(orderByFieldIndex,
+				return modelMgr.getActiveCollaborators(orderByFieldIndex,
 						tableViewer.getTable().getSortDirection() == SWT.UP);
 			}
 		};

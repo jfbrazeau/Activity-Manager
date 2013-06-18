@@ -4,10 +4,6 @@ import junit.framework.TestCase;
 
 public class StringHelperTest extends TestCase {
 
-	public static void main(String[] args) {
-		junit.swingui.TestRunner.run(StringHelperTest.class);
-	}
-
 	public void test0() {
 		assertEquals("00", StringHelper.toHex((byte)0));
 	}

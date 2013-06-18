@@ -189,6 +189,9 @@ public class ContributionsUI extends AbstractTableMgr implements
 
 	}
 
+	/** Model manager */
+	private ModelMgr modelMgr;
+	
 	/** Listeners */
 	private List<IContributionListener> listeners = new ArrayList<IContributionListener>();
 
@@ -244,10 +247,13 @@ public class ContributionsUI extends AbstractTableMgr implements
 	 * 
 	 * @param tabItem
 	 *            item parent.
+	 * @param modelMgr
+	 *            the model manager instance.
 	 */
-	public ContributionsUI(TabItem tabItem) {
+	public ContributionsUI(TabItem tabItem, ModelMgr modelMgr) {
 		this(tabItem.getParent());
 		tabItem.setControl(parent);
+		this.modelMgr = modelMgr;
 	}
 
 	/**
@@ -282,7 +288,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 		gridData.widthHint = 190;
 		gridData.verticalSpan = 2;
 		selectableCollaboratorPanel = new SelectableCollaboratorPanel(parent,
-				gridData);
+				gridData, modelMgr);
 		selectableCollaboratorPanel.addSelectionListener(this);
 
 		// Table
@@ -501,7 +507,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 
 		// Initialisation du popup de choix des taches
 		taskChooserDialog = new TaskChooserTreeWithHistoryDialog(
-				parent.getShell());
+				parent.getShell(), modelMgr);
 
 		// Recherche du 1er Lundi précédent la date courante
 		currentMonday = getMondayBefore(new GregorianCalendar());
@@ -568,7 +574,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 					fromDate.add(Calendar.DATE, -7);
 					Calendar toDate = (Calendar) currentMonday.clone();
 					toDate.add(Calendar.DATE, 6);
-					IntervalContributions ic = ModelMgr
+					IntervalContributions ic = modelMgr
 							.getIntervalContributions(selectedCollaborator,
 									null, fromDate, toDate);
 					// The result contains the contributions of the previous
@@ -721,7 +727,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 					contributions = (Contribution[]) nonNullContributions
 							.toArray(new Contribution[nonNullContributions
 									.size()]);
-					ModelMgr.changeContributionTask(contributions, task);
+					modelMgr.changeContributionTask(contributions, task);
 					// Notification des listeners
 					notifyLabelProviderListener(new LabelProviderChangedEvent(
 							labelProvider, weekContributions));
@@ -743,7 +749,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 						// Suppression effective en base si la contribution
 						// existait
 						if (contribution != null)
-							ModelMgr.removeContribution(contribution, true);
+							modelMgr.removeContribution(contribution, true);
 						weekContributions.getContributions()[columnIndex - 2] = null;
 						// Notification des listeners
 						notifyContributionsRemoved(new Contribution[] { contribution });
@@ -770,11 +776,11 @@ public class ContributionsUI extends AbstractTableMgr implements
 						Duration duration = durations[selectedIndex.intValue() - 1];
 						contribution.setDurationId(duration.getId());
 						if (create) {
-							ModelMgr.createContribution(contribution, true);
+							modelMgr.createContribution(contribution, true);
 							// Notification des listeners
 							notifyContributionAdded(contribution);
 						} else {
-							ModelMgr.updateContribution(contribution, true);
+							modelMgr.updateContribution(contribution, true);
 							// Notification des listeners
 							notifyContributionsUpdated(new Contribution[] { contribution });
 						}
@@ -932,7 +938,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 				else if (pasteItem.equals(source)) {
 					String taskCodePath = (String) clipboard
 							.getContents(TextTransfer.getInstance());
-					Task task = ModelMgr.getTaskByCodePath(taskCodePath);
+					Task task = modelMgr.getTaskByCodePath(taskCodePath);
 					ITaskChooserValidator validator = buildTaskChooserValidator();
 					// Validation de la conformité de la tache pour ajout dans
 					// l'IHM
@@ -958,7 +964,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 						// Suppression des contributions non nulles
 						contributions = (Contribution[]) list
 								.toArray(new Contribution[list.size()]);
-						ModelMgr.removeContributions(contributions);
+						modelMgr.removeContributions(contributions);
 						// Notification des listeners
 						notifyContributionsRemoved(contributions);
 					}
@@ -1055,7 +1061,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 		// Si ce n'est pas le cas c'est une nouvelle ligne
 		if (weekContributions == null) {
 			weekContributions = new TaskContributions();
-			weekContributions.setTaskCodePath(ModelMgr.getTaskCodePath(task));
+			weekContributions.setTaskCodePath(modelMgr.getTaskCodePath(task));
 			weekContributions.setTask(task);
 			weekContributions.setContributions(new Contribution[7]);
 			int itemCount = tableViewer.getTable().getItemCount();
@@ -1158,7 +1164,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				// Chargement du référentiel de durées
-				durations = ModelMgr.getActiveDurations();
+				durations = modelMgr.getActiveDurations();
 				String[] durationsStr = new String[durations.length + 1];
 				durationsStr[0] = ""; //$NON-NLS-1$
 				for (int i = 0; i < durations.length; i++)
@@ -1364,7 +1370,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 									.compareTo(removedTaskFullpath) > 0) {
 								// Dans ce cas il faut mettre à jour le chemin
 								// de la tache
-								currentTask = ModelMgr.getTask(currentTask
+								currentTask = modelMgr.getTask(currentTask
 										.getId());
 								weekContribution.setTask(currentTask);
 								tableViewer.refresh(weekContribution);
@@ -1441,7 +1447,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 						Task currentTask = weekContribution.getTask();
 						// Cas ou la tache modifiée est dans le tableau
 						if (currentTask.getId() == movedTask.getId()) {
-							currentTask = ModelMgr.getTask(currentTask.getId());
+							currentTask = modelMgr.getTask(currentTask.getId());
 							weekContribution.setTask(currentTask);
 							tableViewer.refresh(weekContribution);
 						}
@@ -1452,7 +1458,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 							// Il faut faire un refresh pour que le chemin de
 							// code de la tache
 							// soit mis à jour
-							currentTask = ModelMgr.getTask(currentTask.getId());
+							currentTask = modelMgr.getTask(currentTask.getId());
 							weekContribution.setTask(currentTask);
 							tableViewer.refresh(weekContribution);
 						}
@@ -1462,7 +1468,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 						else if (currentTask.getPath().startsWith(oldTaskPath)) {
 							// Dans ce cas il faut mettre à jour le chemin de la
 							// tache
-							currentTask = ModelMgr.getTask(currentTask.getId());
+							currentTask = modelMgr.getTask(currentTask.getId());
 							weekContribution.setTask(currentTask);
 							tableViewer.refresh(weekContribution);
 						}

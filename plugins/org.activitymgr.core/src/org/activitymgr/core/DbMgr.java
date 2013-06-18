@@ -69,16 +69,16 @@ public class DbMgr {
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd"); //$NON-NLS-1$
 
 	/** Datasource */
-	private static BasicDataSource ds = null;
+	private BasicDataSource ds = null;
 
 	/**
 	 * Contexte de thread utilisé pour détecter les anomalies associées à la
 	 * gestion de transaction
 	 */
-	private static ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
+	private ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
 
 	/**
-	 * Initialise la connexion à la base de données.
+	 * Default constructor.
 	 * 
 	 * @param driverName
 	 *            le nom du driver JDBC.
@@ -91,7 +91,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static void initDatabaseAccess(String driverName, String url,
+	public DbMgr(String driverName, String url,
 			String user, String password) throws DbException {
 		try {
 			// Si la datasource existe on la ferme
@@ -130,7 +130,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la BDD.
 	 */
-	protected static void closeDatabaseAccess() throws DbException {
+	protected void closeDatabaseAccess() throws DbException {
 		try {
 			if (ds != null) {
 				// Récupération de la connexion
@@ -166,17 +166,17 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static DbTransaction beginTransaction() throws DbException {
+	protected DbTransaction beginTransaction() throws DbException {
 		try {
 			// Est-on connecté à la BDD ?
 			if (ds == null)
 				throw new DbException(
 						Strings.getString("DbMgr.errors.SQL_CONNECTION_ESTABLISHMENT_FAILURE"), null); //$NON-NLS-1$
 			// Obtention d'une connexion
-			Connection con = ds.getConnection();
 			if (threadLocal.get() != null)
 				throw new Error(
 						Strings.getString("DbMgr.errors.SQL_MULTI_TRANSACTION_DETECTED")); //$NON-NLS-1$
+			Connection con = ds.getConnection();
 			threadLocal.set(con);
 			// log.debug("Active : " + ds.getNumActive() + ", Idle : " +
 			// ds.getNumIdle() + ", Connexion : " + con);
@@ -195,7 +195,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static void commitTransaction(DbTransaction tx)
+	protected void commitTransaction(DbTransaction tx)
 			throws DbException {
 		try {
 			tx.getConnection().commit();
@@ -215,7 +215,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static boolean tablesExist(DbTransaction tx) throws DbException {
+	protected boolean tablesExist(DbTransaction tx) throws DbException {
 		boolean tablesExist = true;
 		tablesExist &= tableExists(tx, "COLLABORATOR"); //$NON-NLS-1$
 		tablesExist &= tableExists(tx, "CONTRIBUTION"); //$NON-NLS-1$
@@ -235,7 +235,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	private static boolean tableExists(DbTransaction tx, String tableName)
+	protected boolean tableExists(DbTransaction tx, String tableName)
 			throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -272,30 +272,65 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static void createTables(DbTransaction tx) throws DbException {
+	protected void createTables(DbTransaction tx) throws DbException {
+		// Récupération de la connexion
+		Connection con = tx.getConnection();
+
+		// Lecture du fichier SQL de création de la BDD
+		String batchName = "sql/" + (isHSQLDB(con) ? "hsqldb.sql" : "mysqldb.sql"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		InputStream in = DbMgr.class.getResourceAsStream(batchName);
+		executeScript(tx, in);
+
+		// Test de l'existence des tables
+		if (!tablesExist(tx))
+			throw new DbException(
+					Strings.getString("DbMgr.errors.SQL_TABLE_CREATION_FAILURE"), null); //$NON-NLS-1$
+
+	}
+
+	/**
+	 * Executes a SQL script.
+	 * 
+	 * @param tx
+	 *            the transaction context.
+	 * @param scriptContent
+	 *            the script content.
+	 * @throws DbException
+	 *             thrown if a database error occurs.
+	 */
+	protected void executeScript(DbTransaction tx, InputStream scriptContent)
+			throws DbException {
+		try {
+			// Script content retrieval
+			String sql = StringHelper.fromInputStream(scriptContent);
+	
+			// Execute the script
+			executeScript(tx, sql);
+		} catch (IOException e) {
+			log.info("I/O error while loading table creation SQL script.", e); //$NON-NLS-1$
+			throw new DbException(
+					Strings.getString("DbMgr.errors.SQL_SCRIPT_LOAD_FAILURE"), null); //$NON-NLS-1$
+		}
+	}
+
+	/**
+	 * Executes a SQL script.
+	 * 
+	 * @param tx
+	 *            the transaction context.
+	 * @param scriptContent
+	 *            the script content.
+	 * @throws DbException
+	 *             thrown if a database error occurs.
+	 */
+	protected void executeScript(DbTransaction tx, String scriptContent)
+			throws DbException {
 		Statement stmt = null;
 		try {
-			// Récupération de la connexion
-			Connection con = tx.getConnection();
-
-			// Lecture du fichier SQL de création de la BDD
-			String batchName = "sql/" + (isHSQLDB(con) ? "hsqldb.sql" : "mysqldb.sql"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			InputStream in = DbMgr.class.getResourceAsStream(batchName);
-			String batchContent = null;
-			try {
-				batchContent = StringHelper.fromInputStream(in);
-			} catch (IOException e) {
-				log.info(
-						"I/O error while loading table creation SQL script.", e); //$NON-NLS-1$
-				throw new DbException(
-						Strings.getString("DbMgr.errors.SQL_SCRIPT_LOAD_FAILURE"), null); //$NON-NLS-1$
-			}
-
 			// Découpage et exécution du batch
-			stmt = con.createStatement();
-			// TODO Externaliser le découpage du script SQL
+			stmt = tx.getConnection().createStatement();
 			LineNumberReader lnr = new LineNumberReader(new StringReader(
-					batchContent));
+					scriptContent));
 			StringBuffer buf = new StringBuffer();
 			boolean proceed = true;
 			do {
@@ -306,8 +341,7 @@ public class DbMgr {
 					try {
 						line = lnr.readLine();
 					} catch (IOException e) {
-						log.info(
-								"Unexpected I/O error while reading memory stream!", e); //$NON-NLS-1$
+						log.info("Unexpected I/O error while reading memory stream!", e); //$NON-NLS-1$
 						throw new DbException(
 								Strings.getString("DbMgr.errors.MEMORY_IO_FAILURE"), null); //$NON-NLS-1$
 					}
@@ -348,23 +382,20 @@ public class DbMgr {
 
 			} while (proceed);
 
-			// Test de l'existence des tables
-			if (!tablesExist(tx))
-				throw new DbException(
-						Strings.getString("DbMgr.errors.SQL_TABLE_CREATION_FAILURE"), null); //$NON-NLS-1$
-
 			// Fermeture du statement
 			stmt.close();
 			stmt = null;
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException("Database table creation failure", e); //$NON-NLS-1$
-		} finally {
-			if (stmt != null)
-				try {
-					stmt.close();
-				} catch (Throwable ignored) {
-				}
+		} 
+		finally {
+				if (stmt != null)
+					try {
+						stmt.close();
+					} catch (Throwable ignored) {
+					}
 		}
 	}
 
@@ -379,7 +410,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Collaborator createCollaborator(DbTransaction tx,
+	protected Collaborator createCollaborator(DbTransaction tx,
 			Collaborator newCollaborator) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -428,7 +459,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Contribution createContribution(DbTransaction tx,
+	protected Contribution createContribution(DbTransaction tx,
 			Contribution newContribution) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -473,7 +504,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Duration createDuration(DbTransaction tx,
+	protected Duration createDuration(DbTransaction tx,
 			Duration newDuration) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -521,7 +552,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Task createTask(DbTransaction tx, Task parentTask,
+	protected Task createTask(DbTransaction tx, Task parentTask,
 			Task newTask) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -581,7 +612,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static boolean durationIsUsed(DbTransaction tx, Duration duration)
+	protected boolean durationIsUsed(DbTransaction tx, Duration duration)
 			throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -627,7 +658,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static void endTransaction(DbTransaction tx) throws DbException {
+	protected void endTransaction(DbTransaction tx) throws DbException {
 		try {
 			tx.getConnection().close();
 		} catch (SQLException e) {
@@ -647,7 +678,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Collaborator getCollaborator(DbTransaction tx,
+	protected Collaborator getCollaborator(DbTransaction tx,
 			long collaboratorId) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -693,7 +724,7 @@ public class DbMgr {
 	 * @throws SQLException
 	 *             levé en cas de problème SQL.
 	 */
-	private static Collaborator rsToCollaborator(ResultSet rs)
+	private Collaborator rsToCollaborator(ResultSet rs)
 			throws SQLException {
 		Collaborator collaborator = new Collaborator();
 		collaborator.setId(rs.getLong(1));
@@ -713,7 +744,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Collaborator getCollaborator(DbTransaction tx, String login)
+	protected Collaborator getCollaborator(DbTransaction tx, String login)
 			throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -765,7 +796,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Collaborator[] getCollaborators(DbTransaction tx,
+	protected Collaborator[] getCollaborators(DbTransaction tx,
 			int orderByClauseFieldIndex, boolean ascendantSort,
 			boolean onlyActiveCollaborators) throws DbException {
 		PreparedStatement pStmt = null;
@@ -846,7 +877,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Contribution[] getContributions(DbTransaction tx,
+	protected Contribution[] getContributions(DbTransaction tx,
 			Collaborator contributor, Task task, Calendar fromDate,
 			Calendar toDate) throws DbException {
 		log.debug("getContributions(" + contributor + ", " + task + ", " + sdf.format(fromDate.getTime()) + ", " + sdf.format(toDate.getTime()) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
@@ -923,7 +954,7 @@ public class DbMgr {
 	 * @throws SQLException
 	 *             levé en cas d'incident avec la base de données.
 	 */
-	private static Contribution[] rsToContributions(ResultSet rs)
+	private Contribution[] rsToContributions(ResultSet rs)
 			throws SQLException {
 		// Recherche des sous-taches
 		ArrayList<Contribution> list = new ArrayList<Contribution>();
@@ -976,7 +1007,7 @@ public class DbMgr {
 	 * @see jfb.tools.activitymgr.core.DbMgr#getContributionsSum(DbTransaction,
 	 *      Task, Collaborator, Integer, Integer, Integer)
 	 */
-	protected static Contribution[] getContributions(DbTransaction tx,
+	protected Contribution[] getContributions(DbTransaction tx,
 			Task task, Collaborator contributor, Integer year, Integer month,
 			Integer day) throws DbException {
 		log.debug("getContributions(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
@@ -1071,7 +1102,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static long getContributionsSum(DbTransaction tx, Task task,
+	protected long getContributionsSum(DbTransaction tx, Task task,
 			Collaborator contributor, Calendar fromDate, Calendar toDate)
 			throws DbException {
 		PreparedStatement pStmt = null;
@@ -1181,7 +1212,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static long getContributionsNb(DbTransaction tx, Task task,
+	protected long getContributionsNb(DbTransaction tx, Task task,
 			Collaborator contributor, Integer year, Integer month, Integer day)
 			throws DbException {
 		log.debug("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
@@ -1222,7 +1253,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static long getContributionsSum(DbTransaction tx, Task task,
+	protected long getContributionsSum(DbTransaction tx, Task task,
 			Collaborator contributor, Integer year, Integer month, Integer day)
 			throws DbException {
 		log.debug("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
@@ -1266,7 +1297,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	private static long getContributionsAggregation(DbTransaction tx,
+	private long getContributionsAggregation(DbTransaction tx,
 			String aggregation, Task task, Collaborator contributor,
 			Integer year, Integer month, Integer day) throws DbException {
 		log.debug("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
@@ -1354,7 +1385,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Duration getDuration(DbTransaction tx, long durationId)
+	protected Duration getDuration(DbTransaction tx, long durationId)
 			throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -1402,7 +1433,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Duration[] getDurations(DbTransaction tx,
+	protected Duration[] getDurations(DbTransaction tx,
 			boolean onlyActiveCollaborators) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -1453,7 +1484,7 @@ public class DbMgr {
 	 * @throws SQLException
 	 *             levé en cas de problème SQL.
 	 */
-	private static Duration rsToDuration(ResultSet rs) throws SQLException {
+	private Duration rsToDuration(ResultSet rs) throws SQLException {
 		Duration duration = new Duration();
 		duration.setId(rs.getLong(1));
 		duration.setIsActive(rs.getBoolean(2));
@@ -1469,7 +1500,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Task getParentTask(DbTransaction tx, Task task)
+	protected Task getParentTask(DbTransaction tx, Task task)
 			throws DbException {
 		Task parentTask = null;
 		String parentTaskFullPath = task.getPath();
@@ -1500,7 +1531,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Task[] getTasks(DbTransaction tx, String path)
+	protected Task[] getTasks(DbTransaction tx, String path)
 			throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -1552,7 +1583,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Task[] getSubtasks(DbTransaction tx, Task parentTask)
+	protected Task[] getSubtasks(DbTransaction tx, Task parentTask)
 			throws DbException {
 		// Récupération du chemin à partir de la tache parent
 		String fullpath = parentTask == null ? "" : parentTask.getFullPath(); //$NON-NLS-1$
@@ -1573,7 +1604,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Task[] getTasks(DbTransaction tx, TaskSearchFilter filter)
+	protected Task[] getTasks(DbTransaction tx, TaskSearchFilter filter)
 			throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -1702,7 +1733,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Task getTask(DbTransaction tx, long taskId)
+	protected Task getTask(DbTransaction tx, long taskId)
 			throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -1751,7 +1782,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Task[] getTasks(DbTransaction tx, long[] tasksIds)
+	protected Task[] getTasks(DbTransaction tx, long[] tasksIds)
 			throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -1827,7 +1858,7 @@ public class DbMgr {
 	 * 
 	 * @return the SQL request.
 	 */
-	private static StringWriter prepareSelectTaskRequest() {
+	private StringWriter prepareSelectTaskRequest() {
 		StringWriter request = new StringWriter();
 		request.append("select theTask.tsk_id, theTask.tsk_path, theTask.tsk_number, theTask.tsk_code, theTask.tsk_name, theTask.tsk_budget, theTask.tsk_initial_cons, theTask.tsk_todo, theTask.tsk_comment, count(subTask.tsk_id)"
 				+ " from TASK as theTask left join TASK as subTask on subTask.tsk_path = concat(theTask.tsk_path, theTask.tsk_number)"
@@ -1841,7 +1872,7 @@ public class DbMgr {
 	 * @param request
 	 *            the request.
 	 */
-	private static void completeSelectTaskRequest(StringWriter request) {
+	private void completeSelectTaskRequest(StringWriter request) {
 		// HSQLDB expects all the selected columns in the group by
 		// directive
 		request.append(" group by theTask.tsk_id, theTask.tsk_path, theTask.tsk_number, theTask.tsk_code, theTask.tsk_name, theTask.tsk_budget, theTask.tsk_initial_cons, theTask.tsk_todo, theTask.tsk_comment"); //$NON-NLS-1$
@@ -1856,7 +1887,7 @@ public class DbMgr {
 	 * @throws SQLException
 	 *             thrown if an error occurrs.
 	 */
-	private static Task toTask(ResultSet rs) throws SQLException {
+	protected Task toTask(ResultSet rs) throws SQLException {
 		Task task = null;
 		Long tskId = rs.getLong(1);
 		// If the task id that is returned is null,
@@ -1889,7 +1920,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Task getTask(DbTransaction tx, String taskPath,
+	protected Task getTask(DbTransaction tx, String taskPath,
 			byte taskNumber) throws DbException {
 		log.debug("getTask(" + taskPath + ", " + taskNumber + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		PreparedStatement pStmt = null;
@@ -1943,7 +1974,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Task getTask(DbTransaction tx, String taskPath,
+	protected Task getTask(DbTransaction tx, String taskPath,
 			String taskCode) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -1997,7 +2028,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Task[] getTasks(DbTransaction tx,
+	protected Task[] getTasks(DbTransaction tx,
 			Collaborator collaborator, Calendar fromDate, Calendar toDate)
 			throws DbException {
 		log.debug("getTasks(" + collaborator + ", " + sdf.format(fromDate.getTime()) + ", " + sdf.format(toDate.getTime()) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
@@ -2056,7 +2087,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static TaskSums getTaskSums(DbTransaction tx, Task task,
+	protected TaskSums getTaskSums(DbTransaction tx, Task task,
 			Calendar fromDate, Calendar toDate) throws DbException {
 		// TODO Factoriser cette méthode avec getContributionsSum
 		PreparedStatement pStmt = null;
@@ -2209,7 +2240,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static void removeCollaborator(DbTransaction tx,
+	protected void removeCollaborator(DbTransaction tx,
 			Collaborator collaborator) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -2252,7 +2283,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static void removeContribution(DbTransaction tx,
+	protected void removeContribution(DbTransaction tx,
 			Contribution contribution) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -2297,7 +2328,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static void removeDuration(DbTransaction tx, Duration duration)
+	protected void removeDuration(DbTransaction tx, Duration duration)
 			throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -2338,14 +2369,14 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static void removeTask(DbTransaction tx, Task task)
+	protected void removeTask(DbTransaction tx, Task task)
 			throws DbException {
 		PreparedStatement pStmt = null;
 		try {
 			// Control sur les sous taches
-			Task[] subTasks = DbMgr.getSubtasks(tx, task);
+			Task[] subTasks = getSubtasks(tx, task);
 			for (int i = 0; i < subTasks.length; i++) {
-				DbMgr.removeTask(tx, subTasks[i]);
+				removeTask(tx, subTasks[i]);
 			}
 
 			// Préparation de la requête
@@ -2381,7 +2412,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static void rollbackTransaction(DbTransaction tx)
+	protected void rollbackTransaction(DbTransaction tx)
 			throws DbException {
 		try {
 			tx.getConnection().rollback();
@@ -2403,7 +2434,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Collaborator updateCollaborator(DbTransaction tx,
+	protected Collaborator updateCollaborator(DbTransaction tx,
 			Collaborator collaborator) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -2453,7 +2484,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Contribution updateContribution(DbTransaction tx,
+	protected Contribution updateContribution(DbTransaction tx,
 			Contribution contribution) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -2503,7 +2534,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Duration updateDuration(DbTransaction tx, Duration duration)
+	protected Duration updateDuration(DbTransaction tx, Duration duration)
 			throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -2552,7 +2583,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Contribution changeContributionTask(DbTransaction tx,
+	protected Contribution changeContributionTask(DbTransaction tx,
 			Contribution contribution, Task newContributionTask)
 			throws DbException {
 		PreparedStatement pStmt = null;
@@ -2606,7 +2637,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static Task updateTask(DbTransaction tx, Task task)
+	protected Task updateTask(DbTransaction tx, Task task)
 			throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -2662,7 +2693,7 @@ public class DbMgr {
 	 * @param day
 	 *            le jour (facultatif)
 	 */
-	private static void completeContributionRequest(StringBuffer requestBase,
+	private void completeContributionRequest(StringBuffer requestBase,
 			Collaborator contributor, Integer year, Integer month, Integer day) {
 		if (contributor != null)
 			requestBase.append(" and ctb_contributor=?"); //$NON-NLS-1$
@@ -2693,7 +2724,7 @@ public class DbMgr {
 	 * @throws SQLException
 	 *             levé en cas d'incident avec la base de données.
 	 */
-	private static void completeContributionReqParams(PreparedStatement pStmt,
+	private void completeContributionReqParams(PreparedStatement pStmt,
 			int startIndex, Collaborator contributor, Integer year,
 			Integer month, Integer day) throws SQLException {
 		int idx = startIndex;
@@ -2722,7 +2753,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	protected static byte newTaskNumber(DbTransaction tx, String path)
+	protected byte newTaskNumber(DbTransaction tx, String path)
 			throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -2767,7 +2798,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	private static long getGeneratedId(PreparedStatement pStmt)
+	private long getGeneratedId(PreparedStatement pStmt)
 			throws DbException {
 		long generatedId = -1;
 		PreparedStatement pStmt1 = null;
@@ -2821,7 +2852,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	private static boolean isHSQLDB(Connection con) throws DbException {
+	private boolean isHSQLDB(Connection con) throws DbException {
 		try {
 			// Récupération du nom de la base de données
 			String dbName = con.getMetaData().getDatabaseProductName();
@@ -2843,7 +2874,7 @@ public class DbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	private static boolean isEmbeddedHSQLDB(Connection con) throws DbException {
+	private boolean isEmbeddedHSQLDB(Connection con) throws DbException {
 		try {
 			// Récupération du nom de la base de données
 			String dbName = con.getMetaData().getDatabaseProductName();

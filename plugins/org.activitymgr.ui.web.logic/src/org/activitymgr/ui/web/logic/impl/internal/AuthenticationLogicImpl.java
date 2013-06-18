@@ -1,11 +1,12 @@
-package org.activitymgr.ui.web.logic.impl;
+package org.activitymgr.ui.web.logic.impl.internal;
 
 import org.activitymgr.core.DbException;
 import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
-import org.activitymgr.ui.web.logic.IAuthenticatorExtension;
-import org.activitymgr.ui.web.logic.ILogic;
+import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
+import org.activitymgr.ui.web.logic.impl.IAuthenticatorExtension;
+import org.activitymgr.ui.web.logic.impl.LogicContext;
 import org.activitymgr.ui.web.logic.impl.event.ConnectedCollaboratorEvent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -16,7 +17,7 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 
 	private IAuthenticatorExtension authenticator;
 	
-	public AuthenticationLogicImpl(ILogic<?> parent) {
+	public AuthenticationLogicImpl(RootLogicImpl parent) {
 		super(parent);
 		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.authenticator");
 
@@ -60,8 +61,8 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 			}
 			// Authentication
 			if (authenticator.authenticate(login, password)) {
-				Collaborator collaborator = ModelMgr.getCollaborator(login);
-				((LogicContextImpl)getContext()).setConnectedCollaborator(collaborator);
+				Collaborator collaborator = getModelMgr().getCollaborator(login);
+				((LogicContext)getContext()).setConnectedCollaborator(collaborator);
 				getEventBus().fire(new ConnectedCollaboratorEvent(this, collaborator));
 			}
 			else {
@@ -76,10 +77,13 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 
 	@Override
 	protected void handleError(Throwable error) {
-		// TODO Auto-generated method stub
 		super.handleError(error);
 	}
 
+	@Override
+	protected ModelMgr getModelMgr() {
+		return super.getModelMgr();
+	}
 }
 
 class DefaultAuthenticator implements IAuthenticatorExtension {
@@ -93,7 +97,7 @@ class DefaultAuthenticator implements IAuthenticatorExtension {
 	@Override
 	public boolean authenticate(String login, String password) {
 		try {
-			return ModelMgr.getCollaborator(login) != null;
+			return parent.getModelMgr().getCollaborator(login) != null;
 		}
 		catch (DbException e) {
 			parent.handleError(e);
