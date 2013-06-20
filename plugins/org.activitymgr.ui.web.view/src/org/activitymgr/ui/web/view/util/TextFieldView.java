@@ -25,7 +25,7 @@ public class TextFieldView extends TextField implements ITextFieldLogic.View {
 
 	@Override
 	public void setNumericFieldStyle() {
-		addStyleName("amount");
+		setStyleName("amount");
 	}
 	
 	@Override

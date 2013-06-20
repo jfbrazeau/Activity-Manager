@@ -6,4 +6,11 @@
    <extension-point id="org.activitymgr.ui.web.logic.contributionCellLogicProvider" name="Contribution Cell Logic Provider" schema="schema/org.activitymgr.ui.web.logic.contributionCellLogicProvider.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.modelMgrImpl" name="Model Manager Implementation" schema="schema/org.activitymgr.ui.web.logic.modelMgrImpl.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.weekContributionsProvider" name="Week Contributions Provider" schema="schema/org.activitymgr.ui.web.logic.weekContributionsProvider.exsd"/>
+   <extension-point id="org.activitymgr.ui.web.logic.contributionActionHandler" name="Contributions UI Action Handler" schema="schema/org.activitymgr.ui.web.logic.contributionActionHandler.exsd"/>
+   <extension
+         point="org.activitymgr.ui.web.logic.contributionActionHandler">
+      <contributionActionHandler
+            class="org.activitymgr.ui.web.logic.impl.internal.AddTaskContributionActionHandler">
+      </contributionActionHandler>
+   </extension>
 </plugin>

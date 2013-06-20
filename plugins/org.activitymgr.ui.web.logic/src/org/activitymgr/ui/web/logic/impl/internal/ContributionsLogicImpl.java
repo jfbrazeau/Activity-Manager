@@ -31,6 +31,7 @@ import org.activitymgr.ui.web.logic.impl.AbstractActionLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractTextFieldLogicImpl;
 import org.activitymgr.ui.web.logic.impl.IContributionCellLogicProviderExtension;
+import org.activitymgr.ui.web.logic.impl.IContributionsActionHandler;
 import org.activitymgr.ui.web.logic.impl.LabelLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractWeekContributionsProviderExtension;
 import org.eclipse.core.runtime.CoreException;
@@ -95,17 +96,21 @@ public class ContributionsLogicImpl extends AbstractContributionLogicImpl implem
 		}
 			
 		// Add actions
-		IActionLogic newTaskActionLogic = new AbstractActionLogicImpl(this, "New task") {
-			@Override
-			public void onActionInvoked() {
-				List<Long> selectedTaskIds = new ArrayList<Long>();
-				for (TaskContributions tc : weekContributions) {
-					selectedTaskIds.add(tc.getTask().getId());
-				}
-				new TaskChooserLogicImpl(ContributionsLogicImpl.this, selectedTaskIds);
+		cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.contributionActionHandler");
+		for (IConfigurationElement cfg : cfgs) {
+			try {
+				final IContributionsActionHandler handler = ((IContributionsActionHandler) cfg.createExecutableExtension("class"));
+				IActionLogic actionLogic = new AbstractActionLogicImpl(this, handler.getLabel()) {
+					@Override
+					public void onActionInvoked() {
+						handler.handle(ContributionsLogicImpl.this);
+					}
+				};
+				getView().addAction(actionLogic.getView());
+			} catch (CoreException e) {
+				throw new IllegalStateException("Unable to load action handler '" + cfg.getAttribute("class") + "'", e);
 			}
-		};
-		getView().addAction(newTaskActionLogic.getView());
+		}
 
 		// Initialization
 		firstDayOfWeek = new GregorianCalendar();
@@ -308,21 +313,17 @@ System.out.println("Register contribution column : " + column);
 	@Override
 	public void addTask(long taskId) {
 		try {
-			Task task = getModelMgr().getTask(taskId);
-			TaskContributions tc = weekContributionsProvider.newTaskContributions(task, getModelMgr().getTaskCodePath(task));
-			if (tc.getContributions() == null) {
-				tc.setContributions(new Contribution[7]);
-			}
-			if (tc.getTask() == null) {
-				throw new IllegalStateException("Week contribution is not associated to any task");
-			}
-			if (tc.getTaskCodePath() == null) {
-				tc.setTaskCodePath(getModelMgr().getTaskCodePath(tc.getTask()));
-			}
-			weekContributions.add(tc);
-			addWeekContributions(tc);
-			// No need to update totals, the new line has no contribution
-			//updateTotals();
+			addTask(getModelMgr().getTask(taskId));
+		}
+		catch (DbException e) {
+			handleError(e);
+		}
+	}
+
+	@Override
+	public void addTask(Task task) {
+		try {
+			addTask(task, getModelMgr().getTaskCodePath(task));
 		}
 		catch (DbException e) {
 			handleError(e);
@@ -333,8 +334,43 @@ System.out.println("Register contribution column : " + column);
 	}
 
 	@Override
+	public void addTask(Task task, String taskCodePath) {
+		// If the task is already present, no need to add it
+		if (getTasksIds().contains(task.getId())) {
+			return;
+		}
+		TaskContributions tc = weekContributionsProvider.newTaskContributions(task, taskCodePath);
+		if (tc.getContributions() == null) {
+			tc.setContributions(new Contribution[7]);
+		}
+		if (tc.getTask() == null) {
+			throw new IllegalStateException("Week contribution is not associated to any task");
+		}
+		if (tc.getTaskCodePath() == null) {
+			tc.setTaskCodePath(taskCodePath);
+		}
+		weekContributions.add(tc);
+		addWeekContributions(tc);
+		// No need to update totals, the new line has no contribution
+		//updateTotals();
+	}
+
+	private Set<Long> getTasksIds() {
+		Set<Long> result = new LinkedHashSet<Long>();
+		for (TaskContributions tc : getWeekContributions()) {
+			result.add(tc.getTask().getId());
+		}
+		return result;
+	}
+	
+	@Override
 	public Calendar getFirstDayOfWeek() {
 		return firstDayOfWeek;
+	}
+
+	@Override
+	public List<TaskContributions> getWeekContributions() {
+		return weekContributions;
 	}
 
 }

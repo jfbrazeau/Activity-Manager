@@ -151,6 +151,8 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	@Override
 	public void addWeekContribution(long taskId, List<ILogic.IView<?>> cellViews) {
 		contributionsTable.addItem(cellViews.toArray(), taskId);
+		// TODO enhance sort management
+		contributionsTable.sort(new Object[] { "PATH" }, new boolean[] { true });
 	}
 
 	@Override
@@ -241,7 +243,7 @@ class DefaultColumnProvider implements IContributionColumnViewProviderExtension 
 		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.TOTAL_COLUMN_ID, Label.class);
 	}
 
-	private static final int DAY_COLUMN_WIDTH = 50;
+	private static final int DAY_COLUMN_WIDTH = 40;
 	private static final Map<String, Integer> DEFAULT_COLUMN_WIDTHS = new HashMap<String, Integer>();
 	static {
 		DEFAULT_COLUMN_WIDTHS.put(IContributionCellLogicProviderExtension.PATH_COLUMN_ID, 250);
