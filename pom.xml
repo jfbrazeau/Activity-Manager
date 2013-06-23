@@ -29,12 +29,9 @@
 	</repositories>
 
 	<modules>
-		<module>plugins/org.activitymgr.core</module>
-		<module>plugins/org.activitymgr.core.hsqldbfragment</module>
-		<module>plugins/org.activitymgr.core.mysqlfragment</module>
-		<module>plugins/org.activitymgr.ui.rcp</module>
-		<module>plugins/org.activitymgr.ui.web.logic</module>
-		<module>plugins/org.activitymgr.ui.web.view</module>
+		<module>core</module>
+		<module>ui.rcp</module>
+		<module>ui.web</module>
 	</modules>
 
 	<build>

@@ -5,13 +5,13 @@
 
 	<parent>
 		<groupId>org.activitymgr</groupId>
-		<artifactId>org.activitymgr.parent</artifactId>
+		<artifactId>org.activitymgr.ui.web.parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
 	<groupId>org.activitymgr</groupId>
-	<artifactId>org.activitymgr.ui.web.view</artifactId>
+	<artifactId>org.activitymgr.ui.web.logic</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 

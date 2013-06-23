@@ -5,13 +5,13 @@
 
 	<parent>
 		<groupId>org.activitymgr</groupId>
-		<artifactId>org.activitymgr.parent</artifactId>
+		<artifactId>org.activitymgr.core.parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 		<relativePath>../../</relativePath>
 	</parent>
 
 	<groupId>org.activitymgr</groupId>
-	<artifactId>org.activitymgr.core.mysqlfragment</artifactId>
+	<artifactId>org.activitymgr.core</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 
