@@ -35,8 +35,8 @@
 					<products>
 						<product>
 							<id>org.activitymgr.ui.web.view.product</id>
-							<archiveFileName>activitymgr-web-ui-${unqualifiedVersion}.${buildQualifier}</archiveFileName>
-							<rootFolder>activitymgr-web-ui</rootFolder>
+							<archiveFileName>activitymgr-web-server-${unqualifiedVersion}.${buildQualifier}</archiveFileName>
+							<rootFolder>activitymgr-web-server</rootFolder>
 						</product>
 					</products>
 				</configuration>
