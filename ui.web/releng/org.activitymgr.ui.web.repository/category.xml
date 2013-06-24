@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/org.activitymgr.ui.web.feature_1.0.0.qualifier.jar" id="org.activitymgr.ui.web.feature" version="1.0.0.qualifier">
+      <category name="org.activitymgr.ui.web"/>
+   </feature>
+   <feature url="features/org.vaadin.osgiappcontainer.feature_0.1.0.qualifier.jar" id="org.vaadin.osgiappcontainer.feature" version="0.1.0.qualifier">
+      <category name="org.activitymgr.ui.web"/>
+   </feature>
+   <category-def name="org.activitymgr.ui.web" label="ActivityManager Web UI"/>
+</site>

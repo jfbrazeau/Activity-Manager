@@ -15,6 +15,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
+		<module>releng/org.activitymgr.ui.web.repository</module>
 		<module>releng/org.activitymgr.ui.web.feature</module>
 		<module>plugins/org.activitymgr.ui.web.logic</module>
 		<module>plugins/org.activitymgr.ui.web.view</module>
