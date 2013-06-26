@@ -15,6 +15,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
+		<module>releng/org.activitymgr.ui.rcp.repository</module>
 		<module>releng/org.activitymgr.ui.rcp.feature</module>
 		<module>plugins/org.activitymgr.ui.rcp</module>
 	</modules>

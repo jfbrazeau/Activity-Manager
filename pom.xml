@@ -11,10 +11,15 @@
 	</properties>
 
 	<repositories>
-		<repository>
+		<!-- repository>
 			<id>Juno 3.8.x</id>
 			<layout>p2</layout>
 			<url>http://download.eclipse.org/eclipse/updates/3.8</url>
+		</repository -->
+		<repository>
+			<id>Juno 4.2.x</id>
+			<layout>p2</layout>
+			<url>http://download.eclipse.org/eclipse/updates/4.2</url>
 		</repository>
 		<repository>
 			<id>Eclipse Orbit</id>
@@ -30,9 +35,22 @@
 
 	<modules>
 		<module>core</module>
-		<module>ui.rcp</module>
-		<module>ui.web</module>
 	</modules>
+
+	<profiles>
+		<profile>
+			<id>ui.rcp</id>
+			<modules>
+				<module>ui.rcp</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>ui.web</id>
+			<modules>
+				<module>ui.web</module>
+			</modules>
+		</profile>
+	</profiles>
 
 	<build>
 		<plugins>
