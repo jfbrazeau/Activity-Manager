@@ -137,7 +137,7 @@ public class DbMgr {
 				Connection con = ds.getConnection();
 
 				// Cas d'une base HSQLDB embarquée
-				if (isEmbeddedHSQLDB(con)) {
+				if (isEmbeddedHsqlOrH2(con)) {
 					// Extinction de la base de données
 					con.createStatement().execute("shutdown"); //$NON-NLS-1$
 				}
@@ -277,7 +277,7 @@ public class DbMgr {
 		Connection con = tx.getConnection();
 
 		// Lecture du fichier SQL de création de la BDD
-		String batchName = "sql/" + (isHSQLDB(con) ? "hsqldb.sql" : "mysqldb.sql"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		String batchName = "sql/" + (isHsqlOrH2(con) ? "hsqldb.sql" : "mysqldb.sql"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		InputStream in = DbMgr.class.getResourceAsStream(batchName);
 		executeScript(tx, in);
 
@@ -2817,36 +2817,14 @@ public class DbMgr {
 	 */
 	private long getGeneratedId(PreparedStatement pStmt)
 			throws DbException {
-		long generatedId = -1;
 		PreparedStatement pStmt1 = null;
 		try {
-			// Récupération de la connexion
-			Connection con = pStmt.getConnection();
-			// Cas de HSQLDB
-			if (isHSQLDB(con)) {
-				log.debug("HSQL Database detected"); //$NON-NLS-1$
-				pStmt1 = con.prepareStatement("call identity()"); //$NON-NLS-1$
-				ResultSet rs = pStmt1.executeQuery();
-				if (!rs.next())
-					throw new DbException(
-							Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
-				generatedId = rs.getLong(1);
-
-				// Fermeture du statement
-				pStmt1.close();
-				pStmt1 = null;
-			} else {
-				log.debug("Generic Database detected"); //$NON-NLS-1$
-				// Récupération de l'identifiant généré
-				ResultSet rs = pStmt.getGeneratedKeys();
-				if (!rs.next())
-					throw new DbException(
-							Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
-				generatedId = rs.getLong(1);
-			}
-			// Retour du résultat
-			log.debug("Generated id=" + generatedId); //$NON-NLS-1$
-			return generatedId;
+			// Récupération de l'identifiant généré
+			ResultSet rs = pStmt.getGeneratedKeys();
+			if (!rs.next())
+				throw new DbException(
+						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
+			return rs.getLong(1);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
@@ -2861,20 +2839,20 @@ public class DbMgr {
 	}
 
 	/**
-	 * Indique si la BDD de données est une base HSQLDB.
+	 * Indique si la BDD de données est une base HSQLDB ou H2.
 	 * 
 	 * @param con
 	 *            la connexion SQL.
-	 * @return un booléen indiquant si la BDD est de type HSQLDB.
+	 * @return un booléen indiquant si la BDD est de type HSQLDB ou H2.
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	private boolean isHSQLDB(Connection con) throws DbException {
+	private boolean isHsqlOrH2(Connection con) throws DbException {
 		try {
 			// Récupération du nom de la base de données
-			String dbName = con.getMetaData().getDatabaseProductName();
+			String dbName = con.getMetaData().getDatabaseProductName().toLowerCase();
 			log.debug("DbName=" + dbName); //$NON-NLS-1$
-			return "HSQL Database Engine".equals(dbName); //$NON-NLS-1$
+			return dbName.contains("hsql") || dbName.contains("h2"); //$NON-NLS-1$ //$NON-NLS-2$
 		} catch (SQLException e) {
 			log.info("SQL Error", e); //$NON-NLS-1$
 			throw new DbException(
@@ -2883,20 +2861,20 @@ public class DbMgr {
 	}
 
 	/**
-	 * Indique si la BDD de données est une base HSQLDB embarquée.
+	 * Indique si la BDD de données est une base HSQLDB ou H2 embarquée.
 	 * 
 	 * @param con
 	 *            la connexion SQL.
-	 * @return un booléen indiquant si la BDD est de type HSQLDB embarquée.
+	 * @return un booléen indiquant si la BDD est de type HSQLDB ou H2 embarquée.
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	private boolean isEmbeddedHSQLDB(Connection con) throws DbException {
+	private boolean isEmbeddedHsqlOrH2(Connection con) throws DbException {
 		try {
 			// Récupération du nom de la base de données
 			String dbName = con.getMetaData().getDatabaseProductName();
 			log.debug("DbName=" + dbName); //$NON-NLS-1$
-			return isHSQLDB(con) && ds.getUrl().startsWith("jdbc:hsqldb:file"); //$NON-NLS-1$
+			return isHsqlOrH2(con) && ds.getUrl().startsWith("jdbc:hsqldb:file"); //$NON-NLS-1$
 		} catch (SQLException e) {
 			log.info("SQL Error", e); //$NON-NLS-1$
 			throw new DbException(
