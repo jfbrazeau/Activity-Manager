@@ -1155,7 +1155,7 @@ public class ModelMgr {
 			Map<Long, String> tasksCodePathMap = new HashMap<Long, String>();
 			exportSubTasksToXML(tx, out, INDENT, null, "", tasksCodePathMap); //$NON-NLS-1$
 			// Exportation des contributions
-			Contribution[] contributions = dao.getContributions(tx, null,
+			Contribution[] contributions = dao.getContributions(tx, (Task) null,
 					null, null, null, null);
 			if (contributions.length > 0) {
 				XmlHelper.startXmlNode(out, "  ", XmlHelper.CONTRIBUTIONS_NODE); //$NON-NLS-1$
@@ -1654,6 +1654,48 @@ public class ModelMgr {
 	}
 
 	/**
+	 * @param contributor
+	 *            le collaborateur associé aux contributions.
+	 * @param parentTask
+	 *            la tache parente associée aux contributions (en général si parentTask != nul, task = null et vice versa).
+	 * @param task
+	 *            la tache associée aux contributions (en général si parentTask != nul, task = null et vice versa).
+	 * @param fromDate
+	 *            la date de départ.
+	 * @param toDate
+	 *            la date de fin.
+	 * @return la liste des contributions associées aux paramétres spécifiés.
+	 * @throws DbException
+	 *             levé en cas d'incident technique d'accès à la base.
+	 * @throws ModelException 
+	 */
+	public Contribution[] getContributions(Collaborator contributor, Task parentTask, Task task, Calendar fromDate,
+			Calendar toDate) throws DbException, ModelException {
+		log.info("getContributions(" + contributor + ", " + StringHelper.toYYYYMMDD(fromDate) + ", " + StringHelper.toYYYYMMDD(toDate) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+		DbTransaction tx = null;
+		try {
+			// Ouverture de la transaction
+			tx = dao.beginTransaction();
+	
+			// Control sur la date
+			if (fromDate.getTime().compareTo(toDate.getTime()) > 0)
+				throw new ModelException(
+						Strings.getString("ModelMgr.errors.FROM_DATE_MUST_BE_BEFORE_TO_DATE")); //$NON-NLS-1$
+			
+			// Retour du résultat
+			return dao.getContributions(tx,
+					contributor, parentTask, task, fromDate, toDate);
+		} finally {
+			if (tx != null)
+				try {
+					dao.endTransaction(tx);
+				} catch (DbException ignored) {
+				}
+			log.info("end of getContributions");
+		}
+	}
+
+	/**
 	 * Retourne la liste des contributions associées à une tache, un
 	 * collaborateur et à un interval de temps donnés.
 	 * 
@@ -1663,8 +1705,10 @@ public class ModelMgr {
 	 * 
 	 * @param contributor
 	 *            le collaborateur associé aux contributions.
+	 * @param parentTask
+	 *            la tache parente associée aux contributions (en général si parentTask != nul, task = null et vice versa).
 	 * @param task
-	 *            la tache associée aux contributions (optional).
+	 *            la tache associée aux contributions (en général si parentTask != nul, task = null et vice versa).
 	 * @param fromDate
 	 *            la date de départ.
 	 * @param toDate
@@ -1677,7 +1721,7 @@ public class ModelMgr {
 	 *             la date de début spécifiée.
 	 */
 	public IntervalContributions getIntervalContributions(
-			Collaborator contributor, Task task, Calendar fromDate,
+			Collaborator contributor, Task parentTask, Task task, Calendar fromDate,
 			Calendar toDate) throws DbException, ModelException {
 		log.info("getIntervalContributions(" + contributor + ", " + StringHelper.toYYYYMMDD(fromDate) + ", " + StringHelper.toYYYYMMDD(toDate) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 		DbTransaction tx = null;
@@ -1685,16 +1729,20 @@ public class ModelMgr {
 			// Ouverture de la transaction
 			tx = dao.beginTransaction();
 
+			// If the contributor is missing, error....
+			if (contributor == null) {
+				throw new ModelException(Strings.getString("ModelMgr.errors.CONTRIBUTOR_MUST_BE_SPECIFIED"));
+			}
+			
 			// Control sur la date
 			if (fromDate.getTime().compareTo(toDate.getTime()) > 0)
 				throw new ModelException(
 						Strings.getString("ModelMgr.errors.FROM_DATE_MUST_BE_BEFORE_TO_DATE")); //$NON-NLS-1$
 			int daysCount = countDaysBetween(fromDate, toDate) + 1;
 			
-System.out.println("daysCount= "+ daysCount);
 			// Récupération des contributions
 			Contribution[] contributionsArray = dao.getContributions(tx,
-					contributor, task, fromDate, toDate);
+					contributor, parentTask, task, fromDate, toDate);
 
 			// Rangement des contributions par identifiant de tache
 			// (as the tsk parameter can be omitted => in this case, several
@@ -2776,7 +2824,7 @@ System.out.println("daysCount= "+ daysCount);
 				Task task = dao.getTask(tx, contribution.getTaskId());
 				// Récupération de la contribution correspondante en base
 				Contribution[] contributions = dao.getContributions(tx,
-						contributor, task, contribution.getDate(),
+						contributor, null, task, contribution.getDate(),
 						contribution.getDate());
 				if (contributions.length == 0) {
 					// Si la contribution n'existait pas, il n'yu a rien à faire
@@ -3159,7 +3207,7 @@ System.out.println("daysCount= "+ daysCount);
 				Task task = dao.getTask(tx, contribution.getTaskId());
 				// Récupération de la contribution correspondante en base
 				Contribution[] contributions = dao.getContributions(tx,
-						contributor, task, contribution.getDate(),
+						contributor, null, task, contribution.getDate(),
 						contribution.getDate());
 				if (contributions.length == 0) {
 					// Si la contribution n'existe pas, c'est qu'il y a

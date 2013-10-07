@@ -576,7 +576,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 					toDate.add(Calendar.DATE, 6);
 					IntervalContributions ic = modelMgr
 							.getIntervalContributions(selectedCollaborator,
-									null, fromDate, toDate);
+									null, null, fromDate, toDate);
 					// The result contains the contributions of the previous
 					// week
 					// We truncate it before proceeding.

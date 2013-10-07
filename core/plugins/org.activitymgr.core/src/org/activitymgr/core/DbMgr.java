@@ -867,8 +867,10 @@ public class DbMgr {
 	 *            le contexte de transaction.
 	 * @param contributor
 	 *            le collaborateur associé aux contributions.
+	 * @param parentTask
+	 *            la tache parente associée aux contributions (en général si parentTask != nul, task = null et vice versa).
 	 * @param task
-	 *            la tache associée aux contributions.
+	 *            la tache associée aux contributions (en général si parentTask != nul, task = null et vice versa).
 	 * @param fromDate
 	 *            la date de départ.
 	 * @param toDate
@@ -878,7 +880,7 @@ public class DbMgr {
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	protected Contribution[] getContributions(DbTransaction tx,
-			Collaborator contributor, Task task, Calendar fromDate,
+			Collaborator contributor, Task parentTask, Task task, Calendar fromDate,
 			Calendar toDate) throws DbException {
 		log.debug("getContributions(" + contributor + ", " + task + ", " + sdf.format(fromDate.getTime()) + ", " + sdf.format(toDate.getTime()) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 		PreparedStatement pStmt = null;
@@ -890,7 +892,19 @@ public class DbMgr {
 
 			// Préparation de la requête
 			StringWriter request = new StringWriter();
-			request.append("select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from CONTRIBUTION where ctb_year*10000 + ( ctb_month*100 + ctb_day )");
+			request.append("select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration");
+			if (parentTask != null) {
+				request.append(", tsk_id, tsk_path");
+			}
+			request.append(" from CONTRIBUTION");
+			if (parentTask != null) {
+				request.append(", TASK");
+			}
+			request.append(" where");
+			if (parentTask != null) {
+				request.append(" ctb_task=tsk_id and tsk_path like ? and");
+			}
+			request.append(" ctb_year*10000 + ( ctb_month*100 + ctb_day )");
 			if (!fromDateStr.equals(toDateStr)) {
 				request.append(" between ? and ?");
 			} else {
@@ -904,6 +918,10 @@ public class DbMgr {
 			}
 			pStmt = tx.prepareStatement(request.toString());
 			int paramIdx = 1;
+			// Parent task management
+			if (parentTask != null) {
+				pStmt.setString(paramIdx++, parentTask.getFullPath() + '%');
+			}
 			// 1° cas : les deux dates sont différentes
 			if (!fromDateStr.equals(toDateStr)) {
 				pStmt.setString(paramIdx++, fromDateStr);
@@ -1112,9 +1130,9 @@ public class DbMgr {
 			StringBuffer request = new StringBuffer(
 					"select sum(ctb_duration) from CONTRIBUTION");
 			if (task != null)
-				request.append(", task");
+				request.append(", TASK");
 			if (contributor != null)
-				request.append(", collaborator");
+				request.append(", COLLABORATOR");
 			request.append(" where ");
 			if (task != null) {
 				request.append("ctb_task=tsk_id and tsk_id=?");
@@ -1149,11 +1167,10 @@ public class DbMgr {
 
 			// Y'a-t-il un critère de date à ajouter ?
 			if (fromDate != null || toDate != null) {
-				int i = 2;
 				if (fromDate != null)
-					pStmt.setString(i++, sdf.format(fromDate.getTime()));
+					pStmt.setString(idx++, sdf.format(fromDate.getTime()));
 				if (toDate != null)
-					pStmt.setString(i++, sdf.format(toDate.getTime()));
+					pStmt.setString(idx++, sdf.format(toDate.getTime()));
 			}
 			// Exécution de le requête et extraction du résultat
 			rs = pStmt.executeQuery();

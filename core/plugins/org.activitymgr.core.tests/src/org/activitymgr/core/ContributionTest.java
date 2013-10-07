@@ -194,7 +194,7 @@ public class ContributionTest extends AbstractModelTestCase {
 
 		// Recherche de cette contribution
 		IntervalContributions ic = getModelMgr().getIntervalContributions(col1,
-				task111, cal, cal);
+				null, task111, cal, cal);
 		assertNotNull(ic);
 		TaskContributions[] tcs = ic.getTaskContributions();
 		assertNotNull(tcs);
@@ -220,7 +220,7 @@ public class ContributionTest extends AbstractModelTestCase {
 
 		// Nouvelle recherche => à présent, la recherche ne doit rien ramener
 		ic = getModelMgr().getIntervalContributions(col1,
-				task111, cal, cal);
+				null, task111, cal, cal);
 		assertNotNull(ic);
 		tcs = ic.getTaskContributions();
 		assertNotNull(tcs);
@@ -292,7 +292,7 @@ public class ContributionTest extends AbstractModelTestCase {
 
 		// Vérification de la mise à jour en base
 		IntervalContributions ic = getModelMgr().getIntervalContributions(col1,
-				task111, c1.getDate(), c1.getDate());
+				null, task111, c1.getDate(), c1.getDate());
 		assertNotNull(ic);
 		TaskContributions[] tcs = ic.getTaskContributions();
 		assertNotNull(tcs);
@@ -401,7 +401,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		c = getModelMgr().createContribution(c, false);
 
 		// Retrieve interval contributions
-		IntervalContributions ic = getModelMgr().getIntervalContributions(col1, null, 
+		IntervalContributions ic = getModelMgr().getIntervalContributions(col1, null, null, 
 				new GregorianCalendar(2012, 11, 24), // 24th December 2012
 				new GregorianCalendar(2013, 0, 6)); // 6 January 2013
 		assertNotNull(ic);
@@ -431,7 +431,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		c = getModelMgr().createContribution(c, false);
 
 		// Retrieve interval contributions
-		IntervalContributions ic = getModelMgr().getIntervalContributions(col1, null, 
+		IntervalContributions ic = getModelMgr().getIntervalContributions(col1, null, null, 
 				new GregorianCalendar(2012, 2, 19), // 19th March 2012
 				new GregorianCalendar(2012, 3, 1)); // 1st Arpril 2012
 		assertNotNull(ic);

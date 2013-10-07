@@ -429,7 +429,7 @@ class DefaultWeekContributionsProvider extends AbstractWeekContributionsProvider
 		toDate.add(Calendar.DATE, 6);
 		try {
 			IntervalContributions intervalContributions = modelMgr
-					.getIntervalContributions(contributor, null, fromDate,
+					.getIntervalContributions(contributor, null, null, fromDate,
 							toDate);
 			TaskContributions[] weekContributions = intervalContributions.getTaskContributions();
 			
