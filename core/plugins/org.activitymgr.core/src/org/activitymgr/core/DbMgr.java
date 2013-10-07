@@ -416,7 +416,7 @@ public class DbMgr {
 		try {
 			// Préparation de la requête
 			pStmt = tx
-					.prepareStatement("insert into COLLABORATOR (clb_login, clb_first_name, clb_last_name, clb_is_active) values (?, ?, ?, ?)"); //$NON-NLS-1$
+					.prepareStatement("insert into COLLABORATOR (clb_login, clb_first_name, clb_last_name, clb_is_active) values (?, ?, ?, ?)", true); //$NON-NLS-1$
 			pStmt.setString(1, newCollaborator.getLogin());
 			pStmt.setString(2, newCollaborator.getFirstName());
 			pStmt.setString(3, newCollaborator.getLastName());
@@ -566,7 +566,7 @@ public class DbMgr {
 
 			// Préparation de la requête
 			pStmt = tx
-					.prepareStatement("insert into TASK (tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo, tsk_comment) values (?, ?, ?, ?, ?, ?, ?, ?)"); //$NON-NLS-1$
+					.prepareStatement("insert into TASK (tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo, tsk_comment) values (?, ?, ?, ?, ?, ?, ?, ?)", true); //$NON-NLS-1$
 			pStmt.setString(1, newTask.getPath());
 			pStmt.setString(2, StringHelper.toHex(newTask.getNumber()));
 			pStmt.setString(3, newTask.getCode());
@@ -806,7 +806,7 @@ public class DbMgr {
 			StringBuffer request = new StringBuffer(
 					"select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from COLLABORATOR "); //$NON-NLS-1$
 			if (onlyActiveCollaborators)
-				request.append("where clb_is_active=?"); //$NON-NLS-1$
+				request.append("where clb_is_active=? "); //$NON-NLS-1$
 			request.append("order by "); //$NON-NLS-1$
 			switch (orderByClauseFieldIndex) {
 			case Collaborator.ID_FIELD_IDX:
@@ -2205,7 +2205,7 @@ public class DbMgr {
 			 */
 			if (toDate != null) {
 				request = new StringBuffer(
-						"select sum(ctb_duration) from CONTRIBUTION, task where ctb_task=tsk_id and ");
+						"select sum(ctb_duration) from CONTRIBUTION, TASK where ctb_task=tsk_id and ");
 				request.append(taskIsLeaf ? "tsk_id=?" : "tsk_path like ?");
 				request.append(" and ( ctb_year*10000 + ( ctb_month*100 + ctb_day ) ) > ?");
 				// Calcul des consommations au delà de la date de fin spécifiée

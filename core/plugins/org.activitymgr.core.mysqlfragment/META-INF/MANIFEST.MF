@@ -5,4 +5,4 @@ Bundle-SymbolicName: org.activitymgr.core.mysqlfragment
 Bundle-Version: 1.0.0.qualifier
 Fragment-Host: org.apache.commons.dbcp
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Bundle-ClassPath: mysql-connector-java-3.1.12-bin.jar
+Bundle-ClassPath: mysql-connector-java-5.1.26-bin.jar

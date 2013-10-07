@@ -30,6 +30,7 @@ package org.activitymgr.core;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.apache.log4j.Logger;
 
@@ -66,6 +67,23 @@ public class DbTransaction {
 	 * 
 	 * @param sql
 	 *            requête SQL.
+	 * @param generatedKey 
+	 * 	<code>true</code> if the generated key must be returned.
+	 * @return la requête initialisée.
+	 * @throws SQLException
+	 *             en cas d'erreur lié à la BDD.
+	 */
+	protected PreparedStatement prepareStatement(String sql, boolean generatedKey)
+			throws SQLException {
+		log.debug(sql);
+		return generatedKey ? con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS) : con.prepareStatement(sql);
+	}
+
+	/**
+	 * Prépare une requête SQL.
+	 * 
+	 * @param sql
+	 *            requête SQL.
 	 * @return la requête initialisée.
 	 * @throws SQLException
 	 *             en cas d'erreur lié à la BDD.
@@ -73,7 +91,7 @@ public class DbTransaction {
 	protected PreparedStatement prepareStatement(String sql)
 			throws SQLException {
 		log.debug(sql);
-		return con.prepareStatement(sql);
+		return prepareStatement(sql, false);
 	}
 
 }
