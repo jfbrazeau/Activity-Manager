@@ -170,9 +170,8 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 	 *            the model manager.
 	 */
 	public CollaboratorsUI(TabItem tabItem, ModelMgr modelMgr) {
-		this(tabItem.getParent());
+		this(tabItem.getParent(), modelMgr);
 		tabItem.setControl(parent);
-		this.modelMgr = modelMgr;
 	}
 
 	/**
@@ -180,8 +179,12 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 	 * 
 	 * @param parentComposite
 	 *            composant parent.
+	 * @param modelMgr
+	 *            the model manager.
 	 */
-	public CollaboratorsUI(Composite parentComposite) {
+	public CollaboratorsUI(Composite parentComposite, ModelMgr modelMgr) {
+		this.modelMgr = modelMgr;
+
 		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayout(new GridLayout(1, false));

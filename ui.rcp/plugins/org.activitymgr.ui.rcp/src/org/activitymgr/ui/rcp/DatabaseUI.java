@@ -37,18 +37,17 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-
 import org.activitymgr.core.DbException;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Duration;
 import org.activitymgr.core.util.Strings;
-import org.activitymgr.ui.rcp.util.CfgMgr;
 import org.activitymgr.ui.rcp.util.SafeRunner;
 import org.activitymgr.ui.rcp.util.UITechException;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.FileFieldEditor;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
@@ -153,9 +152,8 @@ public class DatabaseUI implements ModifyListener {
 	 *            the model manager instance.
 	 */
 	public DatabaseUI(TabItem tabItem, ModelMgr modelMgr) {
-		this(tabItem.getParent());
+		this(tabItem.getParent(), modelMgr);
 		tabItem.setControl(parent);
-		this.modelMgr = modelMgr;
 	}
 
 	/**
@@ -163,8 +161,12 @@ public class DatabaseUI implements ModifyListener {
 	 * 
 	 * @param parentComposite
 	 *            composant parent.
+	 * @param modelMgr
+	 *            the model manager instance.
 	 */
-	public DatabaseUI(Composite parentComposite) {
+	public DatabaseUI(Composite parentComposite, ModelMgr modelMgr) {
+		this.modelMgr = modelMgr;
+
 		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayout(new GridLayout(1, false));
@@ -440,20 +442,17 @@ public class DatabaseUI implements ModifyListener {
 	 * Initialise l'IHM avec les données en base.
 	 */
 	public void initUI() {
+		IPreferenceStore cfg = Activator.getDefault().getPreferenceStore();
 		// Valeurs par défaut (à supprimer)
-		int databaseType = 1;
-		try {
-			databaseType = Integer.parseInt(CfgMgr.get(CfgMgr.DATABASE_TYPE));
-		} catch (NumberFormatException ignored) {
-		}
-		String jdbcDriver = CfgMgr.get(CfgMgr.JDBC_DRIVER);
-		String dbHost = CfgMgr.get(CfgMgr.DATABASE_HOST);
-		String dbPort = CfgMgr.get(CfgMgr.DATABASE_PORT);
-		String dbDataFile = CfgMgr.get(CfgMgr.DATABASE_DATA_FILE);
-		String dbName = CfgMgr.get(CfgMgr.DATABASE_NAME);
-		String jdbcUrl = CfgMgr.get(CfgMgr.JDBC_URL);
-		String jdbcUser = CfgMgr.get(CfgMgr.JDBC_USER);
-		String jdbcPassword = CfgMgr.get(CfgMgr.JDBC_PASSWORD);
+		int databaseType = cfg.getInt(PreferenceManager.DATABASE_TYPE);
+		String jdbcDriver = cfg.getString(PreferenceManager.JDBC_DRIVER);
+		String dbHost = cfg.getString(PreferenceManager.DATABASE_HOST);
+		String dbPort = cfg.getString(PreferenceManager.DATABASE_PORT);
+		String dbDataFile = cfg.getString(PreferenceManager.DATABASE_DATA_FILE);
+		String dbName = cfg.getString(PreferenceManager.DATABASE_NAME);
+		String jdbcUrl = cfg.getString(PreferenceManager.JDBC_URL);
+		String jdbcUser = cfg.getString(PreferenceManager.JDBC_USER);
+		String jdbcPassword = cfg.getString(PreferenceManager.JDBC_PASSWORD);
 		dbTypeCombo.select(databaseType);
 		dbHostText.setText(dbHost != null ? dbHost : ""); //$NON-NLS-1$
 		dbPortText.setText(dbPort != null ? dbPort : ""); //$NON-NLS-1$
@@ -699,17 +698,17 @@ public class DatabaseUI implements ModifyListener {
 		String jdbcUser = jdbcUserIdText.getText().trim();
 		String jdbcPassword = jdbcPasswordText.getText();
 
-		// Sauvagarde dans le fichier de config
-		CfgMgr.set(CfgMgr.DATABASE_TYPE, databaseType);
-		CfgMgr.set(CfgMgr.JDBC_DRIVER, jdbcDriver);
-		CfgMgr.set(CfgMgr.DATABASE_HOST, dbHost);
-		CfgMgr.set(CfgMgr.DATABASE_PORT, dbPort);
-		CfgMgr.set(CfgMgr.DATABASE_DATA_FILE, dbDataFile);
-		CfgMgr.set(CfgMgr.DATABASE_NAME, dbName);
-		CfgMgr.set(CfgMgr.JDBC_URL, jdbcUrl);
-		CfgMgr.set(CfgMgr.JDBC_USER, jdbcUser);
-		CfgMgr.set(CfgMgr.JDBC_PASSWORD, jdbcPassword);
-		CfgMgr.save();
+		// Sauvagarde de la config
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+		store.setValue(PreferenceManager.DATABASE_TYPE, databaseType);
+		store.setValue(PreferenceManager.JDBC_DRIVER, jdbcDriver);
+		store.setValue(PreferenceManager.DATABASE_HOST, dbHost);
+		store.setValue(PreferenceManager.DATABASE_PORT, dbPort);
+		store.setValue(PreferenceManager.DATABASE_DATA_FILE, dbDataFile);
+		store.setValue(PreferenceManager.DATABASE_NAME, dbName);
+		store.setValue(PreferenceManager.JDBC_URL, jdbcUrl);
+		store.setValue(PreferenceManager.JDBC_USER, jdbcUser);
+		store.setValue(PreferenceManager.JDBC_PASSWORD, jdbcPassword);
 
 		// Changement des paramétres de connexion
 		modelMgr.initialize(jdbcDriver, jdbcUrl, jdbcUser, jdbcPassword);

@@ -161,9 +161,8 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	 *            the model manager instance.
 	 */
 	public DurationsUI(TabItem tabItem, ModelMgr modelMgr) {
-		this(tabItem.getParent());
+		this(tabItem.getParent(), modelMgr);
 		tabItem.setControl(parent);
-		this.modelMgr = modelMgr;
 	}
 
 	/**
@@ -171,8 +170,12 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	 * 
 	 * @param parentComposite
 	 *            composant parent.
+	 * @param modelMgr
+	 *            the model manager instance.
 	 */
-	public DurationsUI(Composite parentComposite) {
+	public DurationsUI(Composite parentComposite, ModelMgr modelMgr) {
+		this.modelMgr = modelMgr;
+
 		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayout(new GridLayout(1, false));
