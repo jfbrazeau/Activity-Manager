@@ -1,12 +1,16 @@
 package org.activitymgr.ui.rcp;
 
+import java.awt.Color;
+
 import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.DatabaseUI.IDbStatusListener;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
@@ -44,7 +48,6 @@ public class MainView extends ViewPart {
 	public void createPartControl(Composite parent) {
 		// Création du groupe d'onglets
 		final TabFolder tabFolder = new TabFolder(parent, SWT.TOP);
-		tabFolder.setLayout(new FillLayout(SWT.VERTICAL));
 		tabFolder
 				.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
