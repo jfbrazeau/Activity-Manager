@@ -1,8 +1,6 @@
 package org.activitymgr.ui.rcp;
 
-import org.activitymgr.ui.rcp.util.SafeRunner;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
@@ -27,15 +25,4 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		configurer.setShowStatusLine(true);
 	}
 	
-	@Override
-	public boolean preWindowShellClose() {
-		new SafeRunner() {
-			protected Object runUnsafe() throws Exception {
-				MainView mainView = (MainView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getViewReferences()[0].getView(true);
-				mainView.getModelMgr().closeDatabaseAccess();
-				return null;
-			}
-		}.run(PlatformUI.getWorkbench().getDisplay().getActiveShell());
-		return super.preWindowShellClose();
-	}
 }
