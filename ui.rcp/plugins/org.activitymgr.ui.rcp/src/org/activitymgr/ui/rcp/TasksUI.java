@@ -33,7 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-
 import org.activitymgr.core.DbException;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.ModelMgr;

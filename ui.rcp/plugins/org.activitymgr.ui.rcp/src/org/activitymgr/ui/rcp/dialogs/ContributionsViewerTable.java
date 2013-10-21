@@ -31,7 +31,6 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-
 import org.activitymgr.core.DbException;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.ModelMgr;

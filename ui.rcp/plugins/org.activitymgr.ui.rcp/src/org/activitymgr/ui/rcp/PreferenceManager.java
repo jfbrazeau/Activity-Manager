@@ -28,7 +28,6 @@
 package org.activitymgr.ui.rcp;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
-import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
  * Preference manager.

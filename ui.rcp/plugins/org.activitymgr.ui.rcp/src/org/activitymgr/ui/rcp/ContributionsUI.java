@@ -35,7 +35,6 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
-
 import org.activitymgr.core.DbException;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.ModelMgr;

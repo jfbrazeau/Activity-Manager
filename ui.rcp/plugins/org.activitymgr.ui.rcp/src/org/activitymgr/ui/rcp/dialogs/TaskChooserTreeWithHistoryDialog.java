@@ -30,7 +30,6 @@ package org.activitymgr.ui.rcp.dialogs;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.util.Strings;
