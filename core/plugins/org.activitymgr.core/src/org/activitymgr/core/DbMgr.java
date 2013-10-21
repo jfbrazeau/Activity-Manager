@@ -1459,7 +1459,7 @@ public class DbMgr {
 			StringBuffer request = new StringBuffer(
 					"select dur_id, dur_is_active from DURATION "); //$NON-NLS-1$
 			if (onlyActiveCollaborators)
-				request.append("where dur_is_active=?"); //$NON-NLS-1$
+				request.append("where dur_is_active=? "); //$NON-NLS-1$
 			request.append("order by dur_id asc"); //$NON-NLS-1$
 			pStmt = tx.prepareStatement(request.toString());
 			if (onlyActiveCollaborators)
