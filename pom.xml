@@ -16,10 +16,15 @@
 			<layout>p2</layout>
 			<url>http://download.eclipse.org/eclipse/updates/3.8</url>
 		</repository -->
-		<repository>
+		<!-- repository>
 			<id>Juno 4.2.x</id>
 			<layout>p2</layout>
 			<url>http://download.eclipse.org/eclipse/updates/4.2</url>
+		</repository -->
+		<repository>
+			<id>Kepler</id>
+			<layout>p2</layout>
+			<url>http://download.eclipse.org/releases/kepler/</url>
 		</repository>
 		<repository>
 			<id>Eclipse Orbit</id>
