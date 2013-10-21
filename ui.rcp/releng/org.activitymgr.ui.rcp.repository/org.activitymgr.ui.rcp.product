@@ -3,6 +3,7 @@
 
 <product name="Activity Manager (RCP) v1.0.0" uid="org.activitymgr.ui.rcp.product" id="org.activitymgr.ui.rcp.product" application="org.activitymgr.ui.rcp.application" version="1.0.0.qualifier" useFeatures="false" includeLaunchers="true">
 
+
    <configIni use="default">
    </configIni>
 
@@ -11,14 +12,19 @@
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
-   <windowImages i16="icons/alt_window_16.gif" i32="icons/alt_window_32.gif"/>
+   <windowImages i16="icons/alt_window_16.gif" i32="icons/alt_window_32.gif" i48="icons/alt_window_48.gif" i64="icons/alt_window_64.gif" i128="icons/alt_window_128.gif"/>
 
+   <splash
+      startupProgressRect="5,105,375,15"
+      startupMessageRect="7,125,375,20"
+      startupForegroundColor="000000" />
    <launcher name="activitymgr">
       <solaris/>
       <win useIco="false">
          <bmp/>
       </win>
    </launcher>
+
 
    <vm>
    </vm>
