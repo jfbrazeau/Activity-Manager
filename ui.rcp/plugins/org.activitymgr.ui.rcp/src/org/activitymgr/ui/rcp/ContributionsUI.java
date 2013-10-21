@@ -124,6 +124,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 	public static final int FRIDAY_COLUMN_IDX = 6;
 	public static final int SATURDAY_COLUMN_IDX = 7;
 	public static final int SUNDAY_COLUMN_IDX = 8;
+	public static final int BLANK_COLUMN_IDX = 9;
 	private static TableOrTreeColumnsMgr tableColsMgr;
 
 	/** Initiales des jours de la semaine */
@@ -296,7 +297,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 
 		// Table
 		final Table table = new Table(parent, SWT.MULTI | SWT.FULL_SELECTION
-				| SWT.BORDER | SWT.HIDE_SELECTION);
+				| SWT.BORDER | SWT.HIDE_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gridData.heightHint = 75;
 		table.setLayoutData(gridData);
@@ -353,10 +354,12 @@ public class ContributionsUI extends AbstractTableMgr implements
 		tableColsMgr
 				.addColumn(
 						"SUNDAY", Strings.getString("ContributionsUI.columns.SUNDAY"), 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
+		// Blank column
+		tableColsMgr.addColumn("BLANK", "", 50, SWT.CENTER); //$NON-NLS-1$ //$NON-NLS-2$
 		tableColsMgr.configureTable(tableViewer);
 
 		// Configuration des éditeurs de cellules
-		CellEditor[] editors = new CellEditor[9];
+		CellEditor[] editors = new CellEditor[10];
 		durationCellEditor = new ComboBoxCellEditor(table, new String[] {},
 				SWT.READ_ONLY) {
 			protected Control createControl(Composite parent) {
@@ -403,6 +406,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 		editors[FRIDAY_COLUMN_IDX] = durationCellEditor;
 		editors[SATURDAY_COLUMN_IDX] = durationCellEditor;
 		editors[SUNDAY_COLUMN_IDX] = durationCellEditor;
+		editors[BLANK_COLUMN_IDX] = null;
 		tableViewer.setCellEditors(editors);
 
 		// Configuration du menu popup
@@ -558,9 +562,9 @@ public class ContributionsUI extends AbstractTableMgr implements
 				TableColumn[] tableColumns = tableViewer.getTable()
 						.getColumns();
 				Calendar date = (Calendar) currentMonday.clone();
-				for (int i = 2; i < tableColumns.length; i++) {
-					TableColumn tableColumn = tableColumns[i];
-					tableColumn.setText(weekDaysInitials[i - 2]
+				for (int i = 0; i < 7; i++) {
+					TableColumn tableColumn = tableColumns[i+2];
+					tableColumn.setText(weekDaysInitials[i]
 							+ date.get(Calendar.DAY_OF_MONTH));
 					date.add(Calendar.DATE, 1);
 				}
@@ -632,6 +636,9 @@ public class ContributionsUI extends AbstractTableMgr implements
 			case (SUNDAY_COLUMN_IDX):
 				canModify = true;
 				break;
+			case (BLANK_COLUMN_IDX) :
+				canModify = false;
+				break;
 			default:
 				throw new Error(
 						Strings.getString("ContributionsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
@@ -671,6 +678,9 @@ public class ContributionsUI extends AbstractTableMgr implements
 			// Par défaut on prend la première sélection
 			if (value == null)
 				value = new Integer(0);
+			break;
+		case (BLANK_COLUMN_IDX) :
+			value = null;
 			break;
 		default:
 			throw new Error(
@@ -794,6 +804,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 					// Mise à jour des totaux
 					tableViewer.refresh(WeekContributionsSum.getInstance());
 					break;
+				case (BLANK_COLUMN_IDX) :
 				default:
 					throw new Error(
 							Strings.getString("ContributionsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
@@ -871,6 +882,9 @@ public class ContributionsUI extends AbstractTableMgr implements
 						}
 						text = StringHelper.hundredthToEntry(sum);
 						break;
+					case (BLANK_COLUMN_IDX) :
+						text = null;
+						break;
 					default:
 						throw new Error(
 								Strings.getString("ContributionsUI.errors.UNKNOWN_COLUMN")); //$NON-NLS-1$
@@ -899,6 +913,9 @@ public class ContributionsUI extends AbstractTableMgr implements
 						text = contribution != null ? StringHelper
 								.hundredthToEntry(contribution.getDurationId())
 								: ""; //$NON-NLS-1$
+						break;
+					case (BLANK_COLUMN_IDX):
+						text = null;
 						break;
 					default:
 						throw new Error(
