@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.activitymgr.core.DbException;
+import org.activitymgr.core.DbMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Collaborator;
@@ -61,10 +62,24 @@ public class ContributionsLogicImpl extends AbstractContributionLogicImpl implem
 	private IContributionCellLogicProviderExtension cellLogicProvider;
 	private AbstractWeekContributionsProviderExtension weekContributionsProvider;
 	private Map<TaskContributions, Map<String, ILogic<?>>> cellLogics = new HashMap<TaskContributions, Map<String, ILogic<?>>>();
+	private Collaborator selectedCollaborator;
 
 	public ContributionsLogicImpl(RootLogicImpl parent) {
 		super(parent);
 
+		// Retrieve collaborators list
+		try {
+			Collaborator[] activeCollaborators = getModelMgr().getActiveCollaborators(Collaborator.FIRST_NAME_FIELD_IDX, true);
+			List<ICollaborator> wrappers = new ArrayList<IContributionsLogic.ICollaborator>();
+			for (Collaborator collaborator : activeCollaborators) {
+				wrappers.add(new CollaboratorWrapper(collaborator));
+			}
+			getView().setCollaborators(wrappers);
+		}
+		catch (DbException e) {
+			throw new IllegalStateException("Unable to retrieve collaborators list", e);
+		}
+		
 		// TODO put in an extension point
 		columnIdentifiers = getColumnIdentifiers();
 		getView().setColumnIdentifiers(columnIdentifiers);
@@ -116,6 +131,9 @@ public class ContributionsLogicImpl extends AbstractContributionLogicImpl implem
 		firstDayOfWeek = new GregorianCalendar();
 		// Fake change : add 0 year and update date in the view
 		changeFirstDayOfWeekAndUpdateView(Calendar.YEAR, 0);
+		
+		// Connected collaborator selection
+		getView().selectCollaborator(getContext().getConnectedCollaborator().getLogin());
 	}
 
 	private List<String> getColumnIdentifiers() {
@@ -212,10 +230,16 @@ System.out.println("Register contribution column : " + column);
 		firstDayOfWeek = moveToFirstDayOfWeek(firstDayOfWeek);
 		getView().setDate(firstDayOfWeek);
 
+		loadContributions();
+	}
+
+	private void loadContributions() {
 		// Load contributions
-		TaskContributions[] tcs = weekContributionsProvider.getWeekContributions(getModelMgr(), getContext().getConnectedCollaborator(), firstDayOfWeek);
 		weekContributions.clear();
-		weekContributions.addAll(Arrays.asList(tcs));
+		if (selectedCollaborator != null) {
+			TaskContributions[] tcs = weekContributionsProvider.getWeekContributions(getModelMgr(), selectedCollaborator, firstDayOfWeek);
+			weekContributions.addAll(Arrays.asList(tcs));
+		}
 	
 		// TODO comparator as constant
 		Collections.sort(weekContributions, new Comparator<TaskContributions>() {
@@ -373,6 +397,26 @@ System.out.println("Register contribution column : " + column);
 		return weekContributions;
 	}
 
+	@Override
+	public void onSelectedCollaboratorChanged(String login) {
+		try {
+			if (selectedCollaborator != null && selectedCollaborator.getLogin().equals(login)) {
+				return;
+			}
+			else {
+				selectedCollaborator = null;
+				if (login != null) {
+					selectedCollaborator = getModelMgr().getCollaborator(login);
+				}
+				// Update contributions
+				loadContributions();
+			}
+		}
+		catch (DbException e) {
+			handleError(e);
+		}
+	}
+
 }
 
 class DefaultContributionCellLogicProvider implements IContributionCellLogicProviderExtension {
@@ -449,4 +493,29 @@ class DefaultWeekContributionsProvider extends AbstractWeekContributionsProvider
 		}
 	}
 
+}
+
+class CollaboratorWrapper implements IContributionsLogic.ICollaborator {
+
+	private Collaborator collaborator;
+
+	CollaboratorWrapper(Collaborator collaborator) {
+		this.collaborator = collaborator;
+	}
+	
+	@Override
+	public String getLogin() {
+		return collaborator.getLogin();
+	}
+
+	@Override
+	public String getFirstName() {
+		return collaborator.getFirstName();
+	}
+
+	@Override
+	public String getLastName() {
+		return collaborator.getLastName();
+	}
+	
 }

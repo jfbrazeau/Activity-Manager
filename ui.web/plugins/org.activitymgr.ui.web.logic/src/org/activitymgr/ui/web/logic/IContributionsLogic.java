@@ -5,6 +5,12 @@ import java.util.List;
 
 // TODO clear
 public interface IContributionsLogic extends ILogic<IContributionsLogic.View> {
+
+	static interface ICollaborator {
+		String getLogin();
+		String getFirstName();
+		String getLastName();
+	}
 	
 	void onPreviousYear();
 
@@ -20,8 +26,14 @@ public interface IContributionsLogic extends ILogic<IContributionsLogic.View> {
 
 	void onDateChange(Calendar value);
 
+	void onSelectedCollaboratorChanged(String login);
+
 	public interface View extends ILogic.IView<IContributionsLogic> {
 		
+		void setCollaborators(List<ICollaborator> collaborators);
+		
+		void selectCollaborator(String login);
+
 		void setColumnIdentifiers(List<String> ids);
 		
 		void setDate(Calendar lastMonday);
@@ -33,7 +45,7 @@ public interface IContributionsLogic extends ILogic<IContributionsLogic.View> {
 		void setColumnFooter(String id, String value);
 		
 		void addAction(IActionLogic.View actionView);
-
+		
 	}
 
 }

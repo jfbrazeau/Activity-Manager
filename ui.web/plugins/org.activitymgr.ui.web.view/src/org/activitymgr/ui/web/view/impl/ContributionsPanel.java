@@ -8,9 +8,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.activitymgr.ui.web.logic.IActionLogic.View;
-import org.activitymgr.ui.web.logic.impl.IContributionCellLogicProviderExtension;
 import org.activitymgr.ui.web.logic.IContributionsLogic;
+import org.activitymgr.ui.web.logic.IContributionsLogic.ICollaborator;
 import org.activitymgr.ui.web.logic.ILogic;
+import org.activitymgr.ui.web.logic.impl.IContributionCellLogicProviderExtension;
 import org.activitymgr.ui.web.view.IContributionColumnViewProviderExtension;
 import org.activitymgr.ui.web.view.util.ActionView;
 import org.activitymgr.ui.web.view.util.ResourceCache;
@@ -57,6 +58,8 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 
 	private VerticalLayout actionsContainer;
 
+	private Table collaboratorsTable;
+
 	public ContributionsPanel(ResourceCache resourceCache) {
 		this.resourceCache = resourceCache;
 
@@ -90,7 +93,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		nextYearButton = new Button("Year >>>");
 		controlsContainer.addComponent(nextYearButton);
 
-		// Contribution tables & actions container
+		// Collaborators list, contribution tables & actions container
 		HorizontalLayout hl = new HorizontalLayout();
 		hl.setSpacing(true);
 		addComponent(hl);
@@ -98,16 +101,34 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		/*
 		 * Actions container
 		 */
-		actionsContainer = new VerticalLayout();
-		hl.addComponent(actionsContainer);
-		
+		collaboratorsTable = new Table();
+		hl.addComponent(collaboratorsTable);
+		collaboratorsTable.addContainerProperty("FNAME", String.class, null);
+		collaboratorsTable.setColumnHeader("FNAME", "Fist name");
+		collaboratorsTable.setColumnWidth("FNAME", 70);
+		collaboratorsTable.addContainerProperty("LNAME", String.class, null);
+		collaboratorsTable.setColumnHeader("LNAME", "Last name");
+		collaboratorsTable.setColumnWidth("LNAME", 70);
+		collaboratorsTable.setSelectable(true);
+		collaboratorsTable.setImmediate(true);
+		collaboratorsTable.setNullSelectionAllowed(false);
+		collaboratorsTable.setHeight("500px");
+
 		/*
 		 * Contributions table
 		 */
 		contributionsTable = new Table();
 		contributionsTable.setFooterVisible(true);
 		contributionsTable.setImmediate(true);
+		contributionsTable.setHeight("500px");
+		contributionsTable.setWidth("1050px");
 		hl.addComponent(contributionsTable);
+		
+		/*
+		 * Actions container
+		 */
+		actionsContainer = new VerticalLayout();
+		hl.addComponent(actionsContainer);
 		
 		// Register the default column view provider
 		viewProviders.add(new DefaultColumnProvider());
@@ -119,6 +140,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 				throw new IllegalStateException("Unable to load view provider '" + cfg.getAttribute("class") + "'", e);
 			}
 		}
+
 
 		// Register listeners
 		previousYearButton.addClickListener(this);
@@ -134,6 +156,12 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 				Calendar cal = new GregorianCalendar();
 				cal.setTime(dateField.getValue());
 				logic.onDateChange(cal);
+			}
+		});
+		collaboratorsTable.addValueChangeListener(new Property.ValueChangeListener() {
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				logic.onSelectedCollaboratorChanged((String) collaboratorsTable.getValue());
 			}
 		});
 	}
@@ -152,7 +180,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	public void addWeekContribution(long taskId, List<ILogic.IView<?>> cellViews) {
 		contributionsTable.addItem(cellViews.toArray(), taskId);
 		// TODO enhance sort management
-		contributionsTable.sort(new Object[] { "PATH" }, new boolean[] { true });
+		contributionsTable.sort(new Object[] { IContributionCellLogicProviderExtension.PATH_COLUMN_ID }, new boolean[] { true });
 	}
 
 	@Override
@@ -211,6 +239,20 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	public void addAction(View actionView) {
 		actionsContainer.addComponent((ActionView) actionView);
 	}
+
+	@Override
+	public void setCollaborators(List<ICollaborator> collaborators) {
+		collaboratorsTable.removeAllItems();
+		for (ICollaborator col : collaborators) {
+			collaboratorsTable.addItem(new Object[] { col.getFirstName(), col.getLastName() }, col.getLogin());
+		}
+	}
+
+	@Override
+	public void selectCollaborator(String login) {
+		collaboratorsTable.select(login);
+	}
+
 }
 
 class DefaultColumnProvider implements IContributionColumnViewProviderExtension {
@@ -247,7 +289,7 @@ class DefaultColumnProvider implements IContributionColumnViewProviderExtension 
 	private static final Map<String, Integer> DEFAULT_COLUMN_WIDTHS = new HashMap<String, Integer>();
 	static {
 		DEFAULT_COLUMN_WIDTHS.put(IContributionCellLogicProviderExtension.PATH_COLUMN_ID, 250);
-		DEFAULT_COLUMN_WIDTHS.put(IContributionCellLogicProviderExtension.NAME_COLUMN_ID, 250);
+		DEFAULT_COLUMN_WIDTHS.put(IContributionCellLogicProviderExtension.NAME_COLUMN_ID, 150);
 	}
 
 	@Override
