@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.activitymgr.core.DbException;
-import org.activitymgr.core.DbMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Collaborator;
@@ -23,22 +22,24 @@ import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskContributions;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
+import org.activitymgr.ui.web.logic.AbstractEvent;
 import org.activitymgr.ui.web.logic.IActionLogic;
 import org.activitymgr.ui.web.logic.IContributionsLogic;
+import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.impl.AbstractActionLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionLogicImpl;
-import org.activitymgr.ui.web.logic.impl.AbstractTextFieldLogicImpl;
+import org.activitymgr.ui.web.logic.impl.AbstractWeekContributionsProviderExtension;
+import org.activitymgr.ui.web.logic.impl.DefaultContributionCellLogicProvider;
 import org.activitymgr.ui.web.logic.impl.IContributionCellLogicProviderExtension;
 import org.activitymgr.ui.web.logic.impl.IContributionsActionHandler;
-import org.activitymgr.ui.web.logic.impl.LabelLogicImpl;
-import org.activitymgr.ui.web.logic.impl.AbstractWeekContributionsProviderExtension;
+import org.activitymgr.ui.web.logic.impl.event.DurationChangedEvent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 
-public class ContributionsLogicImpl extends AbstractContributionLogicImpl implements IContributionsLogic {
+public class ContributionsLogicImpl extends AbstractContributionLogicImpl implements IContributionsLogic, IEventListener {
 	
 	private static final List<String> DEFAULT_COLUMN_IDENTIFIERS = Collections
 			.unmodifiableList(Arrays.asList(new String[] {
@@ -90,7 +91,6 @@ public class ContributionsLogicImpl extends AbstractContributionLogicImpl implem
 		else {
 			try {
 				cellLogicProvider = ((IContributionCellLogicProviderExtension) cfgs[0].createExecutableExtension("class"));
-				cellLogicProvider.setDefaultProvider(DEFAULT_CONTRIBUTION_CELL_LOGIC_PROVIDER);
 			} catch (CoreException e) {
 				throw new IllegalStateException("Unable to load cell logic provider '" + cfgs[0].getAttribute("class") + "'", e);
 			}
@@ -134,6 +134,9 @@ public class ContributionsLogicImpl extends AbstractContributionLogicImpl implem
 		
 		// Connected collaborator selection
 		getView().selectCollaborator(getContext().getConnectedCollaborator().getLogin());
+		
+		// Eregister event listener
+		getEventBus().register(DurationChangedEvent.class, this);
 	}
 
 	private List<String> getColumnIdentifiers() {
@@ -263,7 +266,8 @@ System.out.println("Register contribution column : " + column);
 		cellLogics.put(tc, rowLogics);
 		List<ILogic.IView<?>> cellViews = new ArrayList<ILogic.IView<?>>();
 		for (String columnId : columnIdentifiers) {
-			ILogic<?> cellLogic = cellLogicProvider.getCellLogic(this, columnId, tc);
+			ILogic<?> cellLogic = cellLogicProvider.getCellLogic(this,
+					selectedCollaborator, columnId, tc);
 			rowLogics.put(columnId, cellLogic);
 			cellViews.add(cellLogic.getView());
 		}
@@ -277,7 +281,7 @@ System.out.println("Register contribution column : " + column);
 		return dateCursor;
 	}
 
-	protected void onDurationChanged(TaskContributions weekContributions, int dayOfWeek, String duration, ITextFieldLogic textFieldLogic) {
+	private void onDurationChanged(TaskContributions weekContributions, int dayOfWeek, String duration, ITextFieldLogic textFieldLogic) {
 		System.out.println("onDurationChanged(" + weekContributions + ", " + dayOfWeek + ", " + duration + ", " + textFieldLogic + ")");
 		try {
 			long durationId = 0;
@@ -417,43 +421,15 @@ System.out.println("Register contribution column : " + column);
 		}
 	}
 
-}
-
-class DefaultContributionCellLogicProvider implements IContributionCellLogicProviderExtension {
-	
 	@Override
-	public ILogic<?> getCellLogic(final AbstractContributionLogicImpl parent, final String columnId,
-			final TaskContributions weekContributions) {
-		if (DAY_COLUMNS_IDENTIFIERS.contains(columnId)) {
-			final int dayOfWeek = DAY_COLUMNS_IDENTIFIERS.indexOf(columnId);
-			Contribution c = weekContributions.getContributions()[dayOfWeek];
-			String duration = (c == null) ? "" : StringHelper.hundredthToEntry(c.getDurationId());
-			ITextFieldLogic textFieldLogic = new AbstractTextFieldLogicImpl((ContributionsLogicImpl) parent, duration) {
-				@Override
-				public void onValueChanged(String newValue) {
-					((ContributionsLogicImpl) parent).onDurationChanged(weekContributions, dayOfWeek, newValue, this);
-				}
-			};
-			textFieldLogic.getView().setNumericFieldStyle();
-			return textFieldLogic;
-		}
-		else if (IContributionCellLogicProviderExtension.PATH_COLUMN_ID.equals(columnId)) {
-			return new LabelLogicImpl((ContributionsLogicImpl) parent, weekContributions.getTaskCodePath());
-		}
-		else if (IContributionCellLogicProviderExtension.NAME_COLUMN_ID.equals(columnId)) {
-			return new LabelLogicImpl((ContributionsLogicImpl) parent, weekContributions.getTask().getName());
-		}
-		else if (IContributionCellLogicProviderExtension.TOTAL_COLUMN_ID.equals(columnId)) {
-			return new LabelLogicImpl((ContributionsLogicImpl) parent, "");
+	public void handle(AbstractEvent event) {
+		if (event instanceof DurationChangedEvent) {
+			DurationChangedEvent durationChangedEvent = (DurationChangedEvent) event;
+			onDurationChanged(durationChangedEvent.getWeekContributions(), durationChangedEvent.getDayOfWeek(), durationChangedEvent.getDuration(), durationChangedEvent.getTextFieldLogic());
 		}
 		else {
-			throw new IllegalArgumentException("Unexpected column identifier '" + columnId + "'");
+			throw new IllegalArgumentException("Received an unexpected event");
 		}
-	}
-
-	@Override
-	public void setDefaultProvider(
-			IContributionCellLogicProviderExtension defaultProvider) {
 	}
 
 }

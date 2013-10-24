@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.TaskContributions;
 import org.activitymgr.ui.web.logic.ILogic;
 
@@ -30,9 +31,7 @@ public interface IContributionCellLogicProviderExtension {
 					SUN_COLUMN_ID }));
 
 	ILogic<?> getCellLogic(AbstractContributionLogicImpl parent,
-			String columnId, TaskContributions weekContributions);
+			Collaborator contributor, String columnId,
+			TaskContributions weekContributions);
 	
-	void setDefaultProvider(
-			IContributionCellLogicProviderExtension defaultProvider);
-
 }
