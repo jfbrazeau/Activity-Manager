@@ -7,13 +7,8 @@ import org.activitymgr.core.beans.TaskContributions;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeContributionsActionHandler;
 
-public class AddTaskContributionActionHandler extends
+public class NewTaskContributionActionHandler extends
 	AbstractSafeContributionsActionHandler {
-
-	@Override
-	public String getLabel() {
-		return "New task";
-	}
 
 	@Override
 	public void unsafeHandle(AbstractContributionLogicImpl logic) {

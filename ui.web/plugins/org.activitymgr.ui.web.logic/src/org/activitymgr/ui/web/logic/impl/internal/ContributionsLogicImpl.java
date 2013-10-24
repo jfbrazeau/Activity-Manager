@@ -23,13 +23,11 @@ import org.activitymgr.core.beans.TaskContributions;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.AbstractEvent;
-import org.activitymgr.ui.web.logic.IActionLogic;
 import org.activitymgr.ui.web.logic.IContributionsLogic;
 import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
-import org.activitymgr.ui.web.logic.impl.AbstractActionLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractWeekContributionsProviderExtension;
 import org.activitymgr.ui.web.logic.impl.DefaultContributionCellLogicProvider;
@@ -64,6 +62,7 @@ public class ContributionsLogicImpl extends AbstractContributionLogicImpl implem
 	private AbstractWeekContributionsProviderExtension weekContributionsProvider;
 	private Map<TaskContributions, Map<String, ILogic<?>>> cellLogics = new HashMap<TaskContributions, Map<String, ILogic<?>>>();
 	private Collaborator selectedCollaborator;
+	private Map<String, IContributionsActionHandler> actionHandlers = new HashMap<String, IContributionsActionHandler>();
 
 	public ContributionsLogicImpl(RootLogicImpl parent) {
 		super(parent);
@@ -110,18 +109,19 @@ public class ContributionsLogicImpl extends AbstractContributionLogicImpl implem
 			}
 		}
 			
-		// Add actions
-		cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.contributionActionHandler");
+		// Create actions
+		cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.contributionAction");
 		for (IConfigurationElement cfg : cfgs) {
 			try {
-				final IContributionsActionHandler handler = ((IContributionsActionHandler) cfg.createExecutableExtension("class"));
-				IActionLogic actionLogic = new AbstractActionLogicImpl(this, handler.getLabel()) {
-					@Override
-					public void onActionInvoked() {
-						handler.handle(ContributionsLogicImpl.this);
-					}
-				};
-				getView().addAction(actionLogic.getView());
+				String iconId = cfg.getAttribute("iconId");
+				String label = cfg.getAttribute("label");
+				KeyBinding kb = new KeyBinding(cfg.getAttribute("shortcutKey"));
+				final IContributionsActionHandler handler = ((IContributionsActionHandler) cfg.createExecutableExtension("handler"));
+				// Register the handler
+				String id = handler.getClass().getName();
+				actionHandlers.put(id, handler);
+				// Add the action to the view
+				getView().addAction(id, label, kb.toString(), iconId, kb.getKey(), kb.isCtrl(), kb.isShift(), kb.isAlt()); 
 			} catch (CoreException e) {
 				throw new IllegalStateException("Unable to load action handler '" + cfg.getAttribute("class") + "'", e);
 			}
@@ -148,7 +148,6 @@ public class ContributionsLogicImpl extends AbstractContributionLogicImpl implem
 			Set<String> set = new LinkedHashSet<String>();
 			for (IConfigurationElement cfg : cfgs) {
 				String column = cfg.getAttribute("id");
-System.out.println("Register contribution column : " + column);
 				set.add(column);
 			}
 			System.out.println("Result : " + set);
@@ -430,6 +429,11 @@ System.out.println("Register contribution column : " + column);
 		else {
 			throw new IllegalArgumentException("Received an unexpected event");
 		}
+	}
+
+	@Override
+	public void onAction(String actionId) {
+		actionHandlers.get(actionId).handle(this);
 	}
 
 }

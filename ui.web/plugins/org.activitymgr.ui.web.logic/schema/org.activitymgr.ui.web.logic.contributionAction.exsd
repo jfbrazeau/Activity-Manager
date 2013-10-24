@@ -3,7 +3,7 @@
 <schema targetNamespace="org.activitymgr.ui.web.logic" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="org.activitymgr.ui.web.logic" id="org.activitymgr.ui.web.logic.contributionActionHandler" name="Contributions UI Action Handler"/>
+         <meta.schema plugin="org.activitymgr.ui.web.logic" id="org.activitymgr.ui.web.logic.contributionAction" name="ContributionsUI Action"/>
       </appinfo>
       <documentation>
          [Enter description of this extension point.]
@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence>
-            <element ref="contributionActionHandler"/>
+            <element ref="contributionAction"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,12 +47,33 @@
       </complexType>
    </element>
 
-   <element name="contributionActionHandler">
+   <element name="contributionAction">
       <complexType>
-         <attribute name="class" type="string" use="required">
+         <attribute name="label" type="string" use="required">
             <annotation>
                <documentation>
-                  Contributions UI Action Handler
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="shortcutKey" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="iconId" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="handler" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
                </documentation>
                <appinfo>
                   <meta.attribute kind="java" basedOn=":org.activitymgr.ui.web.logic.impl.IContributionsActionHandler"/>

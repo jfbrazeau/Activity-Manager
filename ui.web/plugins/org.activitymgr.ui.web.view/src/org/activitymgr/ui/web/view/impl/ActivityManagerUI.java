@@ -3,7 +3,6 @@ package org.activitymgr.ui.web.view.impl;
 import javax.servlet.http.Cookie;
 
 import org.activitymgr.ui.web.logic.ActivityManagerLogic;
-import org.activitymgr.ui.web.logic.IActionLogic;
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
 import org.activitymgr.ui.web.logic.IContributionsLogic;
 import org.activitymgr.ui.web.logic.IGenericCallback;
@@ -15,7 +14,6 @@ import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.IViewFactory;
 import org.activitymgr.ui.web.view.impl.dialogs.TaskChooserDialog;
 import org.activitymgr.ui.web.view.impl.dialogs.YesNoDialog;
-import org.activitymgr.ui.web.view.util.ActionView;
 import org.activitymgr.ui.web.view.util.LabelView;
 import org.activitymgr.ui.web.view.util.ResourceCache;
 import org.activitymgr.ui.web.view.util.TextFieldView;
@@ -65,8 +63,6 @@ public class ActivityManagerUI extends UI implements IViewFactory,
 			return new LabelView();
 		} else if (ITextFieldLogic.class.isAssignableFrom(logicType)) {
 			return new TextFieldView();
-		} else if (IActionLogic.class.isAssignableFrom(logicType)) {
-			return new ActionView();
 		} else {
 			throw new IllegalStateException("Unexpected logic type '"
 					+ logicType + "'");

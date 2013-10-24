@@ -7,19 +7,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.activitymgr.ui.web.logic.IActionLogic.View;
 import org.activitymgr.ui.web.logic.IContributionsLogic;
 import org.activitymgr.ui.web.logic.IContributionsLogic.ICollaborator;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.impl.IContributionCellLogicProviderExtension;
 import org.activitymgr.ui.web.view.IContributionColumnViewProviderExtension;
-import org.activitymgr.ui.web.view.util.ActionView;
 import org.activitymgr.ui.web.view.util.ResourceCache;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.event.Action;
+import com.vaadin.event.ShortcutListener;
+import com.vaadin.server.Resource;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.DateField;
@@ -35,7 +36,6 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 
 	private IContributionsLogic logic;
 	
-	@SuppressWarnings("unused")
 	private ResourceCache resourceCache;
 
 	private DateField dateField;
@@ -59,6 +59,8 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	private VerticalLayout actionsContainer;
 
 	private Table collaboratorsTable;
+
+	private List<ShortcutListener> actions = new ArrayList<ShortcutListener>();
 
 	public ContributionsPanel(ResourceCache resourceCache) {
 		this.resourceCache = resourceCache;
@@ -141,7 +143,6 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 			}
 		}
 
-
 		// Register listeners
 		previousYearButton.addClickListener(this);
 		previousMonthButton.addClickListener(this);
@@ -162,6 +163,16 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 			@Override
 			public void valueChange(ValueChangeEvent event) {
 				logic.onSelectedCollaboratorChanged((String) collaboratorsTable.getValue());
+			}
+		});
+		contributionsTable.addActionHandler(new Action.Handler() {
+			@Override
+			public void handleAction(Action action, Object sender, Object target) {
+				((ShortcutListener) action).handleAction(sender, target);
+			}
+			@Override
+			public Action[] getActions(Object target, Object sender) {
+				return (Action[]) actions.toArray(new Action[actions.size()]);
 			}
 		});
 	}
@@ -236,11 +247,6 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	}
 
 	@Override
-	public void addAction(View actionView) {
-		actionsContainer.addComponent((ActionView) actionView);
-	}
-
-	@Override
 	public void setCollaborators(List<ICollaborator> collaborators) {
 		collaboratorsTable.removeAllItems();
 		for (ICollaborator col : collaborators) {
@@ -251,6 +257,44 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	@Override
 	public void selectCollaborator(String login) {
 		collaboratorsTable.select(login);
+	}
+
+	@Override
+	public void addAction(final String actionId, final String label, final String keyBindingDescription, final String iconId, final char key,
+			final boolean ctrl, final boolean shift, final boolean alt) {
+		// TODO Use standard views ?
+		int[] rawModifiers = new int[3];
+		int i = 0;
+		if (ctrl)
+			rawModifiers[i++] = ShortcutListener.ModifierKey.CTRL;
+		if (shift)
+			rawModifiers[i++] = ShortcutListener.ModifierKey.SHIFT;
+		if (alt)
+			rawModifiers[i++] = ShortcutListener.ModifierKey.ALT;
+		int[] modifiers = new int[i];
+		System.arraycopy(rawModifiers, 0, modifiers, 0, i);
+		Resource iconResource = resourceCache.getResource(iconId + ".gif");
+		String caption = label + " <em>"
+				+ keyBindingDescription + "</em>";
+		ShortcutListener newAction = new ShortcutListener(caption,
+				iconResource, key, modifiers) {
+			@Override
+			public void handleAction(Object sender, Object target) {
+				logic.onAction(actionId);
+			}
+		};
+		actions.add(newAction);
+		addShortcutListener(newAction);
+		Button button = new Button();
+		button.setIcon(iconResource);
+		button.setDescription(caption);
+		actionsContainer.addComponent(button);
+		button.addClickListener(new Button.ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				logic.onAction(actionId);
+			}
+		});
 	}
 
 }

@@ -11,7 +11,5 @@ public abstract class AbstractSafeContributionsActionHandler implements IContrib
 		}
 	}
 
-	public abstract String getLabel();
-	
 	public abstract void unsafeHandle(AbstractContributionLogicImpl logic) throws Exception;
 }

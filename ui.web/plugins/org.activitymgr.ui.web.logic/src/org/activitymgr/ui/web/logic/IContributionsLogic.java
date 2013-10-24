@@ -28,6 +28,8 @@ public interface IContributionsLogic extends ILogic<IContributionsLogic.View> {
 
 	void onSelectedCollaboratorChanged(String login);
 
+	void onAction(String actionId);
+
 	public interface View extends ILogic.IView<IContributionsLogic> {
 		
 		void setCollaborators(List<ICollaborator> collaborators);
@@ -44,8 +46,7 @@ public interface IContributionsLogic extends ILogic<IContributionsLogic.View> {
 		
 		void setColumnFooter(String id, String value);
 		
-		void addAction(IActionLogic.View actionView);
-		
+		void addAction(String actionId, String label, String keyBindingDescription, String iconId, char key, boolean ctrl, boolean shift, boolean alt);
 	}
 
 }
