@@ -1,12 +1,16 @@
 package org.activitymgr.ui.web.view.impl.dialogs;
 
+import java.util.Collection;
+
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.view.util.ResourceCache;
 import org.activitymgr.ui.web.view.util.TreeDatasource;
 
+import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.event.ShortcutListener;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -15,31 +19,24 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.Tree;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Window;
 
 @SuppressWarnings("serial")
-public class TaskChooserDialog extends Window implements Button.ClickListener, ITaskChooserLogic.View {
+public class TaskChooserDialog extends AbstractDialog implements Button.ClickListener, ITaskChooserLogic.View {
 
 	private Button ok = new Button("Ok", this);
 	private Button cancel = new Button("Cancel", this);
 	private ITaskChooserLogic logic;
 	private Tree taskTree;
-	private ResourceCache resourceCache;
 	private Label statusLabel;
 
 	public TaskChooserDialog(ResourceCache resourceCache) {
-        super("Select a task");
+        super(resourceCache, "Select a task");
         setModal(true);
 
         setWidth(400, Unit.PIXELS);
 
-        this.resourceCache = resourceCache;
-        
         VerticalLayout vl = new VerticalLayout();
         setContent(vl);
-        
-//        statusLabel = new Label("Select a task");
-//        vl.addComponent(statusLabel);
         
         taskTree = new Tree();
         //taskTree.setWidth(400, Unit.PIXELS);
@@ -71,14 +68,41 @@ public class TaskChooserDialog extends Window implements Button.ClickListener, I
 				logic.onSelectionChanged(taskTree.getValue() == null ? null : Long.parseLong((String) taskTree.getValue()));
 			}
 		});
+        
+        // Key listener
+        addShortcutListener(new ShortcutListener("OK", ShortcutListener.KeyCode.ENTER, new int[] {}) {
+			@Override
+			public void handleAction(Object sender, Object target) {
+				if (ok.isEnabled()) {
+			        if (getParent() != null) {
+			            close();
+			        }
+		        	logic.onTaskChosen(Long.parseLong((String) taskTree.getValue()));
+				}
+				else {
+					taskTree.expandItem(taskTree.getValue());
+				}
+			}
+		});
     }
 
-	@Override
+    public void focus() {
+    	taskTree.focus();
+    }
+
+    @Override
 	public void setTreeContentProviderCallback(
 			ITreeContentProviderCallback treeContentProviderCallback) {
-		taskTree.setContainerDataSource(new TreeDatasource(resourceCache, treeContentProviderCallback));
+		TreeDatasource dataSource = new TreeDatasource(getResourceCache(), treeContentProviderCallback);
+		taskTree.setContainerDataSource(dataSource);
 		taskTree.setItemCaptionPropertyId(TreeDatasource.NAME_PROPERTY_ID);
 		taskTree.setItemIconPropertyId(TreeDatasource.ICON_PROPERTY_ID);
+		// TODO preselect another node ?
+		Collection<?> rootItemIds = dataSource.rootItemIds();
+		if (!rootItemIds.isEmpty()) {
+			Object rootItemId = rootItemIds.iterator().next();
+			taskTree.select(rootItemId);
+		}
 	}
 	
 	@Override

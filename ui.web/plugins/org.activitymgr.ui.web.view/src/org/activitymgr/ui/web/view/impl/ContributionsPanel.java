@@ -21,6 +21,8 @@ import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.event.Action;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.Resource;
+import com.vaadin.server.ClientConnector.AttachEvent;
+import com.vaadin.server.ClientConnector.AttachListener;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.DateField;

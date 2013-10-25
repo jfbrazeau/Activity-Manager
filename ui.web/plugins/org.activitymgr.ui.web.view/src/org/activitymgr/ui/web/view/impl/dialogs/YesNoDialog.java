@@ -8,17 +8,16 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.Window;
 
 @SuppressWarnings("serial")
-public class YesNoDialog extends Window implements Button.ClickListener {
+public class YesNoDialog extends AbstractDialog implements Button.ClickListener {
 
 	private IGenericCallback<Boolean> callback;
 	private Button yes = new Button("Yes", this);
 	private Button no = new Button("No", this);
 
 	public YesNoDialog(String caption, String question, IGenericCallback<Boolean> callback) {
-        super(caption);
+        super(null, caption);
 
         setModal(true);
 
