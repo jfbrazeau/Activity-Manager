@@ -33,4 +33,5 @@ public class TextFieldView extends TextField implements ITextFieldLogic.View {
 			throws com.vaadin.data.Property.ReadOnlyException {
 		super.setValue(newValue != null ? newValue : "");
 	}
+
 }

@@ -29,6 +29,7 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
@@ -67,7 +68,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 
 		setSpacing(true);
 		setMargin(true);
-		
+
 		/*
 		 * Controls
 		 */
@@ -77,10 +78,13 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		emptyLabel.setWidth(250, Unit.PIXELS);
 		controlsContainer.addComponent(emptyLabel);
 		previousYearButton = new Button("<<< Year");
+		previousYearButton.setDescription("Ctrl+Shift+Alt+Left");
 		controlsContainer.addComponent(previousYearButton);
 		previousMonthButton = new Button("<< Month");
+		previousMonthButton.setDescription("Ctrl+Shift+Left");
 		controlsContainer.addComponent(previousMonthButton);
 		previousWeekButton = new Button("< Week");
+		previousWeekButton.setDescription("Ctrl+Left");
 		controlsContainer.addComponent(previousWeekButton);
 		
 		dateField = new DateField();
@@ -89,10 +93,13 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		controlsContainer.addComponent(dateField);
 		
 		nextWeekButton = new Button("Week >");
+		nextWeekButton.setDescription("Ctrl+Right");
 		controlsContainer.addComponent(nextWeekButton);
 		nextMonthButton = new Button("Month >>");
+		nextMonthButton.setDescription("Ctrl+Shift+Right");
 		controlsContainer.addComponent(nextMonthButton);
 		nextYearButton = new Button("Year >>>");
+		nextYearButton.setDescription("Ctrl+Shift+Alt+Right");
 		controlsContainer.addComponent(nextYearButton);
 
 		// Collaborators list, contribution tables & actions container
@@ -120,11 +127,10 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		 * Contributions table
 		 */
 		contributionsTable = new Table();
+		hl.addComponent(contributionsTable);
 		contributionsTable.setFooterVisible(true);
-		contributionsTable.setImmediate(true);
 		contributionsTable.setHeight("500px");
 		contributionsTable.setWidth("1050px");
-		hl.addComponent(contributionsTable);
 		
 		/*
 		 * Actions container
@@ -165,6 +171,8 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 				logic.onSelectedCollaboratorChanged((String) collaboratorsTable.getValue());
 			}
 		});
+
+		// Register action handler		
 		contributionsTable.addActionHandler(new Action.Handler() {
 			@Override
 			public void handleAction(Action action, Object sender, Object target) {
@@ -173,6 +181,56 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 			@Override
 			public Action[] getActions(Object target, Object sender) {
 				return (Action[]) actions.toArray(new Action[actions.size()]);
+			}
+		});
+
+		// Register keyboard shortcut listeners
+		addShortcutListener(new ShortcutListener("Previous year",
+				ShortcutListener.KeyCode.ARROW_LEFT,
+				new int[] { ShortcutListener.ModifierKey.CTRL, ShortcutListener.ModifierKey.SHIFT, ShortcutListener.ModifierKey.ALT }) {
+			@Override
+			public void handleAction(Object sender, Object target) {
+				logic.onPreviousYear();
+			}
+		});
+		addShortcutListener(new ShortcutListener("Previous month",
+				ShortcutListener.KeyCode.ARROW_LEFT,
+				new int[] { ShortcutListener.ModifierKey.CTRL, ShortcutListener.ModifierKey.SHIFT }) {
+			@Override
+			public void handleAction(Object sender, Object target) {
+				logic.onPreviousMonth();
+			}
+		});
+		addShortcutListener(new ShortcutListener("Previous week",
+				ShortcutListener.KeyCode.ARROW_LEFT,
+				new int[] { ShortcutListener.ModifierKey.CTRL }) {
+			@Override
+			public void handleAction(Object sender, Object target) {
+				logic.onPreviousWeek();
+			}
+		});
+		addShortcutListener(new ShortcutListener("Next week",
+				ShortcutListener.KeyCode.ARROW_RIGHT,
+				new int[] { ShortcutListener.ModifierKey.CTRL }) {
+			@Override
+			public void handleAction(Object sender, Object target) {
+				logic.onNextWeek();
+			}
+		});
+		addShortcutListener(new ShortcutListener("Next month",
+				ShortcutListener.KeyCode.ARROW_RIGHT,
+				new int[] { ShortcutListener.ModifierKey.CTRL, ShortcutListener.ModifierKey.SHIFT }) {
+			@Override
+			public void handleAction(Object sender, Object target) {
+				logic.onNextMonth();
+			}
+		});
+		addShortcutListener(new ShortcutListener("Next year",
+				ShortcutListener.KeyCode.ARROW_RIGHT,
+				new int[] { ShortcutListener.ModifierKey.CTRL, ShortcutListener.ModifierKey.SHIFT, ShortcutListener.ModifierKey.ALT  }) {
+			@Override
+			public void handleAction(Object sender, Object target) {
+				logic.onNextYear();
 			}
 		});
 	}
@@ -297,6 +355,10 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		});
 	}
 
+	@Override
+	public void focus() {
+		super.focus();
+	}
 }
 
 class DefaultColumnProvider implements IContributionColumnViewProviderExtension {

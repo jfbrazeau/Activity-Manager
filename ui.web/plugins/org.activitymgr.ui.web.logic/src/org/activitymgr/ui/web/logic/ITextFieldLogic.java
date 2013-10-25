@@ -13,6 +13,8 @@ public interface ITextFieldLogic extends ILogic<ITextFieldLogic.View> {
 		void focus();
 
 		void setNumericFieldStyle();
+
+		void setReadOnly(boolean readOnly);
 		
 	}
 
