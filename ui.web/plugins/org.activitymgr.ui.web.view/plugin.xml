@@ -26,14 +26,8 @@
    <extension
          point="org.vaadin.application">
       <vaadin-ui
-            productionMode="false"
+            productionMode="true"
             ui="org.activitymgr.ui.web.view.impl.ActivityManagerUI">
-         <bundle-to-reload
-               id="org.activitymgr.core">
-         </bundle-to-reload>
-         <bundle-to-reload
-               id="org.activitymgr.ui.web.logic">
-         </bundle-to-reload>
       </vaadin-ui>
    </extension>
 </plugin>
