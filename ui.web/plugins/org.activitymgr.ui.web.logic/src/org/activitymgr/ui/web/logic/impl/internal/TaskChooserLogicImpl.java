@@ -7,13 +7,14 @@ import java.util.List;
 import org.activitymgr.core.DbException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Task;
-import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILabelProviderCallback;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
+import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeLabelProviderCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTreeContentProviderCallback;
+import org.activitymgr.ui.web.logic.impl.LogicContext;
 
 public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.View> implements ITaskChooserLogic {
 	
@@ -24,10 +25,10 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 		// Remember already selected task ids
 		this.selectedTaskIds = selectedTaskIds;
 		// Register the tree content provider
-		getView().setTreeContentProviderCallback(new TaskTreeContentProvider(this, getEventBus(), getModelMgr()));
+		TaskTreeContentProvider callback = new TaskTreeContentProvider(this, getContext(), getModelMgr());
+		getView().setTreeContentProviderCallback(getContext().buildTransactionalWrapper(callback, ITreeContentProviderCallback.class));
 		// Update button state & status label
 		onSelectionChanged(null);
-		
 	}
 
 	@Override
@@ -66,16 +67,18 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback {
 
 	private IModelMgr modelMgr;
+	private LogicContext context;
 
-	public TaskTreeContentProvider(ILogic<?> source, IEventBus eventBus, IModelMgr modelMgr) {
-		super(source, eventBus);
+	public TaskTreeContentProvider(ILogic<?> source, LogicContext context, IModelMgr modelMgr) {
+		super(source, context.getEventBus());
 		this.modelMgr = modelMgr;
+		this.context = context;
 	}
 
 	@Override
 	protected ILabelProviderCallback unsafeGetLabelProvider(final String itemId)
 			throws Exception {
-		return new AbstractSafeLabelProviderCallback(getSource(), getEventBus()) {
+		AbstractSafeLabelProviderCallback callback = new AbstractSafeLabelProviderCallback(getSource(), getEventBus()) {
 			
 			@Override
 			protected String unsafeGetText() throws Exception {
@@ -87,6 +90,7 @@ class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback {
 				return null;
 			}
 		};
+		return context.buildTransactionalWrapper(callback, ILabelProviderCallback.class);
 	}
 
 	@Override
