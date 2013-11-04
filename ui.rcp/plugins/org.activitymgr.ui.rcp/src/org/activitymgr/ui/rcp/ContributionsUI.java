@@ -36,8 +36,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.activitymgr.core.DbException;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
-import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Contribution;
 import org.activitymgr.core.beans.Duration;
@@ -190,7 +190,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 	}
 
 	/** Model manager */
-	private ModelMgr modelMgr;
+	private IModelMgr modelMgr;
 	
 	/** Listeners */
 	private List<IContributionListener> listeners = new ArrayList<IContributionListener>();
@@ -250,7 +250,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 	 * @param modelMgr
 	 *            the model manager instance.
 	 */
-	public ContributionsUI(TabItem tabItem, ModelMgr modelMgr) {
+	public ContributionsUI(TabItem tabItem, IModelMgr modelMgr) {
 		this(tabItem.getParent(), modelMgr);
 		tabItem.setControl(parent);
 	}
@@ -263,7 +263,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 	 * @param modelMgr
 	 *            the model manager instance.
 	 */
-	public ContributionsUI(Composite parentComposite, ModelMgr modelMgr) {
+	public ContributionsUI(Composite parentComposite, IModelMgr modelMgr) {
 		this.modelMgr = modelMgr;
 
 		// Création du composite parent

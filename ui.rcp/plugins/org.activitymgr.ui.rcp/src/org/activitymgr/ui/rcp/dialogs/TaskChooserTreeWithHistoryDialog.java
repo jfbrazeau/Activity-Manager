@@ -30,7 +30,7 @@ package org.activitymgr.ui.rcp.dialogs;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.activitymgr.core.ModelMgr;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.DatabaseUI.IDbStatusListener;
@@ -77,7 +77,7 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 	private List<Task> previouslySelectedTasks = new ArrayList<Task>();
 
 	/** Model manager */
-	private ModelMgr modelMgr;
+	private IModelMgr modelMgr;
 
 	/**
 	 * Constructeur par défaut.
@@ -87,7 +87,7 @@ public class TaskChooserTreeWithHistoryDialog extends AbstractDialog implements
 	 * @param modelMgr
 	 *            the model manager.
 	 */
-	public TaskChooserTreeWithHistoryDialog(Shell parentShell, ModelMgr modelMgr) {
+	public TaskChooserTreeWithHistoryDialog(Shell parentShell, IModelMgr modelMgr) {
 		super(
 				parentShell,
 				Strings.getString("TaskChooserTreeWithHistoryDialog.texts.TITLE"), null, null); //$NON-NLS-1$

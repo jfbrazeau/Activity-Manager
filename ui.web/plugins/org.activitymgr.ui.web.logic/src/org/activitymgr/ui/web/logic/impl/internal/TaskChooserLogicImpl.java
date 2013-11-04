@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.activitymgr.core.DbException;
-import org.activitymgr.core.ModelMgr;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILabelProviderCallback;
@@ -65,9 +65,9 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 
 class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback {
 
-	private ModelMgr modelMgr;
+	private IModelMgr modelMgr;
 
-	public TaskTreeContentProvider(ILogic<?> source, IEventBus eventBus, ModelMgr modelMgr) {
+	public TaskTreeContentProvider(ILogic<?> source, IEventBus eventBus, IModelMgr modelMgr) {
 		super(source, eventBus);
 		this.modelMgr = modelMgr;
 	}

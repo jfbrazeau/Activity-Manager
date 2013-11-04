@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.activitymgr.core.ModelMgr;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskSearchFilter;
 import org.activitymgr.core.util.Strings;
@@ -98,7 +98,7 @@ public class TaskFinderPanel extends Composite {
 
 	/** Dialogue permettant de sélectionner une tache parmi une liste */
 	private TaskChooserDialog taskChooserDialog = null;
-	private ModelMgr modelMgr;
+	private IModelMgr modelMgr;
 
 	/**
 	 * Constructeur par défaut.
@@ -108,7 +108,7 @@ public class TaskFinderPanel extends Composite {
 	 * @param modelMgr
 	 *            the model manager.
 	 */
-	public TaskFinderPanel(Composite parent, ModelMgr modelMgr) {
+	public TaskFinderPanel(Composite parent, IModelMgr modelMgr) {
 		this(parent, SWT.NONE);
 		this.modelMgr = modelMgr;
 	}

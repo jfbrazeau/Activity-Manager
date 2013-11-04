@@ -31,6 +31,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -38,12 +40,14 @@ import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.activitymgr.core.DbException;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
-import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Duration;
+import org.activitymgr.core.util.DbHelper;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.util.SafeRunner;
 import org.activitymgr.ui.rcp.util.UITechException;
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.FileFieldEditor;
@@ -100,8 +104,11 @@ public class DatabaseUI implements ModifyListener {
 	public static final int USER_DEFINED_MODE = 2;
 
 	/** Model manager */
-	private ModelMgr modelMgr;
+	private IModelMgr modelMgr;
 	
+	/** Datasource */
+	private BasicDataSource datasource;
+
 	/** Listener */
 	private List<IDbStatusListener> listeners = new ArrayList<IDbStatusListener>();
 
@@ -151,7 +158,7 @@ public class DatabaseUI implements ModifyListener {
 	 * @param modelMgr
 	 *            the model manager instance.
 	 */
-	public DatabaseUI(TabItem tabItem, ModelMgr modelMgr) {
+	public DatabaseUI(TabItem tabItem, IModelMgr modelMgr) {
 		this(tabItem.getParent(), modelMgr);
 		tabItem.setControl(parent);
 	}
@@ -164,7 +171,7 @@ public class DatabaseUI implements ModifyListener {
 	 * @param modelMgr
 	 *            the model manager instance.
 	 */
-	public DatabaseUI(Composite parentComposite, ModelMgr modelMgr) {
+	public DatabaseUI(Composite parentComposite, IModelMgr modelMgr) {
 		this.modelMgr = modelMgr;
 
 		// Création du composite parent
@@ -710,8 +717,13 @@ public class DatabaseUI implements ModifyListener {
 		store.setValue(PreferenceManager.JDBC_USER, jdbcUser);
 		store.setValue(PreferenceManager.JDBC_PASSWORD, jdbcPassword);
 
-		// Changement des paramétres de connexion
-		modelMgr.initialize(jdbcDriver, jdbcUrl, jdbcUser, jdbcPassword);
+		// Changement des paramètres de connexion
+		datasource = new BasicDataSource();
+		datasource.setDriverClassName(jdbcDriver);
+		datasource.setUrl(jdbcUrl);
+		datasource.setUsername(jdbcUser);
+		datasource.setPassword(jdbcPassword);
+		datasource.setDefaultAutoCommit(false);
 
 		// Test de l'existence du modèle en base
 		boolean dbModelOk = modelMgr.tablesExist();
@@ -778,9 +790,20 @@ public class DatabaseUI implements ModifyListener {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	private void closeDatabase() throws DbException {
+	public void closeDatabase() throws UITechException, DbException {
 		// Changement des paramétres de connexion
-		modelMgr.closeDatabaseAccess();
+		try {
+			Connection con = datasource.getConnection();
+			if (DbHelper.isEmbeddedHsqlOrH2(con, jdbcUrlText.getText().trim())) {
+				DbHelper.shutdowHsqlOrH2(con);
+			}
+			con.close();
+			datasource.close();
+			datasource = null;
+		} catch (SQLException e) {
+			throw new UITechException("Unexpected error while closing the database",e); // TODO internationalize
+		}
+
 		// Activation/désactivation des boutons et des champs
 		openDbButton.setEnabled(true);
 		closeDbButton.setEnabled(false);
@@ -798,6 +821,7 @@ public class DatabaseUI implements ModifyListener {
 			IDbStatusListener listener = it.next();
 			listener.databaseClosed();
 		}
+
 	}
 
 	/**
@@ -969,6 +993,13 @@ public class DatabaseUI implements ModifyListener {
 								Strings.getString("DatabaseUI.informations.DATABASE_SUCCESSFULLY_IMPORTED")); //$NON-NLS-1$
 			}
 		}
+	}
+
+	/**
+	 * @return the datasource.
+	 */
+	public BasicDataSource getDatasource() {
+		return datasource;
 	}
 
 }

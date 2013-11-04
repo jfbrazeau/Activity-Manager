@@ -33,7 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.activitymgr.core.DbException;
-import org.activitymgr.core.ModelMgr;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Duration;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
@@ -129,7 +129,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	}
 
 	/** Model manager */
-	private ModelMgr modelMgr;
+	private IModelMgr modelMgr;
 	
 	/** Viewer */
 	private TableViewer tableViewer;
@@ -159,7 +159,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	 * @param modelMgr
 	 *            the model manager instance.
 	 */
-	public DurationsUI(TabItem tabItem, ModelMgr modelMgr) {
+	public DurationsUI(TabItem tabItem, IModelMgr modelMgr) {
 		this(tabItem.getParent(), modelMgr);
 		tabItem.setControl(parent);
 	}
@@ -172,7 +172,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	 * @param modelMgr
 	 *            the model manager instance.
 	 */
-	public DurationsUI(Composite parentComposite, ModelMgr modelMgr) {
+	public DurationsUI(Composite parentComposite, IModelMgr modelMgr) {
 		this.modelMgr = modelMgr;
 
 		// Création du composite parent

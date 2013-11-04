@@ -1,20 +1,30 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.activitymgr.core.DbException;
-import org.activitymgr.core.ModelMgr;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
+import org.activitymgr.core.CoreModule;
+import org.activitymgr.core.DbTransaction;
+import org.activitymgr.core.IModelMgr;
+import org.apache.commons.dbcp.BasicDataSource;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Provider;
 
 @SuppressWarnings("rawtypes")
 public class Activator implements BundleActivator, ServiceTrackerCustomizer {
@@ -28,7 +38,9 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer {
 
 	private IExtensionRegistry extensionRegistryService;
 
-	private ModelMgr modelMgr;
+	private IModelMgr modelMgr;
+
+	private BasicDataSource datasource;
 
 	private static Activator singleton = null;
 	
@@ -51,7 +63,7 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer {
 		}
 	}
 
-	protected ModelMgr getModelMgr() {
+	protected IModelMgr getModelMgr() {
 		return modelMgr;
 	}
 
@@ -76,28 +88,67 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer {
 
 	private void registerExtensionRegistryService(IExtensionRegistry registry) {
 		extensionRegistryService = registry;
-		// Once the registry is registered, ModelMgr implementation 
-		// can be created
-		// TODO externalize connection parameters
-		try {
-			IConfigurationElement[] cfgs = registry.getConfigurationElementsFor("org.activitymgr.ui.web.logic.modelMgrImpl");
-			ModelMgr modelMgr = 
-					cfgs.length > 0 ? 
-							(ModelMgr) cfgs[0].createExecutableExtension("class") 
-							: new ModelMgr();
-			modelMgr.initialize("com.mysql.jdbc.Driver",
-					"jdbc:mysql://localhost:3306/taskmgr_db", "taskmgr_user",
-					"secret");
-			// If model manager intializaation is successful, the instance is kept
-			this.modelMgr = modelMgr;
-		}
-		catch (DbException e) {
-			// TODO create a log
-			e.printStackTrace();
-		} catch (CoreException e) {
-			// TODO create a log
-			e.printStackTrace();
-		}
+
+		// TODO remove
+//		// Once the registry is registered, ModelMgr implementation 
+//		// can be created
+//		// TODO externalize connection parameters
+//		// Create the datasource
+//		String jdbcDriver = "com.mysql.jdbc.Driver";
+//		String jdbcUrl = "jdbc:mysql://localhost:3306/taskmgr_db";
+//		String jdbcUser = "taskmgr_user";
+//		String jdbcPassword = "secret";
+//		datasource = new BasicDataSource();
+//		datasource.setDriverClassName(jdbcDriver);
+//		datasource.setUrl(jdbcUrl);
+//		datasource.setUsername(jdbcUser);
+//		datasource.setPassword(jdbcPassword);
+//		datasource.setDefaultAutoCommit(false);
+//		
+//		// Create Guice injector
+//		final ThreadLocal<DbTransaction> dbTxs = new ThreadLocal<DbTransaction>();
+//		Injector injector = Guice.createInjector(new CoreModule(),
+//				new AbstractModule() {
+//					@Override
+//					protected void configure() {
+//						bind(DbTransaction.class).toProvider(
+//								new Provider<DbTransaction>() {
+//									@Override
+//									public DbTransaction get() {
+//										return dbTxs.get();
+//									}
+//								});
+//					}
+//				});
+//		// Creates a new model manager wrapper (managing the transaction)
+//		final IModelMgr wrappedModelMgr = injector.getInstance(IModelMgr.class);
+//		modelMgr = (IModelMgr) Proxy.newProxyInstance(
+//				Activator.class.getClassLoader(),
+//				new Class<?>[] { IModelMgr.class }, new InvocationHandler() {
+//					@Override
+//					public Object invoke(Object proxy, Method method,
+//							Object[] args) throws Throwable {
+//						DbTransaction tx = null;
+//						try {
+//							// Open the transaction
+//							tx = new DbTransaction(datasource.getConnection());
+//							dbTxs.set(tx);
+//							// Call the real model manager
+//							Object result = method.invoke(wrappedModelMgr, args);
+//							// Commit the transaction
+//							tx.getConnection().commit();
+//							return result;
+//						} catch (InvocationTargetException t) {
+//							// Rollback the transaction in case of failure
+//							tx.getConnection().rollback();
+//							throw t.getCause();
+//						} finally {
+//							// Release the transaction
+//							dbTxs.remove();
+//							tx.getConnection().close();
+//						}
+//					}
+//				});
 	}
 	
 	@Override
@@ -109,6 +160,14 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer {
 	public void removedService(ServiceReference reference,
 			Object service) {
 		context.ungetService(reference);
+		if (service instanceof IExtensionRegistry){
+			try {
+				modelMgr = null;
+				datasource.close();
+			} catch (SQLException e) {
+				throw new IllegalStateException(e);
+			}
+		}
 	}
 
 	public IExtensionRegistry getExtensionRegistryService() {

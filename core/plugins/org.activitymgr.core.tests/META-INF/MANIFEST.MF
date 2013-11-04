@@ -7,4 +7,5 @@ Bundle-Vendor: Jean-Francois Brazeau
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.activitymgr.core,
  org.apache.log4j,
- org.junit;bundle-version="3.8.2"
+ org.junit;bundle-version="3.8.2",
+ org.apache.commons.dbcp;bundle-version="1.4.0"

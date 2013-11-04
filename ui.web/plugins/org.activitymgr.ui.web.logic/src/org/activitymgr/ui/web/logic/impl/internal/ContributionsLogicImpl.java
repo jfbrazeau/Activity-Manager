@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.activitymgr.core.DbException;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
-import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Contribution;
 import org.activitymgr.core.beans.IntervalContributions;
@@ -441,7 +441,7 @@ public class ContributionsLogicImpl extends AbstractContributionLogicImpl implem
 class DefaultWeekContributionsProvider extends AbstractWeekContributionsProviderExtension {
 	
 	@Override
-	public TaskContributions[] getWeekContributions(ModelMgr modelMgr,
+	public TaskContributions[] getWeekContributions(IModelMgr modelMgr,
 			Collaborator contributor, Calendar firstDayOfWeek) {
 		// Recherche des taches déclarées pour cet utilisateur
 		// pour la semaine courante (et la semaine passée pour

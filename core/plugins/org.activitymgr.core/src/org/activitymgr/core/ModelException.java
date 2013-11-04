@@ -31,7 +31,7 @@ package org.activitymgr.core;
  * Exception levée en cas de violation des contraintes d'intégrité du modèle de
  * données.
  */
-public class ModelException extends AbstractApplicationException {
+public class ModelException extends AbstractException {
 
 	/** Fake serial version UID */
 	private static final long serialVersionUID = 1L;

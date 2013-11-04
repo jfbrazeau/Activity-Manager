@@ -22,7 +22,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 	public boolean preShutdown() {
 		try {
 			MainView mainView = (MainView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getViewReferences()[0].getView(true);
-			mainView.getModelMgr().closeDatabaseAccess();
+			mainView.closeDatabase();
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}

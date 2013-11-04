@@ -1,17 +1,16 @@
-package org.activitymgr.core.util;
+package org.activitymgr.core.impl;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
 import org.activitymgr.core.DbException;
-import org.activitymgr.core.DbTransaction;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
-import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Contribution;
 import org.activitymgr.core.beans.Duration;
 import org.activitymgr.core.beans.Task;
-
+import org.activitymgr.core.util.Strings;
 import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -36,8 +35,6 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		/**
 		 * Crée une durée dans un contexte de transaction.
 		 * 
-		 * @param tx
-		 *            le contexte de transaction.
 		 * @param duration
 		 *            la durée à créer.
 		 * @return la durée créée.
@@ -45,16 +42,14 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		 *             levé en cas d'incident technique d'accès à la base.
 		 * @throws ModelException
 		 *             levé dans la cas ou la durée existe déjà.
-		 * @see org.activitymgr.core.ModelMgr#createDuration(Duration)
+		 * @see IModelMgr#createDuration(Duration)
 		 */
-		public Duration createDuration(DbTransaction tx, Duration duration)
+		public Duration createDuration(Duration duration)
 				throws ModelException, DbException;
 
 		/**
 		 * Crée un collaborateur dans un contexte de transaction.
 		 * 
-		 * @param tx
-		 *            le contexte de transaction.
 		 * @param collaborator
 		 *            le collaborateur à créer.
 		 * @return le collaborateur après création.
@@ -63,16 +58,14 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		 * @throws ModelException
 		 *             levé dans la cas ou la tache de destination ne peut
 		 *             recevoir de sous-tache.
-		 * @see org.activitymgr.core.ModelMgr#createCollaborator(Collaborator)
+		 * @see IModelMgr#createCollaborator(Collaborator)
 		 */
-		public Collaborator createCollaborator(DbTransaction tx,
-				Collaborator collaborator) throws DbException, ModelException;
+		public Collaborator createCollaborator(Collaborator collaborator)
+				throws DbException, ModelException;
 
 		/**
 		 * Crée une nouvelle tache dans un contexte de transaction.
 		 * 
-		 * @param tx
-		 *            le contexte de transaction.
 		 * @param parentTask
 		 *            la tache parent de destination.
 		 * @param task
@@ -83,16 +76,14 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		 * @throws ModelException
 		 *             levé dans la cas ou la tache de destination ne peut
 		 *             recevoir de sous-tache.
-		 * @see org.activitymgr.core.ModelMgr#createTask(Task, Task)
+		 * @see IModelMgr#createTask(Task, Task)
 		 */
-		public Task createTask(DbTransaction tx, Task parentTask, Task task)
-				throws DbException, ModelException;
+		public Task createTask(Task parentTask, Task task) throws DbException,
+				ModelException;
 
 		/**
 		 * Crée une contribution dans un contexte de transaction.
 		 * 
-		 * @param tx
-		 *            le contexte de transaction.
 		 * @param contribution
 		 *            la contribution à créer.
 		 * @return la contribution après création.
@@ -101,17 +92,15 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		 * @throws ModelException
 		 *             levé dans la cas ou la tache de destination ne peut
 		 *             recevoir de contribution.
-		 * @see org.activitymgr.core.ModelMgr#createCollaborator(Collaborator)
+		 * @see IModelMgr#createCollaborator(Collaborator)
 		 */
-		public Contribution createContribution(DbTransaction tx,
-				Contribution contribution) throws DbException, ModelException;
+		public Contribution createContribution(Contribution contribution)
+				throws DbException, ModelException;
 
 		/**
 		 * Retourne la tache associée à un chemin construit à partir de codes de
 		 * taches.
 		 * 
-		 * @param tx
-		 *            le contexte de transaction.
 		 * @param codePath
 		 *            le chemin à base de code.
 		 * @return la tache trouvée.
@@ -120,15 +109,13 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		 * @throws ModelException
 		 *             levé dans le cas ou le chemin de tache est inconnu.
 		 */
-		public Task getTaskByCodePath(DbTransaction tx, final String codePath)
+		public Task getTaskByCodePath(String codePath)
 				throws DbException, ModelException;
 
 		/**
 		 * Retourne le collabirateur dont le login est spécifié dans un contexte
 		 * de transaction.
 		 * 
-		 * @param tx
-		 *            le contexte de transaction.
 		 * @param login
 		 *            l'identifiant de connexion du collaborateur recherché.
 		 * @return le collaborateur dont l'identifiant de connexion est
@@ -136,7 +123,7 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		 * @throws DbException
 		 *             levé en cas d'incident technique d'accès à la base.
 		 */
-		public Collaborator getCollaborator(DbTransaction tx, String login)
+		public Collaborator getCollaborator(String login)
 				throws DbException;
 
 	}
@@ -172,9 +159,6 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	public static final String COMMENT_NODE = "comment"; //$NON-NLS-1$
 	public static final String VALUE_NODE = "value"; //$NON-NLS-1$
 
-	/** Contexte de transaction */
-	private DbTransaction transaction;
-
 	/** Gestionnaire du modèle */
 	private ModelMgrDelegate modelMgrDelegate;
 
@@ -197,9 +181,8 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	 * @param tx
 	 *            contexte de transaction.
 	 */
-	public XmlHelper(ModelMgrDelegate modelMgrDelegate, DbTransaction tx) {
+	public XmlHelper(ModelMgrDelegate modelMgrDelegate) {
 		this.modelMgrDelegate = modelMgrDelegate;
-		this.transaction = tx;
 	}
 
 	/** EntityResolver interface methods */
@@ -214,7 +197,7 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 			throws SAXException, IOException {
 		log.debug("resolveEntity(" + publicId + ", " + systemId + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		return new InputSource(
-				ModelMgr.class.getResourceAsStream("activitymgr.dtd")); //$NON-NLS-1$
+				IModelMgr.class.getResourceAsStream("activitymgr.dtd")); //$NON-NLS-1$
 	}
 
 	/** ErrorHandler interface methods */
@@ -345,11 +328,11 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 			} else if (DURATION_NODE.equals(qName)) {
 				Duration durationToCreate = currentDuration;
 				currentDuration = null;
-				modelMgrDelegate.createDuration(transaction, durationToCreate);
+				modelMgrDelegate.createDuration(durationToCreate);
 			} else if (COLLABORATOR_NODE.equals(qName)) {
 				Collaborator collaboratorToCreate = currentCollaborator;
 				currentCollaborator = null;
-				modelMgrDelegate.createCollaborator(transaction,
+				modelMgrDelegate.createCollaborator(
 						collaboratorToCreate);
 			} else if (LOGIN_NODE.equals(qName)) {
 				currentCollaborator.setLogin(textToSave);
@@ -370,14 +353,14 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 				Task parentOfTaskToCreate = currentParentTask;
 				currentTask = null;
 				currentParentTask = null;
-				modelMgrDelegate.createTask(transaction, parentOfTaskToCreate,
+				modelMgrDelegate.createTask(parentOfTaskToCreate,
 						taskToCreate);
 			} else if (PATH_NODE.equals(qName)) {
 				log.debug("textToSave='" + textToSave + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 				String parentPath = textToSave.substring(0,
 						textToSave.lastIndexOf('/'));
 				log.debug("parentPath='" + parentPath + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-				currentParentTask = "".equals(parentPath) ? null : modelMgrDelegate.getTaskByCodePath(transaction, parentPath); //$NON-NLS-1$
+				currentParentTask = "".equals(parentPath) ? null : modelMgrDelegate.getTaskByCodePath(parentPath); //$NON-NLS-1$
 				String taskCode = textToSave.substring(parentPath.length() + 1);
 				currentTask.setCode(taskCode);
 			} else if (NAME_NODE.equals(qName)) {
@@ -396,14 +379,14 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 			} else if (CONTRIBUTION_NODE.equals(qName)) {
 				Contribution contributionToCreate = currentContribution;
 				currentContribution = null;
-				modelMgrDelegate.createContribution(transaction,
+				modelMgrDelegate.createContribution(
 						contributionToCreate);
 			} else if (CONTRIBUTOR_REF_NODE.equals(qName)) {
 				Collaborator collaborator = modelMgrDelegate.getCollaborator(
-						transaction, textToSave);
+						 textToSave);
 				currentContribution.setContributorId(collaborator.getId());
 			} else if (TASK_REF_NODE.equals(qName)) {
-				Task task = modelMgrDelegate.getTaskByCodePath(transaction,
+				Task task = modelMgrDelegate.getTaskByCodePath(
 						textToSave);
 				currentContribution.setTaskId(task.getId());
 			} else {

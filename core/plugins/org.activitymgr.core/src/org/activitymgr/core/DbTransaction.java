@@ -32,6 +32,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.activitymgr.core.util.DbHelper;
+import org.activitymgr.core.util.Strings;
 import org.apache.log4j.Logger;
 
 /**
@@ -51,7 +53,7 @@ public class DbTransaction {
 	 * @param con
 	 *            connexion à la base de données.
 	 */
-	protected DbTransaction(Connection con) {
+	public DbTransaction(Connection con) {
 		this.con = con;
 	}
 
@@ -63,6 +65,15 @@ public class DbTransaction {
 	}
 
 	/**
+	 * Creates a statement for the current transaction.
+	 * @return the newly created statement.
+	 * @throws SQLException thrown  if a database access error occurs.
+	 */
+	public Statement createStatement() throws SQLException {
+		return con.createStatement();
+	}
+	
+	/**
 	 * Prépare une requête SQL.
 	 * 
 	 * @param sql
@@ -73,7 +84,7 @@ public class DbTransaction {
 	 * @throws SQLException
 	 *             en cas d'erreur lié à la BDD.
 	 */
-	protected PreparedStatement prepareStatement(String sql, boolean generatedKey)
+	public PreparedStatement prepareStatement(String sql, boolean generatedKey)
 			throws SQLException {
 		log.debug(sql);
 		return generatedKey ? con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS) : con.prepareStatement(sql);
@@ -88,10 +99,55 @@ public class DbTransaction {
 	 * @throws SQLException
 	 *             en cas d'erreur lié à la BDD.
 	 */
-	protected PreparedStatement prepareStatement(String sql)
+	public PreparedStatement prepareStatement(String sql)
 			throws SQLException {
 		log.debug(sql);
 		return prepareStatement(sql, false);
+	}
+
+	/**
+	 * Indique si la BDD de données est une base HSQLDB ou H2.
+	 * 
+	 * @return un booléen indiquant si la BDD est de type HSQLDB ou H2.
+	 * @throws DbException
+	 *             levé en cas d'incident technique d'accès à la base.
+	 */
+	public boolean isHsqlOrH2() throws DbException {
+		return DbHelper.isHsqlOrH2(con);
+	}
+
+	/**
+	 * Ferme une transactrion.
+	 * 
+	 * @throws DbException
+	 *             levé en cas d'incident technique d'accès à la base.
+	 */
+	public void endTransaction() throws DbException {
+		try {
+			con.close();
+			con = null;
+		} catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(
+					Strings.getString("DbMgr.errors.SQL_DISCONNECTION_FAILURE"), e); //$NON-NLS-1$
+		}
+	}
+
+	/**
+	 * Annule le modifications effectuées dans le cadre d'une transactrion.
+	 * 
+	 * @throws DbException
+	 *             levé en cas d'incident technique d'accès à la base.
+	 */
+	public void rollbackTransaction()
+			throws DbException {
+		try {
+			con.rollback();
+		} catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(
+					Strings.getString("DbMgr.errors.SQL_ROLLBACK_FAILURE"), e); //$NON-NLS-1$
+		}
 	}
 
 }

@@ -27,9 +27,18 @@
  */
 package org.activitymgr.ui.rcp;
 
-import org.activitymgr.core.ModelMgr;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
+import org.activitymgr.core.CoreModule;
+import org.activitymgr.core.DbException;
+import org.activitymgr.core.DbTransaction;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.DatabaseUI.IDbStatusListener;
+import org.activitymgr.ui.rcp.util.UITechException;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -38,6 +47,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.ui.part.ViewPart;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Provider;
 
 public class MainView extends ViewPart {
 	public static final String ID = "org.activitymgr.ui.view";
@@ -61,7 +75,7 @@ public class MainView extends ViewPart {
 	private static ContributionsUI contributionsUI;
 
 	/** Model manager */
-	private ModelMgr modelMgr;
+	private IModelMgr modelMgr;
 
 	/**
 	 * This is a callback that will allow us to create the viewer and initialize
@@ -73,8 +87,8 @@ public class MainView extends ViewPart {
 		tabFolder
 				.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		// Creates a new model manager
-		modelMgr = new ModelMgr();
+		// TODO move the core module & model manager initialization 
+		initializeModelMgr();
 		
 		// Création de l'onglet de paramétrage de l'accès à la base de
 		// données
@@ -150,16 +164,71 @@ public class MainView extends ViewPart {
 	}
 
 	/**
+	 * Initializes transaction management and model manager.
+	 */
+	private void initializeModelMgr() {
+		// Create Guice injector
+		final ThreadLocal<DbTransaction> dbTxs = new ThreadLocal<DbTransaction>();
+		Injector injector = Guice.createInjector(new CoreModule(),
+				new AbstractModule() {
+					@Override
+					protected void configure() {
+						bind(DbTransaction.class).toProvider(
+								new Provider<DbTransaction>() {
+									@Override
+									public DbTransaction get() {
+										return dbTxs.get();
+									}
+								});
+					}
+				});
+		// Creates a new model manager wrapper (managing the transaction)
+		final IModelMgr wrappedModelMgr = injector.getInstance(IModelMgr.class);
+		modelMgr = (IModelMgr) Proxy.newProxyInstance(
+				MainView.class.getClassLoader(),
+				new Class<?>[] { IModelMgr.class }, new InvocationHandler() {
+					@Override
+					public Object invoke(Object proxy, Method method,
+							Object[] args) throws Throwable {
+						DbTransaction tx = null;
+						try {
+							// Open the transaction
+							tx = new DbTransaction(databaseUI.getDatasource().getConnection());
+							dbTxs.set(tx);
+							// Call the real model manager
+							Object result = method.invoke(wrappedModelMgr, args);
+							// Commit the transaction
+							tx.getConnection().commit();
+							return result;
+						} catch (InvocationTargetException t) {
+							// Rollback the transaction in case of failure
+							tx.getConnection().rollback();
+							throw t.getCause();
+						} finally {
+							// Release the transaction
+							dbTxs.remove();
+							tx.getConnection().close();
+						}
+					}
+				});
+	}
+
+	/**
 	 * Passing the focus request to the viewer's control.
 	 */
 	public void setFocus() {
 	}
 
 	/**
-	 * @return the {@link ModelMgr}.
+	 * Ferme la connexion à la base de données.
+	 * 
+	 * @throws DbException
+	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public ModelMgr getModelMgr() {
-		return modelMgr;
+	public void closeDatabase() throws UITechException, DbException {
+		if (databaseUI != null) {
+			databaseUI.closeDatabase();
+		}
 	}
 
 }

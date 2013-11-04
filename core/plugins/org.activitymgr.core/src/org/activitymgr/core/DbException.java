@@ -30,7 +30,7 @@ package org.activitymgr.core;
 /**
  * Exception levée lors d'un incident technique d'accès à la base de données.
  */
-public class DbException extends AbstractTechnicalException {
+public class DbException extends AbstractException {
 
 	/** Fake serial version UID */
 	private static final long serialVersionUID = 1L;

@@ -27,7 +27,7 @@
  */
 package org.activitymgr.ui.rcp.dialogs;
 
-import org.activitymgr.core.ModelMgr;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Task;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -52,7 +52,7 @@ public class TasksChooserDialog extends AbstractDialog implements MouseListener 
 	private ITaskChooserValidator validator;
 
 	/** Model manager */
-	private ModelMgr modelMgr;
+	private IModelMgr modelMgr;
 
 	/**
 	 * Constructeur par défaut.
@@ -62,7 +62,7 @@ public class TasksChooserDialog extends AbstractDialog implements MouseListener 
 	 * @param modelMgr
 	 *            the model manager.
 	 */
-	public TasksChooserDialog(Shell parentShell, ModelMgr modelMgr) {
+	public TasksChooserDialog(Shell parentShell, IModelMgr modelMgr) {
 		super(parentShell, "Choose a task", null, null);
 		setShellStyle(SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 		this.modelMgr = modelMgr;

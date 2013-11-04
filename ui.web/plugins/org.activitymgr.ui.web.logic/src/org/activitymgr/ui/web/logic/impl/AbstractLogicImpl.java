@@ -1,6 +1,6 @@
 package org.activitymgr.ui.web.logic.impl;
 
-import org.activitymgr.core.ModelMgr;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.IRootLogic;
@@ -28,8 +28,12 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 	private AbstractLogicImpl(ILogic<?> parent, LogicContext context) {
 		this.parent = parent;
 		this.context = context;
+		// Create transactional wrapper
+		Class<? extends ILogic<?>> iLogicInterface = getILogicInterfaces(getClass());
+		ILogic<VIEW> transactionalWrapper = context.buildTransactionalWrapper(this, iLogicInterface);
+		// Create the view and bind the logic to it
 		view = (VIEW) context.getViewFactory().createView(getClass(), getViewParameters());
-		view.registerLogic(this);
+		view.registerLogic(transactionalWrapper);
 	}
 
 	// TODO Javadoc to be overrided
@@ -49,7 +53,7 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 		return context != null ? context.getEventBus() : null;
 	}
 	
-	protected ModelMgr getModelMgr() {
+	protected IModelMgr getModelMgr() {
 		return context != null ? context.getModelMgr() : null;
 	}
 	
@@ -67,6 +71,23 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 
 	protected void handleError(Throwable error) {
 		RootLogicImpl.handleError(getRoot().getView(), error);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Class<? extends ILogic<?>> getILogicInterfaces(Class<?> c) {
+		Class<? extends ILogic<?>> result = null;
+		if (c != Object.class) {
+			result = getILogicInterfaces(c.getSuperclass());
+			for (Class<?> anInterface : c.getInterfaces()) {
+				//System.out.println("  Processing " + anInterface);
+				if (ILogic.class.isAssignableFrom(anInterface)
+						&& (result == null || result
+								.isAssignableFrom(anInterface))) {
+					result = (Class<? extends ILogic<?>>) anInterface;
+				}
+			};
+		}
+		return result;
 	}
 
 }

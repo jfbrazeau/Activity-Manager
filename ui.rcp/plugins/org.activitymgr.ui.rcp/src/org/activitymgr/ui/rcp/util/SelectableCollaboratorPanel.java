@@ -32,7 +32,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.activitymgr.core.ModelMgr;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.CollaboratorsUI.ICollaboratorListener;
@@ -88,7 +88,7 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 	/** Collaborateur sélectionné */
 	private Collaborator selectedCollaborator;
 
-	private ModelMgr modelMgr;
+	private IModelMgr modelMgr;
 
 	/**
 	 * Constructeur par défaut.
@@ -99,7 +99,7 @@ public class SelectableCollaboratorPanel extends AbstractTableMgr implements
 	 *            the model manager.
 	 */
 	public SelectableCollaboratorPanel(Composite parentComposite,
-			Object layoutData, ModelMgr modelMgr) {
+			Object layoutData, IModelMgr modelMgr) {
 		parent = parentComposite;
 		this.modelMgr = modelMgr;
 

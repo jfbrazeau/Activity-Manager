@@ -8,7 +8,7 @@ import org.eclipse.equinox.app.IApplicationContext;
 /**
  * This class controls all aspects of the application's execution
  */
-public class ActivityManagerWebUIApplication  implements IApplication {
+public class ActivityManagerWebUIApplication implements IApplication {
 
 	private CountDownLatch stopLatch;
 

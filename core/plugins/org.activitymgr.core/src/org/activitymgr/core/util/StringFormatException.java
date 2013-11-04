@@ -27,12 +27,12 @@
  */
 package org.activitymgr.core.util;
 
-import org.activitymgr.core.AbstractApplicationException;
+import org.activitymgr.core.AbstractException;
 
 /**
  * Exception utilisée pour les problèmes de conversion de chaînes de caractère.
  */
-public class StringFormatException extends AbstractApplicationException {
+public class StringFormatException extends AbstractException {
 
 	/** serialVersionUID */
 	private static final long serialVersionUID = 1L;

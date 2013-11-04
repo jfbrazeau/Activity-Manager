@@ -27,7 +27,7 @@
  */
 package org.activitymgr.ui.rcp.dialogs;
 
-import org.activitymgr.core.ModelMgr;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.util.Strings;
 import org.apache.log4j.Logger;
@@ -54,7 +54,7 @@ public class TaskChooserDialog extends AbstractDialog {
 	private Task[] tasks;
 
 	/** Model manager */
-	private ModelMgr modelMgr;
+	private IModelMgr modelMgr;
 
 	/**
 	 * Constructeur par défaut.
@@ -64,7 +64,7 @@ public class TaskChooserDialog extends AbstractDialog {
 	 * @param modelMgr
 	 *            the model manager.
 	 */
-	public TaskChooserDialog(Shell parentShell, ModelMgr modelMgr) {
+	public TaskChooserDialog(Shell parentShell, IModelMgr modelMgr) {
 		super(parentShell,
 				Strings.getString("TaskChooserDialog.texts.TITLE"), null, null); //$NON-NLS-1$
 		setShellStyle(SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);

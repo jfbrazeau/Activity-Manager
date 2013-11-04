@@ -32,8 +32,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.activitymgr.core.DbException;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
-import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Contribution;
 import org.activitymgr.core.beans.Task;
@@ -101,7 +101,7 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	private Map<Long, Collaborator> collaboratorsCache = new HashMap<Long, Collaborator>();
 
 	/** Model manager */
-	private ModelMgr modelMgr;
+	private IModelMgr modelMgr;
 
 	/**
 	 * Constructeur par défaut.
@@ -113,7 +113,7 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	 * @param modelMgr
 	 *            the model manager.
 	 */
-	public ContributionsViewerTable(Composite parentComposite, Object layoutData, ModelMgr modelMgr) {
+	public ContributionsViewerTable(Composite parentComposite, Object layoutData, IModelMgr modelMgr) {
 		log.debug("new ContributionsViewerTable()"); //$NON-NLS-1$
 		this.modelMgr = modelMgr;
 		// Création du composite parent

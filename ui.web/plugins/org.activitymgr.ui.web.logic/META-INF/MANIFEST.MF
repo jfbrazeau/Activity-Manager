@@ -7,7 +7,8 @@ Bundle-Vendor: Jean-Francois Brazeau
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.eclipse.osgi,
  org.activitymgr.core,
- org.eclipse.equinox.registry
+ org.eclipse.equinox.registry,
+ org.apache.commons.dbcp;bundle-version="1.4.0"
 Export-Package: org.activitymgr.ui.web.logic,
  org.activitymgr.ui.web.logic.impl,
  org.activitymgr.ui.web.logic.impl.event

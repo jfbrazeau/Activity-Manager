@@ -1,7 +1,7 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
 import org.activitymgr.core.DbException;
-import org.activitymgr.core.ModelMgr;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
@@ -23,7 +23,7 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 
 		// Authenticator retrieval
 		if (cfgs.length == 0) {
-			authenticator = new DefaultAuthenticator(this);
+			authenticator = new DefaultAuthenticator(this, getContext().getModelMgr());
 		}
 		else {
 			if (cfgs.length > 1) {
@@ -80,24 +80,22 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 		super.handleError(error);
 	}
 
-	@Override
-	protected ModelMgr getModelMgr() {
-		return super.getModelMgr();
-	}
 }
 
 class DefaultAuthenticator implements IAuthenticatorExtension {
 	
 	private AuthenticationLogicImpl parent;
+	private IModelMgr modelMgr;
 
-	protected DefaultAuthenticator(AuthenticationLogicImpl parent) {
+	protected DefaultAuthenticator(AuthenticationLogicImpl parent, IModelMgr modelMgr) {
 		this.parent = parent;
+		this.modelMgr = modelMgr;
 	}
 	
 	@Override
 	public boolean authenticate(String login, String password) {
 		try {
-			return parent.getModelMgr().getCollaborator(login) != null;
+			return modelMgr.getCollaborator(login) != null;
 		}
 		catch (DbException e) {
 			parent.handleError(e);

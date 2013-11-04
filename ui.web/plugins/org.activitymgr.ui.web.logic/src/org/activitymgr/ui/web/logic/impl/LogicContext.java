@@ -1,24 +1,70 @@
 package org.activitymgr.ui.web.logic.impl;
 
-import org.activitymgr.core.ModelMgr;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.sql.Connection;
+import java.sql.Savepoint;
+import java.util.Stack;
+
+import org.activitymgr.core.CoreModule;
+import org.activitymgr.core.DbTransaction;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.IViewFactory;
+import org.activitymgr.ui.web.logic.impl.event.EventBusImpl;
+import org.apache.commons.dbcp.BasicDataSource;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Provider;
+
+// TODO Inject ?
 public class LogicContext {
 
 	private IViewFactory viewFactory;
-	private IEventBus eventBus;
+	private IEventBus eventBus = new EventBusImpl();
 	private Collaborator connectedCollaborator;
-	private ModelMgr modelMgr;
+	private IModelMgr modelMgr;
+	private BasicDataSource datasource;
+	private ThreadLocal<DbTransactionContext> transactions;
 
-	public LogicContext(IViewFactory viewFactory, IEventBus eventBus, ModelMgr modelMgr) {
+	public LogicContext(IViewFactory viewFactory, String jdbcDriver, String jdbcUrl, String jdbcUser, String jdbcPassword) {
+		System.err.println("*** NEW LOGIC CONTEXT");
 		this.viewFactory = viewFactory;
-		this.eventBus = eventBus;
-		this.modelMgr = modelMgr;
+
+		datasource = new BasicDataSource();
+		datasource.setDriverClassName(jdbcDriver);
+		datasource.setUrl(jdbcUrl);
+		datasource.setUsername(jdbcUser);
+		datasource.setPassword(jdbcPassword);
+		datasource.setDefaultAutoCommit(false);
+
+		// Create Guice injector
+		transactions = new ThreadLocal<DbTransactionContext>();
+		Injector injector = Guice.createInjector(new CoreModule(),
+				new AbstractModule() {
+					@Override
+					protected void configure() {
+						bind(DbTransaction.class).toProvider(
+								new Provider<DbTransaction>() {
+									@Override
+									public DbTransaction get() {
+										System.out.println("get tx from " + Thread.currentThread() + " : " + transactions.get());
+										DbTransactionContext txCtx = transactions.get();
+										return txCtx != null ? txCtx.tx : null;
+									}
+								});
+					}
+				});
+		// Retrieves the model manager
+		modelMgr = injector.getInstance(IModelMgr.class);
 	}
 
-	public ModelMgr getModelMgr() {
+	public IModelMgr getModelMgr() {
 		return modelMgr;
 	}
 	
@@ -38,4 +84,70 @@ public class LogicContext {
 		this.connectedCollaborator = connectedCollaborator;
 	}
 
+	@SuppressWarnings("unchecked")
+	public <T> T buildTransactionalWrapper(final T wrapped, Class<?> interfaceToWrapp) {
+		return (T) Proxy.newProxyInstance(
+				LogicContext.class.getClassLoader(),
+				// TODO add comments
+				new Class<?>[] { interfaceToWrapp }, new InvocationHandler() {
+					@Override
+					public Object invoke(Object proxy, Method method,
+							Object[] args) throws Throwable {
+						DbTransactionContext txCtx = transactions.get();
+						Savepoint sp = null;
+						try {
+							// Open the transaction if required and push a savepoint
+							if (txCtx == null) {
+								txCtx = new DbTransactionContext(datasource.getConnection());
+								transactions.set(txCtx);
+							}
+							else {
+								sp = txCtx.tx.getConnection().setSavepoint();
+							}
+							txCtx.calls.push(method);
+							log(txCtx, "START");
+							// Call the real model manager
+							Object result = method.invoke(wrapped, args);
+
+							// Commit the transaction (or put a save point)
+							if (txCtx.calls.size() > 1) {
+								sp = txCtx.tx.getConnection().setSavepoint();
+							}
+							else {
+								txCtx.tx.getConnection().commit();
+							}
+							return result;
+						} catch (InvocationTargetException t) {
+							// Rollback the transaction in case of failure
+							if (txCtx.calls.size() > 1) {
+								txCtx.tx.getConnection().rollback(sp);
+							}
+							else {
+								txCtx.tx.getConnection().rollback();
+							}
+							throw t.getCause();
+						} finally {
+							log(txCtx, "END");
+							txCtx.calls.pop();
+							if (txCtx.calls.size() == 0) {
+								// Release the transaction
+								transactions.remove();
+								txCtx.tx.getConnection().close();
+							}
+						}
+					}
+					private void log(DbTransactionContext ctx, String s) {
+						Method method = ctx.calls.peek();
+						System.out.println(Thread.currentThread() + "-" + (method != null ? method.getName() :"") + "-" + ctx.calls.size() + "-" + s);
+					}
+				});
+	}
+}
+
+class DbTransactionContext {
+	DbTransactionContext(Connection con) {
+		tx = new DbTransaction(con);
+	}
+	DbTransaction tx;
+	Stack<Method> calls = new Stack<Method>();
 }

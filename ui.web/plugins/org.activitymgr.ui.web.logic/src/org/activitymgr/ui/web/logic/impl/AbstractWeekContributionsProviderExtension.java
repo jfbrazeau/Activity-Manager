@@ -2,7 +2,7 @@ package org.activitymgr.ui.web.logic.impl;
 
 import java.util.Calendar;
 
-import org.activitymgr.core.ModelMgr;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Contribution;
 import org.activitymgr.core.beans.Task;
@@ -10,7 +10,7 @@ import org.activitymgr.core.beans.TaskContributions;
 
 public abstract class AbstractWeekContributionsProviderExtension {
 
-	public abstract TaskContributions[] getWeekContributions(ModelMgr modelMgr, Collaborator contributor, Calendar firstDayOfWeek);
+	public abstract TaskContributions[] getWeekContributions(IModelMgr modelMgr, Collaborator contributor, Calendar firstDayOfWeek);
 
 	public TaskContributions newTaskContributions(Task task, String taskCodePath) {
 		TaskContributions tc = new TaskContributions();

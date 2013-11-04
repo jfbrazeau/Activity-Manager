@@ -28,7 +28,7 @@
 package org.activitymgr.ui.rcp.dialogs;
 
 
-import org.activitymgr.core.ModelMgr;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.util.AbstractTableMgr;
@@ -61,7 +61,7 @@ public class TasksChooserTree extends AbstractTableMgr implements
 	private Composite parent;
 
 	/** Model manager */
-	private ModelMgr modelMgr;
+	private IModelMgr modelMgr;
 
 	/**
 	 * Constructeur par défaut.
@@ -71,7 +71,7 @@ public class TasksChooserTree extends AbstractTableMgr implements
 	 * @param modelMgr
 	 *            the model manager.
 	 */
-	public TasksChooserTree(Composite parentComposite, ModelMgr modelMgr) {
+	public TasksChooserTree(Composite parentComposite, IModelMgr modelMgr) {
 		this.modelMgr = modelMgr;
 		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);

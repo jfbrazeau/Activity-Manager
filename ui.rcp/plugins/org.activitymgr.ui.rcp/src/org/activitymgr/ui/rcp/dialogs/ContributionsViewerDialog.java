@@ -27,7 +27,7 @@
  */
 package org.activitymgr.ui.rcp.dialogs;
 
-import org.activitymgr.core.ModelMgr;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.util.Strings;
@@ -61,7 +61,7 @@ public class ContributionsViewerDialog extends AbstractDialog {
 	private Integer year;
 
 	/** Model manager */
-	private ModelMgr modelMgr;
+	private IModelMgr modelMgr;
 
 	/**
 	 * Constructeur par défaut.
@@ -71,7 +71,7 @@ public class ContributionsViewerDialog extends AbstractDialog {
 	 * @param modelMgr
 	 *            the model manager.
 	 */
-	public ContributionsViewerDialog(Shell parentShell, ModelMgr modelMgr) {
+	public ContributionsViewerDialog(Shell parentShell, IModelMgr modelMgr) {
 		super(parentShell, Strings
 				.getString("ContributionsViewerDialog.texts.TITLE"), null, null); //$NON-NLS-1$
 		setShellStyle(SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);

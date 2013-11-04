@@ -13,3 +13,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: lib/poi-2.5.1-final-20040804.jar,
  .
+Import-Package: org.apache.commons.dbcp

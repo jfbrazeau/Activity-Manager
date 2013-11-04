@@ -34,8 +34,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.activitymgr.core.DbException;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
-import org.activitymgr.core.ModelMgr;
 import org.activitymgr.core.beans.Contribution;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskSums;
@@ -154,7 +154,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	}
 
 	/** Model manager */
-	private ModelMgr modelMgr;
+	private IModelMgr modelMgr;
 	
 	/** Listeners */
 	private List<ITaskListener> listeners = new ArrayList<ITaskListener>();
@@ -214,7 +214,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 * @param modelMgr
 	 *            the model manager instance.
 	 */
-	public TasksUI(TabItem tabItem, ModelMgr modelMgr) {
+	public TasksUI(TabItem tabItem, IModelMgr modelMgr) {
 		this(tabItem.getParent());
 		tabItem.setControl(parent);
 		this.modelMgr = modelMgr;
