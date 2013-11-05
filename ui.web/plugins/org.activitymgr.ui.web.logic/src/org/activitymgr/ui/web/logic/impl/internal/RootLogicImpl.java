@@ -1,13 +1,5 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-
-import org.activitymgr.core.CoreModule;
-import org.activitymgr.core.DbTransaction;
-import org.activitymgr.core.IModelMgr;
 import org.activitymgr.ui.web.logic.AbstractEvent;
 import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.ILogic;
@@ -16,19 +8,11 @@ import org.activitymgr.ui.web.logic.IViewFactory;
 import org.activitymgr.ui.web.logic.impl.LogicContext;
 import org.activitymgr.ui.web.logic.impl.event.CallbackExceptionEvent;
 import org.activitymgr.ui.web.logic.impl.event.ConnectedCollaboratorEvent;
-import org.activitymgr.ui.web.logic.impl.event.EventBusImpl;
-import org.apache.commons.dbcp.BasicDataSource;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Provider;
 
 public class RootLogicImpl implements IRootLogic {
 
 	private LogicContext context;
 	private IRootLogic.View view;
-	private BasicDataSource datasource;
 	
 	public RootLogicImpl(IViewFactory viewFactory) {
 		// Once the registry is registered, ModelMgr implementation 

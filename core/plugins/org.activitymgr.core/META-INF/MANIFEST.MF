@@ -6,8 +6,6 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jean-Francois Brazeau
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.apache.log4j,
- org.apache.commons.dbcp,
- org.apache.commons.pool,
  com.google.inject;bundle-version="3.0.0";visibility:=reexport,
  javax.inject;bundle-version="1.0.0";visibility:=reexport
 Export-Package: org.activitymgr.core,

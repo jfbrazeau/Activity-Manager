@@ -23,7 +23,7 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 
 		// Authenticator retrieval
 		if (cfgs.length == 0) {
-			authenticator = new DefaultAuthenticator(this, getContext().getModelMgr());
+			authenticator = new DefaultAuthenticator(this, getContext().getComponent(IModelMgr.class));
 		}
 		else {
 			if (cfgs.length > 1) {

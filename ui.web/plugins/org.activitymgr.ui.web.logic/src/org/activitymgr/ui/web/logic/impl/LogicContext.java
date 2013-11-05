@@ -6,6 +6,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.Savepoint;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 import org.activitymgr.core.CoreModule;
@@ -15,7 +17,10 @@ import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.IViewFactory;
 import org.activitymgr.ui.web.logic.impl.event.EventBusImpl;
+import org.activitymgr.ui.web.logic.impl.internal.Activator;
 import org.apache.commons.dbcp.BasicDataSource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -31,11 +36,38 @@ public class LogicContext {
 	private IModelMgr modelMgr;
 	private BasicDataSource datasource;
 	private ThreadLocal<DbTransactionContext> transactions;
+	private Injector injector;
 
 	public LogicContext(IViewFactory viewFactory, String jdbcDriver, String jdbcUrl, String jdbcUser, String jdbcPassword) {
 		System.err.println("*** NEW LOGIC CONTEXT");
 		this.viewFactory = viewFactory;
 
+		List<AbstractModule> modules = new ArrayList<AbstractModule>();
+		modules.add(new CoreModule());
+		modules.add(new AbstractModule() {
+			@Override
+			protected void configure() {
+				bind(DbTransaction.class).toProvider(
+						new Provider<DbTransaction>() {
+							@Override
+							public DbTransaction get() {
+								System.out.println("get tx from " + Thread.currentThread() + " : " + transactions.get());
+								DbTransactionContext txCtx = transactions.get();
+								return txCtx != null ? txCtx.tx : null;
+							}
+						});
+			}
+		});
+		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.additionalModules");
+		for (IConfigurationElement cfg : cfgs) {
+			try {
+				modules.add((AbstractModule) cfg.createExecutableExtension("class"));
+			} catch (CoreException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+
+		// Create the Datasource (TODO static ?)
 		datasource = new BasicDataSource();
 		datasource.setDriverClassName(jdbcDriver);
 		datasource.setUrl(jdbcUrl);
@@ -45,29 +77,15 @@ public class LogicContext {
 
 		// Create Guice injector
 		transactions = new ThreadLocal<DbTransactionContext>();
-		Injector injector = Guice.createInjector(new CoreModule(),
-				new AbstractModule() {
-					@Override
-					protected void configure() {
-						bind(DbTransaction.class).toProvider(
-								new Provider<DbTransaction>() {
-									@Override
-									public DbTransaction get() {
-										System.out.println("get tx from " + Thread.currentThread() + " : " + transactions.get());
-										DbTransactionContext txCtx = transactions.get();
-										return txCtx != null ? txCtx.tx : null;
-									}
-								});
-					}
-				});
+		injector = Guice.createInjector(modules);
 		// Retrieves the model manager
 		modelMgr = injector.getInstance(IModelMgr.class);
 	}
 
-	public IModelMgr getModelMgr() {
-		return modelMgr;
+	public <T> T getComponent(Class<T> c) {
+		return injector.getInstance(c);
 	}
-	
+
 	public IViewFactory getViewFactory() {
 		return viewFactory;
 	}

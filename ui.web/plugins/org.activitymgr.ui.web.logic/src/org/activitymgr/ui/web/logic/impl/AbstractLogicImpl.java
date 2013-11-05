@@ -54,7 +54,7 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 	}
 	
 	protected IModelMgr getModelMgr() {
-		return context != null ? context.getModelMgr() : null;
+		return context != null ? context.getComponent(IModelMgr.class) : null;
 	}
 	
 	public ILogic<?> getParent() {

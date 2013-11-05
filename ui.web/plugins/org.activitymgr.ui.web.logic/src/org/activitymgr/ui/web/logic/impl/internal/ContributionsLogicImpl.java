@@ -33,6 +33,7 @@ import org.activitymgr.ui.web.logic.impl.AbstractWeekContributionsProviderExtens
 import org.activitymgr.ui.web.logic.impl.DefaultContributionCellLogicProvider;
 import org.activitymgr.ui.web.logic.impl.IContributionCellLogicProviderExtension;
 import org.activitymgr.ui.web.logic.impl.IContributionsActionHandler;
+import org.activitymgr.ui.web.logic.impl.LogicContext;
 import org.activitymgr.ui.web.logic.impl.event.DurationChangedEvent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -239,7 +240,7 @@ public class ContributionsLogicImpl extends AbstractContributionLogicImpl implem
 		// Load contributions
 		weekContributions.clear();
 		if (selectedCollaborator != null) {
-			TaskContributions[] tcs = weekContributionsProvider.getWeekContributions(getModelMgr(), selectedCollaborator, firstDayOfWeek);
+			TaskContributions[] tcs = weekContributionsProvider.getWeekContributions(getContext(), selectedCollaborator, firstDayOfWeek);
 			weekContributions.addAll(Arrays.asList(tcs));
 		}
 	
@@ -441,7 +442,7 @@ public class ContributionsLogicImpl extends AbstractContributionLogicImpl implem
 class DefaultWeekContributionsProvider extends AbstractWeekContributionsProviderExtension {
 	
 	@Override
-	public TaskContributions[] getWeekContributions(IModelMgr modelMgr,
+	public TaskContributions[] getWeekContributions(LogicContext logicContext,
 			Collaborator contributor, Calendar firstDayOfWeek) {
 		// Recherche des taches déclarées pour cet utilisateur
 		// pour la semaine courante (et la semaine passée pour
@@ -452,7 +453,7 @@ class DefaultWeekContributionsProvider extends AbstractWeekContributionsProvider
 		Calendar toDate = (Calendar) firstDayOfWeek.clone();
 		toDate.add(Calendar.DATE, 6);
 		try {
-			IntervalContributions intervalContributions = modelMgr
+			IntervalContributions intervalContributions = logicContext.getComponent(IModelMgr.class)
 					.getIntervalContributions(contributor, null, null, fromDate,
 							toDate);
 			TaskContributions[] weekContributions = intervalContributions.getTaskContributions();

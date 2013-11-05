@@ -10,7 +10,7 @@ import org.activitymgr.core.beans.TaskContributions;
 
 public abstract class AbstractWeekContributionsProviderExtension {
 
-	public abstract TaskContributions[] getWeekContributions(IModelMgr modelMgr, Collaborator contributor, Calendar firstDayOfWeek);
+	public abstract TaskContributions[] getWeekContributions(LogicContext context, Collaborator contributor, Calendar firstDayOfWeek);
 
 	public TaskContributions newTaskContributions(Task task, String taskCodePath) {
 		TaskContributions tc = new TaskContributions();

@@ -29,7 +29,7 @@
 		<repository>
 			<id>Eclipse Orbit</id>
 			<layout>p2</layout>
-			<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20130517111416/repository/</url>
+			<url>http://download.eclipse.org/tools/orbit/downloads/drops/S20131024145017/repository/</url>
 		</repository>
 		<repository>
 			<id>Vaadin OSGi Container</id>

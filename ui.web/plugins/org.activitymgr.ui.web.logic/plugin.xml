@@ -6,6 +6,7 @@
    <extension-point id="org.activitymgr.ui.web.logic.contributionCellLogicProvider" name="Contribution Cell Logic Provider" schema="schema/org.activitymgr.ui.web.logic.contributionCellLogicProvider.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.weekContributionsProvider" name="Week Contributions Provider" schema="schema/org.activitymgr.ui.web.logic.weekContributionsProvider.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.contributionAction" name="ContributionsUI Action" schema="schema/org.activitymgr.ui.web.logic.contributionAction.exsd"/>
+   <extension-point id="org.activitymgr.ui.web.logic.additionalModules" name="Additional Guice Modules" schema="schema/org.activitymgr.ui.web.logic.additionalModules.exsd"/>
    <extension
          point="org.activitymgr.ui.web.logic.contributionAction">
       <contributionAction

@@ -8,9 +8,8 @@ Bundle-Vendor: Jean-Francois Brazeau
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.activitymgr.core,
- org.apache.log4j
+ org.apache.log4j,
+ org.apache.commons.dbcp;bundle-version="1.4.0",
+ org.apache.poi;bundle-version="3.9.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: lib/poi-2.5.1-final-20040804.jar,
- .
-Import-Package: org.apache.commons.dbcp
