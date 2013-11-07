@@ -109,8 +109,7 @@ public class TaskFinderPanel extends Composite {
 	 *            the model manager.
 	 */
 	public TaskFinderPanel(Composite parent, IModelMgr modelMgr) {
-		this(parent, SWT.NONE);
-		this.modelMgr = modelMgr;
+		this(parent, SWT.NONE, modelMgr);
 	}
 
 	/**
@@ -120,9 +119,12 @@ public class TaskFinderPanel extends Composite {
 	 *            le composant parent.
 	 * @param style
 	 *            le style du panneau.
+	 * @param modelMgr
+	 *            the model manager.
 	 */
-	public TaskFinderPanel(Composite parent, int style) {
+	public TaskFinderPanel(Composite parent, int style, IModelMgr modelMgr) {
 		super(parent, style);
+		this.modelMgr = modelMgr;
 		initialize();
 		// Initialisation de la liste de choix du champ utilisé pour la
 		// recherche (nom, code)

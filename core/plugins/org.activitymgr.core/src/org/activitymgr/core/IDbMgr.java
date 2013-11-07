@@ -36,7 +36,6 @@ import org.activitymgr.core.beans.Duration;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskSearchFilter;
 import org.activitymgr.core.beans.TaskSums;
-import org.activitymgr.core.impl.DbMgrImpl;
 
 /**
  * Composant offrant les services de base de persistence de l'application.
@@ -192,12 +191,8 @@ public interface IDbMgr {
 	/**
 	 * @param contributor
 	 *            le collaborateur associé aux contributions.
-	 * @param parentTask
-	 *            la tache parente associée aux contributions (en général si
-	 *            parentTask != nul, task = null et vice versa).
 	 * @param task
-	 *            la tache associée aux contributions (en général si parentTask
-	 *            != nul, task = null et vice versa).
+	 *            la tache associée aux contributions.
 	 * @param fromDate
 	 *            la date de départ.
 	 * @param toDate
@@ -206,43 +201,24 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Contribution[] getContributions(Collaborator contributor, Task parentTask,
-			Task task, Calendar fromDate, Calendar toDate) throws DbException;
+	Contribution[] getContributions(Collaborator contributor, Task task,
+			Calendar fromDate, Calendar toDate) throws DbException;
 
 	/**
-	 * Retourne les contributions associées aux paramétres spécifiés.
-	 * 
-	 * <p>
-	 * Tous les paramétres sont facultatifs. Chaque paramétre spécifié agît
-	 * comme un filtre sur le résultat. A l'inverse, l'omission d'un paramétre
-	 * provoque l'inclusion de toutes les contributions, quelque soit leurs
-	 * valeurs pour l'attribut considéré.
-	 * </p>
-	 * 
-	 * <p>
-	 * La spécification des paramétres répond aux mêmes règles que pour la
-	 * méthode <code>getContributionsSum</code>.
-	 * </p>
-	 * 
-	 * @param task
-	 *            la tâche associée aux contributions (facultative).
 	 * @param contributor
-	 *            le collaborateur associé aux contributions (facultatif).
-	 * @param year
-	 *            l'année (facultative).
-	 * @param month
-	 *            le mois (facultatif).
-	 * @param day
-	 *            le jour (facultatif).
-	 * @return les contributions.
+	 *            le collaborateur associé aux contributions.
+	 * @param task
+	 *            la tache associée aux contributions.
+	 * @param fromDate
+	 *            la date de départ.
+	 * @param toDate
+	 *            la date de fin.
+	 * @return le nombre de contributions.
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
-	 * 
-	 * @see DbMgrImpl.tools.activitymgr.core.DbMgr#getContributionsSum(DbTransaction,
-	 *      Task, Collaborator, Integer, Integer, Integer)
 	 */
-	Contribution[] getContributions(Task task, Collaborator contributor,
-			Integer year, Integer month, Integer day) throws DbException;
+	int getContributionsCount(Collaborator contributor, Task task,
+			Calendar fromDate, Calendar toDate) throws DbException;
 
 	/**
 	 * Calcule le total des contributions associée aux paramétres spécifiés.
@@ -257,75 +233,8 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	long getContributionsSum(Task task, Collaborator contributor,
+	long getContributionsSum(Collaborator contributor, Task task, 
 			Calendar fromDate, Calendar toDate) throws DbException;
-
-	/**
-	 * Calcule le nombre des contributions associée aux paramétres spécifiés.
-	 * 
-	 * <p>
-	 * Tous les paramétres sont facultatifs. Chaque paramétre spécifié agît
-	 * comme un filtre sur le résultat. A l'inverse, l'omission d'un paramétre
-	 * provoque l'inclusion de toutes les contributions, quelque soit leurs
-	 * valeurs pour l'attribut considéré.
-	 * </p>
-	 * 
-	 * <p>
-	 * En spécifiant la tache X, on connaîtra la somme des contribution pour la
-	 * taches X. En ne spécifiant pas de tache, la somme sera effectuée quelque
-	 * soit les tâches.
-	 * </p>
-	 * 
-	 * @param task
-	 *            la tâche associée aux contributions (facultative).
-	 * @param contributor
-	 *            le collaborateur associé aux contributions (facultatif).
-	 * @param year
-	 *            l'année (facultative).
-	 * @param month
-	 *            le mois (facultatif).
-	 * @param day
-	 *            le jour (facultatif).
-	 * @return la seomme des contributions.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
-	long getContributionsNb(Task task, Collaborator contributor, Integer year,
-			Integer month, Integer day) throws DbException;
-
-	/**
-	 * Calcule le cumuls des consommations associees aux contributions pour les
-	 * paramétres spécifiés.
-	 * 
-	 * <p>
-	 * Tous les paramétres sont facultatifs. Chaque paramétre spécifié agît
-	 * comme un filtre sur le résultat. A l'inverse, l'omission d'un paramétre
-	 * provoque l'inclusion de toutes les contributions, quelque soit leurs
-	 * valeurs pour l'attribut considéré.
-	 * </p>
-	 * 
-	 * <p>
-	 * En spécifiant la tache X, on connaîtra la somme des contribution pour la
-	 * taches X. En ne spécifiant pas de tache, la somme sera effectuée quelque
-	 * soit les tâches.
-	 * </p>
-	 * 
-	 * @param task
-	 *            la tâche associée aux contributions (facultative).
-	 * @param contributor
-	 *            le collaborateur associé aux contributions (facultatif).
-	 * @param year
-	 *            l'année (facultative).
-	 * @param month
-	 *            le mois (facultatif).
-	 * @param day
-	 *            le jour (facultatif).
-	 * @return la seomme des contributions.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
-	long getContributionsSum(Task task, Collaborator contributor, Integer year,
-			Integer month, Integer day) throws DbException;
 
 	/**
 	 * @param durationId
@@ -354,6 +263,12 @@ public interface IDbMgr {
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	Task getParentTask(Task task) throws DbException;
+
+	/**
+	 * @return the root tasks count.
+	 * @throws DbException thrown if a database exception occurs.
+	 */
+	int getRootTasksCount() throws DbException;	
 
 	/**
 	 * @param path

@@ -4,7 +4,6 @@ import org.activitymgr.ui.web.logic.IAuthenticationLogic;
 import org.activitymgr.ui.web.view.util.ResourceCache;
 
 import com.vaadin.event.ShortcutListener;
-import com.vaadin.server.ClientConnector;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CheckBox;

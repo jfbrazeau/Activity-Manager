@@ -2,7 +2,6 @@ package org.activitymgr.ui.web.logic.impl;
 
 import java.util.Calendar;
 
-import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Contribution;
 import org.activitymgr.core.beans.Task;

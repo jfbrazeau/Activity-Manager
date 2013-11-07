@@ -43,7 +43,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.activitymgr.core.DbException;
-import org.activitymgr.core.DbTransaction;
 import org.activitymgr.core.IDbMgr;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
@@ -72,6 +71,10 @@ import com.google.inject.Inject;
  * Les services offerts par cette classe garantissent l'intégrité du modèle.
  * </p>
  */
+/**
+ * @author jbrazeau
+ * 
+ */
 public class ModelMgrImpl implements IModelMgr {
 
 	/** Logger */
@@ -91,23 +94,22 @@ public class ModelMgrImpl implements IModelMgr {
 		this.dao = dao;
 	}
 
-	/**
-	 * Vérifie si les tables existent dans le modèle.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @return un booléen indiquant si la table spécifiée existe dans le modèle.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see org.activitymgr.core.IModelMgr#tablesExist()
 	 */
+	@Override
 	public boolean tablesExist() throws DbException {
 		return dao.tablesExist();
 	}
 
-	/**
-	 * Crée les tables du modèle de données.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see org.activitymgr.core.IModelMgr#createTables()
 	 */
+	@Override
 	public void createTables() throws DbException {
 		dao.createTables();
 	}
@@ -155,42 +157,46 @@ public class ModelMgrImpl implements IModelMgr {
 		}
 	}
 
-	/**
-	 * Vérifie si la tache spécifiée peut accueillir des sous-taches.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param task
-	 *            la tache à controler.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé dans la cas ou la tache de destination ne peut recevoir
-	 *             de sous-tache.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#checkAcceptsSubtasks(org.activitymgr.core
+	 * .beans.Task)
 	 */
+	@Override
 	public void checkAcceptsSubtasks(Task task) throws DbException,
 			ModelException {
-		// Rafraichissement des attributs de la tache
-		task = dao.getTask(task.getId());
-		// Une tâche qui admet déja des sous-taches peut en admettre d'autres
-		// La suite des controles n'est donc exécutée que si la tache n'admet
-		// pas de sous-tâches
-		if (task.getSubTasksCount() == 0) {
-			// Une tache ne peut admettre une sous-tache que si elle
-			// n'est pas déja associée à un consommé (ie: à des contributions)
-			long contribsNb = dao.getContributionsNb(task, null, null, null,
-					null);
-			if (contribsNb != 0)
-				throw new ModelException(
-						Strings.getString(
-								"ModelMgr.errors.TASK_USED_BY_CONTRIBUTIONS", task.getName(), new Long(contribsNb))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			if (task.getBudget() != 0)
-				throw new ModelException(
-						Strings.getString("ModelMgr.errors.NON_NULL_TASK_BUDGET")); //$NON-NLS-1$
-			if (task.getInitiallyConsumed() != 0)
-				throw new ModelException(
-						Strings.getString("ModelMgr.errors.NON_NULL_TASK_INITIALLY_CONSUMMED")); //$NON-NLS-1$
-			if (task.getTodo() != 0)
-				throw new ModelException(
-						Strings.getString("ModelMgr.errors.NON_NULL_TASK_ESTIMATED_TIME_TO_COMPLETE")); //$NON-NLS-1$
+		// If the task is null, it means it is root task, so it always
+		// accepts sub tasks
+		if (task != null) {
+			// Rafraichissement des attributs de la tache
+			task = dao.getTask(task.getId());
+			// Une tâche qui admet déja des sous-taches peut en admettre
+			// d'autres
+			// La suite des controles n'est donc exécutée que si la tache
+			// n'admet
+			// pas de sous-tâches
+			if (task.getSubTasksCount() == 0) {
+				// Une tache ne peut admettre une sous-tache que si elle
+				// n'est pas déja associée à un consommé (ie: à des
+				// contributions)
+				long contribsNb = dao.getContributionsCount(null, task, null,
+						null);
+				if (contribsNb != 0)
+					throw new ModelException(
+							Strings.getString(
+									"ModelMgr.errors.TASK_USED_BY_CONTRIBUTIONS", task.getName(), new Long(contribsNb))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				if (task.getBudget() != 0)
+					throw new ModelException(
+							Strings.getString("ModelMgr.errors.NON_NULL_TASK_BUDGET")); //$NON-NLS-1$
+				if (task.getInitiallyConsumed() != 0)
+					throw new ModelException(
+							Strings.getString("ModelMgr.errors.NON_NULL_TASK_INITIALLY_CONSUMMED")); //$NON-NLS-1$
+				if (task.getTodo() != 0)
+					throw new ModelException(
+							Strings.getString("ModelMgr.errors.NON_NULL_TASK_ESTIMATED_TIME_TO_COMPLETE")); //$NON-NLS-1$
+			}
 		}
 	}
 
@@ -256,18 +262,14 @@ public class ModelMgrImpl implements IModelMgr {
 							"ModelMgr.errors.NON_UNIQUE_COLLABORATOR_LOGIN", colWithSameLogin.getLogin())); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
-	/**
-	 * Crée un collaborateur dans un contexte de transaction.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param collaborator
-	 *            le collaborateur à créer.
-	 * @return le collaborateur après création.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé dans la cas ou la tache de destination ne peut recevoir
-	 *             de sous-tache.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#createCollaborator(org.activitymgr.core
+	 * .beans.Collaborator)
 	 */
+	@Override
 	public Collaborator createCollaborator(Collaborator collaborator)
 			throws DbException, ModelException {
 		log.info("createCollaborator(" + collaborator + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -281,20 +283,14 @@ public class ModelMgrImpl implements IModelMgr {
 		return collaborator;
 	}
 
-	/**
-	 * Crée une contribution dans un contexte de transaction.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param contribution
-	 *            la contribution à créer.
-	 * @param updateEstimatedTimeToComlete
-	 *            booléen indiquant si le reste à faire doit être décrémenté.
-	 * @return la contribution après création.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé dans la cas ou la tache de destination ne peut recevoir
-	 *             de contribution.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#createContribution(org.activitymgr.core
+	 * .beans.Contribution, boolean)
 	 */
+	@Override
 	public Contribution createContribution(Contribution contribution,
 			boolean updateEstimatedTimeToComlete) throws DbException,
 			ModelException {
@@ -327,17 +323,14 @@ public class ModelMgrImpl implements IModelMgr {
 		return contribution;
 	}
 
-	/**
-	 * Crée une durée dans un contexte de transaction.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param duration
-	 *            la durée à créer.
-	 * @return la durée créée.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé dans la cas ou la durée existe déjà.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#createDuration(org.activitymgr.core.beans
+	 * .Duration)
 	 */
+	@Override
 	public Duration createDuration(Duration duration) throws DbException,
 			ModelException {
 		log.info("createDuration(" + duration + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -358,13 +351,12 @@ public class ModelMgrImpl implements IModelMgr {
 		return duration;
 	}
 
-	/**
-	 * Crée un nouveau collaborateur en générant automatiquement ses attributs.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @return le nouveau collaborateur.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see org.activitymgr.core.IModelMgr#createNewCollaborator()
 	 */
+	@Override
 	public Collaborator createNewCollaborator() throws DbException {
 		// Le login doit être unique => il faut vérifier si
 		// celui-ci n'a pas déja été attribué
@@ -390,29 +382,14 @@ public class ModelMgrImpl implements IModelMgr {
 		return collaborator;
 	}
 
-	/**
-	 * Crée une nouvelle tache en générant un nom et un code.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * <p>
-	 * Avant création, les caractéristiques de la tache de destination sont
-	 * controllées pour voir si elle peut accueillir des sous-taches.
-	 * </p>
-	 * 
-	 * <p>
-	 * Cette méthode est synchronisé en raison de la génération du numéro de la
-	 * tache qui est déplacée à un autre chemin.
-	 * </p>
-	 * 
-	 * @param parentTask
-	 *            la tache parent de destination.
-	 * @return la tache créée.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé dans la cas ou la tache de destination ne peut recevoir
-	 *             de sous-tache.
-	 * @see jfb.tools.activitymgr.core.ModelMgrImpl#checkAcceptsSubtasks(Task)
+	 * @see
+	 * org.activitymgr.core.IModelMgr#createNewTask(org.activitymgr.core.beans
+	 * .Task)
 	 */
+	@Override
 	public synchronized Task createNewTask(Task parentTask) throws DbException,
 			ModelException {
 		// Le code doit être unique => il faut vérifier si
@@ -435,31 +412,14 @@ public class ModelMgrImpl implements IModelMgr {
 		return createTask(parentTask, task);
 	}
 
-	/**
-	 * Crée une nouvelle tache dans un contexte de transaction.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * <p>
-	 * Avant création, les caractéristiques de la tache de destination sont
-	 * controllées pour voir si elle peut accueillir des sous-taches.
-	 * </p>
-	 * 
-	 * <p>
-	 * Cette méthode est synchronisé en raison de la génération du numéro de la
-	 * tache qui est déplacée à un autre chemin.
-	 * </p>
-	 * 
-	 * @param parentTask
-	 *            la tache parent de destination.
-	 * @param task
-	 *            la tache à créer.
-	 * @return la tache créée.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé dans la cas ou la tache de destination ne peut recevoir
-	 *             de sous-tache.
-	 * @see jfb.tools.activitymgr.core.ModelMgrImpl#checkAcceptsSubtasks(Task)
+	 * @see
+	 * org.activitymgr.core.IModelMgr#createTask(org.activitymgr.core.beans.
+	 * Task, org.activitymgr.core.beans.Task)
 	 */
+	@Override
 	public synchronized Task createTask(Task parentTask, Task task)
 			throws DbException, ModelException {
 		log.info("createTask(" + parentTask + ", " + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -483,36 +443,24 @@ public class ModelMgrImpl implements IModelMgr {
 		return task;
 	}
 
-	/**
-	 * Vérifie si la durée existe en base.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param duration
-	 *            la durée à vérifier.
-	 * @return un booléen indiquant si la durée existe.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#durationExists(org.activitymgr.core.beans
+	 * .Duration)
 	 */
+	@Override
 	public boolean durationExists(Duration duration) throws DbException {
 		return (dao.getDuration(duration.getId()) != null);
 	}
 
-	/**
-	 * Importe le contenu d'un fichier XML.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param in
-	 *            le flux depuis lequel est lu le flux XML.
-	 * @throws IOException
-	 *             levé en cas d'incident I/O lors de la lecture sur le flux
-	 *             d'entrée
-	 * @throws DbException
-	 *             levé en cas d'incident avec la base de données.
-	 * @throws ParserConfigurationException
-	 *             levé en cas de mauvaise configuration du parser XML.
-	 * @throws SAXException
-	 *             levé en cas d'erreur de mauvais format du fichier XML.
-	 * @throws ModelException
-	 *             levé en cas d'incohérence des données lors de l'import
+	 * @see org.activitymgr.core.IModelMgr#importFromXML(java.io.InputStream)
 	 */
+	@Override
 	public void importFromXML(InputStream in) throws IOException, DbException,
 			ParserConfigurationException, SAXException, ModelException {
 		try {
@@ -607,17 +555,12 @@ public class ModelMgrImpl implements IModelMgr {
 		}
 	}
 
-	/**
-	 * Exporte le contenu de la base dans un fichier XML.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param out
-	 *            le flux dans lequel est généré le flux XML.
-	 * @throws IOException
-	 *             levé en cas d'incident I/O lors de l'écriture sur le flux de
-	 *             sortie.
-	 * @throws DbException
-	 *             levé en cas d'incident avec la base de données.
+	 * @see org.activitymgr.core.IModelMgr#exportToXML(java.io.OutputStream)
 	 */
+	@Override
 	public void exportToXML(OutputStream out) throws IOException, DbException {
 		// Entête XML
 		XmlHelper.println(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); //$NON-NLS-1$
@@ -711,8 +654,8 @@ public class ModelMgrImpl implements IModelMgr {
 		Map<Long, String> tasksCodePathMap = new HashMap<Long, String>();
 		exportSubTasksToXML(out, INDENT, null, "", tasksCodePathMap); //$NON-NLS-1$
 		// Exportation des contributions
-		Contribution[] contributions = dao.getContributions((Task) null, null,
-				null, null, null);
+		Contribution[] contributions = dao.getContributions(null, null, null,
+				null);
 		if (contributions.length > 0) {
 			XmlHelper.startXmlNode(out, "  ", XmlHelper.CONTRIBUTIONS_NODE); //$NON-NLS-1$
 			for (int i = 0; i < contributions.length; i++) {
@@ -802,270 +745,136 @@ public class ModelMgrImpl implements IModelMgr {
 		}
 	}
 
-	/**
-	 * @param collaboratorId
-	 *            l'identifiant du collaborateur recherché.
-	 * @return le collaborateur dont l'identifiant est spécifié.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IModelMgr#getCollaborator(long)
 	 */
+	@Override
 	public Collaborator getCollaborator(long collaboratorId) throws DbException {
 		return dao.getCollaborator(collaboratorId);
 	}
 
-	/**
-	 * @param login
-	 *            l'identifiant de connexion du collaborateur recherché.
-	 * @return le collaborateur dont l'identifiant de connexion est spécifié.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IModelMgr#getCollaborator(java.lang.String)
 	 */
+	@Override
 	public Collaborator getCollaborator(String login) throws DbException {
 		// Récupération des collaborateurs
 		return dao.getCollaborator(login);
 	}
 
-	/**
-	 * @return la liste des collaborateurs.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IModelMgr#getCollaborators()
 	 */
+	@Override
 	public Collaborator[] getCollaborators() throws DbException {
-		return getCollaborators(Collaborator.LOGIN_FIELD_IDX, true, false);
+		return dao.getCollaborators(Collaborator.LOGIN_FIELD_IDX, true, false);
 	}
 
-	/**
-	 * @param orderByClauseFieldIndex
-	 *            index de l'attribut utilisé pour le tri.
-	 * @param ascendantSort
-	 *            booléen indiquant si le tri doit être ascendant.
-	 * @return la liste des collaborateurs actifs.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IModelMgr#getActiveCollaborators(int, boolean)
 	 */
+	@Override
 	public Collaborator[] getActiveCollaborators(int orderByClauseFieldIndex,
 			boolean ascendantSort) throws DbException {
-		return getCollaborators(orderByClauseFieldIndex, ascendantSort, true);
+		return dao.getCollaborators(orderByClauseFieldIndex, ascendantSort,
+				true);
 	}
 
-	/**
-	 * @param orderByClauseFieldIndex
-	 *            index de l'attribut utilisé pour le tri.
-	 * @param ascendantSort
-	 *            booléen indiquant si le tri doit être ascendant.
-	 * @return la liste des collaborateurs.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IModelMgr#getCollaborators(int, boolean)
 	 */
+	@Override
 	public Collaborator[] getCollaborators(int orderByClauseFieldIndex,
 			boolean ascendantSort) throws DbException {
-		return getCollaborators(orderByClauseFieldIndex, ascendantSort, false);
-	}
-
-	/**
-	 * @param orderByClauseFieldIndex
-	 *            index de l'attribut utilisé pour le tri.
-	 * @param ascendantSort
-	 *            booléen indiquant si le tri doit être ascendant.
-	 * @param onlyActiveCollaborators
-	 *            booléen indiquant si l'on ne doit retourner que les
-	 *            collaborateurs actifs.
-	 * @return la liste des collaborateurs.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
-	public Collaborator[] getCollaborators(int orderByClauseFieldIndex,
-			boolean ascendantSort, boolean onlyActiveCollaborators)
-			throws DbException {
-		// Récupération des collaborateurs
 		return dao.getCollaborators(orderByClauseFieldIndex, ascendantSort,
-				onlyActiveCollaborators);
+				false);
 	}
 
-	/**
-	 * Retourne les contributions associées aux paramétres spécifiés.
-	 * 
-	 * @param task
-	 *            la tâche associée aux contributions (facultative).
-	 * @param contributor
-	 *            le collaborateur associé aux contributions (facultatif).
-	 * @param year
-	 *            l'année (facultative).
-	 * @param month
-	 *            le mois (facultatif).
-	 * @param day
-	 *            le jour (facultatif).
-	 * @return les contributions.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé en cas d'incohérence des données en entrée avec le
-	 *             modèle.
-	 * 
-	 * @see jfb.tools.activitymgr.core.DbMgrImpl#getContributions(DbTransaction,
-	 *      Task, Collaborator, Integer, Integer, Integer)
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.IModelMgr#getContributionsSum(org.activitymgr.core.beans.Collaborator, org.activitymgr.core.beans.Task, java.util.Calendar, java.util.Calendar)
 	 */
-	public Contribution[] getContributions(Task task, Collaborator contributor,
-			Integer year, Integer month, Integer day) throws ModelException,
-			DbException {
-		// Vérification de la tache (le chemin de la tache doit être le bon
-		// pour
-		// que le calcul le soit)
-		if (task != null)
-			checkTaskPathAndUpdateSubTasksCount(task);
-
-		// Récupération des durées
-		return dao.getContributions(task, contributor, year, month, day);
-	}
-
-	/**
-	 * Calcule le total des contributions associée aux paramétres spécifiés.
-	 * 
-	 * @param contributor
-	 *            le collaborateur associé aux contributions (facultatif).
-	 * @param fromDate
-	 *            la date de départ.
-	 * @param toDate
-	 *            la date de fin.
-	 * @return la seomme des contributions.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @deprecated
-	 */
-	public long getContributionsSum(Task task, Collaborator contributor,
-			Calendar fromDate, Calendar toDate) throws DbException {
-		return dao.getContributionsSum(task, contributor, fromDate, toDate);
-	}
-
-	/**
-	 * Calcule le cumul des consommations associees aux contributions associée
-	 * pour les paramétres spécifiés.
-	 * 
-	 * @param task
-	 *            la tâche associée aux contributions (facultative).
-	 * @param contributor
-	 *            le collaborateur associé aux contributions (facultatif).
-	 * @param year
-	 *            l'année (facultative).
-	 * @param month
-	 *            le mois (facultatif).
-	 * @param day
-	 *            le jour (facultatif).
-	 * @return la seomme des contributions.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé en cas d'incohérence des données en entrée avec le
-	 *             modèle.
-	 * 
-	 * @see jfb.tools.activitymgr.core.DbMgrImpl#getContributionsSum(DbTransaction,
-	 *      Task, Collaborator, Integer, Integer, Integer)
-	 * @deprecated
-	 */
-	public long getContributionsSum(Task task, Collaborator contributor,
-			Integer year, Integer month, Integer day) throws ModelException,
-			DbException {
-		return dao.getContributionsSum(task, contributor, year, month, day);
-	}
-
-	/**
-	 * Calcule le nombre de contributions associée aux paramétres spécifiés dans
-	 * un contexte de transaction.
-	 * 
-	 * @param task
-	 *            la tâche associée aux contributions (facultative).
-	 * @param contributor
-	 *            le collaborateur associé aux contributions (facultatif).
-	 * @param year
-	 *            l'année (facultative).
-	 * @param month
-	 *            le mois (facultatif).
-	 * @param day
-	 *            le jour (facultatif).
-	 * @return la seomme des contributions.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé en cas d'incohérence des données en entrée avec le
-	 *             modèle.
-	 * 
-	 * @see jfb.tools.activitymgr.core.DbMgrImpl#getContributionsSum(DbTransaction,
-	 *      Task, Collaborator, Integer, Integer, Integer)
-	 */
-	public long getContributionsNb(Task task, Collaborator contributor,
-			Integer year, Integer month, Integer day) throws ModelException,
-			DbException {
-		// Vérification de la tache (le chemin de la tache doit être le bon pour
-		// que le calcul le soit)
-		if (task != null)
-			checkTaskPathAndUpdateSubTasksCount(task);
-
-		// Récupération du total
-		return dao.getContributionsNb(task, contributor, year, month, day);
-	}
-
-	/**
-	 * @param contributor
-	 *            le collaborateur associé aux contributions.
-	 * @param parentTask
-	 *            la tache parente associée aux contributions (en général si
-	 *            parentTask != nul, task = null et vice versa).
-	 * @param task
-	 *            la tache associée aux contributions (en général si parentTask
-	 *            != nul, task = null et vice versa).
-	 * @param fromDate
-	 *            la date de départ.
-	 * @param toDate
-	 *            la date de fin.
-	 * @return la liste des contributions associées aux paramétres spécifiés.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 */
-	public Contribution[] getContributions(Collaborator contributor,
-			Task parentTask, Task task, Calendar fromDate, Calendar toDate)
-			throws DbException, ModelException {
+	@Override
+	public long getContributionsSum(Collaborator contributor,Task task, 
+			Calendar fromDate, Calendar toDate) throws DbException, ModelException {
 		// Control sur la date
-		if (fromDate.getTime().compareTo(toDate.getTime()) > 0)
-			throw new ModelException(
-					Strings.getString("ModelMgr.errors.FROM_DATE_MUST_BE_BEFORE_TO_DATE")); //$NON-NLS-1$
-
-		// Retour du résultat
-		return dao.getContributions(contributor, parentTask, task, fromDate,
-				toDate);
+		checkInterval(fromDate, toDate);
+		// Récupération du total
+		return dao.getContributionsSum(contributor, task, fromDate, toDate);
 	}
 
-	/**
-	 * Retourne la liste des contributions associées à une tache, un
-	 * collaborateur et à un interval de temps donnés.
-	 * 
-	 * <p>
-	 * Un tableau dont la taille est égale au nombre de jours séparant les deux
-	 * dates spécifiées est retourné.
-	 * 
-	 * @param contributor
-	 *            le collaborateur associé aux contributions.
-	 * @param parentTask
-	 *            la tache parente associée aux contributions (en général si
-	 *            parentTask != nul, task = null et vice versa).
-	 * @param task
-	 *            la tache associée aux contributions (en général si parentTask
-	 *            != nul, task = null et vice versa).
-	 * @param fromDate
-	 *            la date de départ.
-	 * @param toDate
-	 *            la date de fin.
-	 * @return la liste des contributions.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé dans le cas ou la date de fin spécifiée est antérieure à
-	 *             la date de début spécifiée.
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.IModelMgr#getContributionsCount(org.activitymgr.core.beans.Collaborator, org.activitymgr.core.beans.Task, java.util.Calendar, java.util.Calendar)
 	 */
-	public IntervalContributions getIntervalContributions(
-			Collaborator contributor, Task parentTask, Task task,
+	@Override
+	public int getContributionsCount(Collaborator contributor, Task task, 
+			Calendar fromDate, Calendar toDate) throws ModelException,
+			DbException {
+		// Control sur la date
+		checkInterval(fromDate, toDate);
+		// Récupération du compte
+		return dao.getContributionsCount(contributor, task, fromDate, toDate);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IModelMgr#getContributions(org.activitymgr.core.
+	 * beans.Collaborator, org.activitymgr.core.beans.Task, java.util.Calendar,
+	 * java.util.Calendar)
+	 */
+	@Override
+	public Contribution[] getContributions(Collaborator contributor, Task task,
 			Calendar fromDate, Calendar toDate) throws DbException,
 			ModelException {
+		// Vérification de la tache (le chemin de la tache doit être le bon
+		// pour que le calcul le soit)
+		if (task != null)
+			checkTaskPathAndUpdateSubTasksCount(task);
+
+		// Control sur la date
+		checkInterval(fromDate, toDate);
+
+		// Retour du résultat
+		return dao.getContributions(contributor, task, fromDate, toDate);
+	}
+
+	/**
+	 * Checks whether the given interval is relevant or not.
+	 * @param fromDate start of the date interval.
+	 * @param toDate end of the date interval.
+	 * @throws ModelException thrown if the interval is invalid.
+	 */
+	private void checkInterval(Calendar fromDate, Calendar toDate)
+			throws ModelException {
+		if (fromDate != null && toDate != null
+				&& fromDate.getTime().compareTo(toDate.getTime()) > 0)
+			throw new ModelException(
+					Strings.getString("ModelMgr.errors.FROM_DATE_MUST_BE_BEFORE_TO_DATE")); //$NON-NLS-1$
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IModelMgr#getIntervalContributions(org.activitymgr
+	 * .core.beans.Collaborator, org.activitymgr.core.beans.Task,
+	 * java.util.Calendar, java.util.Calendar)
+	 */
+	@Override
+	public IntervalContributions getIntervalContributions(
+			Collaborator contributor, Task task, Calendar fromDate,
+			Calendar toDate) throws DbException, ModelException {
 		// If the contributor is missing, error....
 		if (contributor == null) {
 			throw new ModelException(
@@ -1073,14 +882,12 @@ public class ModelMgrImpl implements IModelMgr {
 		}
 
 		// Control sur la date
-		if (fromDate.getTime().compareTo(toDate.getTime()) > 0)
-			throw new ModelException(
-					Strings.getString("ModelMgr.errors.FROM_DATE_MUST_BE_BEFORE_TO_DATE")); //$NON-NLS-1$
+		checkInterval(fromDate, toDate);
 		int daysCount = countDaysBetween(fromDate, toDate) + 1;
 
 		// Récupération des contributions
 		Contribution[] contributionsArray = dao.getContributions(contributor,
-				parentTask, task, fromDate, toDate);
+				task, fromDate, toDate);
 
 		// Rangement des contributions par identifiant de tache
 		// (as the tsk parameter can be omitted => in this case, several
@@ -1187,66 +994,51 @@ public class ModelMgrImpl implements IModelMgr {
 		}
 	}
 
-	/**
-	 * @return la liste des durées actives.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IModelMgr#getDurations()
 	 */
+	@Override
 	public Duration[] getDurations() throws DbException {
-		return getDurations(false);
+		return dao.getDurations(false);
 	}
 
-	/**
-	 * @return la liste des durées actives.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IModelMgr#getActiveDurations()
 	 */
+	@Override
 	public Duration[] getActiveDurations() throws DbException {
-		return getDurations(true);
+		return dao.getDurations(true);
 	}
 
-	/**
-	 * @param onlyActiveCollaborators
-	 *            booléen indiquant si l'on ne doit retourner que les
-	 *            collaborateurs actifs.
-	 * @return la liste des durées.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IModelMgr#getDuration(long)
 	 */
-	private Duration[] getDurations(boolean onlyActiveCollaborators)
-			throws DbException {
-		return dao.getDurations(onlyActiveCollaborators);
-	}
-
-	/**
-	 * @param durationId
-	 *            identifiant de la durée.
-	 * @return la durée dont l'identifiant est spécifiée.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
+	@Override
 	public Duration getDuration(long durationId) throws DbException {
 		return dao.getDuration(durationId);
 	}
 
-	/**
-	 * @param task
-	 *            la tache dont on veut connaitre la tache parent.
-	 * @return la tache parent d'une tache spécifiée.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IModelMgr#getParentTask(org.activitymgr.core.beans
+	 * .Task)
 	 */
 	public Task getParentTask(Task task) throws DbException {
 		return dao.getParentTask(task);
 	}
 
-	/**
-	 * @param parentTaskId
-	 *            l'identifiant de la tache dont on veut connaître les
-	 *            sous-taches.
-	 * @return la liste des taches associées à un chemin donné.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IModelMgr#getSubtasks(java.lang.Long)
 	 */
 	public Task[] getSubtasks(Long parentTaskId) throws DbException {
 		// Récupération des sous tâches
@@ -1255,68 +1047,65 @@ public class ModelMgrImpl implements IModelMgr {
 		return getSubtasks(parentTask);
 	}
 
-	/**
-	 * @param parentTask
-	 *            la tache dont on veut connaître les sous-taches.
-	 * @return la liste des taches associées à un chemin donné.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IModelMgr#getSubtasks(org.activitymgr.core.beans
+	 * .Task)
 	 */
 	public Task[] getSubtasks(Task parentTask) throws DbException {
 		return dao.getSubtasks(parentTask);
 	}
 
-	/**
-	 * @param taskId
-	 *            l'identifiant de la tache recherchée.
-	 * @return la tache dont l'identifiant est spécifié.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IModelMgr#getTask(long)
 	 */
 	public Task getTask(long taskId) throws DbException {
 		return dao.getTask(taskId);
 	}
 
-	/**
-	 * Retourn la liste des taches correspondant au filtre de recherche
-	 * spécifié.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param filter
-	 *            le filtre de recherche.
-	 * @return la liste des taches correspondant au filtre de recherche
-	 *         spécifié.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see org.activitymgr.core.IModelMgr#getRootTasksCount()
 	 */
+	@Override
+	public int getRootTasksCount() throws DbException {
+		return dao.getRootTasksCount();
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IModelMgr#getTasks(org.activitymgr.core.beans.
+	 * TaskSearchFilter)
+	 */
+	@Override
 	public Task[] getTasks(TaskSearchFilter filter) throws DbException {
 		return dao.getTasks(filter);
 	}
 
-	/**
-	 * @param taskPath
-	 *            le chemin de la tache recherchée.
-	 * @param taskCode
-	 *            le code de la tache recherchée.
-	 * @return la tache dont le code et la tache parent sont spécifiés.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IModelMgr#getTask(java.lang.String,
+	 * java.lang.String)
 	 */
+	@Override
 	public Task getTask(String taskPath, String taskCode) throws DbException {
 		return dao.getTask(taskPath, taskCode);
 	}
 
-	/**
-	 * Retourne la tache associée à un chemin construit à partir de codes de
-	 * taches.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param codePath
-	 *            le chemin à base de code.
-	 * @return la tache trouvée.
-	 * @throws DbException
-	 *             levé en cas d'incident technique avec la base de données.
-	 * @throws ModelException
-	 *             levé dans le cas ou le chemin de tache est inconnu.
+	 * @see org.activitymgr.core.IModelMgr#getTaskByCodePath(java.lang.String)
 	 */
+	@Override
 	public Task getTaskByCodePath(final String codePath) throws DbException,
 			ModelException {
 		log.info("getTaskByCodePath(" + codePath + ")"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1343,33 +1132,25 @@ public class ModelMgrImpl implements IModelMgr {
 		return task;
 	}
 
-	/**
-	 * @param collaborator
-	 *            le collaborateur.
-	 * @param fromDate
-	 *            date de début.
-	 * @param toDate
-	 *            date de fin.
-	 * @return la liste de taches associées au collaborateur entre les 2 dates
-	 *         spécifiées.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IModelMgr#getTasks(org.activitymgr.core.beans.
+	 * Collaborator, java.util.Calendar, java.util.Calendar)
 	 */
+	@Override
 	public Task[] getTasks(Collaborator collaborator, Calendar fromDate,
 			Calendar toDate) throws DbException {
 		return dao.getTasks(collaborator, fromDate, toDate);
 	}
 
-	/**
-	 * Retourne la liste des taches associées aux chemins spécifiés.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param codePaths
-	 *            la liste des chemins.
-	 * @return la liste des tâches.
-	 * @throws DbException
-	 * @throws ModelException
-	 *             levé dans le cas ou une tache n'existe pas.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#getTasksByCodePath(java.lang.String[])
 	 */
+	@Override
 	public Task[] getTasksByCodePath(String[] codePaths) throws DbException,
 			ModelException {
 		// Recherche des taches
@@ -1389,20 +1170,14 @@ public class ModelMgrImpl implements IModelMgr {
 		return tasks;
 	}
 
-	/**
-	 * @param task
-	 *            la tâche pour laquelle on souhaite connaître les totaux.
-	 * @param fromDate
-	 *            date de départ à prendre en compte pour le calcul.
-	 * @param toDate
-	 *            date de fin à prendre en compte pour le calcul.
-	 * @return les totaux associés à une tache (consommé, etc.).
-	 * @throws ModelException
-	 *             levé dans le cas ou le chemin ou le numéro de la tache en
-	 *             base ne sont pas ceux de la tache spécifiée.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IModelMgr#getTaskSums(org.activitymgr.core.beans
+	 * .Task, java.util.Calendar, java.util.Calendar)
 	 */
+	@Override
 	public TaskSums getTaskSums(Task task, Calendar fromDate, Calendar toDate)
 			throws ModelException, DbException {
 		// Vérification de la tache (le chemin de la tache doit être le bon
@@ -1418,18 +1193,14 @@ public class ModelMgrImpl implements IModelMgr {
 		return sums;
 	}
 
-	/**
-	 * Construit le chemin de la tâche à partir des codes de tache.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param task
-	 *            la tache dont on veut connaître le chemin.
-	 * @return le chemin.
-	 * @throws ModelException
-	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
-	 *             changé.
-	 * @throws DbException
-	 *             levé en cas d'incident technique avec la base de données.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#getTaskCodePath(org.activitymgr.core.beans
+	 * .Task)
 	 */
+	@Override
 	public String getTaskCodePath(Task task) throws ModelException, DbException {
 		// Le chemin de la tache et son numéro ne doivent pas avoir changés
 		// pour pouvoir invoquer cette méthode (la modification des
@@ -1465,23 +1236,14 @@ public class ModelMgrImpl implements IModelMgr {
 		return taskPath.toString();
 	}
 
-	/**
-	 * Déplace la tache d'un cran vers le bas.
-	 * <p>
-	 * Le chemin de la tache et son numéro ne doivent pas avoir changés pour
-	 * pouvoir invoquer cette méthode (la modification des attributs n'est
-	 * autorisée que pour les champs autres que le chemin et le numéro de la
-	 * tache.
-	 * </p>
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param task
-	 *            la tache à déplacer vers le bas.
-	 * @throws ModelException
-	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
-	 *             changé.
-	 * @throws DbException
-	 *             levé en cas d'incident technique avec la base de données.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#moveDownTask(org.activitymgr.core.beans
+	 * .Task)
 	 */
+	@Override
 	public void moveDownTask(Task task) throws ModelException, DbException {
 		// Le chemin de la tache et son numéro ne doivent pas avoir changés
 		// pour pouvoir invoquer cette méthode (la modification des
@@ -1501,19 +1263,14 @@ public class ModelMgrImpl implements IModelMgr {
 		toggleTasks(task, taskToMoveUp);
 	}
 
-	/**
-	 * Déplace une tache de plus d'un cran (au contraire des méthodes
-	 * <code>moveUp</code> et <code>moveDown</code>.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param task
-	 *            la tache à déplacer.
-	 * @param newTaskNumber
-	 *            le nouveau numéro de la tâche.
-	 * @throws ModelException
-	 *             levé en cas de violation du modèle.
-	 * @throws DbException
-	 *             levé en cas d'incident technique avec la base de données.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#moveTaskUpOrDown(org.activitymgr.core.
+	 * beans.Task, int)
 	 */
+	@Override
 	public void moveTaskUpOrDown(Task task, int newTaskNumber)
 			throws ModelException, DbException {
 		// Le chemin de la tache et son numéro ne doivent pas avoir changés
@@ -1527,14 +1284,16 @@ public class ModelMgrImpl implements IModelMgr {
 					"New task number is equal to current task number ; task not moved");
 
 		// Récupération de la tache parent, et contrôle du modèle
-		// (le numéro de destination ne peut être hors intervalle)
+		// (le numéro de destination ne peut être hors interval)
 		Task parentTask = dao.getParentTask(task);
-		if (newTaskNumber > parentTask.getSubTasksCount() || newTaskNumber < 1)
+		int subTasksCount = parentTask != null ? parentTask.getSubTasksCount()
+				: getRootTasksCount();
+		if (newTaskNumber > subTasksCount || newTaskNumber < 1)
 			throw new ModelException("Invalid task number");
 
 		// Définition du sens de déplacement
 		int stepSign = task.getNumber() > newTaskNumber ? -1 : 1;
-		for (int i = task.getNumber(); i != newTaskNumber + stepSign; i = i
+		for (int i = task.getNumber() + stepSign; i != newTaskNumber + stepSign; i = i
 				+ stepSign) {
 			Task taskToToggle = dao.getTask(task.getPath(), (byte) i);
 			toggleTasks(task, taskToToggle);
@@ -1542,31 +1301,14 @@ public class ModelMgrImpl implements IModelMgr {
 		}
 	}
 
-	/**
-	 * Déplace la tache vers un autre endroit dans la hiérarchie des taches.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * <p>
-	 * Le chemin de la tache et son numéro ne doivent pas avoir changés pour
-	 * pouvoir invoquer cette méthode (la modification des attributs n'est
-	 * autorisée que pour les champs autres que le chemin et le numéro de la
-	 * tache.
-	 * </p>
-	 * 
-	 * <p>
-	 * Cette méthode est synchronisé en raison de la génération du numéro de la
-	 * tache qui est déplacée à un autre chemin.
-	 * </p>
-	 * 
-	 * @param task
-	 *            la tache à déplacer.
-	 * @param destParentTask
-	 *            tache parent de destination.
-	 * @throws ModelException
-	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
-	 *             changé.
-	 * @throws DbException
-	 *             levé en cas d'incident technique avec la base de données.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#moveTask(org.activitymgr.core.beans.Task,
+	 * org.activitymgr.core.beans.Task)
 	 */
+	@Override
 	public synchronized void moveTask(Task task, Task destParentTask)
 			throws ModelException, DbException {
 		/**
@@ -1633,23 +1375,14 @@ public class ModelMgrImpl implements IModelMgr {
 		rebuildSubtasksNumbers(srcParentTask);
 	}
 
-	/**
-	 * Déplace la tache d'un cran vers le haut.
-	 * <p>
-	 * Le chemin de la tache et son numéro ne doivent pas avoir changés pour
-	 * pouvoir invoquer cette méthode (la modification des attributs n'est
-	 * autorisée que pour les champs autres que le chemin et le numéro de la
-	 * tache.
-	 * </p>
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param task
-	 *            la tache à déplacer vers le haut.
-	 * @throws ModelException
-	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
-	 *             changé.
-	 * @throws DbException
-	 *             levé en cas d'incident technique avec la base de données.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#moveUpTask(org.activitymgr.core.beans.
+	 * Task)
 	 */
+	@Override
 	public void moveUpTask(Task task) throws ModelException, DbException {
 		// Le chemin de la tache et son numéro ne doivent pas avoir changés
 		// pour pouvoir invoquer cette méthode (la modification des
@@ -1695,21 +1428,18 @@ public class ModelMgrImpl implements IModelMgr {
 		}
 	}
 
-	/**
-	 * Supprime un collaborateur.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param collaborator
-	 *            le collaborateur à supprimer.
-	 * @throws ModelException
-	 *             levé dans le cas ou le collaborateur est associé à des
-	 *             contributions en base.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#removeCollaborator(org.activitymgr.core
+	 * .beans.Collaborator)
 	 */
+	@Override
 	public void removeCollaborator(Collaborator collaborator)
 			throws ModelException, DbException {
 		// Vérification que le collaborateur n'est pas utilisé
-		long contribsNb = getContributionsNb(null, collaborator, null, null,
+		long contribsNb = getContributionsCount(collaborator, null, null,
 				null);
 		if (contribsNb != 0)
 			throw new ModelException(
@@ -1720,18 +1450,14 @@ public class ModelMgrImpl implements IModelMgr {
 		dao.removeCollaborator(collaborator);
 	}
 
-	/**
-	 * Supprime une contribution.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param contribution
-	 *            la contribution à supprimer.
-	 * @param updateEstimatedTimeToComlete
-	 *            booléen indiquant si le reste à faire doit être incrémenté.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé dans le cas ou la donnée a changé en base de données.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#removeContribution(org.activitymgr.core
+	 * .beans.Contribution, boolean)
 	 */
+	@Override
 	public void removeContribution(Contribution contribution,
 			boolean updateEstimatedTimeToComlete) throws DbException,
 			ModelException {
@@ -1746,7 +1472,7 @@ public class ModelMgrImpl implements IModelMgr {
 			Task task = dao.getTask(contribution.getTaskId());
 			// Récupération de la contribution correspondante en base
 			Contribution[] contributions = dao.getContributions(contributor,
-					null, task, contribution.getDate(), contribution.getDate());
+					task, contribution.getDate(), contribution.getDate());
 			if (contributions.length == 0) {
 				// Si la contribution n'existait pas, il n'y a rien à faire
 				// de plus
@@ -1773,14 +1499,14 @@ public class ModelMgrImpl implements IModelMgr {
 		}
 	}
 
-	/**
-	 * Supprime des contributions.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param contributions
-	 *            les contributions à supprimer.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#removeContributions(org.activitymgr.core
+	 * .beans.Contribution[])
 	 */
+	@Override
 	public void removeContributions(Contribution[] contributions)
 			throws DbException {
 		// Suppression de la contribution
@@ -1788,17 +1514,14 @@ public class ModelMgrImpl implements IModelMgr {
 			dao.removeContribution(contributions[i]);
 	}
 
-	/**
-	 * Supprime une durée du référentiel de durées dans un contexte de
-	 * transaction.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param duration
-	 *            la durée à supprimer.
-	 * @throws ModelException
-	 *             levé dans le cas ou la durée n'existe pas en base.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#removeDuration(org.activitymgr.core.beans
+	 * .Duration)
 	 */
+	@Override
 	public void removeDuration(Duration duration) throws ModelException,
 			DbException {
 		// Vérification de l'existance
@@ -1815,22 +1538,14 @@ public class ModelMgrImpl implements IModelMgr {
 		dao.removeDuration(duration);
 	}
 
-	/**
-	 * Supprime une tache.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * <p>
-	 * Cette méthode est synchronisé en raison de la modification potentielle du
-	 * numéro de certaines taches.
-	 * </p>
-	 * 
-	 * @param task
-	 *            la tache à supprimer.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé en cas de violation d'une contrainte d'intégrité du
-	 *             modèle.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#removeTask(org.activitymgr.core.beans.
+	 * Task)
 	 */
+	@Override
 	public synchronized void removeTask(Task task) throws DbException,
 			ModelException {
 		// Vérification de l'adéquation des attibuts de la tache avec les
@@ -1838,7 +1553,7 @@ public class ModelMgrImpl implements IModelMgr {
 		checkTaskPathAndUpdateSubTasksCount(task);
 
 		// Vérification que la tache n'est pas utilisé
-		long contribsNb = getContributionsNb(task, null, null, null, null);
+		long contribsNb = getContributionsCount(null, task, null, null);
 		if (contribsNb != 0)
 			throw new ModelException(Strings.getString(
 					"ModelMgr.errors.TASK_HAS_SUBTASKS", new Long(contribsNb))); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1893,17 +1608,14 @@ public class ModelMgrImpl implements IModelMgr {
 				task1.getFullPath());
 	}
 
-	/**
-	 * Modifie les attributs d'un collaborateur.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param collaborator
-	 *            le collaborateur à modifier.
-	 * @return le collaborateur modifié.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé en cas de non unicité du login.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#updateCollaborator(org.activitymgr.core
+	 * .beans.Collaborator)
 	 */
+	@Override
 	public Collaborator updateCollaborator(Collaborator collaborator)
 			throws DbException, ModelException {
 		// Control de l'unicité du login
@@ -1916,32 +1628,26 @@ public class ModelMgrImpl implements IModelMgr {
 		return collaborator;
 	}
 
-	/**
-	 * Met à jour une durée.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param duration
-	 *            la durée à mettre à jour.
-	 * @return la durée mise à jour.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#updateDuration(org.activitymgr.core.beans
+	 * .Duration)
 	 */
+	@Override
 	public Duration updateDuration(Duration duration) throws DbException {
 		return dao.updateDuration(duration);
 	}
 
-	/**
-	 * Modifie les attributs d'une contribution.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param contribution
-	 *            la contribution à modifier.
-	 * @param updateEstimatedTimeToComlete
-	 *            booléen indiquant si le reste à faire doit être décrémenté.
-	 * @return la contribution modifiée.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé dans le cas ou la donnée a changé en base de données.
+	 * @see
+	 * org.activitymgr.core.IModelMgr#updateContribution(org.activitymgr.core
+	 * .beans.Contribution, boolean)
 	 */
+	@Override
 	public Contribution updateContribution(Contribution contribution,
 			boolean updateEstimatedTimeToComlete) throws DbException,
 			ModelException {
@@ -1963,7 +1669,7 @@ public class ModelMgrImpl implements IModelMgr {
 			Task task = dao.getTask(contribution.getTaskId());
 			// Récupération de la contribution correspondante en base
 			Contribution[] contributions = dao.getContributions(contributor,
-					null, task, contribution.getDate(), contribution.getDate());
+					task, contribution.getDate(), contribution.getDate());
 			if (contributions.length == 0) {
 				// Si la contribution n'existe pas, c'est qu'il y a
 				// déphasage entre les données de l'appelant et la BDD
@@ -1989,21 +1695,10 @@ public class ModelMgrImpl implements IModelMgr {
 		return result;
 	}
 
-	/**
-	 * Change la tache d'une liste de contributions.
-	 * 
-	 * @param contributions
-	 *            la liste de contributions.
-	 * @param newContributionTask
-	 *            la tache à affecter.
-	 * @return la liste de contributions mise à jour.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé dans le cas où la tache cible ne peut être acdepter de
-	 *             contribution.
-	 * 
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.IModelMgr#changeContributionTask(org.activitymgr.core.beans.Contribution[], org.activitymgr.core.beans.Task)
 	 */
+	@Override
 	public Contribution[] changeContributionTask(Contribution[] contributions,
 			Task newContributionTask) throws DbException, ModelException {
 		// La tache ne peut accepter une contribution que
@@ -2022,24 +1717,10 @@ public class ModelMgrImpl implements IModelMgr {
 		return contributions;
 	}
 
-	/**
-	 * Modifie une durée.
-	 * <p>
-	 * Pour pouvoir être modifiée, la durée ne doit pas être utilisée.
-	 * </p>
-	 * 
-	 * @param duration
-	 *            la durée à modifier.
-	 * @param newDuration
-	 *            la nouvelle valeur de la durée.
-	 * @return la durée modifiée.
-	 * @throws ModelException
-	 *             levé dans le cas ou la durée à changer est utilisée ou dans
-	 *             le cas ou la nouvelle valeur pour la durée existe déja dans
-	 *             le référentiel.
-	 * @throws DbException
-	 *             levé en cas d'incident technique avec la base de données.
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.IModelMgr#updateDuration(org.activitymgr.core.beans.Duration, org.activitymgr.core.beans.Duration)
 	 */
+	@Override
 	public Duration updateDuration(Duration duration, Duration newDuration)
 			throws ModelException, DbException {
 		// Si la nouvelle durée est égale à l'ancienne, il n'y a rien
@@ -2055,24 +1736,10 @@ public class ModelMgrImpl implements IModelMgr {
 		return newDuration;
 	}
 
-	/**
-	 * Met à jour les attributs d'une tache en base.
-	 * <p>
-	 * Le chemin de la tache et son numéro ne doivent pas avoir changés pour
-	 * pouvoir invoquer cette méthode (la modification des attributs n'est
-	 * autorisée que pour les champs autres que le chemin et le numéro de la
-	 * tache.
-	 * </p>
-	 * 
-	 * @param task
-	 *            la tache à mettre à jour.
-	 * @return la tache mise à jour.
-	 * @throws ModelException
-	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
-	 *             changé.
-	 * @throws DbException
-	 *             levé en cas d'incident technique avec la base de données.
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.IModelMgr#updateTask(org.activitymgr.core.beans.Task)
 	 */
+	@Override
 	public Task updateTask(Task task) throws ModelException, DbException {
 		// Le chemin de la tache et son numéro ne doivent pas avoir changés
 		// pour pouvoir invoquer cette méthode (la modification des

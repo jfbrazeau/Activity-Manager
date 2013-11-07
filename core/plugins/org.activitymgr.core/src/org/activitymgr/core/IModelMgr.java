@@ -278,46 +278,17 @@ public interface IModelMgr {
 			boolean ascendantSort) throws DbException;
 
 	/**
-	 * Retourne les contributions associées aux paramétres spécifiés.
-	 * 
-	 * @param task
-	 *            la tâche associée aux contributions (facultative).
-	 * @param contributor
-	 *            le collaborateur associé aux contributions (facultatif).
-	 * @param year
-	 *            l'année (facultative).
-	 * @param month
-	 *            le mois (facultatif).
-	 * @param day
-	 *            le jour (facultatif).
-	 * @return les contributions.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé en cas d'incohérence des données en entrée avec le
-	 *             modèle.
-	 * 
-	 * @see jfb.tools.activitymgr.core.DbMgrImpl#getContributions(DbTransaction,
-	 *      Task, Collaborator, Integer, Integer, Integer)
-	 */
-	public Contribution[] getContributions(Task task, Collaborator contributor,
-			Integer year, Integer month, Integer day) throws ModelException,
-			DbException;
-
-	/**
 	 * Calcule le nombre des contributions associée aux paramétres spécifiés.
 	 * 
 	 * @param task
 	 *            la tâche associée aux contributions (facultative).
 	 * @param contributor
 	 *            le collaborateur associé aux contributions (facultatif).
-	 * @param year
-	 *            l'année (facultative).
-	 * @param month
-	 *            le mois (facultatif).
-	 * @param day
-	 *            le jour (facultatif).
-	 * @return la seomme des contributions.
+	 * @param fromDate
+	 *            la date de départ.
+	 * @param toDate
+	 *            la date de fin.
+	 * @return le nombre de contributions.
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
@@ -327,13 +298,15 @@ public interface IModelMgr {
 	 * @see jfb.tools.activitymgr.core.DbMgrImpl#getContributionsNb(DbTransaction,
 	 *      Task, Collaborator, Integer, Integer, Integer)
 	 */
-	public long getContributionsNb(Task task, Collaborator contributor,
-			Integer year, Integer month, Integer day) throws ModelException,
+	public int getContributionsCount(Collaborator contributor, Task task, 
+			Calendar fromDate, Calendar toDate) throws ModelException,
 			DbException;
 
 	/**
 	 * Calcule le total des contributions associée aux paramétres spécifiés.
 	 * 
+	 * @param task
+	 *            the task of the contributions to select (or parent task).
 	 * @param contributor
 	 *            le collaborateur associé aux contributions (facultatif).
 	 * @param fromDate
@@ -343,49 +316,16 @@ public interface IModelMgr {
 	 * @return la seomme des contributions.
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
-	 * @deprecated
+	 * @throws ModelException 
 	 */
-	public long getContributionsSum(Task task, Collaborator contributor,
-			Calendar fromDate, Calendar toDate) throws DbException;
-
-	/**
-	 * Calcule le cumul des consommations associees aux contributions associée
-	 * pour les paramétres spécifiés.
-	 * 
-	 * @param task
-	 *            la tâche associée aux contributions (facultative).
-	 * @param contributor
-	 *            le collaborateur associé aux contributions (facultatif).
-	 * @param year
-	 *            l'année (facultative).
-	 * @param month
-	 *            le mois (facultatif).
-	 * @param day
-	 *            le jour (facultatif).
-	 * @return la seomme des contributions.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé en cas d'incohérence des données en entrée avec le
-	 *             modèle.
-	 * 
-	 * @see jfb.tools.activitymgr.core.DbMgrImpl#getContributionsSum(DbTransaction,
-	 *      Task, Collaborator, Integer, Integer, Integer)
-	 * @deprecated
-	 */
-	public long getContributionsSum(Task task, Collaborator contributor,
-			Integer year, Integer month, Integer day) throws ModelException,
-			DbException;
+	public long getContributionsSum(Collaborator contributor, Task task, 
+			Calendar fromDate, Calendar toDate) throws DbException, ModelException;
 
 	/**
 	 * @param contributor
 	 *            le collaborateur associé aux contributions.
-	 * @param parentTask
-	 *            la tache parente associée aux contributions (en général si
-	 *            parentTask != nul, task = null et vice versa).
 	 * @param task
-	 *            la tache associée aux contributions (en général si parentTask
-	 *            != nul, task = null et vice versa).
+	 *            la tache associée aux contributions.
 	 * @param fromDate
 	 *            la date de départ.
 	 * @param toDate
@@ -395,9 +335,9 @@ public interface IModelMgr {
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 */
-	public Contribution[] getContributions(Collaborator contributor,
-			Task parentTask, Task task, Calendar fromDate, Calendar toDate)
-			throws DbException, ModelException;
+	public Contribution[] getContributions(Collaborator contributor, Task task,
+			Calendar fromDate, Calendar toDate) throws DbException,
+			ModelException;
 
 	/**
 	 * Retourne la liste des contributions associées à une tache, un
@@ -409,12 +349,8 @@ public interface IModelMgr {
 	 * 
 	 * @param contributor
 	 *            le collaborateur associé aux contributions.
-	 * @param parentTask
-	 *            la tache parente associée aux contributions (en général si
-	 *            parentTask != nul, task = null et vice versa).
 	 * @param task
-	 *            la tache associée aux contributions (en général si parentTask
-	 *            != nul, task = null et vice versa).
+	 *            la tache associée aux contributions.
 	 * @param fromDate
 	 *            la date de départ.
 	 * @param toDate
@@ -427,9 +363,8 @@ public interface IModelMgr {
 	 *             la date de début spécifiée.
 	 */
 	public IntervalContributions getIntervalContributions(
-			Collaborator contributor, Task parentTask, Task task,
-			Calendar fromDate, Calendar toDate) throws DbException,
-			ModelException;
+			Collaborator contributor, Task task, Calendar fromDate,
+			Calendar toDate) throws DbException, ModelException;
 
 	/**
 	 * @return la liste des durées actives.
@@ -490,6 +425,13 @@ public interface IModelMgr {
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public Task getTask(long taskId) throws DbException;
+
+	/**
+	 * @return the root tasks count.
+	 * @throws DbException
+	 *             thrown if a database exception occurs.
+	 */
+	int getRootTasksCount() throws DbException;
 
 	/**
 	 * Retourn la liste des taches correspondant au filtre de recherche

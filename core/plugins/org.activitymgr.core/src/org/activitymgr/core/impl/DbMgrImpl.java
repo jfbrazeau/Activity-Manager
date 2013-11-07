@@ -94,13 +94,12 @@ public class DbMgrImpl implements IDbMgr {
 		return tx.get();
 	}
 
-	/**
-	 * Vérifie si les tables existent dans le modèle.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @return un booléen indiquant si la table spécifiée existe dans le modèle.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see org.activitymgr.core.IDbMgr#tablesExist()
 	 */
+	@Override
 	public boolean tablesExist() throws DbException {
 		boolean tablesExist = true;
 		tablesExist &= tableExists("COLLABORATOR"); //$NON-NLS-1$
@@ -110,15 +109,12 @@ public class DbMgrImpl implements IDbMgr {
 		return tablesExist;
 	}
 
-	/**
-	 * Vérifie si une table existe dans le modèle.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param tableName
-	 *            le nom de la table.
-	 * @return un booléen indiquant si la table spécifiée existe dans le modèle.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see org.activitymgr.core.IDbMgr#tableExists(java.lang.String)
 	 */
+	@Override
 	public boolean tableExists(String tableName) throws DbException {
 		ResultSet rs = null;
 		try {
@@ -144,12 +140,12 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Crée les tables du modèle de données.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see org.activitymgr.core.IDbMgr#createTables()
 	 */
+	@Override
 	public void createTables() throws DbException {
 		// Lecture du fichier SQL de création de la BDD
 		String batchName = (tx().isHsqlOrH2() ? "hsqldb.sql" : "mysqldb.sql"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -162,14 +158,12 @@ public class DbMgrImpl implements IDbMgr {
 					Strings.getString("DbMgr.errors.SQL_TABLE_CREATION_FAILURE"), null); //$NON-NLS-1$
 	}
 
-	/**
-	 * Executes a SQL script.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param scriptContent
-	 *            the script content.
-	 * @throws DbException
-	 *             thrown if a database error occurs.
+	 * @see org.activitymgr.core.IDbMgr#executeScript(java.io.InputStream)
 	 */
+	@Override
 	public void executeScript(InputStream scriptContent) throws DbException {
 		try {
 			// Script content retrieval
@@ -184,14 +178,12 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Executes a SQL script.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param scriptContent
-	 *            the script content.
-	 * @throws DbException
-	 *             thrown if a database error occurs.
+	 * @see org.activitymgr.core.IDbMgr#executeScript(java.lang.String)
 	 */
+	@Override
 	public void executeScript(String scriptContent) throws DbException {
 		Statement stmt = null;
 		try {
@@ -262,15 +254,14 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Crée un collaborateur.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param newCollaborator
-	 *            le collaborateur à créer.
-	 * @return le collaborateur après création.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IDbMgr#createCollaborator(org.activitymgr.core.beans
+	 * .Collaborator)
 	 */
+	@Override
 	public Collaborator createCollaborator(Collaborator newCollaborator)
 			throws DbException {
 		PreparedStatement pStmt = null;
@@ -306,15 +297,14 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Crée une contribution.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param newContribution
-	 *            la nouvelle contribution.
-	 * @return la contribution après création.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IDbMgr#createContribution(org.activitymgr.core.beans
+	 * .Contribution)
 	 */
+	@Override
 	public Contribution createContribution(Contribution newContribution)
 			throws DbException {
 		PreparedStatement pStmt = null;
@@ -346,15 +336,14 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Crée une contribution.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param newDuration
-	 *            la nouvelle durée.
-	 * @return la durée après création.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IDbMgr#createDuration(org.activitymgr.core.beans
+	 * .Duration)
 	 */
+	@Override
 	public Duration createDuration(Duration newDuration) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -381,22 +370,14 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Crée une tache.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * <p>
-	 * La tache parent peut être nulle pour indiquer que la nouvelle tache est
-	 * une tache racine.
-	 * </p>
-	 * 
-	 * @param parentTask
-	 *            la tache parent accueillant la nouvelle tache.
-	 * @param newTask
-	 *            la nouvelle tache.
-	 * @return la tache après création.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IDbMgr#createTask(org.activitymgr.core.beans.Task,
+	 * org.activitymgr.core.beans.Task)
 	 */
+	@Override
 	public Task createTask(Task parentTask, Task newTask) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -442,15 +423,14 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Vérifie si la durée est utilisée en base.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param duration
-	 *            la durée à vérifier.
-	 * @return un booléen indiquant si la durée est utilisée.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IDbMgr#durationIsUsed(org.activitymgr.core.beans
+	 * .Duration)
 	 */
+	@Override
 	public boolean durationIsUsed(Duration duration) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -484,13 +464,12 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * @param collaboratorId
-	 *            l'identifiant du collaborateur recherché.
-	 * @return le collaborateur dont l'identifiant est spécifié.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IDbMgr#getCollaborator(long)
 	 */
+	@Override
 	public Collaborator getCollaborator(long collaboratorId) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -543,13 +522,12 @@ public class DbMgrImpl implements IDbMgr {
 		return collaborator;
 	}
 
-	/**
-	 * @param login
-	 *            l'identifiant de connexion du collaborateur recherché.
-	 * @return le collaborateur dont l'identifiant de connexion est spécifié.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IDbMgr#getCollaborator(java.lang.String)
 	 */
+	@Override
 	public Collaborator getCollaborator(String login) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -584,18 +562,12 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * @param orderByClauseFieldIndex
-	 *            index de l'attribut utilisé pour le tri.
-	 * @param ascendantSort
-	 *            booléen indiquant si le tri doit être ascendant.
-	 * @param onlyActiveCollaborators
-	 *            booléen indiquant si l'on ne doit retourner que les
-	 *            collaborateurs actifs.
-	 * @return la liste des collaborateurs.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IDbMgr#getCollaborators(int, boolean, boolean)
 	 */
+	@Override
 	public Collaborator[] getCollaborators(int orderByClauseFieldIndex,
 			boolean ascendantSort, boolean onlyActiveCollaborators)
 			throws DbException {
@@ -659,103 +631,6 @@ public class DbMgrImpl implements IDbMgr {
 	}
 
 	/**
-	 * @param contributor
-	 *            le collaborateur associé aux contributions.
-	 * @param parentTask
-	 *            la tache parente associée aux contributions (en général si
-	 *            parentTask != nul, task = null et vice versa).
-	 * @param task
-	 *            la tache associée aux contributions (en général si parentTask
-	 *            != nul, task = null et vice versa).
-	 * @param fromDate
-	 *            la date de départ.
-	 * @param toDate
-	 *            la date de fin.
-	 * @return la liste des contributions associées aux paramétres spécifiés.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
-	public Contribution[] getContributions(Collaborator contributor,
-			Task parentTask, Task task, Calendar fromDate, Calendar toDate)
-			throws DbException {
-		log.debug("getContributions(" + contributor + ", " + task + ", " + sdf.format(fromDate.getTime()) + ", " + sdf.format(toDate.getTime()) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-		PreparedStatement pStmt = null;
-		ResultSet rs = null;
-		try {
-			// Conversion des dates
-			String fromDateStr = sdf.format(fromDate.getTime());
-			String toDateStr = sdf.format(toDate.getTime());
-
-			// Préparation de la requête
-			StringWriter request = new StringWriter();
-			request.append("select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration");
-			if (parentTask != null) {
-				request.append(", tsk_id, tsk_path");
-			}
-			request.append(" from CONTRIBUTION");
-			if (parentTask != null) {
-				request.append(", TASK");
-			}
-			request.append(" where");
-			if (parentTask != null) {
-				request.append(" ctb_task=tsk_id and tsk_path like ? and");
-			}
-			request.append(" ctb_year*10000 + ( ctb_month*100 + ctb_day )");
-			if (!fromDateStr.equals(toDateStr)) {
-				request.append(" between ? and ?");
-			} else {
-				request.append(" = ?");
-			}
-			if (contributor != null) {
-				request.append(" and ctb_contributor=?");
-			}
-			if (task != null) {
-				request.append(" and ctb_task=?");
-			}
-			pStmt = tx().prepareStatement(request.toString());
-			int paramIdx = 1;
-			// Parent task management
-			if (parentTask != null) {
-				pStmt.setString(paramIdx++, parentTask.getFullPath() + '%');
-			}
-			// 1° cas : les deux dates sont différentes
-			if (!fromDateStr.equals(toDateStr)) {
-				pStmt.setString(paramIdx++, fromDateStr);
-				pStmt.setString(paramIdx++, toDateStr);
-			}
-			// 2° cas : les deux dates sont égales
-			else {
-				pStmt.setString(paramIdx++, fromDateStr);
-			}
-			if (contributor != null) {
-				pStmt.setLong(paramIdx++, contributor.getId());
-			}
-			if (task != null) {
-				pStmt.setLong(paramIdx++, task.getId());
-			}
-
-			// Exécution de la requête
-			rs = pStmt.executeQuery();
-
-			// Extraction du résultat
-			Contribution[] result = rsToContributions(rs);
-
-			// Fermeture du ResultSet
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return result;
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString("DbMgr.errors.CONTRIBUTIONS_SELECTION_FAILURE"), e); //$NON-NLS-1$
-		} finally {
-			lastAttemptToClose(pStmt);
-		}
-	}
-
-	/**
 	 * Extrait les contributions du resultat de la requête SQL.
 	 * 
 	 * @param rs
@@ -782,99 +657,32 @@ public class DbMgrImpl implements IDbMgr {
 		return (Contribution[]) list.toArray(new Contribution[list.size()]);
 	}
 
-	/**
-	 * Retourne les contributions associées aux paramétres spécifiés.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * <p>
-	 * Tous les paramétres sont facultatifs. Chaque paramétre spécifié agît
-	 * comme un filtre sur le résultat. A l'inverse, l'omission d'un paramétre
-	 * provoque l'inclusion de toutes les contributions, quelque soit leurs
-	 * valeurs pour l'attribut considéré.
-	 * </p>
-	 * 
-	 * <p>
-	 * La spécification des paramétres répond aux mêmes règles que pour la
-	 * méthode <code>getContributionsSum</code>.
-	 * </p>
-	 * 
-	 * @param task
-	 *            la tâche associée aux contributions (facultative).
-	 * @param contributor
-	 *            le collaborateur associé aux contributions (facultatif).
-	 * @param year
-	 *            l'année (facultative).
-	 * @param month
-	 *            le mois (facultatif).
-	 * @param day
-	 *            le jour (facultatif).
-	 * @return les contributions.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 * 
-	 * @see jfb.tools.activitymgr.core.DbMgrImpl#getContributionsSum(DbTransaction,
-	 *      Task, Collaborator, Integer, Integer, Integer)
+	 * @see
+	 * org.activitymgr.core.IDbMgr#getContributions(org.activitymgr.core.beans
+	 * .Collaborator, org.activitymgr.core.beans.Task, java.util.Calendar,
+	 * java.util.Calendar)
 	 */
-	public Contribution[] getContributions(Task task, Collaborator contributor,
-			Integer year, Integer month, Integer day) throws DbException {
-		log.debug("getContributions(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+	@Override
+	public Contribution[] getContributions(Collaborator contributor, Task task,
+			Calendar fromDate, Calendar toDate) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			StringBuffer baseRequest = new StringBuffer(
-					"select ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration from CONTRIBUTION, TASK where ctb_task=tsk_id"); //$NON-NLS-1$
-			String orderByClause = " order by ctb_year, ctb_month, ctb_day, tsk_path, tsk_number, ctb_contributor, ctb_duration"; //$NON-NLS-1$
-			// Cas ou la tache n'est pas spécifiée
-			if (task == null) {
-				// Préparation de la requête
-				completeContributionRequest(baseRequest, contributor, year,
-						month, day);
-				baseRequest.append(orderByClause);
-				String request = baseRequest.toString();
-				pStmt = tx().prepareStatement(request);
-				completeContributionReqParams(pStmt, 1, contributor, year,
-						month, day);
-			}
-			// Si la tache n'admet pas de sous-taches, le cumul de
-			// budget, de consommé initial, de reste à faire sont
-			// égaux à ceux de la tache
-			else if (task.getSubTasksCount() == 0) {
-				// Préparation de la requête
-				baseRequest.append(" and tsk_id=?"); //$NON-NLS-1$
-				completeContributionRequest(baseRequest, contributor, year,
-						month, day);
-				baseRequest.append(orderByClause);
-				String request = baseRequest.toString();
-				pStmt = tx().prepareStatement(request);
-				pStmt.setLong(1, task.getId());
-				log.debug(" taskId=" + task.getId()); //$NON-NLS-1$
-				completeContributionReqParams(pStmt, 2, contributor, year,
-						month, day);
-			}
-			// Sinon, il faut calculer
-			else {
-				// Paramètre pour la clause 'LIKE'
-				String pathLike = task.getFullPath() + "%"; //$NON-NLS-1$
-
-				// Préparation de la requête
-				baseRequest.append(" and tsk_path like ?"); //$NON-NLS-1$
-				completeContributionRequest(baseRequest, contributor, year,
-						month, day);
-				baseRequest.append(orderByClause);
-				String request = baseRequest.toString();
-				pStmt = tx().prepareStatement(request);
-				pStmt.setString(1, pathLike);
-				completeContributionReqParams(pStmt, 2, contributor, year,
-						month, day);
-			}
+			// Build the request
+			pStmt = buildContributionsRequest(task, contributor, fromDate,
+					toDate,
+					"ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration");
 
 			// Exécution de la requête
-			log.debug("Request : " + baseRequest); //$NON-NLS-1$
 			rs = pStmt.executeQuery();
 
 			// Extraction du résultat
 			Contribution[] result = rsToContributions(rs);
 
-			// Fermeture du statement
+			// Fermeture du ResultSet
 			pStmt.close();
 			pStmt = null;
 
@@ -889,70 +697,19 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Calcule le total des contributions associée aux paramétres spécifiés.
-	 * 
-	 * @param contributor
-	 *            le collaborateur associé aux contributions (facultatif).
-	 * @param fromDate
-	 *            la date de départ.
-	 * @param toDate
-	 *            la date de fin.
-	 * @return la seomme des contributions.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.IDbMgr#getContributionsSum(org.activitymgr.core.beans.Collaborator, org.activitymgr.core.beans.Task, java.util.Calendar, java.util.Calendar)
 	 */
-	public long getContributionsSum(Task task, Collaborator contributor,
+	@Override
+	public long getContributionsSum(Collaborator contributor, Task task,
 			Calendar fromDate, Calendar toDate) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Préparation de la requête
-			StringBuffer request = new StringBuffer(
-					"select sum(ctb_duration) from CONTRIBUTION");
-			if (task != null)
-				request.append(", TASK");
-			if (contributor != null)
-				request.append(", COLLABORATOR");
-			request.append(" where ");
-			if (task != null) {
-				request.append("ctb_task=tsk_id and tsk_id=?");
-			}
-			if (contributor != null) {
-				if (task != null)
-					request.append(" and ");
-				request.append("ctb_contributor=clb_id and clb_id=?");
-			}
-			// Y'a-t-il un critère de date à ajouter ?
-			if (fromDate != null || toDate != null) {
-				request.append(" and ( ctb_year*10000 + ( ctb_month*100 + ctb_day ) )");
-				// Deux dates spécifiées
-				if (fromDate != null && toDate != null)
-					request.append(" between ? and ?");
-				// Seule la date de début spécifiée
-				else if (fromDate != null)
-					request.append(">=?");
-				// Seule la date de fin spécifiée
-				else
-					request.append("<=?");
-			}
+			// Build the SQL request
+			pStmt = buildContributionsRequest(task, contributor, fromDate,
+					toDate, "sum(ctb_duration)");
 
-			// Calcul du consommé
-			log.debug("request : " + request);
-			pStmt = tx().prepareStatement(request.toString()); //$NON-NLS-1$
-			int idx = 1;
-			if (task != null)
-				pStmt.setLong(idx++, task.getId());
-			if (contributor != null)
-				pStmt.setLong(idx++, contributor.getId());
-
-			// Y'a-t-il un critère de date à ajouter ?
-			if (fromDate != null || toDate != null) {
-				if (fromDate != null)
-					pStmt.setString(idx++, sdf.format(fromDate.getTime()));
-				if (toDate != null)
-					pStmt.setString(idx++, sdf.format(toDate.getTime()));
-			}
 			// Exécution de le requête et extraction du résultat
 			rs = pStmt.executeQuery();
 			if (!rs.next())
@@ -974,201 +731,148 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Calcule le nombre des contributions associée aux paramétres spécifiés.
-	 * 
-	 * <p>
-	 * Tous les paramétres sont facultatifs. Chaque paramétre spécifié agît
-	 * comme un filtre sur le résultat. A l'inverse, l'omission d'un paramétre
-	 * provoque l'inclusion de toutes les contributions, quelque soit leurs
-	 * valeurs pour l'attribut considéré.
-	 * </p>
-	 * 
-	 * <p>
-	 * En spécifiant la tache X, on connaîtra la somme des contribution pour la
-	 * taches X. En ne spécifiant pas de tache, la somme sera effectuée quelque
-	 * soit les tâches.
-	 * </p>
-	 * 
-	 * @param task
-	 *            la tâche associée aux contributions (facultative).
-	 * @param contributor
-	 *            le collaborateur associé aux contributions (facultatif).
-	 * @param year
-	 *            l'année (facultative).
-	 * @param month
-	 *            le mois (facultatif).
-	 * @param day
-	 *            le jour (facultatif).
-	 * @return la seomme des contributions.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.IDbMgr#getContributionsCount(org.activitymgr.core.beans.Collaborator, org.activitymgr.core.beans.Task, java.util.Calendar, java.util.Calendar)
 	 */
-	public long getContributionsNb(Task task, Collaborator contributor,
-			Integer year, Integer month, Integer day) throws DbException {
-		log.debug("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		return getContributionsAggregation(
-				"count(ctb_duration)", task, contributor, year, month, day); //$NON-NLS-1$
-	}
-
-	/**
-	 * Calcule le cumuls des consommations associees aux contributions pour les
-	 * paramétres spécifiés.
-	 * 
-	 * <p>
-	 * Tous les paramétres sont facultatifs. Chaque paramétre spécifié agît
-	 * comme un filtre sur le résultat. A l'inverse, l'omission d'un paramétre
-	 * provoque l'inclusion de toutes les contributions, quelque soit leurs
-	 * valeurs pour l'attribut considéré.
-	 * </p>
-	 * 
-	 * <p>
-	 * En spécifiant la tache X, on connaîtra la somme des contribution pour la
-	 * taches X. En ne spécifiant pas de tache, la somme sera effectuée quelque
-	 * soit les tâches.
-	 * </p>
-	 * 
-	 * @param task
-	 *            la tâche associée aux contributions (facultative).
-	 * @param contributor
-	 *            le collaborateur associé aux contributions (facultatif).
-	 * @param year
-	 *            l'année (facultative).
-	 * @param month
-	 *            le mois (facultatif).
-	 * @param day
-	 *            le jour (facultatif).
-	 * @return la seomme des contributions.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
-	public long getContributionsSum(Task task, Collaborator contributor,
-			Integer year, Integer month, Integer day) throws DbException {
-		log.debug("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-		return getContributionsAggregation(
-				"sum(ctb_duration)", task, contributor, year, month, day); //$NON-NLS-1$
-	}
-
-	/**
-	 * Calcule une aggregation associee aux contributions pour les paramétres
-	 * spécifiés.
-	 * 
-	 * <p>
-	 * Tous les paramétres sont facultatifs. Chaque paramétre spécifié agît
-	 * comme un filtre sur le résultat. A l'inverse, l'omission d'un paramétre
-	 * provoque l'inclusion de toutes les contributions, quelque soit leurs
-	 * valeurs pour l'attribut considéré.
-	 * </p>
-	 * 
-	 * <p>
-	 * En spécifiant la tache X, on connaîtra la somme des contribution pour la
-	 * taches X. En ne spécifiant pas de tache, la somme sera effectuée quelque
-	 * soit les tâches.
-	 * </p>
-	 * 
-	 * @param aggregation
-	 *            la chaîne représentant l'aggrégation (ex:
-	 *            <code>sum(ctb_contribution)</code>).
-	 * @param task
-	 *            la tâche associée aux contributions (facultative).
-	 * @param contributor
-	 *            le collaborateur associé aux contributions (facultatif).
-	 * @param year
-	 *            l'année (facultative).
-	 * @param month
-	 *            le mois (facultatif).
-	 * @param day
-	 *            le jour (facultatif).
-	 * @return la seomme des contributions.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
-	private long getContributionsAggregation(String aggregation, Task task,
-			Collaborator contributor, Integer year, Integer month, Integer day)
-			throws DbException {
-		log.debug("getContributionsSum(" + task + ", " + contributor + ", " + year + ", " + month + ", " + day + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+	@Override
+	public int getContributionsCount(Collaborator contributor, Task task,
+			Calendar fromDate, Calendar toDate) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			StringBuffer baseRequest = new StringBuffer("select ") //$NON-NLS-1$
-					.append(aggregation).append(
-							" from CONTRIBUTION, TASK where ctb_task=tsk_id"); //$NON-NLS-1$
-			// Cas ou la tache n'est pas spécifiée
-			if (task == null) {
-				// Préparation de la requête
-				completeContributionRequest(baseRequest, contributor, year,
-						month, day);
-				String request = baseRequest.toString();
-				pStmt = tx().prepareStatement(request);
-				completeContributionReqParams(pStmt, 1, contributor, year,
-						month, day);
-			}
-			// Si la tache n'admet pas de sous-taches, le cumul de
-			// budget, de consommé initial, de reste à faire sont
-			// égaux à ceux de la tache
-			else if (task.getSubTasksCount() == 0) {
-				// Préparation de la requête
-				baseRequest.append(" and tsk_id=?"); //$NON-NLS-1$
-				completeContributionRequest(baseRequest, contributor, year,
-						month, day);
-				String request = baseRequest.toString();
-				pStmt = tx().prepareStatement(request);
-				pStmt.setLong(1, task.getId());
-				log.debug(" taskId=" + task.getId()); //$NON-NLS-1$
-				completeContributionReqParams(pStmt, 2, contributor, year,
-						month, day);
-			}
-			// Sinon, il faut calculer
-			else {
-				// Paramètre pour la clause 'LIKE'
-				String pathLike = task.getFullPath() + "%"; //$NON-NLS-1$
+			// Build the SQL request
+			pStmt = buildContributionsRequest(task, contributor, fromDate,
+					toDate, "count(ctb_duration)");
 
-				// Préparation de la requête
-				baseRequest.append(" and tsk_path like ?"); //$NON-NLS-1$
-				completeContributionRequest(baseRequest, contributor, year,
-						month, day);
-				String request = baseRequest.toString();
-				pStmt = tx().prepareStatement(request);
-				pStmt.setString(1, pathLike);
-				completeContributionReqParams(pStmt, 2, contributor, year,
-						month, day);
-			}
-
-			// Exécution de la requête
-			log.debug("Request : " + baseRequest); //$NON-NLS-1$
+			// Exécution de le requête et extraction du résultat
 			rs = pStmt.executeQuery();
 			if (!rs.next())
 				throw new DbException(
 						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
-			long agregation = rs.getLong(1);
-
-			// Fermeture du statement
+			int count = rs.getInt(1);
 			pStmt.close();
 			pStmt = null;
 
 			// Retour du résultat
-			log.info("agregation=" + agregation); //$NON-NLS-1$
-			return agregation;
+			return count;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
-					Strings.getString("DbMgr.errors.CONTRIBUTIONS_SUM_COMPUTATION_FAILURE"), e); //$NON-NLS-1$
+					"Erreur lors du calcul du consommé d'un collaborateur sur un intervalle de temps donné",
+					e);
 		} finally {
-			try {
-				if (pStmt != null)
-					pStmt.close();
-			} catch (Throwable ignored) {
-			}
+			lastAttemptToClose(pStmt);
 		}
 	}
 
 	/**
-	 * @param durationId
-	 *            l'identifiant de la durée.
-	 * @return la durée.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * Builds a request that selects contributions using a given task,
+	 * contributor and date interval.
+	 * 
+	 * <p>
+	 * All parameters are optionnal.
+	 * </p>
+	 * 
+	 * @param task
+	 *            a parent task of the contributions tasks.
+	 * @param contributor
+	 *            the contributor.
+	 * @param fromDate
+	 *            start date of the interval.
+	 * @param toDate
+	 *            end date of the interval.
+	 * @param fieldsToSelect
+	 *            fields to select.
+	 * @return
+	 * @throws SQLException
 	 */
+	private PreparedStatement buildContributionsRequest(Task task,
+			Collaborator contributor, Calendar fromDate, Calendar toDate,
+			String fieldsToSelect) throws SQLException {
+		PreparedStatement pStmt;
+		// Préparation de la requête
+		StringBuffer request = new StringBuffer("select ")
+				.append(fieldsToSelect);
+		request.append(" from CONTRIBUTION");
+		if (task != null) {
+			request.append(", TASK");
+		}
+		boolean insertWhereClause = true;
+		if (contributor != null) {
+			request.append(insertWhereClause ? " where" : " and");
+			insertWhereClause = false;
+			request.append(" ctb_contributor=?");
+		}
+		if (task != null) {
+			request.append(insertWhereClause ? " where" : " and");
+			insertWhereClause = false;
+			request.append(" ctb_task=tsk_id and (tsk_id=? or tsk_path like ?)");
+		}
+		// Conversion des dates
+		String fromDateStr = fromDate != null ? sdf.format(fromDate.getTime())
+				: null;
+		String toDateStr = toDate != null ? sdf.format(toDate.getTime()) : null;
+		if (fromDate != null || toDate != null) {
+			request.append(insertWhereClause ? " where" : " and");
+			insertWhereClause = false;
+			request.append(" (ctb_year*10000 + ( ctb_month*100 + ctb_day ))");
+			// If both dates are specified
+			if (fromDate != null && toDate != null) {
+				if (!fromDateStr.equals(toDateStr)) {
+					request.append(" between ? and ?");
+				} else {
+					request.append(" = ?");
+				}
+			}
+			// Else if only 'from' specified (toDate == null)
+			else if (fromDate != null) {
+				request.append(" >= ?");
+			}
+			// Else if only 'to' specified (fromDate == null)
+			else {
+				request.append(" <= ?");
+			}
+		}
+
+		// Calcul du consommé
+		log.debug("request : " + request);
+		pStmt = tx().prepareStatement(request.toString()); //$NON-NLS-1$
+		int paramIdx = 1;
+		if (contributor != null) {
+			pStmt.setLong(paramIdx++, contributor.getId());
+		}
+		if (task != null) {
+			pStmt.setLong(paramIdx++, task.getId());
+			pStmt.setString(paramIdx++, task.getFullPath() + '%');
+		}
+		if (fromDate != null || toDate != null) {
+			// If both dates are specified
+			if (fromDate != null && toDate != null) {
+				if (!fromDateStr.equals(toDateStr)) {
+					pStmt.setString(paramIdx++, fromDateStr);
+					pStmt.setString(paramIdx++, toDateStr);
+				} else {
+					pStmt.setString(paramIdx++, fromDateStr);
+				}
+			}
+			// Else if only 'from' specified (toDate == null)
+			else if (fromDate != null) {
+				pStmt.setString(paramIdx++, fromDateStr);
+			}
+			// Else if only 'to' specified (fromDate == null)
+			else {
+				pStmt.setString(paramIdx++, toDateStr);
+			}
+		}
+		return pStmt;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IDbMgr#getDuration(long)
+	 */
+	@Override
 	public Duration getDuration(long durationId) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -1203,14 +907,12 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * @param onlyActiveCollaborators
-	 *            booléen indiquant si l'on ne doit retourner que les
-	 *            collaborateurs actifs.
-	 * @return la liste des durées.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IDbMgr#getDurations(boolean)
 	 */
+	@Override
 	public Duration[] getDurations(boolean onlyActiveCollaborators)
 			throws DbException {
 		PreparedStatement pStmt = null;
@@ -1265,13 +967,14 @@ public class DbMgrImpl implements IDbMgr {
 		return duration;
 	}
 
-	/**
-	 * @param task
-	 *            la tache dont on veut connaitre la tache parent.
-	 * @return la tache parent d'une tache spécifiée.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IDbMgr#getParentTask(org.activitymgr.core.beans.
+	 * Task)
 	 */
+	@Override
 	public Task getParentTask(Task task) throws DbException {
 		Task parentTask = null;
 		String parentTaskFullPath = task.getPath();
@@ -1293,13 +996,12 @@ public class DbMgrImpl implements IDbMgr {
 		return parentTask;
 	}
 
-	/**
-	 * @param path
-	 *            le chemin dont on veut connaître les taches.
-	 * @return la liste des taches associées à un chemin donné.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IDbMgr#getTasks(java.lang.String)
 	 */
+	@Override
 	public Task[] getTasks(String path) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -1339,13 +1041,13 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * @param parentTask
-	 *            la tache parent dont on veut connaitre les sous-taches.
-	 * @return la liste des sous-taches.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IDbMgr#getSubtasks(org.activitymgr.core.beans.Task)
 	 */
+	@Override
 	public Task[] getSubtasks(Task parentTask) throws DbException {
 		// Récupération du chemin à partir de la tache parent
 		String fullpath = parentTask == null ? "" : parentTask.getFullPath(); //$NON-NLS-1$
@@ -1353,17 +1055,13 @@ public class DbMgrImpl implements IDbMgr {
 		return getTasks(fullpath);
 	}
 
-	/**
-	 * Retourn la liste des taches correspondant au filtre de recherche
-	 * spécifié.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param filter
-	 *            le filtre de recherche.
-	 * @return la liste des taches correspondant au filtre de recherche
-	 *         spécifié.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see org.activitymgr.core.IDbMgr#getTasks(org.activitymgr.core.beans.
+	 * TaskSearchFilter)
 	 */
+	@Override
 	public Task[] getTasks(TaskSearchFilter filter) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -1479,13 +1177,12 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * @param tasksIds
-	 *            the task identifier.
-	 * @return la tache dont l'identifiant est spécifié.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IDbMgr#getTask(long)
 	 */
+	@Override
 	public Task getTask(long taskId) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -1521,13 +1218,12 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * @param tasksIds
-	 *            the task identifiers list.
-	 * @return the tasks.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IDbMgr#getTasks(long[])
 	 */
+	@Override
 	public Task[] getTasks(long[] tasksIds) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -1650,15 +1346,12 @@ public class DbMgrImpl implements IDbMgr {
 		return task;
 	}
 
-	/**
-	 * @param taskPath
-	 *            le chemin de la tache recherchée.
-	 * @param taskNumber
-	 *            le numéro de la tache recherchée.
-	 * @return la tache dont le chemin et le numéro sont spécifiés.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IDbMgr#getTask(java.lang.String, byte)
 	 */
+	@Override
 	public Task getTask(String taskPath, byte taskNumber) throws DbException {
 		log.debug("getTask(" + taskPath + ", " + taskNumber + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		PreparedStatement pStmt = null;
@@ -1697,15 +1390,13 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * @param taskPath
-	 *            le chemin de la tache recherchée.
-	 * @param taskCode
-	 *            le code de la tache recherchée.
-	 * @return la tache dont le code et la tache parent sont spécifiés.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IDbMgr#getTask(java.lang.String,
+	 * java.lang.String)
 	 */
+	@Override
 	public Task getTask(String taskPath, String taskCode) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -1741,18 +1432,14 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * @param collaborator
-	 *            le collaborateur.
-	 * @param fromDate
-	 *            date de début.
-	 * @param toDate
-	 *            date de fin.
-	 * @return la liste de taches associées au collaborateur entre les 2 dates
-	 *         spécifiées.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IDbMgr#getTasks(org.activitymgr.core.beans.Collaborator
+	 * , java.util.Calendar, java.util.Calendar)
 	 */
+	@Override
 	public Task[] getTasks(Collaborator collaborator, Calendar fromDate,
 			Calendar toDate) throws DbException {
 		log.debug("getTasks(" + collaborator + ", " + sdf.format(fromDate.getTime()) + ", " + sdf.format(toDate.getTime()) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
@@ -1795,17 +1482,14 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * @param task
-	 *            la tâche pour laquelle on souhaite connaître les totaux.
-	 * @param fromDate
-	 *            date de départ à prendre en compte pour le calcul.
-	 * @param toDate
-	 *            date de fin à prendre en compte pour le calcul.
-	 * @return les totaux associés à une tache (consommé, etc.).
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IDbMgr#getTaskSums(org.activitymgr.core.beans.Task,
+	 * java.util.Calendar, java.util.Calendar)
 	 */
+	@Override
 	public TaskSums getTaskSums(Task task, Calendar fromDate, Calendar toDate)
 			throws DbException {
 		// TODO Factoriser cette méthode avec getContributionsSum
@@ -1950,14 +1634,14 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Supprime un collaborateur.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param collaborator
-	 *            le collaborateur à supprimer.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IDbMgr#removeCollaborator(org.activitymgr.core.beans
+	 * .Collaborator)
 	 */
+	@Override
 	public void removeCollaborator(Collaborator collaborator)
 			throws DbException {
 		PreparedStatement pStmt = null;
@@ -1987,14 +1671,14 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Supprime une contribution.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param contribution
-	 *            la contribution à supprimer.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IDbMgr#removeContribution(org.activitymgr.core.beans
+	 * .Contribution)
 	 */
+	@Override
 	public void removeContribution(Contribution contribution)
 			throws DbException {
 		PreparedStatement pStmt = null;
@@ -2027,14 +1711,14 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Supprime une durée du référentiel de durées.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param duration
-	 *            la durée à supprimer.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IDbMgr#removeDuration(org.activitymgr.core.beans
+	 * .Duration)
 	 */
+	@Override
 	public void removeDuration(Duration duration) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -2062,14 +1746,13 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Supprime une tache.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param task
-	 *            la tache à supprimer.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IDbMgr#removeTask(org.activitymgr.core.beans.Task)
 	 */
+	@Override
 	public void removeTask(Task task) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -2100,15 +1783,14 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Modifie les attributs d'un collaborateur.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param collaborator
-	 *            le collaborateur à modifier.
-	 * @return le collaborateur modifié.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IDbMgr#updateCollaborator(org.activitymgr.core.beans
+	 * .Collaborator)
 	 */
+	@Override
 	public Collaborator updateCollaborator(Collaborator collaborator)
 			throws DbException {
 		PreparedStatement pStmt = null;
@@ -2145,15 +1827,14 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Modifie les attributs d'une contribution.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param contribution
-	 *            la contribution à modifier.
-	 * @return la contribution modifiée.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IDbMgr#updateContribution(org.activitymgr.core.beans
+	 * .Contribution)
 	 */
+	@Override
 	public Contribution updateContribution(Contribution contribution)
 			throws DbException {
 		PreparedStatement pStmt = null;
@@ -2190,15 +1871,14 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Met à jour une durée.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param duration
-	 *            la durée à mettre à jour.
-	 * @return la durée mise à jour.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IDbMgr#updateDuration(org.activitymgr.core.beans
+	 * .Duration)
 	 */
+	@Override
 	public Duration updateDuration(Duration duration) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -2230,17 +1910,14 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Change la tache d'une contribution.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param contribution
-	 *            la contribution.
-	 * @param newContributionTask
-	 *            la tache à affecter.
-	 * @return la contribution mise à jour.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IDbMgr#changeContributionTask(org.activitymgr.core
+	 * .beans.Contribution, org.activitymgr.core.beans.Task)
 	 */
+	@Override
 	public Contribution changeContributionTask(Contribution contribution,
 			Task newContributionTask) throws DbException {
 		PreparedStatement pStmt = null;
@@ -2280,15 +1957,13 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Modifie les attributs d'une tache.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param task
-	 *            la tache à modifier.
-	 * @return la tache modifiée.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see
+	 * org.activitymgr.core.IDbMgr#updateTask(org.activitymgr.core.beans.Task)
 	 */
+	@Override
 	public Task updateTask(Task task) throws DbException {
 		PreparedStatement pStmt = null;
 		try {
@@ -2327,78 +2002,12 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Complete la requete de calcul de la somme des contributions.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param requestBase
-	 *            buffer utilisé pour la construction de la requête.
-	 * @param contributor
-	 *            le collaborateur ayant contribué à la tache (facultatif).
-	 * @param year
-	 *            l'année (facultative)
-	 * @param month
-	 *            le mois (facultatif)
-	 * @param day
-	 *            le jour (facultatif)
+	 * @see org.activitymgr.core.IDbMgr#newTaskNumber(java.lang.String)
 	 */
-	private void completeContributionRequest(StringBuffer requestBase,
-			Collaborator contributor, Integer year, Integer month, Integer day) {
-		if (contributor != null)
-			requestBase.append(" and ctb_contributor=?"); //$NON-NLS-1$
-		if (year != null)
-			requestBase.append(" and ctb_year=?"); //$NON-NLS-1$
-		if (month != null)
-			requestBase.append(" and ctb_month=?"); //$NON-NLS-1$
-		if (day != null)
-			requestBase.append(" and ctb_day=?"); //$NON-NLS-1$
-		log.debug("built request : " + requestBase.toString()); //$NON-NLS-1$
-	}
-
-	/**
-	 * Complete les paramétres de la requete de calcul de la somme des
-	 * contributions.
-	 * 
-	 * @param pStmt
-	 *            le statement.
-	 * @param startIndex
-	 * @param contributor
-	 *            le collaborateur ayant contribué à la tache (facultatif).
-	 * @param year
-	 *            l'année (facultative)
-	 * @param month
-	 *            le mois (facultatif)
-	 * @param day
-	 *            le jour (facultatif)
-	 * @throws SQLException
-	 *             levé en cas d'incident avec la base de données.
-	 */
-	private void completeContributionReqParams(PreparedStatement pStmt,
-			int startIndex, Collaborator contributor, Integer year,
-			Integer month, Integer day) throws SQLException {
-		int idx = startIndex;
-		log.debug("contributorId=" + (contributor != null ? String.valueOf(contributor.getId()) : "null")); //$NON-NLS-1$ //$NON-NLS-2$
-		log.debug("year=" + year); //$NON-NLS-1$
-		log.debug("month=" + month); //$NON-NLS-1$
-		log.debug("day=" + day); //$NON-NLS-1$
-		if (contributor != null)
-			pStmt.setLong(idx++, contributor.getId());
-		if (year != null)
-			pStmt.setInt(idx++, year.intValue());
-		if (month != null)
-			pStmt.setInt(idx++, month.intValue());
-		if (day != null)
-			pStmt.setInt(idx++, day.intValue());
-	}
-
-	/**
-	 * Génère un nouveau numéro de tache pour un chemin donné.
-	 * 
-	 * @param path
-	 *            le chemin considéré.
-	 * @return le numéro généré.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
+	@Override
 	public byte newTaskNumber(String path) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -2483,6 +2092,43 @@ public class DbMgrImpl implements IDbMgr {
 				rs.close();
 			} catch (Throwable ignored) {
 			}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.IDbMgr#getRootTasksCount()
+	 */
+	public int getRootTasksCount() throws DbException {
+		PreparedStatement pStmt = null;
+		ResultSet rs = null;
+		try {
+			// Request preparation
+			pStmt = tx().prepareStatement(
+					"select count(tsk_id) from TASK where tsk_path=''");
+
+			// Exécution de la requête
+			rs = pStmt.executeQuery();
+
+			// Préparation du résultat
+			if (!rs.next())
+				throw new DbException(
+						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
+			int result = rs.getInt(1);
+
+			// Fermeture du ResultSet
+			pStmt.close();
+			pStmt = null;
+
+			// Retour du résultat
+			return result;
+		} catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(
+					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_ID_FAILURE"), e); //$NON-NLS-1$ //$NON-NLS-2$
+		} finally {
+			lastAttemptToClose(pStmt);
+		}
 	}
 
 }

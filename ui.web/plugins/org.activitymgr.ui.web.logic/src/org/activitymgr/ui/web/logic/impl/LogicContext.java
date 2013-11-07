@@ -12,7 +12,6 @@ import java.util.Stack;
 
 import org.activitymgr.core.CoreModule;
 import org.activitymgr.core.DbTransaction;
-import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.IViewFactory;
@@ -33,7 +32,6 @@ public class LogicContext {
 	private IViewFactory viewFactory;
 	private IEventBus eventBus = new EventBusImpl();
 	private Collaborator connectedCollaborator;
-	private IModelMgr modelMgr;
 	private BasicDataSource datasource;
 	private ThreadLocal<DbTransactionContext> transactions;
 	private Injector injector;
@@ -78,8 +76,6 @@ public class LogicContext {
 		// Create Guice injector
 		transactions = new ThreadLocal<DbTransactionContext>();
 		injector = Guice.createInjector(modules);
-		// Retrieves the model manager
-		modelMgr = injector.getInstance(IModelMgr.class);
 	}
 
 	public <T> T getComponent(Class<T> c) {

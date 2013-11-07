@@ -3,7 +3,6 @@ package org.activitymgr.ui.web.view.impl.dialogs;
 import org.activitymgr.ui.web.view.util.ResourceCache;
 
 import com.vaadin.event.ShortcutListener;
-import com.vaadin.server.ClientConnector.AttachEvent;
 import com.vaadin.ui.Window;
 
 @SuppressWarnings("serial")

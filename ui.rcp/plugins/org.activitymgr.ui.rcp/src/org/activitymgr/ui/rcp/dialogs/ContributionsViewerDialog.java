@@ -56,9 +56,6 @@ public class ContributionsViewerDialog extends AbstractDialog {
 	 */
 	private Task task;
 	private Collaborator contributor;
-	private Integer day;
-	private Integer month;
-	private Integer year;
 
 	/** Model manager */
 	private IModelMgr modelMgr;
@@ -90,7 +87,7 @@ public class ContributionsViewerDialog extends AbstractDialog {
 		Composite c = (Composite) super.createDialogArea(parent);
 		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		contributionsTable = new ContributionsViewerTable(c, gridData, modelMgr);
-		contributionsTable.setFilter(task, contributor, year, month, day);
+		contributionsTable.setFilter(task, contributor);
 		return c;
 	}
 
@@ -111,20 +108,10 @@ public class ContributionsViewerDialog extends AbstractDialog {
 	 *            la tache.
 	 * @param contributor
 	 *            le collaborateur.
-	 * @param year
-	 *            l'année.
-	 * @param month
-	 *            le mois.
-	 * @param day
-	 *            le jour.
 	 */
-	public void setFilter(Task task, Collaborator contributor, Integer year,
-			Integer month, Integer day) {
+	public void setFilter(Task task, Collaborator contributor) {
 		this.task = task;
 		this.contributor = contributor;
-		this.year = year;
-		this.month = month;
-		this.day = day;
 	}
 
 }

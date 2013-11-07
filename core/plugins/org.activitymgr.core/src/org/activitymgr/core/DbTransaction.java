@@ -33,7 +33,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.activitymgr.core.util.DbHelper;
-import org.activitymgr.core.util.Strings;
 import org.apache.log4j.Logger;
 
 /**
@@ -114,40 +113,6 @@ public class DbTransaction {
 	 */
 	public boolean isHsqlOrH2() throws DbException {
 		return DbHelper.isHsqlOrH2(con);
-	}
-
-	/**
-	 * Ferme une transactrion.
-	 * 
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
-	public void endTransaction() throws DbException {
-		try {
-			con.close();
-			con = null;
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString("DbMgr.errors.SQL_DISCONNECTION_FAILURE"), e); //$NON-NLS-1$
-		}
-	}
-
-	/**
-	 * Annule le modifications effectuées dans le cadre d'une transactrion.
-	 * 
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
-	public void rollbackTransaction()
-			throws DbException {
-		try {
-			con.rollback();
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString("DbMgr.errors.SQL_ROLLBACK_FAILURE"), e); //$NON-NLS-1$
-		}
 	}
 
 }

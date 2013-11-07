@@ -55,7 +55,7 @@
                   Authenticator custom implementation
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn=":org.activitymgr.ui.web.logic.IAuthenticatorExtension" deprecated="true"/>
+                  <meta.attribute kind="java" basedOn=":org.activitymgr.ui.web.logic.IAuthenticatorExtension"/>
                </appinfo>
             </annotation>
          </attribute>
