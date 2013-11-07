@@ -128,7 +128,7 @@ public class SWTHelper {
 		HSSFSheet sheet = wb.createSheet(Strings
 				.getString("SWTHelper.excelsheet.TAB_NAME")); //$NON-NLS-1$
 		sheet.createFreezePane(0, 1, 0, 1);
-		sheet.setColumnWidth((short) 0, (short) 10000);
+		sheet.setColumnWidth(0, 10000);
 		// Création du style de l'entête
 		HSSFCellStyle headerCellStyle = wb.createCellStyle();
 		headerCellStyle.setFillForegroundColor(HSSFColor.GREY_25_PERCENT.index);
@@ -139,12 +139,12 @@ public class SWTHelper {
 		headerCellStyle.setBorderRight(headerCellStyle.getBorderBottom());
 		headerCellStyle.setBorderTop(headerCellStyle.getBorderBottom());
 		// Création de l'entête
-		HSSFRow row = sheet.createRow((short) 0);
+		HSSFRow row = sheet.createRow(0);
 		TreeColumn[] columns = tree.getColumns();
 		for (int i = 0; i < columns.length; i++) {
 			TreeColumn column = columns[i];
-			sheet.setColumnWidth((short) i, (short) (column.getWidth() * 50));
-			HSSFCell cell = row.createCell((short) i);
+			sheet.setColumnWidth(i, (column.getWidth() * 50));
+			HSSFCell cell = row.createCell(i);
 			cell.setCellValue(column.getText());
 			cell.setCellStyle(headerCellStyle);
 		}
@@ -186,15 +186,15 @@ public class SWTHelper {
 			log.debug(" +-> TreeItem : " + i + ", expanded=" + treeItem.getExpanded() + ", data='" + treeItem.getData() + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			if (treeItem.getData() != null) {
 				HSSFRow row = sheet
-						.createRow((short) (sheet.getLastRowNum() + 1));
+						.createRow(sheet.getLastRowNum() + 1);
 				String rowName = treeItem.getText(0);
 				log.debug("  +-> Row : '" + rowName + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-				HSSFCell cell = row.createCell((short) 0);
+				HSSFCell cell = row.createCell(0);
 				cell.setCellValue(indent + rowName);
 				cell.setCellStyle(cellStyle);
 				for (int j = 1; j < columnsNb; j++) {
 					log.debug("  +-> Cell : " + j + ", '" + treeItem.getText(j) + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-					cell = row.createCell((short) j);
+					cell = row.createCell(j);
 					cell.setCellStyle(cellStyle);
 					String cellValue = treeItem.getText(j);
 					try {
@@ -216,7 +216,7 @@ public class SWTHelper {
 		log.debug("startRowNum=" + startRowNum + ", endRowNum=" + endRowNum); //$NON-NLS-1$ //$NON-NLS-2$
 		if (!"".equals(indent) && (endRowNum - startRowNum >= 1)) { //$NON-NLS-1$
 			log.debug(" -> grouped!"); //$NON-NLS-1$
-			sheet.groupRow((short) startRowNum, (short) endRowNum);
+			sheet.groupRow(startRowNum, endRowNum);
 		}
 	}
 
@@ -275,12 +275,12 @@ public class SWTHelper {
 		headerCellStyle.setBorderRight(headerCellStyle.getBorderBottom());
 		headerCellStyle.setBorderTop(headerCellStyle.getBorderBottom());
 		// Création de l'entête
-		HSSFRow row = sheet.createRow((short) 0);
+		HSSFRow row = sheet.createRow(0);
 		TableColumn[] columns = table.getColumns();
 		for (int i = 0; i < columns.length; i++) {
 			TableColumn column = columns[i];
-			sheet.setColumnWidth((short) i, (short) (column.getWidth() * 50));
-			HSSFCell cell = row.createCell((short) i);
+			sheet.setColumnWidth(i, column.getWidth() * 50);
+			HSSFCell cell = row.createCell(i);
 			cell.setCellValue(column.getText());
 			cell.setCellStyle(headerCellStyle);
 		}
@@ -318,15 +318,15 @@ public class SWTHelper {
 			log.debug(" +-> TreeItem : " + i + ", data='" + tableItem.getData() + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			if (tableItem.getData() != null) {
 				HSSFRow row = sheet
-						.createRow((short) (sheet.getLastRowNum() + 1));
+						.createRow(sheet.getLastRowNum() + 1);
 				String rowName = tableItem.getText(0);
 				log.debug("  +-> Row : '" + rowName + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-				HSSFCell cell = row.createCell((short) 0);
+				HSSFCell cell = row.createCell(0);
 				cell.setCellValue(rowName);
 				cell.setCellStyle(cellStyle);
 				for (int j = 1; j < columnsNb; j++) {
 					log.debug("  +-> Cell : " + j + ", '" + tableItem.getText(j) + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-					cell = row.createCell((short) j);
+					cell = row.createCell(j);
 					cell.setCellStyle(cellStyle);
 					String cellValue = tableItem.getText(j);
 					try {
