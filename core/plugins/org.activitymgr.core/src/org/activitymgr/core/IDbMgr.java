@@ -189,6 +189,20 @@ public interface IDbMgr {
 			throws DbException;
 
 	/**
+	 * @param task
+	 *            la tache associée aux contributions.
+	 * @param fromDate
+	 *            la date de départ.
+	 * @param toDate
+	 *            la date de fin.
+	 * @return the contributors list corresponding to the given date interval.
+	 * @throws DbException
+	 *             levé en cas d'incident technique d'accès à la base.
+	 */
+	Collaborator[] getContributors(Task task,
+			Calendar fromDate, Calendar toDate) throws DbException;
+
+	/**
 	 * @param contributor
 	 *            le collaborateur associé aux contributions.
 	 * @param task
@@ -342,8 +356,8 @@ public interface IDbMgr {
 	Task getTask(String taskPath, String taskCode) throws DbException;
 
 	/**
-	 * @param collaborator
-	 *            le collaborateur.
+	 * @param contributor
+	 *            le contributeur.
 	 * @param fromDate
 	 *            date de début.
 	 * @param toDate
@@ -353,7 +367,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Task[] getTasks(Collaborator collaborator, Calendar fromDate,
+	Task[] getContributedTasks(Collaborator contributor, Calendar fromDate,
 			Calendar toDate) throws DbException;
 
 	/**

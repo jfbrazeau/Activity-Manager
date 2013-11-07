@@ -442,7 +442,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		getModelMgr().removeContribution(c, false);
 		removeSampleObjects();
 	}
-
+	
 	public void testCountDaysWhenHourChanges() throws DbException,
 			ModelException {
 		// Création des taches de test
@@ -474,4 +474,107 @@ public class ContributionTest extends AbstractModelTestCase {
 		removeSampleObjects();
 	}
 
+	public void testGetContributedTasks() throws DbException, ModelException {
+		Calendar today = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
+		// Création des taches de test
+		createSampleObjects(true);
+
+		// c1 => col1, task111, today
+		// c2 => col2, task112, today+1day
+		// c3 => col2, task111, today+1month
+		
+		// All parameters null
+		Task[] tasks = getModelMgr().getContributedTasks(null, null, null);
+		assertNotNull(tasks);
+		assertEquals(2, tasks.length);
+
+		// Collaborator given
+		tasks = getModelMgr().getContributedTasks(col1, null, null);
+		assertNotNull(tasks);
+		assertEquals(1, tasks.length);
+		assertEquals(task111.getId(), tasks[0].getId());
+
+		// Interval given
+		tasks = getModelMgr().getContributedTasks(null, today, today);
+		assertNotNull(tasks);
+		assertEquals(1, tasks.length);
+		assertEquals(task111.getId(), tasks[0].getId());
+
+		// All parameters given
+		tasks = getModelMgr().getContributedTasks(col1, today, today);
+		assertNotNull(tasks);
+		assertEquals(1, tasks.length);
+		assertEquals(task111.getId(), tasks[0].getId());
+
+		// All parameters given, empty result
+		tasks = getModelMgr().getContributedTasks(col2, today, today);
+		assertNotNull(tasks);
+		assertEquals(0, tasks.length);
+
+		// Missing end date
+		tasks = getModelMgr().getContributedTasks(col2, today, null);
+		assertNotNull(tasks);
+		assertEquals(2, tasks.length);
+
+		// Missing start date and collaborator
+		tasks = getModelMgr().getContributedTasks(null, null, today);
+		assertNotNull(tasks);
+		assertEquals(1, tasks.length);
+		assertEquals(task111.getId(), tasks[0].getId());
+
+		// Remove sample objects
+		removeSampleObjects();
+	}
+
+	public void testGetContributors() throws DbException, ModelException {
+		Calendar today = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
+		// Création des taches de test
+		createSampleObjects(true);
+
+		// c1 => col1, task111, today
+		// c2 => col2, task112, today+1day
+		// c3 => col2, task111, today+1month
+
+		// All parameters null
+		Collaborator[] contributors = getModelMgr().getContributors(null, null, null);
+		assertNotNull(contributors);
+		assertEquals(2, contributors.length);
+
+		// Collaborator given
+		contributors = getModelMgr().getContributors(task111, null, null);
+		assertNotNull(contributors);
+		assertEquals(2, contributors.length);
+
+		// Interval given
+		contributors = getModelMgr().getContributors(null, today, today);
+		assertNotNull(contributors);
+		assertEquals(1, contributors.length);
+		assertEquals(col1.getId(), contributors[0].getId());
+
+		// All parameters given
+		contributors = getModelMgr().getContributors(task111, today, today);
+		assertNotNull(contributors);
+		assertEquals(1, contributors.length);
+		assertEquals(col1.getId(), contributors[0].getId());
+
+		// All parameters given, empty result
+		contributors = getModelMgr().getContributors(task112, today, today);
+		assertNotNull(contributors);
+		assertEquals(0, contributors.length);
+
+		// Missing end date
+		contributors = getModelMgr().getContributors(task111, today, null);
+		assertNotNull(contributors);
+		assertEquals(2, contributors.length);
+
+		// Missing start date and collaborator
+		contributors = getModelMgr().getContributors(null, null, today);
+		assertNotNull(contributors);
+		assertEquals(1, contributors.length);
+		assertEquals(col1.getId(), contributors[0].getId());
+
+		// Remove sample objects
+		removeSampleObjects();
+	}
+	
 }

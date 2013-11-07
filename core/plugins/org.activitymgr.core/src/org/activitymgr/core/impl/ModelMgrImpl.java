@@ -849,6 +849,16 @@ public class ModelMgrImpl implements IModelMgr {
 		return dao.getContributions(contributor, task, fromDate, toDate);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.IModelMgr#getContributors(org.activitymgr.core.beans.Task, java.util.Calendar, java.util.Calendar)
+	 */
+	@Override
+	public Collaborator[] getContributors(Task task, Calendar fromDate,
+			Calendar toDate) throws DbException, ModelException {
+		checkInterval(fromDate, toDate);
+		return dao.getContributors(task, fromDate, toDate);
+	}
+
 	/**
 	 * Checks whether the given interval is relevant or not.
 	 * @param fromDate start of the date interval.
@@ -1135,13 +1145,13 @@ public class ModelMgrImpl implements IModelMgr {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.activitymgr.core.IModelMgr#getTasks(org.activitymgr.core.beans.
+	 * @see org.activitymgr.core.IModelMgr# the start date of the interval to consider (optionnal).(org.activitymgr.core.beans.
 	 * Collaborator, java.util.Calendar, java.util.Calendar)
 	 */
 	@Override
-	public Task[] getTasks(Collaborator collaborator, Calendar fromDate,
+	public Task[] getContributedTasks(Collaborator contributor, Calendar fromDate,
 			Calendar toDate) throws DbException {
-		return dao.getTasks(collaborator, fromDate, toDate);
+		return dao.getContributedTasks(contributor, fromDate, toDate);
 	}
 
 	/*

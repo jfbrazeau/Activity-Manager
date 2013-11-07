@@ -49,21 +49,22 @@ import org.xml.sax.SAXException;
 public interface IModelMgr {
 
 	/**
-	 * Vérifie si les tables existent dans le modèle.
+	 * Change la tache d'une liste de contributions.
 	 * 
-	 * @return un booléen indiquant si la table spécifiée existe dans le modèle.
+	 * @param contributions
+	 *            la liste de contributions.
+	 * @param newContributionTask
+	 *            la tache à affecter.
+	 * @return la liste de contributions mise à jour.
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
-	 */
-	public boolean tablesExist() throws DbException;
-
-	/**
-	 * Crée les tables du modèle de données.
+	 * @throws ModelException
+	 *             levé dans le cas où la tache cible ne peut être acdepter de
+	 *             contribution.
 	 * 
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public void createTables() throws DbException;
+	public Contribution[] changeContributionTask(Contribution[] contributions,
+			Task newContributionTask) throws DbException, ModelException;
 
 	/**
 	 * Vérifie si la tache spécifiée peut accueillir des sous-taches.
@@ -162,6 +163,14 @@ public interface IModelMgr {
 			ModelException;
 
 	/**
+	 * Crée les tables du modèle de données.
+	 * 
+	 * @throws DbException
+	 *             levé en cas d'incident technique d'accès à la base.
+	 */
+	public void createTables() throws DbException;
+
+	/**
 	 * Crée une nouvelle tache.
 	 * 
 	 * <p>
@@ -196,26 +205,6 @@ public interface IModelMgr {
 	public boolean durationExists(Duration duration) throws DbException;
 
 	/**
-	 * Importe le contenu d'un fichier XML.
-	 * 
-	 * @param in
-	 *            le flux depuis lequel est lu le flux XML.
-	 * @throws IOException
-	 *             levé en cas d'incident I/O lors de la lecture sur le flux
-	 *             d'entrée
-	 * @throws DbException
-	 *             levé en cas d'incident avec la base de données.
-	 * @throws ParserConfigurationException
-	 *             levé en cas de mauvaise configuration du parser XML.
-	 * @throws SAXException
-	 *             levé en cas d'erreur de mauvais format du fichier XML.
-	 * @throws ModelException
-	 *             levé en cas d'incohérence des données lors de l'import
-	 */
-	public void importFromXML(InputStream in) throws IOException, DbException,
-			ParserConfigurationException, SAXException, ModelException;
-
-	/**
 	 * Exporte le contenu de la base dans un fichier XML.
 	 * 
 	 * @param out
@@ -227,6 +216,25 @@ public interface IModelMgr {
 	 *             levé en cas d'incident avec la base de données.
 	 */
 	public void exportToXML(OutputStream out) throws IOException, DbException;
+
+	/**
+	 * @param orderByClauseFieldIndex
+	 *            index de l'attribut utilisé pour le tri.
+	 * @param ascendantSort
+	 *            booléen indiquant si le tri doit être ascendant.
+	 * @return la liste des collaborateurs actifs.
+	 * @throws DbException
+	 *             levé en cas d'incident technique d'accès à la base.
+	 */
+	public Collaborator[] getActiveCollaborators(int orderByClauseFieldIndex,
+			boolean ascendantSort) throws DbException;
+
+	/**
+	 * @return la liste des durées actives.
+	 * @throws DbException
+	 *             levé en cas d'incident technique d'accès à la base.
+	 */
+	public Duration[] getActiveDurations() throws DbException;
 
 	/**
 	 * @param collaboratorId
@@ -258,24 +266,45 @@ public interface IModelMgr {
 	 *            index de l'attribut utilisé pour le tri.
 	 * @param ascendantSort
 	 *            booléen indiquant si le tri doit être ascendant.
-	 * @return la liste des collaborateurs actifs.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
-	public Collaborator[] getActiveCollaborators(int orderByClauseFieldIndex,
-			boolean ascendantSort) throws DbException;
-
-	/**
-	 * @param orderByClauseFieldIndex
-	 *            index de l'attribut utilisé pour le tri.
-	 * @param ascendantSort
-	 *            booléen indiquant si le tri doit être ascendant.
 	 * @return la liste des collaborateurs.
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public Collaborator[] getCollaborators(int orderByClauseFieldIndex,
 			boolean ascendantSort) throws DbException;
+
+	/**
+	 * @param contributor
+	 *            le contributeur.
+	 * @param fromDate
+	 *            date de début.
+	 * @param toDate
+	 *            date de fin.
+	 * @return la liste de taches associées au collaborateur entre les 2 dates
+	 *         spécifiées.
+	 * @throws DbException
+	 *             levé en cas d'incident technique d'accès à la base.
+	 */
+	public Task[] getContributedTasks(Collaborator contributor,
+			Calendar fromDate, Calendar toDate) throws DbException;
+
+	/**
+	 * @param contributor
+	 *            le collaborateur associé aux contributions.
+	 * @param task
+	 *            la tache associée aux contributions.
+	 * @param fromDate
+	 *            la date de départ.
+	 * @param toDate
+	 *            la date de fin.
+	 * @return la liste des contributions associées aux paramétres spécifiés.
+	 * @throws DbException
+	 *             levé en cas d'incident technique d'accès à la base.
+	 * @throws ModelException
+	 */
+	public Contribution[] getContributions(Collaborator contributor, Task task,
+			Calendar fromDate, Calendar toDate) throws DbException,
+			ModelException;
 
 	/**
 	 * Calcule le nombre des contributions associée aux paramétres spécifiés.
@@ -298,7 +327,7 @@ public interface IModelMgr {
 	 * @see jfb.tools.activitymgr.core.DbMgrImpl#getContributionsNb(DbTransaction,
 	 *      Task, Collaborator, Integer, Integer, Integer)
 	 */
-	public int getContributionsCount(Collaborator contributor, Task task, 
+	public int getContributionsCount(Collaborator contributor, Task task,
 			Calendar fromDate, Calendar toDate) throws ModelException,
 			DbException;
 
@@ -316,28 +345,43 @@ public interface IModelMgr {
 	 * @return la seomme des contributions.
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException 
+	 * @throws ModelException
 	 */
-	public long getContributionsSum(Collaborator contributor, Task task, 
-			Calendar fromDate, Calendar toDate) throws DbException, ModelException;
+	public long getContributionsSum(Collaborator contributor, Task task,
+			Calendar fromDate, Calendar toDate) throws DbException,
+			ModelException;
 
 	/**
-	 * @param contributor
-	 *            le collaborateur associé aux contributions.
 	 * @param task
 	 *            la tache associée aux contributions.
 	 * @param fromDate
 	 *            la date de départ.
 	 * @param toDate
 	 *            la date de fin.
-	 * @return la liste des contributions associées aux paramétres spécifiés.
+	 * @return the contributors list corresponding to the given date interval.
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
+	 *             levé si l'interval est incohérent.
 	 */
-	public Contribution[] getContributions(Collaborator contributor, Task task,
-			Calendar fromDate, Calendar toDate) throws DbException,
-			ModelException;
+	Collaborator[] getContributors(Task task, Calendar fromDate, Calendar toDate)
+			throws DbException, ModelException;
+
+	/**
+	 * @param durationId
+	 *            identifiant de la durée.
+	 * @return la durée dont l'identifiant est spécifiée.
+	 * @throws DbException
+	 *             levé en cas d'incident technique d'accès à la base.
+	 */
+	public Duration getDuration(long durationId) throws DbException;
+
+	/**
+	 * @return la liste des durées actives.
+	 * @throws DbException
+	 *             levé en cas d'incident technique d'accès à la base.
+	 */
+	public Duration[] getDurations() throws DbException;
 
 	/**
 	 * Retourne la liste des contributions associées à une tache, un
@@ -367,29 +411,6 @@ public interface IModelMgr {
 			Calendar toDate) throws DbException, ModelException;
 
 	/**
-	 * @return la liste des durées actives.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
-	public Duration[] getDurations() throws DbException;
-
-	/**
-	 * @return la liste des durées actives.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
-	public Duration[] getActiveDurations() throws DbException;
-
-	/**
-	 * @param durationId
-	 *            identifiant de la durée.
-	 * @return la durée dont l'identifiant est spécifiée.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
-	public Duration getDuration(long durationId) throws DbException;
-
-	/**
 	 * @param task
 	 *            la tache dont on veut connaitre la tache parent.
 	 * @return la tache parent d'une tache spécifiée.
@@ -397,6 +418,13 @@ public interface IModelMgr {
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public Task getParentTask(Task task) throws DbException;
+
+	/**
+	 * @return the root tasks count.
+	 * @throws DbException
+	 *             thrown if a database exception occurs.
+	 */
+	int getRootTasksCount() throws DbException;
 
 	/**
 	 * @param parentTaskId
@@ -427,26 +455,6 @@ public interface IModelMgr {
 	public Task getTask(long taskId) throws DbException;
 
 	/**
-	 * @return the root tasks count.
-	 * @throws DbException
-	 *             thrown if a database exception occurs.
-	 */
-	int getRootTasksCount() throws DbException;
-
-	/**
-	 * Retourn la liste des taches correspondant au filtre de recherche
-	 * spécifié.
-	 * 
-	 * @param filter
-	 *            le filtre de recherche.
-	 * @return la liste des taches correspondant au filtre de recherche
-	 *         spécifié.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
-	public Task[] getTasks(TaskSearchFilter filter) throws DbException;
-
-	/**
 	 * @param taskPath
 	 *            le chemin de la tache recherchée.
 	 * @param taskCode
@@ -473,19 +481,31 @@ public interface IModelMgr {
 			ModelException;
 
 	/**
-	 * @param collaborator
-	 *            le collaborateur.
-	 * @param fromDate
-	 *            date de début.
-	 * @param toDate
-	 *            date de fin.
-	 * @return la liste de taches associées au collaborateur entre les 2 dates
-	 *         spécifiées.
+	 * Construit le chemin de la tâche à partir des codes de tache.
+	 * 
+	 * @param task
+	 *            la tache dont on veut connaître le chemin.
+	 * @return le chemin.
+	 * @throws ModelException
+	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
+	 *             changé.
+	 * @throws DbException
+	 *             levé en cas d'incident technique avec la base de données.
+	 */
+	public String getTaskCodePath(Task task) throws ModelException, DbException;
+
+	/**
+	 * Retourn la liste des taches correspondant au filtre de recherche
+	 * spécifié.
+	 * 
+	 * @param filter
+	 *            le filtre de recherche.
+	 * @return la liste des taches correspondant au filtre de recherche
+	 *         spécifié.
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public Task[] getTasks(Collaborator collaborator, Calendar fromDate,
-			Calendar toDate) throws DbException;
+	public Task[] getTasks(TaskSearchFilter filter) throws DbException;
 
 	/**
 	 * Retourne la liste des taches associées aux chemins spécifiés.
@@ -518,18 +538,24 @@ public interface IModelMgr {
 			throws ModelException, DbException;
 
 	/**
-	 * Construit le chemin de la tâche à partir des codes de tache.
+	 * Importe le contenu d'un fichier XML.
 	 * 
-	 * @param task
-	 *            la tache dont on veut connaître le chemin.
-	 * @return le chemin.
-	 * @throws ModelException
-	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
-	 *             changé.
+	 * @param in
+	 *            le flux depuis lequel est lu le flux XML.
+	 * @throws IOException
+	 *             levé en cas d'incident I/O lors de la lecture sur le flux
+	 *             d'entrée
 	 * @throws DbException
-	 *             levé en cas d'incident technique avec la base de données.
+	 *             levé en cas d'incident avec la base de données.
+	 * @throws ParserConfigurationException
+	 *             levé en cas de mauvaise configuration du parser XML.
+	 * @throws SAXException
+	 *             levé en cas d'erreur de mauvais format du fichier XML.
+	 * @throws ModelException
+	 *             levé en cas d'incohérence des données lors de l'import
 	 */
-	public String getTaskCodePath(Task task) throws ModelException, DbException;
+	public void importFromXML(InputStream in) throws IOException, DbException,
+			ParserConfigurationException, SAXException, ModelException;
 
 	/**
 	 * Déplace la tache d'un cran vers le bas.
@@ -549,22 +575,6 @@ public interface IModelMgr {
 	 *             levé en cas d'incident technique avec la base de données.
 	 */
 	public void moveDownTask(Task task) throws ModelException, DbException;
-
-	/**
-	 * Déplace une tache de plus d'un cran (au contraire des méthodes
-	 * <code>moveUp</code> et <code>moveDown</code>.
-	 * 
-	 * @param task
-	 *            la tache à déplacer.
-	 * @param newTaskNumber
-	 *            le nouveau numéro de la tâche.
-	 * @throws ModelException
-	 *             levé en cas de violation du modèle.
-	 * @throws DbException
-	 *             levé en cas d'incident technique avec la base de données.
-	 */
-	public void moveTaskUpOrDown(Task task, int newTaskNumber)
-			throws ModelException, DbException;
 
 	/**
 	 * Déplace la tache vers un autre endroit dans la hiérarchie des taches.
@@ -593,6 +603,22 @@ public interface IModelMgr {
 	 */
 	public void moveTask(Task task, Task destParentTask) throws ModelException,
 			DbException;
+
+	/**
+	 * Déplace une tache de plus d'un cran (au contraire des méthodes
+	 * <code>moveUp</code> et <code>moveDown</code>.
+	 * 
+	 * @param task
+	 *            la tache à déplacer.
+	 * @param newTaskNumber
+	 *            le nouveau numéro de la tâche.
+	 * @throws ModelException
+	 *             levé en cas de violation du modèle.
+	 * @throws DbException
+	 *             levé en cas d'incident technique avec la base de données.
+	 */
+	public void moveTaskUpOrDown(Task task, int newTaskNumber)
+			throws ModelException, DbException;
 
 	/**
 	 * Déplace la tache d'un cran vers le haut.
@@ -686,6 +712,15 @@ public interface IModelMgr {
 	public void removeTask(Task task) throws DbException, ModelException;
 
 	/**
+	 * Vérifie si les tables existent dans le modèle.
+	 * 
+	 * @return un booléen indiquant si la table spécifiée existe dans le modèle.
+	 * @throws DbException
+	 *             levé en cas d'incident technique d'accès à la base.
+	 */
+	public boolean tablesExist() throws DbException;
+
+	/**
 	 * Modifie les attributs d'un collaborateur.
 	 * 
 	 * @param collaborator
@@ -698,17 +733,6 @@ public interface IModelMgr {
 	 */
 	public Collaborator updateCollaborator(Collaborator collaborator)
 			throws DbException, ModelException;
-
-	/**
-	 * Met à jour une durée.
-	 * 
-	 * @param duration
-	 *            la durée à mettre à jour.
-	 * @return la durée mise à jour.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
-	public Duration updateDuration(Duration duration) throws DbException;
 
 	/**
 	 * Modifie les attributs d'une contribution.
@@ -728,22 +752,15 @@ public interface IModelMgr {
 			ModelException;
 
 	/**
-	 * Change la tache d'une liste de contributions.
+	 * Met à jour une durée.
 	 * 
-	 * @param contributions
-	 *            la liste de contributions.
-	 * @param newContributionTask
-	 *            la tache à affecter.
-	 * @return la liste de contributions mise à jour.
+	 * @param duration
+	 *            la durée à mettre à jour.
+	 * @return la durée mise à jour.
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
-	 * @throws ModelException
-	 *             levé dans le cas où la tache cible ne peut être acdepter de
-	 *             contribution.
-	 * 
 	 */
-	public Contribution[] changeContributionTask(Contribution[] contributions,
-			Task newContributionTask) throws DbException, ModelException;
+	public Duration updateDuration(Duration duration) throws DbException;
 
 	/**
 	 * Modifie une durée.

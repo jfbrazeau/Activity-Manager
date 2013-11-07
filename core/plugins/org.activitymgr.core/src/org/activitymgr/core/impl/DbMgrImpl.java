@@ -697,8 +697,13 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.activitymgr.core.IDbMgr#getContributionsSum(org.activitymgr.core.beans.Collaborator, org.activitymgr.core.beans.Task, java.util.Calendar, java.util.Calendar)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IDbMgr#getContributionsSum(org.activitymgr.core.
+	 * beans.Collaborator, org.activitymgr.core.beans.Task, java.util.Calendar,
+	 * java.util.Calendar)
 	 */
 	@Override
 	public long getContributionsSum(Collaborator contributor, Task task,
@@ -731,8 +736,13 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.activitymgr.core.IDbMgr#getContributionsCount(org.activitymgr.core.beans.Collaborator, org.activitymgr.core.beans.Task, java.util.Calendar, java.util.Calendar)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IDbMgr#getContributionsCount(org.activitymgr.core
+	 * .beans.Collaborator, org.activitymgr.core.beans.Task, java.util.Calendar,
+	 * java.util.Calendar)
 	 */
 	@Override
 	public int getContributionsCount(Collaborator contributor, Task task,
@@ -789,7 +799,6 @@ public class DbMgrImpl implements IDbMgr {
 	private PreparedStatement buildContributionsRequest(Task task,
 			Collaborator contributor, Calendar fromDate, Calendar toDate,
 			String fieldsToSelect) throws SQLException {
-		PreparedStatement pStmt;
 		// Préparation de la requête
 		StringBuffer request = new StringBuffer("select ")
 				.append(fieldsToSelect);
@@ -797,7 +806,37 @@ public class DbMgrImpl implements IDbMgr {
 		if (task != null) {
 			request.append(", TASK");
 		}
-		boolean insertWhereClause = true;
+		return buildIntervalRequest(request, contributor, task, fromDate,
+				toDate, true, null);
+	}
+
+	/**
+	 * Builds a interval request (a request that handles a date interval).
+	 * 
+	 * @param request
+	 *            the request buffer.
+	 * @param contributor
+	 *            the contributor to consider (optionnal).
+	 * @param task
+	 *            the task to consider (optionnal).
+	 * @param fromDate
+	 *            the start date of the interval to consider (optionnal).
+	 * @param toDate
+	 *            the end date of the interval to consider (optionnal).
+	 * @param insertWhereClause
+	 *            <code>true</code> if a <code>where</code> keyword must be
+	 *            inserted.
+	 * @param orderByClause
+	 *            the order by clause.
+	 * @return the request.
+	 * @throws SQLException
+	 *             thrown if a SQL exception occurs.
+	 */
+	private PreparedStatement buildIntervalRequest(StringBuffer request,
+			Collaborator contributor, Task task, Calendar fromDate,
+			Calendar toDate, boolean insertWhereClause, String orderByClause)
+			throws SQLException {
+		PreparedStatement pStmt;
 		if (contributor != null) {
 			request.append(insertWhereClause ? " where" : " and");
 			insertWhereClause = false;
@@ -833,8 +872,12 @@ public class DbMgrImpl implements IDbMgr {
 				request.append(" <= ?");
 			}
 		}
-
-		// Calcul du consommé
+		// Order by ?
+		if (orderByClause != null) {
+			request.append(" order by ");
+			request.append(orderByClause);
+		}
+		// Execute request
 		log.debug("request : " + request);
 		pStmt = tx().prepareStatement(request.toString()); //$NON-NLS-1$
 		int paramIdx = 1;
@@ -1432,27 +1475,67 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#getTasks(org.activitymgr.core.beans.Collaborator
-	 * , java.util.Calendar, java.util.Calendar)
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.IDbMgr#getContributors(org.activitymgr.core.beans.Task, java.util.Calendar, java.util.Calendar)
 	 */
 	@Override
-	public Task[] getTasks(Collaborator collaborator, Calendar fromDate,
+	public Collaborator[] getContributors(Task task, Calendar fromDate,
 			Calendar toDate) throws DbException {
-		log.debug("getTasks(" + collaborator + ", " + sdf.format(fromDate.getTime()) + ", " + sdf.format(toDate.getTime()) + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
 			// Préparation de la requête
-			pStmt = tx()
-					.prepareStatement(
-							"select distinct ctb_task, tsk_path, tsk_number from CONTRIBUTION, TASK where ctb_task=tsk_id and ctb_contributor=? and ctb_year*10000 + ( ctb_month*100 + ctb_day ) between ? and ? order by tsk_path, tsk_number"); //$NON-NLS-1$
-			pStmt.setLong(1, collaborator.getId());
-			pStmt.setString(2, sdf.format(fromDate.getTime()));
-			pStmt.setString(3, sdf.format(toDate.getTime()));
+			StringBuffer request = new StringBuffer();
+			request.append("select distinct (ctb_contributor), clb_login, clb_first_name, clb_last_name, clb_is_active from CONTRIBUTION, COLLABORATOR");
+			if (task != null) {
+				request.append(", TASK");
+			}
+			request.append("  where ctb_contributor=clb_id");
+			pStmt = buildIntervalRequest(request, null, task, fromDate,
+					toDate, false, "clb_login");
+
+			// Exécution de la requête
+			rs = pStmt.executeQuery();
+
+			// Recherche des sous-taches
+			ArrayList<Collaborator> list = new ArrayList<Collaborator>();
+			while (rs.next()) {
+				list.add(rsToCollaborator(rs));
+			}
+
+			// Fermeture du ResultSet
+			pStmt.close();
+			pStmt = null;
+
+			// Retour du résultat
+			return (Collaborator[]) list.toArray(new Collaborator[list.size()]);
+		} catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(
+					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_COLLABORATOR_FAILURE"), e); //$NON-NLS-1$
+		} finally {
+			lastAttemptToClose(pStmt);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IDbMgr#getContributedTasks(org.activitymgr.core.beans.Collaborator
+	 * , java.util.Calendar, java.util.Calendar)
+	 */
+	@Override
+	public Task[] getContributedTasks(Collaborator contributor, Calendar fromDate,
+			Calendar toDate) throws DbException {
+		PreparedStatement pStmt = null;
+		ResultSet rs = null;
+		try {
+			// Préparation de la requête
+			StringBuffer request = new StringBuffer();
+			request.append("select distinct ctb_task, tsk_path, tsk_number from CONTRIBUTION, TASK where ctb_task=tsk_id");
+			pStmt = buildIntervalRequest(request, contributor, null, fromDate,
+					toDate, false, "tsk_path, tsk_number");
 
 			// Exécution de la requête
 			rs = pStmt.executeQuery();
@@ -1492,7 +1575,6 @@ public class DbMgrImpl implements IDbMgr {
 	@Override
 	public TaskSums getTaskSums(Task task, Calendar fromDate, Calendar toDate)
 			throws DbException {
-		// TODO Factoriser cette méthode avec getContributionsSum
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
@@ -1536,50 +1618,21 @@ public class DbMgrImpl implements IDbMgr {
 			 * Calcul du consommé
 			 */
 
-			// Préparation de la requête
-			StringBuffer request = new StringBuffer(
-					"select sum(ctb_duration), count(ctb_duration) from CONTRIBUTION, TASK where ctb_task=tsk_id and ");
-			// En fonction du cas, on recherche soit sur la tache précise
-			// (tsk_id=?), soit sur un arbre (tsk_path like ?)
-			request.append(taskIsLeaf ? "tsk_id=?" : "tsk_path like ?");
-			// Y'a-t-il un critère de date à ajouter ?
-			if (fromDate != null || toDate != null) {
-				request.append(" and ( ctb_year*10000 + ( ctb_month*100 + ctb_day ) )");
-				// Deux dates spécifiées
-				if (fromDate != null && toDate != null)
-					request.append(" between ? and ?");
-				// Seule la date de début spécifiée
-				else if (fromDate != null)
-					request.append(">=?");
-				// Seule la date de fin spécifiée
-				else
-					request.append("<=?");
-			}
+			// Build the request
+			pStmt = buildContributionsRequest(task, null, fromDate, toDate,
+					"sum(ctb_duration), count(ctb_duration)");
 
-			// Calcul du consommé
-			pStmt = tx().prepareStatement(request.toString()); //$NON-NLS-1$
-			// En fonction du cas, on recherche soit sur la tache précise
-			// (tsk_id=?), soit sur un arbre (tsk_path like ?)
-			if (taskIsLeaf)
-				pStmt.setLong(1, task.getId());
-			else
-				pStmt.setString(1, (task == null ? "" : task.getFullPath())
-						+ "%");
-			// Y'a-t-il un critère de date à ajouter ?
-			if (fromDate != null || toDate != null) {
-				int i = 2;
-				if (fromDate != null)
-					pStmt.setString(i++, sdf.format(fromDate.getTime()));
-				if (toDate != null)
-					pStmt.setString(i++, sdf.format(toDate.getTime()));
-			}
-			// Exécution de le requête et extraction du résultat
+			// Exécution de la requête
 			rs = pStmt.executeQuery();
+
+			// Extraction du résultat
 			if (!rs.next())
 				throw new DbException(
 						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
 			taskSums.setConsumedSum(rs.getLong(1));
 			taskSums.setContributionsNb(rs.getLong(2));
+
+			// Fermeture du ResultSet
 			pStmt.close();
 			pStmt = null;
 
@@ -1591,25 +1644,22 @@ public class DbMgrImpl implements IDbMgr {
 			 * futures déja enregistrées dans le système
 			 */
 			if (toDate != null) {
-				request = new StringBuffer(
-						"select sum(ctb_duration) from CONTRIBUTION, TASK where ctb_task=tsk_id and ");
-				request.append(taskIsLeaf ? "tsk_id=?" : "tsk_path like ?");
-				request.append(" and ( ctb_year*10000 + ( ctb_month*100 + ctb_day ) ) > ?");
-				// Calcul des consommations au delà de la date de fin spécifiée
-				pStmt = tx().prepareStatement(request.toString()); //$NON-NLS-1$
-				if (taskIsLeaf)
-					pStmt.setLong(1, task.getId());
-				else
-					pStmt.setString(1, (task == null ? "" : task.getFullPath())
-							+ "%");
-				pStmt.setString(2, sdf.format(toDate.getTime()));
-				// Exécution de le requête et extraction du résultat
+				// Build the request
+				Calendar date = (Calendar) toDate.clone();
+				date.add(Calendar.DATE, 1);
+				pStmt = buildContributionsRequest(task, null, date, null,
+						"sum(ctb_duration)");
+
+				// Exécution de la requête
 				rs = pStmt.executeQuery();
+
+				// Extraction du résultat
 				if (!rs.next())
 					throw new DbException(
 							Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
-				// Mise à jour du RAF
 				taskSums.setTodoSum(taskSums.getTodoSum() + rs.getLong(1));
+
+				// Fermeture du ResultSet
 				pStmt.close();
 				pStmt = null;
 			}
