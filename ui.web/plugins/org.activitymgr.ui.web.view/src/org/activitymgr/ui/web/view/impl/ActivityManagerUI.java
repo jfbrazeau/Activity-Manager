@@ -1,7 +1,5 @@
 package org.activitymgr.ui.web.view.impl;
 
-import java.io.IOException;
-
 import javax.servlet.http.Cookie;
 
 import org.activitymgr.ui.web.logic.ActivityManagerLogic;
@@ -22,7 +20,6 @@ import org.activitymgr.ui.web.view.util.TextFieldView;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Notification;

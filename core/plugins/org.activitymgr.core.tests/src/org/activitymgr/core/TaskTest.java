@@ -40,6 +40,9 @@ public class TaskTest extends AbstractModelTestCase {
 		assertEquals(task.getName(), otherTask.getName());
 		assertEquals(task.getNumber(), otherTask.getNumber());
 		
+		// Le nombre de tache racine doit etre égal à 1
+		assertEquals(1, getModelMgr().getRootTasksCount());
+		
 		// Suppression
 		getModelMgr().removeTask(task);
 		

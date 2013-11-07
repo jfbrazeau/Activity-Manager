@@ -454,7 +454,7 @@ class DefaultWeekContributionsProvider extends AbstractWeekContributionsProvider
 		toDate.add(Calendar.DATE, 6);
 		try {
 			IntervalContributions intervalContributions = logicContext.getComponent(IModelMgr.class)
-					.getIntervalContributions(contributor, null, null, fromDate,
+					.getIntervalContributions(contributor, null, fromDate,
 							toDate);
 			TaskContributions[] weekContributions = intervalContributions.getTaskContributions();
 			

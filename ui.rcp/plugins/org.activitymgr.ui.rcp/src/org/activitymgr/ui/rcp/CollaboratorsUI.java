@@ -546,8 +546,7 @@ public class CollaboratorsUI extends AbstractTableMgr implements
 				else if (listTaskContributionsItem.equals(source)) {
 					Collaborator selectedCollaborator = (Collaborator) selection[0]
 							.getData();
-					contribsViewerDialog.setFilter(null, selectedCollaborator,
-							null, null, null);
+					contribsViewerDialog.setFilter(null, selectedCollaborator);
 					// Ouverture du dialogue
 					contribsViewerDialog.open();
 				}

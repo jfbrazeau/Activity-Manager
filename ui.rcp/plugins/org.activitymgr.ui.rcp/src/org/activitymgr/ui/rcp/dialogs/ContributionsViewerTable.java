@@ -67,9 +67,6 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	/** Filtre de recherche */
 	private Task task;
 	private Collaborator contributor;
-	private Integer day;
-	private Integer month;
-	private Integer year;
 
 	/** Constantes associées aux colonnes */
 	public static final int DATE_COLUMN_IDX = 0;
@@ -172,21 +169,11 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	 *            la tache.
 	 * @param contributor
 	 *            le collaborateur.
-	 * @param year
-	 *            l'année.
-	 * @param month
-	 *            le mois.
-	 * @param day
-	 *            le jour.
 	 */
-	public void setFilter(Task task, Collaborator contributor, Integer year,
-			Integer month, Integer day) {
+	public void setFilter(Task task, Collaborator contributor) {
 		// Initialisation du filtre de recherche
 		this.task = task;
 		this.contributor = contributor;
-		this.year = year;
-		this.month = month;
-		this.day = day;
 		// Création d'une racine fictive
 		tableViewer.setInput(ROOT_NODE);
 	}
@@ -203,8 +190,7 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				// Recherche des collaborateurs
-				return modelMgr.getContributions(task, contributor, year,
-						month, day);
+				return modelMgr.getContributions(contributor, task, null, null);
 			}
 		};
 		// Exécution

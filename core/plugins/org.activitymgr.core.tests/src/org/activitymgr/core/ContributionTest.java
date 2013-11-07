@@ -37,6 +37,12 @@ public class ContributionTest extends AbstractModelTestCase {
 	private void createSampleObjects(boolean createContributions)
 			throws DbException, ModelException {
 		// Création des tâches de test
+		// ROOT
+		// + T1
+		// | + T11
+		// | + T111
+		// | + T112
+		// + T2
 		rootTask = getModelMgr().createNewTask(null);
 		rootTask.setName("Root task");
 		rootTask = getModelMgr().updateTask(rootTask);
@@ -194,7 +200,7 @@ public class ContributionTest extends AbstractModelTestCase {
 
 		// Recherche de cette contribution
 		IntervalContributions ic = getModelMgr().getIntervalContributions(col1,
-				null, task111, cal, cal);
+				task111, cal, cal);
 		assertNotNull(ic);
 		TaskContributions[] tcs = ic.getTaskContributions();
 		assertNotNull(tcs);
@@ -219,8 +225,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		assertEquals(oldEtc, task111.getTodo());
 
 		// Nouvelle recherche => à présent, la recherche ne doit rien ramener
-		ic = getModelMgr().getIntervalContributions(col1,
-				null, task111, cal, cal);
+		ic = getModelMgr().getIntervalContributions(col1, task111, cal, cal);
 		assertNotNull(ic);
 		tcs = ic.getTaskContributions();
 		assertNotNull(tcs);
@@ -292,7 +297,7 @@ public class ContributionTest extends AbstractModelTestCase {
 
 		// Vérification de la mise à jour en base
 		IntervalContributions ic = getModelMgr().getIntervalContributions(col1,
-				null, task111, c1.getDate(), c1.getDate());
+				task111, c1.getDate(), c1.getDate());
 		assertNotNull(ic);
 		TaskContributions[] tcs = ic.getTaskContributions();
 		assertNotNull(tcs);
@@ -324,7 +329,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		Contribution[] cs = null;
 
 		// Test requête avec tache racine
-		cs = getModelMgr().getContributions(rootTask, null, null, null, null);
+		cs = getModelMgr().getContributions(null, rootTask, null, null);
 		assertNotNull(cs);
 		assertEquals(3, cs.length);
 		assertEquals(c1, cs[0]);
@@ -332,32 +337,52 @@ public class ContributionTest extends AbstractModelTestCase {
 		assertEquals(c3, cs[2]);
 
 		// Test requête avec une tache
-		cs = getModelMgr().getContributions(task111, null, null, null, null);
+		cs = getModelMgr().getContributions(null, task111, null, null);
 		assertNotNull(cs);
 		assertEquals(2, cs.length);
 		assertEquals(c1, cs[0]);
 		assertEquals(c3, cs[1]);
 
 		// Test requête avec une tache et un collaborateur
-		cs = getModelMgr().getContributions(task111, col1, null, null, null);
+		cs = getModelMgr().getContributions(col1, task111, null, null);
 		assertNotNull(cs);
 		assertEquals(1, cs.length);
 		assertEquals(c1, cs[0]);
 
 		// Test requête avec une tache et un collaborateur et un mois
-		cs = getModelMgr().getContributions(task111, col1,
-				new Integer(c1.getYear()), new Integer(c1.getMonth()),
-				new Integer(c1.getDay()));
+		Calendar cal = new GregorianCalendar(c1.getYear(), c1.getMonth() - 1,
+				c1.getDay());
+		cs = getModelMgr().getContributions(col1, task111, cal, cal);
 		assertNotNull(cs);
 		assertEquals(1, cs.length);
 		assertEquals(c1, cs[0]);
 
 		// Test requête avec le jour et la tache racine
-		cs = getModelMgr().getContributions(rootTask, null,
-				new Integer(c1.getYear()), new Integer(c1.getMonth()),
-				new Integer(c1.getDay()));
+		cs = getModelMgr().getContributions(null, rootTask,
+				cal, cal);
 		assertNotNull(cs);
 		assertEquals(1, cs.length);
+		assertEquals(c1, cs[0]);
+
+		// Test requête avec le jour et la tache racine
+		cs = getModelMgr().getContributions(null, rootTask,
+				null, cal);
+		assertNotNull(cs);
+		assertEquals(1, cs.length);
+		assertEquals(c1, cs[0]);
+
+		// Test requête avec le jour et la tache racine
+		cs = getModelMgr().getContributions(null, rootTask,
+				cal, null);
+		assertNotNull(cs);
+		assertEquals(3, cs.length); // 3 contributions
+		assertEquals(c1, cs[0]);
+
+		// Test requête avec le jour et la tache racine
+		cs = getModelMgr().getContributions(null, rootTask,
+				null, null);
+		assertNotNull(cs);
+		assertEquals(3, cs.length); // 3 contributions
 		assertEquals(c1, cs[0]);
 
 		// Suppression des taches de test
@@ -387,7 +412,8 @@ public class ContributionTest extends AbstractModelTestCase {
 		removeSampleObjects();
 	}
 
-	public void testCountDaysWhenYearHasMoreThan365Days() throws DbException, ModelException {
+	public void testCountDaysWhenYearHasMoreThan365Days() throws DbException,
+			ModelException {
 		// Création des taches de test
 		createSampleObjects(true);
 
@@ -401,8 +427,8 @@ public class ContributionTest extends AbstractModelTestCase {
 		c = getModelMgr().createContribution(c, false);
 
 		// Retrieve interval contributions
-		IntervalContributions ic = getModelMgr().getIntervalContributions(col1, null, null, 
-				new GregorianCalendar(2012, 11, 24), // 24th December 2012
+		IntervalContributions ic = getModelMgr().getIntervalContributions(col1,
+				null, new GregorianCalendar(2012, 11, 24), // 24th December 2012
 				new GregorianCalendar(2013, 0, 6)); // 6 January 2013
 		assertNotNull(ic);
 		assertNotNull(ic.getTaskContributions());
@@ -411,13 +437,14 @@ public class ContributionTest extends AbstractModelTestCase {
 		assertNotNull(ic.getTaskContributions()[0].getContributions());
 		// Expected size : 14 days
 		assertEquals(14, ic.getTaskContributions()[0].getContributions().length);
-		
+
 		// Suppression des taches de test
 		getModelMgr().removeContribution(c, false);
 		removeSampleObjects();
 	}
 
-	public void testCountDaysWhenHourChanges() throws DbException, ModelException {
+	public void testCountDaysWhenHourChanges() throws DbException,
+			ModelException {
 		// Création des taches de test
 		createSampleObjects(true);
 
@@ -431,8 +458,8 @@ public class ContributionTest extends AbstractModelTestCase {
 		c = getModelMgr().createContribution(c, false);
 
 		// Retrieve interval contributions
-		IntervalContributions ic = getModelMgr().getIntervalContributions(col1, null, null, 
-				new GregorianCalendar(2012, 2, 19), // 19th March 2012
+		IntervalContributions ic = getModelMgr().getIntervalContributions(col1,
+				null, new GregorianCalendar(2012, 2, 19), // 19th March 2012
 				new GregorianCalendar(2012, 3, 1)); // 1st Arpril 2012
 		assertNotNull(ic);
 		assertNotNull(ic.getTaskContributions());
@@ -441,7 +468,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		assertNotNull(ic.getTaskContributions()[0].getContributions());
 		// Expected size : 14 days
 		assertEquals(14, ic.getTaskContributions()[0].getContributions().length);
-		
+
 		// Suppression des taches de test
 		getModelMgr().removeContribution(c, false);
 		removeSampleObjects();

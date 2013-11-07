@@ -215,9 +215,8 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 *            the model manager instance.
 	 */
 	public TasksUI(TabItem tabItem, IModelMgr modelMgr) {
-		this(tabItem.getParent());
+		this(tabItem.getParent(), modelMgr);
 		tabItem.setControl(parent);
-		this.modelMgr = modelMgr;
 	}
 
 	/**
@@ -226,7 +225,9 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 * @param parentComposite
 	 *            composant parent.
 	 */
-	public TasksUI(Composite parentComposite) {
+	public TasksUI(Composite parentComposite, IModelMgr modelMgr) {
+		this.modelMgr = modelMgr;
+
 		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayout(new GridLayout(1, false));
@@ -829,14 +830,17 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 					if (taskChooserDialog.open() == Dialog.OK) {
 						Task chosenTask = (Task) taskChooserDialog.getValue();
 						String oldTaskFullpath = selectedTask.getFullPath();
+						boolean needRefresh = false;
 						// Traitement du changement éventuel de parent
 						if (!chosenTask.getPath()
 								.equals(selectedTask.getPath())) {
+							Task destParentTask = modelMgr.getParentTask(chosenTask);
 							// Déplacement
-							modelMgr.moveTask(selectedTask, chosenTask);
+							modelMgr.moveTask(selectedTask, destParentTask);
 							// Rafraichissement de la tache
 							selectedTask = modelMgr.getTask(selectedTask
 									.getId());
+							needRefresh = true;
 						}
 						// Déplacement de la tache
 						int targetNumber = chosenTask.getNumber();
@@ -846,11 +850,16 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 						else if (moveAfterAnotherTaskItem.equals(source)
 								&& targetNumber < selectedTask.getNumber())
 							targetNumber++;
-						modelMgr.moveTaskUpOrDown(selectedTask, targetNumber);
-						// Notification des listeners
-						notifyTaskMoved(oldTaskFullpath, selectedTask);
-						// Mise à jour de l'IHM
-						treeViewer.refresh();
+						if (targetNumber != selectedTask.getNumber()) {
+							modelMgr.moveTaskUpOrDown(selectedTask, targetNumber);
+							needRefresh = true;
+						}
+						if (needRefresh) {
+							// Notification des listeners
+							notifyTaskMoved(oldTaskFullpath, selectedTask);
+							// Mise à jour de l'IHM
+							treeViewer.refresh();
+						}
 					}
 				}
 				// Cas d'une demande de déplacement vers une autre tache
@@ -982,8 +991,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				else if (listTaskContributionsItem.equals(source)) {
 					TreeItem selectedItem = selection[0];
 					Task selectedTask = (Task) selectedItem.getData();
-					contribsViewerDialog.setFilter(selectedTask, null, null,
-							null, null);
+					contribsViewerDialog.setFilter(selectedTask, null);
 					// Ouverture du dialogue
 					contribsViewerDialog.open();
 				}

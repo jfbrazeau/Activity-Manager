@@ -1,17 +1,11 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.activitymgr.core.CoreModule;
-import org.activitymgr.core.DbTransaction;
 import org.activitymgr.core.IModelMgr;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -20,11 +14,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Provider;
 
 @SuppressWarnings("rawtypes")
 public class Activator implements BundleActivator, ServiceTrackerCustomizer {

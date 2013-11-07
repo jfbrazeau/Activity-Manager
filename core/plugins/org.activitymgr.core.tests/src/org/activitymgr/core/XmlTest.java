@@ -117,7 +117,7 @@ public class XmlTest extends AbstractModelTestCase {
 	
 	public void testCreateContributions() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de taches
-		Contribution[] initialContributions = getModelMgr().getContributions((Task) null, null, null, null, null);
+		Contribution[] initialContributions = getModelMgr().getContributions(null, null, null, null);
 		assertNotNull(initialContributions);
 		assertEquals(0, initialContributions.length);
 
@@ -125,7 +125,7 @@ public class XmlTest extends AbstractModelTestCase {
 		importTestFile();
 		
 		// Vérification du nombre de durées après import
-		Contribution[] contributions = getModelMgr().getContributions((Task) null, null, null, null, null);
+		Contribution[] contributions = getModelMgr().getContributions(null, null, null, null);
 		assertNotNull(contributions);
 		assertEquals(2, contributions.length);
 
@@ -204,7 +204,7 @@ public class XmlTest extends AbstractModelTestCase {
 		assertEquals(export, export2);
 
 		// Supression des objets de test ayant été réimportés
-		contribution = getModelMgr().getContributions((Task) null, null, null, null, null)[0];
+		contribution = getModelMgr().getContributions(null, null, null, null)[0];
 		getModelMgr().removeContribution(contribution, false);
 		task = getModelMgr().getTaskByCodePath("/Par/Code");
 		getModelMgr().removeTask(task);
