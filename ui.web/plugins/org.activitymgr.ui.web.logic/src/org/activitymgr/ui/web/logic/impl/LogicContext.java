@@ -5,13 +5,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
 import org.activitymgr.core.CoreModule;
+import org.activitymgr.core.DbException;
 import org.activitymgr.core.DbTransaction;
+import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.IViewFactory;
@@ -36,7 +39,7 @@ public class LogicContext {
 	private ThreadLocal<DbTransactionContext> transactions;
 	private Injector injector;
 
-	public LogicContext(IViewFactory viewFactory, String jdbcDriver, String jdbcUrl, String jdbcUser, String jdbcPassword) {
+	public LogicContext(IViewFactory viewFactory, String jdbcDriver, String jdbcUrl, String jdbcUser, String jdbcPassword) throws SQLException {
 		System.err.println("*** NEW LOGIC CONTEXT");
 		this.viewFactory = viewFactory;
 
@@ -76,6 +79,22 @@ public class LogicContext {
 		// Create Guice injector
 		transactions = new ThreadLocal<DbTransactionContext>();
 		injector = Guice.createInjector(modules);
+
+		// Initialize the database
+		Connection con = datasource.getConnection();
+		transactions.set(new DbTransactionContext(con));
+		try {
+			getComponent(IModelMgr.class).initialize();
+			con.commit();
+		}
+		catch (DbException e) {
+			con.rollback();
+			throw new IllegalStateException("Couldn't initialize the database access", e);
+		}
+		finally {
+			transactions.remove();
+			con.close();
+		}
 	}
 
 	public <T> T getComponent(Class<T> c) {

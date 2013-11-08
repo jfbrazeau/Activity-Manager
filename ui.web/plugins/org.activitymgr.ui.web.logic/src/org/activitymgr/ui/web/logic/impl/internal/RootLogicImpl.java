@@ -1,5 +1,7 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
+import java.sql.SQLException;
+
 import org.activitymgr.ui.web.logic.AbstractEvent;
 import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.ILogic;
@@ -24,7 +26,11 @@ public class RootLogicImpl implements IRootLogic {
 		String jdbcUser = "taskmgr_user";
 		String jdbcPassword = "secret";
 		// Context initialization
-		context = new LogicContext(viewFactory, jdbcDriver, jdbcUrl, jdbcUser, jdbcPassword);
+		try {
+			context = new LogicContext(viewFactory, jdbcDriver, jdbcUrl, jdbcUser, jdbcPassword);
+		} catch (SQLException e) {
+			throw new IllegalStateException(e);
+		}
 
 		// View creation
 		view = (IRootLogic.View) viewFactory.createView(getClass());

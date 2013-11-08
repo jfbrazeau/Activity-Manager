@@ -88,10 +88,23 @@ public class ModelMgrImpl implements IModelMgr {
 	 * 
 	 * @param tx
 	 *            the transaction provider;
+	 * @throws DbException
+	 *             thrown if a database error occurs.
 	 */
 	@Inject
-	public ModelMgrImpl(IDbMgr dao) {
+	public ModelMgrImpl(IDbMgr dao) throws DbException {
 		this.dao = dao;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.IModelMgr#initialize()
+	 */
+	public void initialize() throws DbException {
+		// Initializes the database if required
+		if (!dao.tablesExist()) {
+			// Create default tables
+			dao.createTables();
+		}
 	}
 
 	/*
@@ -800,23 +813,34 @@ public class ModelMgrImpl implements IModelMgr {
 				false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.activitymgr.core.IModelMgr#getContributionsSum(org.activitymgr.core.beans.Collaborator, org.activitymgr.core.beans.Task, java.util.Calendar, java.util.Calendar)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IModelMgr#getContributionsSum(org.activitymgr.core
+	 * .beans.Collaborator, org.activitymgr.core.beans.Task, java.util.Calendar,
+	 * java.util.Calendar)
 	 */
 	@Override
-	public long getContributionsSum(Collaborator contributor,Task task, 
-			Calendar fromDate, Calendar toDate) throws DbException, ModelException {
+	public long getContributionsSum(Collaborator contributor, Task task,
+			Calendar fromDate, Calendar toDate) throws DbException,
+			ModelException {
 		// Control sur la date
 		checkInterval(fromDate, toDate);
 		// Récupération du total
 		return dao.getContributionsSum(contributor, task, fromDate, toDate);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.activitymgr.core.IModelMgr#getContributionsCount(org.activitymgr.core.beans.Collaborator, org.activitymgr.core.beans.Task, java.util.Calendar, java.util.Calendar)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IModelMgr#getContributionsCount(org.activitymgr.
+	 * core.beans.Collaborator, org.activitymgr.core.beans.Task,
+	 * java.util.Calendar, java.util.Calendar)
 	 */
 	@Override
-	public int getContributionsCount(Collaborator contributor, Task task, 
+	public int getContributionsCount(Collaborator contributor, Task task,
 			Calendar fromDate, Calendar toDate) throws ModelException,
 			DbException {
 		// Control sur la date
@@ -849,8 +873,12 @@ public class ModelMgrImpl implements IModelMgr {
 		return dao.getContributions(contributor, task, fromDate, toDate);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.activitymgr.core.IModelMgr#getContributors(org.activitymgr.core.beans.Task, java.util.Calendar, java.util.Calendar)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IModelMgr#getContributors(org.activitymgr.core.beans
+	 * .Task, java.util.Calendar, java.util.Calendar)
 	 */
 	@Override
 	public Collaborator[] getContributors(Task task, Calendar fromDate,
@@ -861,9 +889,13 @@ public class ModelMgrImpl implements IModelMgr {
 
 	/**
 	 * Checks whether the given interval is relevant or not.
-	 * @param fromDate start of the date interval.
-	 * @param toDate end of the date interval.
-	 * @throws ModelException thrown if the interval is invalid.
+	 * 
+	 * @param fromDate
+	 *            start of the date interval.
+	 * @param toDate
+	 *            end of the date interval.
+	 * @throws ModelException
+	 *             thrown if the interval is invalid.
 	 */
 	private void checkInterval(Calendar fromDate, Calendar toDate)
 			throws ModelException {
@@ -1145,12 +1177,13 @@ public class ModelMgrImpl implements IModelMgr {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.activitymgr.core.IModelMgr# the start date of the interval to consider (optionnal).(org.activitymgr.core.beans.
-	 * Collaborator, java.util.Calendar, java.util.Calendar)
+	 * @see org.activitymgr.core.IModelMgr# the start date of the interval to
+	 * consider (optionnal).(org.activitymgr.core.beans. Collaborator,
+	 * java.util.Calendar, java.util.Calendar)
 	 */
 	@Override
-	public Task[] getContributedTasks(Collaborator contributor, Calendar fromDate,
-			Calendar toDate) throws DbException {
+	public Task[] getContributedTasks(Collaborator contributor,
+			Calendar fromDate, Calendar toDate) throws DbException {
 		return dao.getContributedTasks(contributor, fromDate, toDate);
 	}
 
@@ -1449,8 +1482,7 @@ public class ModelMgrImpl implements IModelMgr {
 	public void removeCollaborator(Collaborator collaborator)
 			throws ModelException, DbException {
 		// Vérification que le collaborateur n'est pas utilisé
-		long contribsNb = getContributionsCount(collaborator, null, null,
-				null);
+		long contribsNb = getContributionsCount(collaborator, null, null, null);
 		if (contribsNb != 0)
 			throw new ModelException(
 					Strings.getString(
@@ -1705,8 +1737,12 @@ public class ModelMgrImpl implements IModelMgr {
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.activitymgr.core.IModelMgr#changeContributionTask(org.activitymgr.core.beans.Contribution[], org.activitymgr.core.beans.Task)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IModelMgr#changeContributionTask(org.activitymgr
+	 * .core.beans.Contribution[], org.activitymgr.core.beans.Task)
 	 */
 	@Override
 	public Contribution[] changeContributionTask(Contribution[] contributions,
@@ -1727,8 +1763,12 @@ public class ModelMgrImpl implements IModelMgr {
 		return contributions;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.activitymgr.core.IModelMgr#updateDuration(org.activitymgr.core.beans.Duration, org.activitymgr.core.beans.Duration)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IModelMgr#updateDuration(org.activitymgr.core.beans
+	 * .Duration, org.activitymgr.core.beans.Duration)
 	 */
 	@Override
 	public Duration updateDuration(Duration duration, Duration newDuration)
@@ -1746,8 +1786,12 @@ public class ModelMgrImpl implements IModelMgr {
 		return newDuration;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.activitymgr.core.IModelMgr#updateTask(org.activitymgr.core.beans.Task)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.IModelMgr#updateTask(org.activitymgr.core.beans.
+	 * Task)
 	 */
 	@Override
 	public Task updateTask(Task task) throws ModelException, DbException {
