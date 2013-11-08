@@ -260,14 +260,14 @@ public interface IDbMgr {
 	Duration getDuration(long durationId) throws DbException;
 
 	/**
-	 * @param onlyActiveCollaborators
+	 * @param onlyActiveDurations
 	 *            booléen indiquant si l'on ne doit retourner que les
-	 *            collaborateurs actifs.
+	 *            durées actives.
 	 * @return la liste des durées.
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Duration[] getDurations(boolean onlyActiveCollaborators) throws DbException;
+	Duration[] getDurations(boolean onlyActiveDurations) throws DbException;
 
 	/**
 	 * @param task
