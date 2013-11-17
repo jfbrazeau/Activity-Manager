@@ -14,5 +14,4 @@ Export-Package: org.activitymgr.ui.web.logic,
  org.activitymgr.ui.web.logic.impl.event
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.activitymgr.ui.web.logic.impl.internal.Activator
-Bundle-ClassPath: lib/poi-2.5.1-final-20040804.jar,
- .
+Bundle-ClassPath: .
