@@ -1,7 +1,9 @@
-package org.activitymgr.ui.web.view.util;
+package org.activitymgr.ui.web.view.impl.internal.util;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.activitymgr.ui.web.view.IResourceCache;
 
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
@@ -10,14 +12,14 @@ import com.vaadin.data.Property;
 @SuppressWarnings("serial")
 public abstract class AbstractContainerDatasource<ITEM_TYPE extends Item> implements Container {
 
-	private ResourceCache resourceCache;
+	private IResourceCache resourceCache;
 	private Map<String, ITEM_TYPE> items = new HashMap<String, ITEM_TYPE>();
 
-	protected AbstractContainerDatasource(ResourceCache resourceCache) {
+	protected AbstractContainerDatasource(IResourceCache resourceCache) {
 		this.resourceCache = resourceCache;
 	}
 
-	protected final ResourceCache getResourceCache() {
+	protected final IResourceCache getResourceCache() {
 		return resourceCache;
 	}
 	

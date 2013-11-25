@@ -1,4 +1,4 @@
-package org.activitymgr.ui.web.view.util;
+package org.activitymgr.ui.web.view.impl.internal.util;
 
 import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILabelLogic.View;

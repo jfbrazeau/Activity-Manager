@@ -1,7 +1,7 @@
-package org.activitymgr.ui.web.view.impl;
+package org.activitymgr.ui.web.view.impl.internal;
 
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
-import org.activitymgr.ui.web.view.util.ResourceCache;
+import org.activitymgr.ui.web.view.IResourceCache;
 
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.ui.Alignment;
@@ -19,9 +19,9 @@ public class AuthenticationPanel extends GridLayout implements
 	private IAuthenticationLogic logic;
 
 	@SuppressWarnings("unused")
-	private ResourceCache resourceCache;
+	private IResourceCache resourceCache;
 
-	public AuthenticationPanel(ResourceCache resourceCache, String defaultUser) {
+	public AuthenticationPanel(IResourceCache resourceCache, String defaultUser) {
 		super(1, 1);
 		this.resourceCache = resourceCache;
 

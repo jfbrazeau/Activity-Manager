@@ -1,14 +1,15 @@
-package org.activitymgr.ui.web.view.util;
+package org.activitymgr.ui.web.view.impl.internal;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.activitymgr.ui.web.logic.ILabelProviderCallback.Icon;
+import org.activitymgr.ui.web.view.IResourceCache;
 
 import com.vaadin.server.Resource;
 import com.vaadin.server.ThemeResource;
 
-public class ResourceCache {
+public class ResourceCacheImpl implements IResourceCache {
 	
 	public static final String ONE_PIXEL_ICON = "one-pixel.gif";
 

@@ -1,11 +1,11 @@
-package org.activitymgr.ui.web.view.impl.dialogs;
+package org.activitymgr.ui.web.view.impl.internal.dialogs;
 
 import java.util.Collection;
 
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
-import org.activitymgr.ui.web.view.util.ResourceCache;
-import org.activitymgr.ui.web.view.util.TreeDatasource;
+import org.activitymgr.ui.web.view.IResourceCache;
+import org.activitymgr.ui.web.view.impl.internal.util.TreeDatasource;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -28,7 +28,7 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	private Tree taskTree;
 	private Label statusLabel;
 
-	public TaskChooserDialog(ResourceCache resourceCache) {
+	public TaskChooserDialog(IResourceCache resourceCache) {
         super(resourceCache, "Select a task");
         setModal(true);
 

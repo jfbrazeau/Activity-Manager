@@ -12,7 +12,7 @@ public interface IRootLogic extends ILogic<IRootLogic.View> {
 		
 		void showConfirm(String message, IGenericCallback<Boolean> callback);
 
-		void show(IView<?> view);
+		void setContentView(IView<?> contentView);
 
 		String getCookie(String name);
 		

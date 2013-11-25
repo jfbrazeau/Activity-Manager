@@ -38,7 +38,7 @@ public class RootLogicImpl implements IRootLogic {
 
 		// Model manager retrieval
 		// Create authentication logic
-		getView().show(new AuthenticationLogicImpl(this).getView());
+		getView().setContentView(new AuthenticationLogicImpl(this).getView());
 		
 		// Event listeners registration
 		context.getEventBus().register(CallbackExceptionEvent.class, new IEventListener() {
@@ -51,7 +51,7 @@ public class RootLogicImpl implements IRootLogic {
 		context.getEventBus().register(ConnectedCollaboratorEvent.class, new IEventListener() {
 			@Override
 			public void handle(AbstractEvent event) {
-				getView().show(new ContributionsLogicImpl(RootLogicImpl.this).getView());
+				getView().setContentView(new ContributionsLogicImpl(RootLogicImpl.this).getView());
 			}
 		});
 	}

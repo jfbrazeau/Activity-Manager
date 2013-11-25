@@ -1,4 +1,4 @@
-package org.activitymgr.ui.web.view.impl;
+package org.activitymgr.ui.web.view.impl.internal;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -12,7 +12,7 @@ import org.activitymgr.ui.web.logic.IContributionsLogic.ICollaborator;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.impl.IContributionCellLogicProviderExtension;
 import org.activitymgr.ui.web.view.IContributionColumnViewProviderExtension;
-import org.activitymgr.ui.web.view.util.ResourceCache;
+import org.activitymgr.ui.web.view.IResourceCache;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 
@@ -36,7 +36,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 
 	private IContributionsLogic logic;
 	
-	private ResourceCache resourceCache;
+	private IResourceCache resourceCache;
 
 	private DateField dateField;
 
@@ -62,7 +62,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 
 	private List<ShortcutListener> actions = new ArrayList<ShortcutListener>();
 
-	public ContributionsPanel(ResourceCache resourceCache) {
+	public ContributionsPanel(IResourceCache resourceCache) {
 		this.resourceCache = resourceCache;
 
 		setSpacing(true);

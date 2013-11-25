@@ -1,10 +1,11 @@
-package org.activitymgr.ui.web.view.util;
+package org.activitymgr.ui.web.view.impl.internal.util;
 
 import java.util.Arrays;
 import java.util.Collection;
 
 import org.activitymgr.ui.web.logic.ILabelProviderCallback;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
+import org.activitymgr.ui.web.view.IResourceCache;
 
 import com.vaadin.data.Container;
 import com.vaadin.data.Property;
@@ -23,7 +24,7 @@ public class TreeDatasource extends
 
 	private ITreeContentProviderCallback contentProvider;
 
-	public TreeDatasource(ResourceCache resourceCache,
+	public TreeDatasource(IResourceCache resourceCache,
 			ITreeContentProviderCallback contentProvider) {
 		super(resourceCache);
 		this.contentProvider = contentProvider;
@@ -119,7 +120,7 @@ class TreeItem extends AbstractItem {
 	
 	private ILabelProviderCallback labelProvider;
 
-	public TreeItem(ResourceCache resourceCache, ILabelProviderCallback labelProvider) {
+	public TreeItem(IResourceCache resourceCache, ILabelProviderCallback labelProvider) {
 		super(resourceCache);
 		this.labelProvider = labelProvider;
 	}

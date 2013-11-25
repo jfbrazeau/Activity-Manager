@@ -2,12 +2,13 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="org.activitymgr.ui.web.view.contributionColumnViewProvider" name="Contribution Column View Provider" schema="schema/org.activitymgr.ui.web.view.contributionColumnViewProvider.exsd"/>
+   <extension-point id="org.activitymgr.ui.web.view.viewFactory" name="View Factory" schema="schema/org.activitymgr.ui.web.view.viewFactory.exsd"/>
    <extension
          id="application"
          point="org.eclipse.core.runtime.applications">
       <application>
          <run
-               class="org.activitymgr.ui.web.view.impl.ActivityManagerWebUIApplication">
+               class="org.activitymgr.ui.web.view.impl.internal.ActivityManagerWebUIApplication">
          </run>
       </application>
    </extension>
@@ -27,7 +28,13 @@
          point="org.vaadin.application">
       <vaadin-ui
             productionMode="true"
-            ui="org.activitymgr.ui.web.view.impl.ActivityManagerUI">
+            ui="org.activitymgr.ui.web.view.impl.internal.ActivityManagerUI">
       </vaadin-ui>
+   </extension>
+   <extension
+         point="org.activitymgr.ui.web.view.viewFactory">
+      <viewFactory
+            class="org.activitymgr.ui.web.view.impl.internal.DefaultViewFactoryImpl">
+      </viewFactory>
    </extension>
 </plugin>

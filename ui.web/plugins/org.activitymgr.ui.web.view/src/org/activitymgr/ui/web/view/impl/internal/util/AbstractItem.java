@@ -1,4 +1,6 @@
-package org.activitymgr.ui.web.view.util;
+package org.activitymgr.ui.web.view.impl.internal.util;
+
+import org.activitymgr.ui.web.view.IResourceCache;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
@@ -6,13 +8,13 @@ import com.vaadin.data.Property;
 @SuppressWarnings("serial")
 public abstract class AbstractItem implements Item {
 	
-	private ResourceCache resourceCache;
+	private IResourceCache resourceCache;
 	
-	public AbstractItem(ResourceCache resourceCache) {
+	public AbstractItem(IResourceCache resourceCache) {
 		this.resourceCache = resourceCache;
 	}
 	
-	public ResourceCache getResourceCache() {
+	public IResourceCache getResourceCache() {
 		return resourceCache;
 	}
 

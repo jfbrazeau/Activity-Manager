@@ -1,22 +1,19 @@
-package org.activitymgr.ui.web.view.impl;
+package org.activitymgr.ui.web.view.impl.internal;
 
 import javax.servlet.http.Cookie;
 
 import org.activitymgr.ui.web.logic.ActivityManagerLogic;
-import org.activitymgr.ui.web.logic.IAuthenticationLogic;
-import org.activitymgr.ui.web.logic.IContributionsLogic;
 import org.activitymgr.ui.web.logic.IGenericCallback;
-import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.IRootLogic;
-import org.activitymgr.ui.web.logic.ITaskChooserLogic;
-import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.IViewFactory;
-import org.activitymgr.ui.web.view.impl.dialogs.TaskChooserDialog;
-import org.activitymgr.ui.web.view.impl.dialogs.YesNoDialog;
-import org.activitymgr.ui.web.view.util.LabelView;
-import org.activitymgr.ui.web.view.util.ResourceCache;
-import org.activitymgr.ui.web.view.util.TextFieldView;
+import org.activitymgr.ui.web.view.IContributionColumnViewProviderExtension;
+import org.activitymgr.ui.web.view.IResourceCache;
+import org.activitymgr.ui.web.view.impl.AbstractViewFactoryExtension;
+import org.activitymgr.ui.web.view.impl.internal.dialogs.YesNoDialog;
+import org.activitymgr.ui.web.view.impl.internal.util.ComposedViewFactory;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.server.VaadinRequest;
@@ -28,10 +25,9 @@ import com.vaadin.ui.UI;
 
 @Theme("activitymgr")
 @SuppressWarnings("serial")
-public class ActivityManagerUI extends UI implements IViewFactory,
-		IRootLogic.View {
+public class ActivityManagerUI extends UI implements IRootLogic.View {
 
-	private ResourceCache resourceCache;
+	private IResourceCache resourceCache;
 	@SuppressWarnings("unused")
 	private IRootLogic logic;
 	private Cookie[] cookies;
@@ -39,34 +35,23 @@ public class ActivityManagerUI extends UI implements IViewFactory,
 	@Override
 	protected void init(VaadinRequest request) {
 		// Create the resource cache
-		resourceCache = new ResourceCache();
+		resourceCache = new ResourceCacheImpl();
 		// Fetch all cookies from the request
 		cookies = request.getCookies();
-		// Create the logic
-		new ActivityManagerLogic(this);
-	}
-
-	@Override
-	public IView<?> createView(Class<?> logicType, Object... parameters) {
-		if (IRootLogic.class.isAssignableFrom(logicType)) {
-			return this;
-		} else if (IAuthenticationLogic.class.isAssignableFrom(logicType)) {
-			String defaultUser = (String) (parameters.length > 0 ? parameters[0] : null);
-			return new AuthenticationPanel(resourceCache, defaultUser);
-		} else if (IContributionsLogic.class.isAssignableFrom(logicType)) {
-			return new ContributionsPanel(resourceCache);
-		} else if (ITaskChooserLogic.class.isAssignableFrom(logicType)) {
-			TaskChooserDialog dialog = new TaskChooserDialog(resourceCache);
-			getUI().addWindow(dialog);
-			return dialog;
-		} else if (ILabelLogic.class.isAssignableFrom(logicType)) {
-			return new LabelView();
-		} else if (ITextFieldLogic.class.isAssignableFrom(logicType)) {
-			return new TextFieldView();
-		} else {
-			throw new IllegalStateException("Unexpected logic type '"
-					+ logicType + "'");
+		// Create the composed view factory
+		ComposedViewFactory composedViewFactory = new ComposedViewFactory();
+		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.view.viewFactory");
+		for (IConfigurationElement cfg : cfgs) {
+			try {
+				AbstractViewFactoryExtension aViewFactory = (AbstractViewFactoryExtension) cfg.createExecutableExtension("class"); 
+				aViewFactory.initialize(this, resourceCache);
+				composedViewFactory.register(aViewFactory);
+			} catch (CoreException e) {
+				throw new IllegalStateException("Unable to load view factory '" + cfg.getAttribute("class") + "'", e);
+			}
 		}
+		// Create the logic
+		new ActivityManagerLogic(composedViewFactory);
 	}
 
 	@Override
@@ -102,7 +87,7 @@ public class ActivityManagerUI extends UI implements IViewFactory,
 	}
 
 	@Override
-	public void show(IView<?> view) {
+	public void setContentView(IView<?> view) {
 		setContent((Component) view);
 	}
 
