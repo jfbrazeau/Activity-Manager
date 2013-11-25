@@ -51,7 +51,9 @@ public class RootLogicImpl implements IRootLogic {
 		context.getEventBus().register(ConnectedCollaboratorEvent.class, new IEventListener() {
 			@Override
 			public void handle(AbstractEvent event) {
-				getView().setContentView(new ContributionsLogicImpl(RootLogicImpl.this).getView());
+				TableFolderLogicImpl folderLogic = new TableFolderLogicImpl(RootLogicImpl.this);
+				getView().setContentView(folderLogic.getView());
+				folderLogic.addTab("Contributions", new ContributionsLogicImpl(RootLogicImpl.this));
 			}
 		});
 	}

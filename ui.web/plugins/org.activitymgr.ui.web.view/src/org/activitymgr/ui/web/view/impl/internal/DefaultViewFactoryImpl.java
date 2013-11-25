@@ -4,6 +4,7 @@ import org.activitymgr.ui.web.logic.IAuthenticationLogic;
 import org.activitymgr.ui.web.logic.IContributionsLogic;
 import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.IRootLogic;
+import org.activitymgr.ui.web.logic.ITabFolderLogic;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.ILogic.IView;
@@ -33,6 +34,8 @@ public class DefaultViewFactoryImpl extends AbstractViewFactoryExtension {
 			return new LabelView();
 		} else if (ITextFieldLogic.class.isAssignableFrom(logicType)) {
 			return new TextFieldView();
+		} else if (ITabFolderLogic.class.isAssignableFrom(logicType)) {
+			return new TabFolderViewImpl();
 		} else {
 			return null;
 		}

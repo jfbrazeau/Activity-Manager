@@ -6,8 +6,6 @@ import org.activitymgr.ui.web.logic.ActivityManagerLogic;
 import org.activitymgr.ui.web.logic.IGenericCallback;
 import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.IRootLogic;
-import org.activitymgr.ui.web.logic.IViewFactory;
-import org.activitymgr.ui.web.view.IContributionColumnViewProviderExtension;
 import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.AbstractViewFactoryExtension;
 import org.activitymgr.ui.web.view.impl.internal.dialogs.YesNoDialog;
