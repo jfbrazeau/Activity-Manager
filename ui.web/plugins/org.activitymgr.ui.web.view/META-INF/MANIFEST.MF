@@ -6,7 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jean-Francois Brazeau
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.vaadin.osgiappcontainer;visibility:=reexport,
- org.activitymgr.ui.web.logic,
+ org.activitymgr.ui.web.logic;visibility:=reexport,
  org.eclipse.equinox.app,
  org.eclipse.core.runtime
 Bundle-ActivationPolicy: lazy

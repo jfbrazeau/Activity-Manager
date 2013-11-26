@@ -4,6 +4,7 @@ import org.activitymgr.core.DbException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
+import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.IAuthenticatorExtension;
 import org.activitymgr.ui.web.logic.impl.LogicContext;
@@ -17,8 +18,8 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 
 	private IAuthenticatorExtension authenticator;
 	
-	public AuthenticationLogicImpl(RootLogicImpl parent) {
-		super(parent);
+	public AuthenticationLogicImpl(ILogic<?> parent, LogicContext context) {
+		super(parent, context);
 		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.authenticator");
 
 		// Authenticator retrieval

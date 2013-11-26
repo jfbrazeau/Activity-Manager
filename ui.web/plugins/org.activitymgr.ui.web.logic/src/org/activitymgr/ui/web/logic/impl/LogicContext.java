@@ -120,7 +120,7 @@ public class LogicContext {
 	@SuppressWarnings("unchecked")
 	public <T> T buildTransactionalWrapper(final T wrapped, Class<?> interfaceToWrapp) {
 		return (T) Proxy.newProxyInstance(
-				LogicContext.class.getClassLoader(),
+				wrapped.getClass().getClassLoader(),
 				// TODO add comments
 				new Class<?>[] { interfaceToWrapp }, new InvocationHandler() {
 					@Override

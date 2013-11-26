@@ -16,16 +16,12 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 
 	private VIEW view;
 
-	public AbstractLogicImpl(AbstractLogicImpl<?> parent) {
-		this(parent, parent.getContext());
-	}
-
-	public AbstractLogicImpl(RootLogicImpl parent) {
+	protected AbstractLogicImpl(AbstractLogicImpl<?> parent) {
 		this(parent, parent.getContext());
 	}
 
 	@SuppressWarnings("unchecked")
-	private AbstractLogicImpl(ILogic<?> parent, LogicContext context) {
+	protected AbstractLogicImpl(ILogic<?> parent, LogicContext context) {
 		this.parent = parent;
 		this.context = context;
 		// Create transactional wrapper
