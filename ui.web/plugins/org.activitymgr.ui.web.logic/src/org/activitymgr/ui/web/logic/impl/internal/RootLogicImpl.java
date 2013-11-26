@@ -1,5 +1,7 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 
 import org.activitymgr.ui.web.logic.AbstractEvent;
@@ -7,9 +9,11 @@ import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.IRootLogic;
 import org.activitymgr.ui.web.logic.IViewFactory;
+import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.LogicContext;
 import org.activitymgr.ui.web.logic.impl.event.CallbackExceptionEvent;
 import org.activitymgr.ui.web.logic.impl.event.ConnectedCollaboratorEvent;
+import org.eclipse.core.runtime.IConfigurationElement;
 
 public class RootLogicImpl implements IRootLogic {
 
@@ -51,9 +55,36 @@ public class RootLogicImpl implements IRootLogic {
 		context.getEventBus().register(ConnectedCollaboratorEvent.class, new IEventListener() {
 			@Override
 			public void handle(AbstractEvent event) {
-				TableFolderLogicImpl folderLogic = new TableFolderLogicImpl(RootLogicImpl.this);
-				getView().setContentView(folderLogic.getView());
-				folderLogic.addTab("Contributions", new ContributionsLogicImpl(RootLogicImpl.this));
+				// Create the tab container
+				TableFolderLogicImpl tabFolderLogic = new TableFolderLogicImpl(RootLogicImpl.this);
+				getView().setContentView(tabFolderLogic.getView());
+				// Iterate over the provided tabs and create it
+				IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.tabLogic");
+				for (IConfigurationElement cfg : cfgs) {
+					Exception exc = null;
+					try {
+						Class<AbstractLogicImpl<?>> tabLogicClass = Activator.getDefault().<AbstractLogicImpl<?>>loadClass(cfg.getContributor().getName(), cfg.getAttribute("class"));
+						// Tab logic is supposed to have a declared constructor accepting an abstract logic as parent
+						Constructor<AbstractLogicImpl<?>> constructor = tabLogicClass.getDeclaredConstructor(AbstractLogicImpl.class);
+						AbstractLogicImpl<?> tabLogic = constructor.newInstance(tabFolderLogic);
+						tabFolderLogic.addTab(cfg.getAttribute("label"), tabLogic);
+					} catch (ClassNotFoundException e) {
+						exc = e;
+					} catch (NoSuchMethodException e) {
+						exc = e;
+					} catch (InstantiationException e) {
+						exc = e;
+					} catch (IllegalAccessException e) {
+						exc = e;
+					} catch (InvocationTargetException e) {
+						exc = e;
+					}
+					if (exc !=null) {
+						System.err.println("Couldn't create a tab logic");
+						exc.printStackTrace();
+					}
+				}
+				
 			}
 		});
 	}

@@ -6,11 +6,10 @@ import java.util.List;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskContributions;
 import org.activitymgr.ui.web.logic.IContributionsLogic;
-import org.activitymgr.ui.web.logic.impl.internal.RootLogicImpl;
 
 public abstract class AbstractContributionLogicImpl extends AbstractLogicImpl<IContributionsLogic.View> {
 
-	public AbstractContributionLogicImpl(RootLogicImpl parent) {
+	public AbstractContributionLogicImpl(AbstractLogicImpl<?> parent) {
 		super(parent);
 	}
 

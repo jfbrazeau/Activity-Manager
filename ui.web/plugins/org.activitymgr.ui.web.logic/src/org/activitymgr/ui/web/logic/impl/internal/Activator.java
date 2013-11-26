@@ -9,6 +9,7 @@ import java.util.Map;
 import org.activitymgr.core.IModelMgr;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -50,6 +51,16 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer {
 			serviceTrackers.put(cl, st);
 			st.open();
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <TYPE> Class<TYPE> loadClass(String bundleId, String className) throws ClassNotFoundException {
+		for (Bundle b : context.getBundles()) {
+			if (bundleId.equals(b.getSymbolicName())) {
+				return (Class<TYPE>) b.loadClass(className);
+			}
+		}
+		return null;
 	}
 
 	protected IModelMgr getModelMgr() {

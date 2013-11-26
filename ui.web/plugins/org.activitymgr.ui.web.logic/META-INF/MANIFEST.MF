@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Activity Manager Wrb UI Logic
+Bundle-Name: Activity Manager Web UI Logic
 Bundle-SymbolicName: org.activitymgr.ui.web.logic;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jean-Francois Brazeau

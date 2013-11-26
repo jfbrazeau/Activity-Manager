@@ -7,6 +7,7 @@
    <extension-point id="org.activitymgr.ui.web.logic.weekContributionsProvider" name="Week Contributions Provider" schema="schema/org.activitymgr.ui.web.logic.weekContributionsProvider.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.contributionAction" name="ContributionsUI Action" schema="schema/org.activitymgr.ui.web.logic.contributionAction.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.additionalModules" name="Additional Guice Modules" schema="schema/org.activitymgr.ui.web.logic.additionalModules.exsd"/>
+   <extension-point id="org.activitymgr.ui.web.logic.tabLogic" name="Tab Logic Provider" schema="schema/org.activitymgr.ui.web.logic.tabLogic.exsd"/>
    <extension
          point="org.activitymgr.ui.web.logic.contributionAction">
       <contributionAction
@@ -15,5 +16,12 @@
             label="New task"
             shortcutKey="CTRL+SHIFT+N">
       </contributionAction>
+   </extension>
+   <extension
+         point="org.activitymgr.ui.web.logic.tabLogic">
+      <tab
+            class="org.activitymgr.ui.web.logic.impl.internal.ContributionsLogicImpl"
+            label="Contributions">
+      </tab>
    </extension>
 </plugin>

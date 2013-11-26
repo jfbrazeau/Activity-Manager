@@ -29,6 +29,7 @@ import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionLogicImpl;
+import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractWeekContributionsProviderExtension;
 import org.activitymgr.ui.web.logic.impl.DefaultContributionCellLogicProvider;
 import org.activitymgr.ui.web.logic.impl.IContributionCellLogicProviderExtension;
@@ -65,7 +66,7 @@ public class ContributionsLogicImpl extends AbstractContributionLogicImpl implem
 	private Collaborator selectedCollaborator;
 	private Map<String, IContributionsActionHandler> actionHandlers = new HashMap<String, IContributionsActionHandler>();
 
-	public ContributionsLogicImpl(RootLogicImpl parent) {
+	public ContributionsLogicImpl(AbstractLogicImpl<?> parent) {
 		super(parent);
 
 		// Retrieve collaborators list
