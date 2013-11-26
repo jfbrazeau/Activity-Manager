@@ -35,12 +35,12 @@ public class LogicContext {
 	private IViewFactory viewFactory;
 	private IEventBus eventBus = new EventBusImpl();
 	private Collaborator connectedCollaborator;
+	// TODO datasource musn't be declined by logic context
 	private BasicDataSource datasource;
 	private ThreadLocal<DbTransactionContext> transactions;
 	private Injector injector;
 
 	public LogicContext(IViewFactory viewFactory, String jdbcDriver, String jdbcUrl, String jdbcUser, String jdbcPassword) throws SQLException {
-		System.err.println("*** NEW LOGIC CONTEXT");
 		this.viewFactory = viewFactory;
 
 		List<AbstractModule> modules = new ArrayList<AbstractModule>();
