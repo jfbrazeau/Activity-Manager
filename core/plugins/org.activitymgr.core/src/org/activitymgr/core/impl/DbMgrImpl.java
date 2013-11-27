@@ -1353,7 +1353,7 @@ public class DbMgrImpl implements IDbMgr {
 	 *            the request.
 	 */
 	private void completeSelectTaskRequest(StringWriter request) {
-		// HSQLDB expects all the selected columns in the group by
+		// HSQLDB expects all selected columns to be present in the group by
 		// directive
 		request.append(" group by theTask.tsk_id, theTask.tsk_path, theTask.tsk_number, theTask.tsk_code, theTask.tsk_name, theTask.tsk_budget, theTask.tsk_initial_cons, theTask.tsk_todo, theTask.tsk_comment"); //$NON-NLS-1$
 	}
