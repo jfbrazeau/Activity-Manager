@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Activity Manager UI (Web)" uid="org.activitymgr.ui.web.view.product" id="org.activitymgr.ui.web.view.product" application="org.activitymgr.ui.web.view.application" useFeatures="false" includeLaunchers="true">
+<product name="Activity Manager UI (Web)" uid="org.activitymgr.ui.web.view.product" id="org.activitymgr.ui.web.view.product" application="org.activitymgr.ui.web.view.application" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
@@ -27,6 +27,7 @@
    <plugins>
       <plugin id="javax.servlet"/>
       <plugin id="org.activitymgr.core"/>
+      <plugin id="org.activitymgr.core.h2fragment" fragment="true"/>
       <plugin id="org.activitymgr.core.hsqldbfragment" fragment="true"/>
       <plugin id="org.activitymgr.core.mysqlfragment" fragment="true"/>
       <plugin id="org.activitymgr.ui.web.logic"/>
@@ -59,6 +60,10 @@
       <plugin id="org.eclipse.osgi.services"/>
       <plugin id="org.vaadin.osgiappcontainer"/>
    </plugins>
+
+   <features>
+      <feature id="org.activitymgr.ui.web.feature" version="1.0.0.qualifier"/>
+   </features>
 
    <configurations>
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
