@@ -17,6 +17,7 @@ import org.activitymgr.core.DbTransaction;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.ui.web.logic.IEventBus;
+import org.activitymgr.ui.web.logic.IFeatureAccessManager;
 import org.activitymgr.ui.web.logic.IViewFactory;
 import org.activitymgr.ui.web.logic.impl.event.EventBusImpl;
 import org.activitymgr.ui.web.logic.impl.internal.Activator;
@@ -39,9 +40,11 @@ public class LogicContext {
 	private BasicDataSource datasource;
 	private ThreadLocal<DbTransactionContext> transactions;
 	private Injector injector;
+	private IFeatureAccessManager accessManager;
 
-	public LogicContext(IViewFactory viewFactory, String jdbcDriver, String jdbcUrl, String jdbcUser, String jdbcPassword) throws SQLException {
+	public LogicContext(IViewFactory viewFactory, IFeatureAccessManager accessManager, String jdbcDriver, String jdbcUrl, String jdbcUser, String jdbcPassword) throws SQLException {
 		this.viewFactory = viewFactory;
+		this.accessManager = accessManager;
 
 		List<AbstractModule> modules = new ArrayList<AbstractModule>();
 		modules.add(new CoreModule());
@@ -95,6 +98,10 @@ public class LogicContext {
 			transactions.remove();
 			con.close();
 		}
+	}
+
+	public IFeatureAccessManager getAccessManager() {
+		return accessManager;
 	}
 
 	public <T> T getComponent(Class<T> c) {
