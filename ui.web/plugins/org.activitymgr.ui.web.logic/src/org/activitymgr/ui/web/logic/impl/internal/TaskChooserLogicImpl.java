@@ -40,8 +40,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				if (selectedTaskIds.contains(taskId)) {
 					newStatus = "This task is already selected";
 				} else {
-					Task task = getModelMgr().getTask(taskId);
-					if (task.getSubTasksCount() != 0) {
+					if (!getModelMgr().isLeaf(taskId)) {
 						newStatus = "You cannot select a container task";
 					}
 					else {

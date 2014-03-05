@@ -155,6 +155,15 @@ public interface IDbMgr {
 	boolean durationIsUsed(Duration duration) throws DbException;
 
 	/**
+	 * @param parentTaskId
+	 *            the task identifier.
+	 * @return the sub tasks count.
+	 * @throws DbException
+	 *             thrown if a DAO exception occurs.
+	 */
+	int getSubTasksCount(long parentTaskId) throws DbException;
+
+	/**
 	 * @param collaboratorId
 	 *            l'identifiant du collaborateur recherché.
 	 * @return le collaborateur dont l'identifiant est spécifié.
@@ -199,8 +208,8 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Collaborator[] getContributors(Task task,
-			Calendar fromDate, Calendar toDate) throws DbException;
+	Collaborator[] getContributors(Task task, Calendar fromDate, Calendar toDate)
+			throws DbException;
 
 	/**
 	 * @param contributor
@@ -247,7 +256,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	long getContributionsSum(Collaborator contributor, Task task, 
+	long getContributionsSum(Collaborator contributor, Task task,
 			Calendar fromDate, Calendar toDate) throws DbException;
 
 	/**
@@ -261,8 +270,8 @@ public interface IDbMgr {
 
 	/**
 	 * @param onlyActiveDurations
-	 *            booléen indiquant si l'on ne doit retourner que les
-	 *            durées actives.
+	 *            booléen indiquant si l'on ne doit retourner que les durées
+	 *            actives.
 	 * @return la liste des durées.
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
@@ -280,9 +289,10 @@ public interface IDbMgr {
 
 	/**
 	 * @return the root tasks count.
-	 * @throws DbException thrown if a database exception occurs.
+	 * @throws DbException
+	 *             thrown if a database exception occurs.
 	 */
-	int getRootTasksCount() throws DbException;	
+	int getRootTasksCount() throws DbException;
 
 	/**
 	 * @param path
@@ -300,7 +310,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Task[] getSubtasks(Task parentTask) throws DbException;
+	Task[] getSubTasks(Task parentTask) throws DbException;
 
 	/**
 	 * Retourn la liste des taches correspondant au filtre de recherche

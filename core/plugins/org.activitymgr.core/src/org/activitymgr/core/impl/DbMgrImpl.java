@@ -464,6 +464,42 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.IDbMgr#subTasksCount(long)
+	 */
+	public int getSubTasksCount(long parentTaskId) throws DbException {
+		PreparedStatement pStmt = null;
+		ResultSet rs = null;
+		try {
+			// Request preparation
+			pStmt = tx().prepareStatement(
+					"select theTask.tsk_id, theTask.tsk_path, theTask.tsk_number, count(subTask.tsk_id)"
+				+ " from TASK as theTask left join TASK as subTask on subTask.tsk_path = concat(theTask.tsk_path, theTask.tsk_number)");
+
+			// Exécution de la requête
+			rs = pStmt.executeQuery();
+
+			// Préparation du résultat
+			if (!rs.next())
+				throw new DbException(
+						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
+			int result = rs.getInt(1);
+
+			// Fermeture du ResultSet
+			pStmt.close();
+			pStmt = null;
+
+			// Retour du résultat
+			return result;
+		} catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DbException(
+					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_ID_FAILURE"), e); //$NON-NLS-1$ //$NON-NLS-2$
+		} finally {
+			lastAttemptToClose(pStmt);
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -1088,10 +1124,10 @@ public class DbMgrImpl implements IDbMgr {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.activitymgr.core.IDbMgr#getSubtasks(org.activitymgr.core.beans.Task)
+	 * org.activitymgr.core.IDbMgr#getSubTasks(org.activitymgr.core.beans.Task)
 	 */
 	@Override
-	public Task[] getSubtasks(Task parentTask) throws DbException {
+	public Task[] getSubTasks(Task parentTask) throws DbException {
 		// Récupération du chemin à partir de la tache parent
 		String fullpath = parentTask == null ? "" : parentTask.getFullPath(); //$NON-NLS-1$
 		log.debug("Looking for tasks with path='" + fullpath + "'"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1384,7 +1420,6 @@ public class DbMgrImpl implements IDbMgr {
 			task.setInitiallyConsumed(rs.getLong(7));
 			task.setTodo(rs.getLong(8));
 			task.setComment(rs.getString(9));
-			task.setSubTasksCount(rs.getInt(10));
 		}
 		return task;
 	}
@@ -1580,39 +1615,27 @@ public class DbMgrImpl implements IDbMgr {
 		try {
 			// Préparation du résultat
 			TaskSums taskSums = new TaskSums();
-			boolean taskIsLeaf = task != null && task.getSubTasksCount() == 0;
 
 			/**
 			 * Calcul de la partie indépendante des contributions (budget /
 			 * consommation initiale / reste à faire
 			 */
-
-			// Si la tache n'admet pas de sous-taches, le cumul de
-			// budget, de consommé initial, de reste à faire sont
-			// égaux à ceux de la tache
-			if (taskIsLeaf) {
-				taskSums.setBudgetSum(task.getBudget());
-				taskSums.setInitiallyConsumedSum(task.getInitiallyConsumed());
-				taskSums.setTodoSum(task.getTodo());
-			}
-			// Sinon, il faut calculer
-			else {
-				// Calcul des cumuls
-				pStmt = tx()
-						.prepareStatement(
-								"select sum(tsk_budget), sum(tsk_initial_cons), sum(tsk_todo) from TASK where tsk_path like ?"); //$NON-NLS-1$
-				pStmt.setString(1, (task == null ? "" : task.getFullPath())
-						+ "%");
-				rs = pStmt.executeQuery();
-				if (!rs.next())
-					throw new DbException(
-							Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
-				taskSums.setBudgetSum(rs.getLong(1));
-				taskSums.setInitiallyConsumedSum(rs.getLong(2));
-				taskSums.setTodoSum(rs.getLong(3));
-				pStmt.close();
-				pStmt = null;
-			}
+			pStmt = tx()
+					.prepareStatement(
+							"select sum(tsk_budget), sum(tsk_initial_cons), sum(tsk_todo) from TASK where concat(tsk_path, tsk_number)=? or (tsk_path like ?)"); //$NON-NLS-1$
+			String path = (task == null ? "" : task.getFullPath());
+			pStmt.setString(1, path);
+			pStmt.setString(2, path
+					+ "%");
+			rs = pStmt.executeQuery();
+			if (!rs.next())
+				throw new DbException(
+						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
+			taskSums.setBudgetSum(rs.getLong(1));
+			taskSums.setInitiallyConsumedSum(rs.getLong(2));
+			taskSums.setTodoSum(rs.getLong(3));
+			pStmt.close();
+			pStmt = null;
 
 			/**
 			 * Calcul du consommé
@@ -1807,7 +1830,7 @@ public class DbMgrImpl implements IDbMgr {
 		PreparedStatement pStmt = null;
 		try {
 			// Control sur les sous taches
-			Task[] subTasks = getSubtasks(task);
+			Task[] subTasks = getSubTasks(task);
 			for (int i = 0; i < subTasks.length; i++) {
 				removeTask(subTasks[i]);
 			}

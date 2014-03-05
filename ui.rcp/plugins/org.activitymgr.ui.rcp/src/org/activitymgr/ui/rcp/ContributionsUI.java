@@ -1044,9 +1044,14 @@ public class ContributionsUI extends AbstractTableMgr implements
 		ITaskChooserValidator taskChooserValidator = new ITaskChooserValidator() {
 			public void validateChoosenTask(Task selectedTask)
 					throws DialogException {
-				if (selectedTask.getSubTasksCount() > 0)
+				try {
+					if (modelMgr.isLeaf(selectedTask.getId()))
+						throw new DialogException(
+								Strings.getString("ContributionsUI.errors.PARENT_TASK_SELECTED"), null);//$NON-NLS-1$
+				} catch (DbException e) {
 					throw new DialogException(
-							Strings.getString("ContributionsUI.errors.PARENT_TASK_SELECTED"), null); //$NON-NLS-1$
+							e.getMessage(), null);
+				} 
 			}
 		};
 		// Retour du résultat

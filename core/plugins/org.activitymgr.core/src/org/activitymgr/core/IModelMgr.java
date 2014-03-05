@@ -226,6 +226,26 @@ public interface IModelMgr {
 	public void exportToXML(OutputStream out) throws IOException, DbException;
 
 	/**
+	 * Tells whether the given task is leaf or not.
+	 * 
+	 * @param taskId
+	 *            the task identifier.
+	 * @return <code>true</code> if the task is leaf.
+	 * @throws DbException
+	 *             thrown if a DAO exception occurs.
+	 */
+	boolean isLeaf(long taskId) throws DbException;
+
+	/**
+	 * @param parentTaskId
+	 *            the task identifier.
+	 * @return the sub tasks count.
+	 * @throws DbException
+	 *             thrown if a DAO exception occurs.
+	 */
+	int getSubTasksCount(long parentTaskId) throws DbException;
+
+	/**
 	 * @param orderByClauseFieldIndex
 	 *            index de l'attribut utilisé pour le tri.
 	 * @param ascendantSort

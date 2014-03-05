@@ -28,6 +28,7 @@
 package org.activitymgr.ui.rcp.dialogs;
 
 
+import org.activitymgr.core.DbException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.util.Strings;
@@ -155,7 +156,12 @@ public class TaskChooserTree extends AbstractTableMgr implements
 	public boolean hasChildren(Object element) {
 		log.debug("ITreeContentProvider.getChildren(" + element + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		final Task task = (Task) element;
-		return task.getSubTasksCount() > 0;
+		try {
+			return modelMgr.getSubTasksCount(task.getId()) > 0;
+		} catch (DbException e) {
+			log.error(e);
+			return false;
+		}
 	}
 
 	/*

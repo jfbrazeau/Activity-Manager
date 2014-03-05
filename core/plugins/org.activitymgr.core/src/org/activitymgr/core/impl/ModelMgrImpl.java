@@ -156,7 +156,7 @@ public class ModelMgrImpl implements IModelMgr {
 			Task task = it.next();
 			log.debug("Updating path of task '" + task.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 			// Mise à jour des taches filles
-			Task[] subTasks = dao.getSubtasks(task);
+			Task[] subTasks = dao.getSubTasks(task);
 			if (subTasks.length > 0)
 				changeTasksPaths(subTasks, oldPathLength, newPath);
 			// Puis mise à jour de la tache elle-même
@@ -190,7 +190,7 @@ public class ModelMgrImpl implements IModelMgr {
 			// La suite des controles n'est donc exécutée que si la tache
 			// n'admet
 			// pas de sous-tâches
-			if (task.getSubTasksCount() == 0) {
+			if (getSubTasksCount(task.getId()) == 0) {
 				// Une tache ne peut admettre une sous-tache que si elle
 				// n'est pas déja associée à un consommé (ie: à des
 				// contributions)
@@ -225,7 +225,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de sous-tache.
 	 */
-	private void checkTaskPathAndUpdateSubTasksCount(Task task)
+	private void checkTaskPath(Task task)
 			throws ModelException, DbException {
 		boolean noErrorOccured = false;
 		Task _task = null;
@@ -240,7 +240,6 @@ public class ModelMgrImpl implements IModelMgr {
 			if (_task.getNumber() != task.getNumber())
 				throw new ModelException(
 						Strings.getString("ModelMgr.errors.TASK_NUMBER_UPDATE_DETECTED")); //$NON-NLS-1$
-			task.setSubTasksCount(_task.getSubTasksCount());
 			// Si aucune erreur n'est intervenue...
 			noErrorOccured = true;
 		} finally {
@@ -310,10 +309,10 @@ public class ModelMgrImpl implements IModelMgr {
 		log.info("createContribution(" + contribution + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		// La tache ne peut accepter une contribution que
 		// si elle n'admet aucune sous-tache
-		Task task = dao.getTask(contribution.getTaskId());
-		if (task.getSubTasksCount() > 0)
+		if (getSubTasksCount(contribution.getTaskId()) > 0)
 			throw new ModelException(
 					Strings.getString("ModelMgr.errors.TASK_WITH_AT_LEAST_ONE_SUBTASK_CANNOT_ACCEPT_CONTRIBUTIONS")); //$NON-NLS-1$
+		Task task = dao.getTask(contribution.getTaskId());
 
 		// La durée existe-t-elle ?
 		if (dao.getDuration(contribution.getDurationId()) == null) {
@@ -580,7 +579,7 @@ public class ModelMgrImpl implements IModelMgr {
 		XmlHelper.println(out, "<!DOCTYPE model SYSTEM \"activitymgr.dtd\">"); //$NON-NLS-1$
 
 		// Ajout des sommes de controle
-		Task[] rootTasks = dao.getSubtasks(null);
+		Task[] rootTasks = dao.getSubTasks(null);
 		if (rootTasks.length > 0) {
 			XmlHelper.println(out, "<!-- "); //$NON-NLS-1$
 			XmlHelper
@@ -721,7 +720,7 @@ public class ModelMgrImpl implements IModelMgr {
 	private void exportSubTasksToXML(OutputStream out, String indent,
 			Task parentTask, String parentCodePath,
 			Map<Long, String> taskCodesPathMap) throws IOException, DbException {
-		Task[] tasks = dao.getSubtasks(parentTask);
+		Task[] tasks = dao.getSubTasks(parentTask);
 		if (tasks.length > 0) {
 			// Cas particulier pour la racine
 			if (parentTask == null)
@@ -747,15 +746,29 @@ public class ModelMgrImpl implements IModelMgr {
 					XmlHelper.printTextNode(out, indent,
 							XmlHelper.COMMENT_NODE, task.getComment());
 				XmlHelper.endXmlNode(out, "    ", XmlHelper.TASK_NODE); //$NON-NLS-1$
-				if (task.getSubTasksCount() > 0) {
-					exportSubTasksToXML(out, indent, task, taskCodePath,
-							taskCodesPathMap);
-				}
+				exportSubTasksToXML(out, indent, task, taskCodePath,
+						taskCodesPathMap);
 			}
 			// Cas particulier pour la racine
 			if (parentTask == null)
 				XmlHelper.endXmlNode(out, "  ", XmlHelper.TASKS_NODE); //$NON-NLS-1$
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.IModelMgr#isLeaf(long)
+	 */
+	@Override
+	public boolean isLeaf(long parentTaskId) throws DbException {
+		return getSubTasksCount(parentTaskId) > 0;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.IModelMgr#getSubTasksCount(long)
+	 */
+	@Override
+	public int getSubTasksCount(long parentTaskId) throws DbException {
+		return dao.getSubTasksCount(parentTaskId);
 	}
 
 	/*
@@ -864,7 +877,7 @@ public class ModelMgrImpl implements IModelMgr {
 		// Vérification de la tache (le chemin de la tache doit être le bon
 		// pour que le calcul le soit)
 		if (task != null)
-			checkTaskPathAndUpdateSubTasksCount(task);
+			checkTaskPath(task);
 
 		// Control sur la date
 		checkInterval(fromDate, toDate);
@@ -1097,7 +1110,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 * .Task)
 	 */
 	public Task[] getSubtasks(Task parentTask) throws DbException {
-		return dao.getSubtasks(parentTask);
+		return dao.getSubTasks(parentTask);
 	}
 
 	/*
@@ -1227,7 +1240,7 @@ public class ModelMgrImpl implements IModelMgr {
 		// pour
 		// que le calcul le soit)
 		if (task != null)
-			checkTaskPathAndUpdateSubTasksCount(task);
+			checkTaskPath(task);
 
 		// Calcul des sommes
 		TaskSums sums = dao.getTaskSums(task, fromDate, toDate);
@@ -1250,7 +1263,7 @@ public class ModelMgrImpl implements IModelMgr {
 		// attributs
 		// n'est autorisée que pour les champs autres que le chemin et le
 		// numéro.
-		checkTaskPathAndUpdateSubTasksCount(task);
+		checkTaskPath(task);
 
 		// Construction du chemin
 		return buildTaskCodePath(task);
@@ -1293,7 +1306,7 @@ public class ModelMgrImpl implements IModelMgr {
 		// attributs
 		// n'est autorisée que pour les champs autres que le chemin et le
 		// numéro.
-		checkTaskPathAndUpdateSubTasksCount(task);
+		checkTaskPath(task);
 
 		// Recherche de la tache à descendre (incrémentation du numéro)
 		byte taskToMoveUpNumber = (byte) (task.getNumber() + 1);
@@ -1318,7 +1331,7 @@ public class ModelMgrImpl implements IModelMgr {
 			throws ModelException, DbException {
 		// Le chemin de la tache et son numéro ne doivent pas avoir changés
 		// pour pouvoir invoquer cette méthode
-		checkTaskPathAndUpdateSubTasksCount(task);
+		checkTaskPath(task);
 
 		// Pour que la méthode fonctionne, il faut que le nombre
 		// cible soit différent du nombre courant
@@ -1329,7 +1342,7 @@ public class ModelMgrImpl implements IModelMgr {
 		// Récupération de la tache parent, et contrôle du modèle
 		// (le numéro de destination ne peut être hors interval)
 		Task parentTask = dao.getParentTask(task);
-		int subTasksCount = parentTask != null ? parentTask.getSubTasksCount()
+		int subTasksCount = parentTask != null ? getSubTasksCount(parentTask.getId())
 				: getRootTasksCount();
 		if (newTaskNumber > subTasksCount || newTaskNumber < 1)
 			throw new ModelException("Invalid task number");
@@ -1363,9 +1376,9 @@ public class ModelMgrImpl implements IModelMgr {
 		// attributs
 		// n'est autorisée que pour les champs autres que le chemin et le
 		// numéro.
-		checkTaskPathAndUpdateSubTasksCount(task);
+		checkTaskPath(task);
 		if (destParentTask != null)
-			checkTaskPathAndUpdateSubTasksCount(destParentTask);
+			checkTaskPath(destParentTask);
 
 		// Control : la tache de destination ne doit pas être
 		// une tache fille de la tache à déplacer
@@ -1401,7 +1414,7 @@ public class ModelMgrImpl implements IModelMgr {
 		// avant modification de son numéro et de son chemin
 		String initialTaskFullPath = task.getFullPath();
 		Task srcParentTask = dao.getParentTask(task);
-		Task[] subTasksToMove = dao.getSubtasks(task);
+		Task[] subTasksToMove = dao.getSubTasks(task);
 
 		// Déplacement de la tache
 		byte number = dao.newTaskNumber(destPath);
@@ -1432,7 +1445,7 @@ public class ModelMgrImpl implements IModelMgr {
 		// attributs
 		// n'est autorisée que pour les champs autres que le chemin et le
 		// numéro.
-		checkTaskPathAndUpdateSubTasksCount(task);
+		checkTaskPath(task);
 
 		// Recherche de la tache à monter (décrémentation du numéro)
 		byte taskToMoveDownNumber = (byte) (task.getNumber() - 1);
@@ -1456,13 +1469,13 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	private void rebuildSubtasksNumbers(Task parentTask) throws DbException {
 		// Récupération des sous-taches
-		Task[] tasks = dao.getSubtasks(parentTask);
+		Task[] tasks = dao.getSubTasks(parentTask);
 		for (int i = 0; i < tasks.length; i++) {
 			Task task = tasks[i];
 			byte taskNumber = task.getNumber();
 			byte expectedNumber = (byte) (i + 1);
 			if (taskNumber != expectedNumber) {
-				Task[] subTasks = dao.getSubtasks(task);
+				Task[] subTasks = dao.getSubTasks(task);
 				task.setNumber(expectedNumber);
 				String fullPath = task.getFullPath();
 				changeTasksPaths(subTasks, fullPath.length(), fullPath);
@@ -1592,7 +1605,7 @@ public class ModelMgrImpl implements IModelMgr {
 			ModelException {
 		// Vérification de l'adéquation des attibuts de la tache avec les
 		// données en base
-		checkTaskPathAndUpdateSubTasksCount(task);
+		checkTaskPath(task);
 
 		// Vérification que la tache n'est pas utilisé
 		long contribsNb = getContributionsCount(null, task, null, null);
@@ -1628,8 +1641,8 @@ public class ModelMgrImpl implements IModelMgr {
 		String task2InitialFullpath = task2.getFullPath();
 
 		// Récupération des taches filles de ces 2 taches
-		Task[] task1subTasks = dao.getSubtasks(task1);
-		Task[] task2subTasks = dao.getSubtasks(task2);
+		Task[] task1subTasks = dao.getSubTasks(task1);
+		Task[] task2subTasks = dao.getSubTasks(task2);
 
 		// Changement des numéros de la tache 1 avec une valeur fictive
 		task1.setNumber((byte) 0);
@@ -1749,7 +1762,7 @@ public class ModelMgrImpl implements IModelMgr {
 			Task newContributionTask) throws DbException, ModelException {
 		// La tache ne peut accepter une contribution que
 		// si elle n'admet aucune sous-tache
-		if (newContributionTask.getSubTasksCount() > 0)
+		if (getSubTasksCount(newContributionTask.getId()) > 0)
 			throw new ModelException(
 					Strings.getString("ModelMgr.errors.A_TASK_WITH_SUBTASKS_CANNOT_ACCEPT_CONTRIBUTIONS")); //$NON-NLS-1$
 
@@ -1800,7 +1813,7 @@ public class ModelMgrImpl implements IModelMgr {
 		// attributs
 		// n'est autorisée que pour les champs autres que le chemin et le
 		// numéro.
-		checkTaskPathAndUpdateSubTasksCount(task);
+		checkTaskPath(task);
 
 		// Check sur l'unicité du code pour le chemin considéré
 		Task parentTask = dao.getParentTask(task);

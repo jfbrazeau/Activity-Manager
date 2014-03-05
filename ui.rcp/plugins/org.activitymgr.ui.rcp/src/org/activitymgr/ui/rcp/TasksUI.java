@@ -468,7 +468,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		final int propertyIdx = treeColsMgr.getColumnIndex(property);
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				boolean hasChilds = (task.getSubTasksCount() > 0);
+				boolean hasChilds = (modelMgr.getSubTasksCount(task.getId()) > 0);
 				boolean canModify = false;
 				switch (propertyIdx) {
 				case (NAME_COLUMN_IDX):
@@ -511,7 +511,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				TaskSums taskSums = getTasksSums(task);
-				boolean hasChilds = (task.getSubTasksCount() > 0);
+				boolean hasChilds = (modelMgr.getSubTasksCount(task.getId()) > 0);
 				String value = null;
 				switch (propertyIdx) {
 				case (NAME_COLUMN_IDX):
@@ -675,7 +675,12 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	public boolean hasChildren(Object element) {
 		log.debug("ITreeContentProvider.getChildren(" + element + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		final Task task = (Task) element;
-		return task.getSubTasksCount() > 0;
+		try {
+			return modelMgr.getSubTasksCount(task.getId()) > 0;
+		} catch (DbException e) {
+			log.error(e);
+			return false;
+		}
 	}
 
 	/*

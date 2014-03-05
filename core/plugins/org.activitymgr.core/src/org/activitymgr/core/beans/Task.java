@@ -46,9 +46,6 @@ public class Task extends SimpleIdentityBean {
 	/** Numéro de la tâche */
 	private byte number;
 
-	/** Nombre de taches filles */
-	private int subTasksCount;
-
 	/** Budget */
 	private long budget;
 
@@ -101,13 +98,6 @@ public class Task extends SimpleIdentityBean {
 	 */
 	public String getPath() {
 		return path;
-	}
-
-	/**
-	 * @return le nombre de tâches filles.
-	 */
-	public int getSubTasksCount() {
-		return subTasksCount;
 	}
 
 	/**
@@ -175,16 +165,6 @@ public class Task extends SimpleIdentityBean {
 	 */
 	public void setPath(String path) {
 		this.path = path;
-	}
-
-	/**
-	 * Définiti le nombre de taches filles.
-	 * 
-	 * @param subTasksCount
-	 *            le nouveau nombre de taches filles.
-	 */
-	public void setSubTasksCount(int subTasksCount) {
-		this.subTasksCount = subTasksCount;
 	}
 
 	/**
