@@ -1,7 +1,10 @@
 package org.activitymgr.ui.web.view.impl.internal;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +21,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.util.converter.Converter;
 import com.vaadin.event.Action;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.Resource;
@@ -27,6 +31,7 @@ import com.vaadin.ui.DateField;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.PopupDateField;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -38,7 +43,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	
 	private IResourceCache resourceCache;
 
-	private DateField dateField;
+	private PopupDateField dateField;
 
 	private Button previousYearButton;
 
@@ -86,8 +91,23 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		previousWeekButton.setDescription("Ctrl+Left");
 		controlsContainer.addComponent(previousWeekButton);
 		
-		dateField = new DateField();
-		dateField.setDateFormat("EEE dd/MM/yyyy");
+		dateField = new PopupDateField() {
+			@Override
+			protected Date handleUnparsableDateString(String dateString)
+		            throws Converter.ConversionException {
+				try {
+					int idx = dateString.indexOf(' ');
+					if (idx > 0) {
+						dateString = dateString.substring(idx);
+					}
+					SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+					return sdf.parse(dateString);
+				} catch (ParseException ignore) {
+					return super.handleUnparsableDateString(dateString);
+				}
+		    }
+		};
+		dateField.setDateFormat("E dd/MM/yyyy");
 		dateField.setStyleName("monday-date-field");
 		controlsContainer.addComponent(dateField);
 		
