@@ -27,7 +27,6 @@ import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.Resource;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.DateField;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -103,7 +102,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 					SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 					return sdf.parse(dateString);
 				} catch (ParseException ignore) {
-					return super.handleUnparsableDateString(dateString);
+					return new Date();
 				}
 		    }
 		};
@@ -180,7 +179,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 			@Override
 			public void valueChange(ValueChangeEvent event) {
 				Calendar cal = new GregorianCalendar();
-				cal.setTime(dateField.getValue());
+				cal.setTime(dateField.getValue()!= null ? dateField.getValue() : new Date());
 				logic.onDateChange(cal);
 			}
 		});
