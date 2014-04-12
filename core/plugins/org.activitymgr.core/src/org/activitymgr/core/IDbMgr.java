@@ -99,7 +99,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	<C extends Collaborator> C createCollaborator(C newCollaborator)
+	Collaborator createCollaborator(Collaborator newCollaborator)
 			throws DbException;
 
 	/**
