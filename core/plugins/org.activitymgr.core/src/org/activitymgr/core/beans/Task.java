@@ -58,6 +58,8 @@ public class Task extends SimpleIdentityBean {
 	/** Commentaire sur la tache */
 	private String comment;
 
+	private String numberAsHex;
+
 	/**
 	 * @return le code de la tache.
 	 */
@@ -91,6 +93,16 @@ public class Task extends SimpleIdentityBean {
 	 */
 	public byte getNumber() {
 		return number;
+	}
+
+	/**
+	 * @return le numéro de la tache.
+	 */
+	public String getNumberAsHex() {
+		if (numberAsHex == null) {
+			numberAsHex = StringHelper.toHex(number);
+		}
+		return numberAsHex;
 	}
 
 	/**
@@ -155,6 +167,18 @@ public class Task extends SimpleIdentityBean {
 	 */
 	public void setNumber(byte number) {
 		this.number = number;
+		this.numberAsHex = null;
+	}
+
+	/**
+	 * Définit le numéro de la tache.
+	 * 
+	 * @param number
+	 *            le nouveau numéro.
+	 */
+	public void setNumberAsHex(String hex) {
+		this.numberAsHex = hex;
+		this.number = StringHelper.toByte(hex);
 	}
 
 	/**
@@ -184,7 +208,7 @@ public class Task extends SimpleIdentityBean {
 	 */
 	public String getFullPath() {
 		StringBuffer result = new StringBuffer(path != null ? path : ""); //$NON-NLS-1$
-		result.append(StringHelper.toHex(number));
+		result.append(getNumberAsHex());
 		return result.toString();
 	}
 

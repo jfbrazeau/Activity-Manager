@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -42,9 +41,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 
 import org.activitymgr.core.DbException;
 import org.activitymgr.core.DbTransaction;
@@ -55,6 +53,12 @@ import org.activitymgr.core.beans.Duration;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskSearchFilter;
 import org.activitymgr.core.beans.TaskSums;
+import org.activitymgr.core.orm.AscendantOrderByClause;
+import org.activitymgr.core.orm.DbClassMapping;
+import org.activitymgr.core.orm.DescendantOrderByClause;
+import org.activitymgr.core.orm.IDbClassMapper;
+import org.activitymgr.core.orm.InStatement;
+import org.activitymgr.core.orm.LikeStatement;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
 import org.apache.log4j.Logger;
@@ -64,6 +68,7 @@ import com.google.inject.Provider;
 
 /**
  * Classe offrant les services de base de persistence de l'application.
+ * TODO 2236 -> 1865 -> 1558
  */
 public class DbMgrImpl implements IDbMgr {
 
@@ -75,6 +80,18 @@ public class DbMgrImpl implements IDbMgr {
 
 	/** Transaction provider */
 	private Provider<DbTransaction> tx;
+	
+	/** Database task mapper */
+	private IDbClassMapper<Collaborator> collaboratorMapper;
+
+	/** Database task mapper */
+	private IDbClassMapper<Task> taskMapper;
+
+	/** Database task mapper */
+	private IDbClassMapper<Duration> durationMapper;
+
+	/** Database task mapper */
+	private IDbClassMapper<Contribution> contributionMapper;
 
 	/**
 	 * Default constructor.
@@ -85,6 +102,17 @@ public class DbMgrImpl implements IDbMgr {
 	@Inject
 	public DbMgrImpl(Provider<DbTransaction> tx) {
 		this.tx = tx;
+		try {
+			Properties props = new Properties();
+			props.load(DbMgrImpl.class.getResourceAsStream("mapping.properties"));
+			DbClassMapping mapping = new DbClassMapping(props);
+			collaboratorMapper = mapping.getMapper(Collaborator.class);
+			taskMapper = mapping.getMapper(Task.class);
+			durationMapper = mapping.getMapper(Duration.class);
+			contributionMapper = mapping.getMapper(Contribution.class);
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	/**
@@ -264,36 +292,13 @@ public class DbMgrImpl implements IDbMgr {
 	@Override
 	public Collaborator createCollaborator(Collaborator newCollaborator)
 			throws DbException {
-		PreparedStatement pStmt = null;
 		try {
-			// Préparation de la requête
-			pStmt = tx()
-					.prepareStatement(
-							"insert into COLLABORATOR (clb_login, clb_first_name, clb_last_name, clb_is_active) values (?, ?, ?, ?)", true); //$NON-NLS-1$
-			pStmt.setString(1, newCollaborator.getLogin());
-			pStmt.setString(2, newCollaborator.getFirstName());
-			pStmt.setString(3, newCollaborator.getLastName());
-			pStmt.setBoolean(4, newCollaborator.getIsActive());
-			pStmt.executeUpdate();
-
-			// Récupération de l'identifiant généré
-			long generatedId = getGeneratedId(pStmt);
-			log.debug("Generated id=" + generatedId); //$NON-NLS-1$
-			newCollaborator.setId(generatedId);
-
-			// Fermeture du statement
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return newCollaborator;
+			return collaboratorMapper.insert(tx().getConnection(), newCollaborator);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
 					Strings.getString(
 							"DbMgr.errors.COLLABORATOR_CREATION_FAILUE", newCollaborator.getLogin()), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -307,32 +312,12 @@ public class DbMgrImpl implements IDbMgr {
 	@Override
 	public Contribution createContribution(Contribution newContribution)
 			throws DbException {
-		PreparedStatement pStmt = null;
 		try {
-			// Préparation de la requête
-			pStmt = tx()
-					.prepareStatement(
-							"insert into CONTRIBUTION (ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration) values (?, ?, ?, ?, ?, ?)"); //$NON-NLS-1$
-			pStmt.setInt(1, newContribution.getYear());
-			pStmt.setInt(2, newContribution.getMonth());
-			pStmt.setInt(3, newContribution.getDay());
-			pStmt.setLong(4, newContribution.getContributorId());
-			pStmt.setLong(5, newContribution.getTaskId());
-			pStmt.setLong(6, newContribution.getDurationId());
-			pStmt.executeUpdate();
-
-			// Fermeture du statement
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return newContribution;
+			return contributionMapper.insert(tx().getConnection(), newContribution);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
 					Strings.getString("DbMgr.errors.CONTRIBUTION_CREATION_FAILUE"), e); //$NON-NLS-1$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -345,28 +330,12 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public Duration createDuration(Duration newDuration) throws DbException {
-		PreparedStatement pStmt = null;
 		try {
-			// Préparation de la requête
-			pStmt = tx()
-					.prepareStatement(
-							"insert into DURATION (dur_id, dur_is_active) values (?, ?)"); //$NON-NLS-1$
-			pStmt.setLong(1, newDuration.getId());
-			pStmt.setBoolean(2, newDuration.getIsActive());
-			pStmt.executeUpdate();
-
-			// Fermeture du statement
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return newDuration;
+			return durationMapper.insert(tx().getConnection(), newDuration);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(Strings.getString(
 					"DbMgr.errors.DURATION_CREATION_FAILUE", newDuration), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -379,7 +348,6 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public Task createTask(Task parentTask, Task newTask) throws DbException {
-		PreparedStatement pStmt = null;
 		try {
 			// Mise à jour du chemin de la tâche
 			String parentPath = parentTask == null ? "" : parentTask.getFullPath(); //$NON-NLS-1$
@@ -389,37 +357,11 @@ public class DbMgrImpl implements IDbMgr {
 			byte taskNumber = newTaskNumber(parentPath);
 			newTask.setNumber(taskNumber);
 
-			// Préparation de la requête
-			pStmt = tx()
-					.prepareStatement(
-							"insert into TASK (tsk_path, tsk_number, tsk_code, tsk_name, tsk_budget, tsk_initial_cons, tsk_todo, tsk_comment) values (?, ?, ?, ?, ?, ?, ?, ?)", true); //$NON-NLS-1$
-			pStmt.setString(1, newTask.getPath());
-			pStmt.setString(2, StringHelper.toHex(newTask.getNumber()));
-			pStmt.setString(3, newTask.getCode());
-			pStmt.setString(4, newTask.getName());
-			pStmt.setLong(5, newTask.getBudget());
-			pStmt.setLong(6, newTask.getInitiallyConsumed());
-			pStmt.setLong(7, newTask.getTodo());
-			pStmt.setString(8, newTask.getComment());
-			pStmt.executeUpdate();
-
-			// Récupération de l'identifiant généré
-			long generatedId = getGeneratedId(pStmt);
-			log.debug("Generated id=" + generatedId); //$NON-NLS-1$
-			newTask.setId(generatedId);
-
-			// Fermeture du ResultSet
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return newTask;
+			return taskMapper.insert(tx().getConnection(), newTask);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(Strings.getString(
 					"DbMgr.errors.TASK_CREATION_FAILURE", newTask.getName()), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -432,35 +374,12 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public boolean durationIsUsed(Duration duration) throws DbException {
-		PreparedStatement pStmt = null;
-		ResultSet rs = null;
 		try {
-			// Préparation de la requête
-			pStmt = tx().prepareStatement(
-					"select count(*) from CONTRIBUTION where ctb_duration=?"); //$NON-NLS-1$
-			pStmt.setLong(1, duration.getId());
-
-			// Exécution de la requête
-			rs = pStmt.executeQuery();
-
-			// Préparation du résultat
-			if (!rs.next())
-				throw new DbException(
-						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
-			boolean durationIsUsed = rs.getInt(1) > 0;
-
-			// Fermeture du statement
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return durationIsUsed;
+			return contributionMapper.count(tx().getConnection(), new String[] { "DurationId" }, new Object[] { duration.getId()}) > 0;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(Strings.getString(
 					"DbMgr.errors.SQL_DURATION_CHECK_FAILURE", duration), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -473,8 +392,9 @@ public class DbMgrImpl implements IDbMgr {
 		try {
 			// Request preparation
 			pStmt = tx().prepareStatement(
-					"select theTask.tsk_id, theTask.tsk_path, theTask.tsk_number, count(subTask.tsk_id)"
-				+ " from TASK as theTask left join TASK as subTask on subTask.tsk_path = concat(theTask.tsk_path, theTask.tsk_number)");
+					"select theTask.tsk_id, count(subTask.tsk_id)"
+				+ " from TASK as theTask left join TASK as subTask on subTask.tsk_path = concat(theTask.tsk_path, theTask.tsk_number) where theTask.tsk_id=?");
+			pStmt.setLong(1, parentTaskId);
 
 			// Exécution de la requête
 			rs = pStmt.executeQuery();
@@ -483,7 +403,7 @@ public class DbMgrImpl implements IDbMgr {
 			if (!rs.next())
 				throw new DbException(
 						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
-			int result = rs.getInt(1);
+			int result = rs.getInt(2);
 
 			// Fermeture du ResultSet
 			pStmt.close();
@@ -507,35 +427,13 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public Collaborator getCollaborator(long collaboratorId) throws DbException {
-		PreparedStatement pStmt = null;
-		ResultSet rs = null;
 		try {
-			pStmt = tx()
-					.prepareStatement(
-							"select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from COLLABORATOR where clb_id=?"); //$NON-NLS-1$
-			pStmt.setLong(1, collaboratorId);
-
-			// Exécution de la requête
-			rs = pStmt.executeQuery();
-
-			// Préparation du résultat
-			Collaborator collaborator = null;
-			if (rs.next())
-				collaborator = rsToCollaborator(rs);
-
-			// Fermeture du statement
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return collaborator;
+			return collaboratorMapper.selectByPK(tx().getConnection(), new Object[] { collaboratorId });
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
 					Strings.getString(
 							"DbMgr.errors.COLLABORATOR_SELECTION_BY_ID_FAILURE", new Long(collaboratorId)), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -565,36 +463,14 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public Collaborator getCollaborator(String login) throws DbException {
-		PreparedStatement pStmt = null;
-		ResultSet rs = null;
 		try {
-			// Préparation de la requête
-			pStmt = tx()
-					.prepareStatement(
-							"select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from COLLABORATOR where clb_login=?"); //$NON-NLS-1$
-			pStmt.setString(1, login);
-
-			// Exécution de la requête
-			rs = pStmt.executeQuery();
-
-			// Préparation du résultat
-			Collaborator collaborator = null;
-			if (rs.next())
-				collaborator = rsToCollaborator(rs);
-
-			// Fermeture du ResultSet
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return collaborator;
+			Collaborator[] collaborators = collaboratorMapper.select(tx().getConnection(), new String[] { "Login" }, new Object[] { login }, null, -1);
+			return collaborators.length > 0 ? collaborators[0] : null;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
 					Strings.getString(
 							"DbMgr.errors.COLLABORATOR_SELECTION_BY_LOGIN_FAILURE", login), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -607,62 +483,37 @@ public class DbMgrImpl implements IDbMgr {
 	public Collaborator[] getCollaborators(int orderByClauseFieldIndex,
 			boolean ascendantSort, boolean onlyActiveCollaborators)
 			throws DbException {
-		PreparedStatement pStmt = null;
-		ResultSet rs = null;
 		try {
-			// Préparation de la requête
-			StringBuffer request = new StringBuffer(
-					"select clb_id, clb_login, clb_first_name, clb_last_name, clb_is_active from COLLABORATOR "); //$NON-NLS-1$
-			if (onlyActiveCollaborators)
-				request.append("where clb_is_active=? "); //$NON-NLS-1$
-			request.append("order by "); //$NON-NLS-1$
+			String[] whereClauseAttrNames = onlyActiveCollaborators ? new String[] { "IsActive" } : null;
+			Object[] whereClauseAttrValues = onlyActiveCollaborators ? new Object[] { Boolean.TRUE } : null;
+			String orderByClauseFieldName = null;
 			switch (orderByClauseFieldIndex) {
 			case Collaborator.ID_FIELD_IDX:
-				request.append("clb_id"); //$NON-NLS-1$
+				orderByClauseFieldName = "Id"; //$NON-NLS-1$
 				break;
 			case Collaborator.LOGIN_FIELD_IDX:
-				request.append("clb_login"); //$NON-NLS-1$
+				orderByClauseFieldName = "Login"; //$NON-NLS-1$
 				break;
 			case Collaborator.FIRST_NAME_FIELD_IDX:
-				request.append("clb_first_name"); //$NON-NLS-1$
+				orderByClauseFieldName = "FirstName"; //$NON-NLS-1$
 				break;
 			case Collaborator.LAST_NAME_FIELD_IDX:
-				request.append("clb_last_name"); //$NON-NLS-1$
+				orderByClauseFieldName = "LastName"; //$NON-NLS-1$
 				break;
 			case Collaborator.IS_ACTIVE_FIELD_IDX:
-				request.append("clb_is_active"); //$NON-NLS-1$
+				orderByClauseFieldName = "IsActive"; //$NON-NLS-1$
 				break;
 			default:
 				throw new DbException(
 						Strings.getString(
 								"DbMgr.errors.UNKNOWN_FIELD_INDEX", new Integer(orderByClauseFieldIndex)), null); //$NON-NLS-1$ //$NON-NLS-2$
 			}
-			request.append(ascendantSort ? " asc" : " desc"); //$NON-NLS-1$ //$NON-NLS-2$
-			pStmt = tx().prepareStatement(request.toString());
-			if (onlyActiveCollaborators)
-				pStmt.setBoolean(1, true);
-
-			// Exécution de la requête
-			rs = pStmt.executeQuery();
-
-			// Recherche des sous-taches
-			ArrayList<Collaborator> list = new ArrayList<Collaborator>();
-			while (rs.next())
-				list.add(rsToCollaborator(rs));
-
-			// Fermeture du ResultSet
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			log.debug("  => found " + list.size() + " entrie(s)"); //$NON-NLS-1$ //$NON-NLS-2$
-			return (Collaborator[]) list.toArray(new Collaborator[list.size()]);
+			Object[] orderByClause = new Object[] { ascendantSort ? new AscendantOrderByClause(orderByClauseFieldName) : new DescendantOrderByClause(orderByClauseFieldName)};
+			return collaboratorMapper.select(tx().getConnection(), whereClauseAttrNames, whereClauseAttrValues, orderByClause, -1);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
 					Strings.getString("DbMgr.errors.COLLABORATORS_SELECTION_FAILURE"), e); //$NON-NLS-1$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -953,36 +804,13 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public Duration getDuration(long durationId) throws DbException {
-		PreparedStatement pStmt = null;
-		ResultSet rs = null;
 		try {
-			// Préparation de la requête
-			pStmt = tx()
-					.prepareStatement(
-							"select dur_id, dur_is_active from DURATION where dur_id=?"); //$NON-NLS-1$
-			pStmt.setLong(1, durationId);
-
-			// Exécution de la requête
-			rs = pStmt.executeQuery();
-
-			// Reécupération du résultat
-			Duration duration = null;
-			if (rs.next())
-				duration = rsToDuration(rs);
-
-			// Fermeture du ResultSet
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return duration;
+			return durationMapper.selectByPK(tx().getConnection(), new Object[] { durationId });
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
 					Strings.getString(
 							"DbMgr.errors.DURATION_SELECTION_BY_ID", new Long(durationId)), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -994,56 +822,15 @@ public class DbMgrImpl implements IDbMgr {
 	@Override
 	public Duration[] getDurations(boolean onlyActiveCollaborators)
 			throws DbException {
-		PreparedStatement pStmt = null;
-		ResultSet rs = null;
 		try {
-			// Préparation de la requête
-			StringBuffer request = new StringBuffer(
-					"select dur_id, dur_is_active from DURATION "); //$NON-NLS-1$
-			if (onlyActiveCollaborators)
-				request.append("where dur_is_active=? "); //$NON-NLS-1$
-			request.append("order by dur_id asc"); //$NON-NLS-1$
-			pStmt = tx().prepareStatement(request.toString());
-			if (onlyActiveCollaborators)
-				pStmt.setBoolean(1, true);
-
-			// Exécution de la requête
-			rs = pStmt.executeQuery();
-
-			// Recherche des sous-taches
-			ArrayList<Duration> list = new ArrayList<Duration>();
-			while (rs.next())
-				list.add(rsToDuration(rs));
-
-			// Fermeture du ResultSet
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return (Duration[]) list.toArray(new Duration[list.size()]);
+			String[] whereClauseAttributeNames = onlyActiveCollaborators ? new String[] { "IsActive" } : null;
+			Object[] whereClauseAttributeValues = onlyActiveCollaborators ? new Object[] { Boolean.TRUE } : null;
+			return durationMapper.select(tx().getConnection(), whereClauseAttributeNames, whereClauseAttributeValues, new Object[] { new AscendantOrderByClause("Id") }, -1);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
 					Strings.getString("DbMgr.errors.DURATIONS_SELECTION_FAILURE"), e); //$NON-NLS-1$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
-	}
-
-	/**
-	 * Convertit le résultat d'une requête en durée.
-	 * 
-	 * @param rs
-	 *            le result set.
-	 * @return la durée.
-	 * @throws SQLException
-	 *             levé en cas de problème SQL.
-	 */
-	private Duration rsToDuration(ResultSet rs) throws SQLException {
-		Duration duration = new Duration();
-		duration.setId(rs.getLong(1));
-		duration.setIsActive(rs.getBoolean(2));
-		return duration;
 	}
 
 	/*
@@ -1082,41 +869,12 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public Task[] getTasks(String path) throws DbException {
-		PreparedStatement pStmt = null;
-		ResultSet rs = null;
 		try {
-			// Préparation de la requête
-			pStmt = tx()
-					.prepareStatement(
-							"select tsk_id, tsk_number from TASK where tsk_path=? order by tsk_number"); //$NON-NLS-1$
-			pStmt.setString(1, path);
-
-			// Exécution de la requête
-			rs = pStmt.executeQuery();
-
-			// Recherche des sous-taches
-			ArrayList<Long> list = new ArrayList<Long>();
-			while (rs.next()) {
-				list.add(rs.getLong(1));
-			}
-
-			// Fermeture du ResultSet
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			long[] taskIds = new long[list.size()];
-			for (int i = 0; i < taskIds.length; i++) {
-				taskIds[i] = list.get(i);
-			}
-			Task[] tasks = getTasks(taskIds);
-			return tasks;
+			return taskMapper.select(tx().getConnection(), new String[] { "Path" }, new Object[] { path }, new Object[] { new AscendantOrderByClause("NumberAsHex") }, -1);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(Strings.getString(
 					"DbMgr.errors.TASK_SELECTION_BY_PATH", path), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -1263,37 +1021,12 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public Task getTask(long taskId) throws DbException {
-		PreparedStatement pStmt = null;
-		ResultSet rs = null;
 		try {
-			// Request preparation
-			StringWriter request = prepareSelectTaskRequest();
-			request.append(" theTask.tsk_id=?");
-			completeSelectTaskRequest(request);
-			pStmt = tx().prepareStatement(request.toString());
-			pStmt.setLong(1, taskId);
-
-			// Exécution de la requête
-			rs = pStmt.executeQuery();
-
-			// Préparation du résultat
-			Task result = null;
-			if (rs.next()) {
-				result = toTask(rs);
-			}
-
-			// Fermeture du ResultSet
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return result;
+			return taskMapper.selectByPK(tx().getConnection(), new Object[] { taskId });
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
 					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_ID_FAILURE"), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -1304,124 +1037,33 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public Task[] getTasks(long[] tasksIds) throws DbException {
-		PreparedStatement pStmt = null;
-		ResultSet rs = null;
-		Map<Long, Task> tasksMap = new HashMap<Long, Task>();
+		List<Task> result = new ArrayList<Task>();
 		try {
 			if (tasksIds != null && tasksIds.length != 0) {
 				// The task id array is cut in sub arrays of maximum 250 tasks
-				List<long[]> tasksIdsSubArrays = new ArrayList<long[]>();
+				List<Object[]> tasksIdsSubArrays = new ArrayList<Object[]>();
 				for (int i = 0; i < tasksIds.length; i += 250) {
-					long[] subArray = new long[Math.min(250, tasksIds.length
+					Object[] subArray = new Object[Math.min(250, tasksIds.length
 							- i)];
-					System.arraycopy(tasksIds, i, subArray, 0, subArray.length);
+					for (int j = 0; j < subArray.length; j++) {
+						subArray[j] = tasksIds[i + j];
+					}
 					tasksIdsSubArrays.add(subArray);
 				}
 
 				// Then a loop is performed over the sub arrays
-				for (long[] tasksIdsSubArray : tasksIdsSubArrays) {
-					// Préparation de la requête
-					StringWriter request = prepareSelectTaskRequest();
-					request.append(" theTask.tsk_id");
-					if (tasksIdsSubArray.length == 1) {
-						request.append("=?");
-					} else {
-						request.append(" in (");
-						for (int i = 0; i < tasksIdsSubArray.length; i++) {
-							request.append(i == 0 ? "?" : ", ?");
-						}
-						request.append(")");
-					}
-					completeSelectTaskRequest(request);
-					pStmt = tx().prepareStatement(request.toString());
-					for (int i = 0; i < tasksIdsSubArray.length; i++) {
-						pStmt.setLong(i + 1, tasksIdsSubArray[i]);
-					}
-
-					// Exécution de la requête
-					rs = pStmt.executeQuery();
-
-					// Préparation du résultat
-					while (rs.next()) {
-						Task task = toTask(rs);
-						tasksMap.put(task.getId(), task);
-					}
-					// Fermeture du ResultSet
-					pStmt.close();
-					pStmt = null;
+				for (Object[] tasksIdsSubArray : tasksIdsSubArrays) {
+					Task[] tasks = taskMapper.select(tx().getConnection(), new String[] { "Id" }, new Object[] { new InStatement(tasksIdsSubArray) }, new Object[] { new AscendantOrderByClause("NumberAsHex") }, -1);
+					result.addAll(Arrays.asList(tasks));
 				}
 			}
-			// The result must be reordonned in order to
-			// respect the task id array specified as an entry
-			Task[] result = new Task[tasksIds.length];
-			for (int i = 0; i < tasksIds.length; i++) {
-				long taskId = tasksIds[i];
-				result[i] = tasksMap.get(taskId);
-			}
 			// Retour du résultat
-			return result;
+			return (Task[]) result.toArray(new Task[result.size()]);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
 					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_ID_FAILURE"), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
-	}
-
-	/**
-	 * Prepares the SQL select request used to retrieve the tasks.
-	 * 
-	 * @return the SQL request.
-	 */
-	private StringWriter prepareSelectTaskRequest() {
-		StringWriter request = new StringWriter();
-		request.append("select theTask.tsk_id, theTask.tsk_path, theTask.tsk_number, theTask.tsk_code, theTask.tsk_name, theTask.tsk_budget, theTask.tsk_initial_cons, theTask.tsk_todo, theTask.tsk_comment, count(subTask.tsk_id)"
-				+ " from TASK as theTask left join TASK as subTask on subTask.tsk_path = concat(theTask.tsk_path, theTask.tsk_number)"
-				+ " where");
-		return request;
-	}
-
-	/**
-	 * Completes the SQL select request used to retrieve the tasks.
-	 * 
-	 * @param request
-	 *            the request.
-	 */
-	private void completeSelectTaskRequest(StringWriter request) {
-		// HSQLDB expects all selected columns to be present in the group by
-		// directive
-		request.append(" group by theTask.tsk_id, theTask.tsk_path, theTask.tsk_number, theTask.tsk_code, theTask.tsk_name, theTask.tsk_budget, theTask.tsk_initial_cons, theTask.tsk_todo, theTask.tsk_comment"); //$NON-NLS-1$
-	}
-
-	/**
-	 * Builds a Task from a SQL result set.
-	 * 
-	 * @param rs
-	 *            the result set.
-	 * @return the task.
-	 * @throws SQLException
-	 *             thrown if an error occurrs.
-	 */
-	private Task toTask(ResultSet rs) throws SQLException {
-		Task task = null;
-		Long tskId = rs.getLong(1);
-		// If the task id that is returned is null,
-		// it means that the request returned nothing
-		// (the task id is 'not null' in the database)
-		if (tskId != null) {
-			task = new Task();
-			task.setId(tskId);
-			task.setPath(rs.getString(2));
-			task.setNumber(StringHelper.toByte(rs.getString(3)));
-			task.setCode(rs.getString(4));
-			task.setName(rs.getString(5));
-			task.setBudget(rs.getLong(6));
-			task.setInitiallyConsumed(rs.getLong(7));
-			task.setTodo(rs.getLong(8));
-			task.setComment(rs.getString(9));
-		}
-		return task;
 	}
 
 	/*
@@ -1431,40 +1073,14 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public Task getTask(String taskPath, byte taskNumber) throws DbException {
-		log.debug("getTask(" + taskPath + ", " + taskNumber + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		PreparedStatement pStmt = null;
-		ResultSet rs = null;
 		try {
-			// Préparation de la requête
-			StringWriter request = prepareSelectTaskRequest();
-			request.append(" theTask.tsk_path=? and theTask.tsk_number=?");
-			completeSelectTaskRequest(request);
-			pStmt = tx().prepareStatement(request.toString());
-			pStmt.setString(1, taskPath);
-			pStmt.setString(2, StringHelper.toHex(taskNumber));
-
-			// Exécution de la requête
-			rs = pStmt.executeQuery();
-
-			// Préparation du résultat
-			Task task = null;
-			if (rs.next()) {
-				task = toTask(rs);
-			}
-			// Fermeture du ResultSet
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			log.debug("task = " + task); //$NON-NLS-1$
-			return task;
+			Task[] tasks = taskMapper.select(tx().getConnection(), new String[] { "Path", "NumberAsHex" }, new Object[] { taskPath, StringHelper.toHex(taskNumber) }, null, -1);
+			return tasks.length > 0 ? tasks[0] : null;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
 					Strings.getString(
 							"DbMgr.errors.TASK_SELECTION_BY_NUMBER_FROM_PATH_FAILURE", new Byte(taskNumber), taskPath), e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -1476,37 +1092,13 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public Task getTask(String taskPath, String taskCode) throws DbException {
-		PreparedStatement pStmt = null;
-		ResultSet rs = null;
 		try {
-			// Préparation de la requête
-			StringWriter request = prepareSelectTaskRequest();
-			request.append(" theTask.tsk_path=? and theTask.tsk_code=?"); //$NON-NLS-1$
-			completeSelectTaskRequest(request);
-			pStmt = tx().prepareStatement(request.toString());
-			pStmt.setString(1, taskPath);
-			pStmt.setString(2, taskCode);
-
-			// Exécution de la requête
-			rs = pStmt.executeQuery();
-
-			// Préparation du résultat
-			Task task = null;
-			if (rs.next()) {
-				task = toTask(rs);
-			}
-			// Fermeture du ResultSet
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return task;
+			Task[] tasks = taskMapper.select(tx().getConnection(), new String[] { "Path", "Code" }, new Object[] { taskPath, taskCode }, null, -1);
+			return tasks.length > 0 ? tasks[0] : null;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(Strings.getString(
 					"DbMgr.errors.TASK_SELECTION_BY_CODE_FAILURE", taskCode), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -1717,30 +1309,13 @@ public class DbMgrImpl implements IDbMgr {
 	@Override
 	public void removeCollaborator(Collaborator collaborator)
 			throws DbException {
-		PreparedStatement pStmt = null;
 		try {
-			// Préparation de la requête
-			pStmt = tx().prepareStatement(
-					"delete from COLLABORATOR where clb_id=?"); //$NON-NLS-1$
-			pStmt.setLong(1, collaborator.getId());
-
-			// Exécution de la requête
-			int removed = pStmt.executeUpdate();
-			if (removed != 1)
-				throw new SQLException(
-						Strings.getString("DbMgr.errors.SQL_ROW_DELETION_FAILURE")); //$NON-NLS-1$
-
-			// Fermeture du statement
-			pStmt.close();
-			pStmt = null;
-
+			collaboratorMapper.delete(tx().getConnection(), new String[] { "Id" }, new Object[] { collaborator.getId() });
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
 					Strings.getString(
 							"DbMgr.errors.COLLABORATOR_DELETION_FAILURE", collaborator.getLogin()), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -1754,33 +1329,12 @@ public class DbMgrImpl implements IDbMgr {
 	@Override
 	public void removeContribution(Contribution contribution)
 			throws DbException {
-		PreparedStatement pStmt = null;
 		try {
-			// Préparation de la requête
-			pStmt = tx()
-					.prepareStatement(
-							"delete from CONTRIBUTION where ctb_year=? and ctb_month=? and ctb_day=? and ctb_contributor=? and ctb_task=?"); //$NON-NLS-1$
-			pStmt.setInt(1, contribution.getYear());
-			pStmt.setInt(2, contribution.getMonth());
-			pStmt.setInt(3, contribution.getDay());
-			pStmt.setLong(4, contribution.getContributorId());
-			pStmt.setLong(5, contribution.getTaskId());
-
-			// Exécution de la requête
-			int removed = pStmt.executeUpdate();
-			if (removed != 1)
-				throw new SQLException(
-						Strings.getString("DbMgr.errors.SQL_DISCONNECTION_FAILURE")); //$NON-NLS-1$
-
-			// Fermeture du statement
-			pStmt.close();
-			pStmt = null;
+			contributionMapper.deleteByPK(tx().getConnection(), contribution);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
 					Strings.getString("DbMgr.errors.CONTRIBUTION_DELETION_FAILURE"), e); //$NON-NLS-1$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -1793,29 +1347,13 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public void removeDuration(Duration duration) throws DbException {
-		PreparedStatement pStmt = null;
 		try {
-			// Préparation de la requête
-			pStmt = tx()
-					.prepareStatement("delete from DURATION where dur_id=?"); //$NON-NLS-1$
-			pStmt.setLong(1, duration.getId());
-
-			// Exécution de la requête
-			int removed = pStmt.executeUpdate();
-			if (removed != 1)
-				throw new SQLException(
-						Strings.getString("DbMgr.errors.SQL_ROW_DELETION_FAILURE")); //$NON-NLS-1$
-
-			// Fermeture du statement
-			pStmt.close();
-			pStmt = null;
+			durationMapper.deleteByPK(tx().getConnection(), duration);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
 					Strings.getString(
 							"DbMgr.errors.DURATION_DELETION_FAILURE", new Long(duration.getId())), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -1827,32 +1365,15 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public void removeTask(Task task) throws DbException {
-		PreparedStatement pStmt = null;
 		try {
-			// Control sur les sous taches
-			Task[] subTasks = getSubTasks(task);
-			for (int i = 0; i < subTasks.length; i++) {
-				removeTask(subTasks[i]);
-			}
-
-			// Préparation de la requête
-			pStmt = tx().prepareStatement("delete from TASK where tsk_id=?"); //$NON-NLS-1$
-			pStmt.setLong(1, task.getId());
-
-			// Exécution de la requête
-			int removed = pStmt.executeUpdate();
-			if (removed != 1)
-				throw new SQLException("No row was deleted"); //$NON-NLS-1$
-
-			// Fermeture du statement
-			pStmt.close();
-			pStmt = null;
+			// Delete sub tasks
+			taskMapper.delete(tx().getConnection(), new String[] { "Path" }, new Object[] { new LikeStatement(task.getFullPath() + "%") });
+			// Delete the task
+			taskMapper.deleteByPK(tx().getConnection(), task);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(Strings.getString(
 					"DbMgr.errors.TASK_DELETION_FAILURE", task.getName()), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -1866,37 +1387,13 @@ public class DbMgrImpl implements IDbMgr {
 	@Override
 	public Collaborator updateCollaborator(Collaborator collaborator)
 			throws DbException {
-		PreparedStatement pStmt = null;
 		try {
-			// Préparation de la requête
-			pStmt = tx()
-					.prepareStatement(
-							"update COLLABORATOR set clb_login=?, clb_first_name=?, clb_last_name=?, clb_is_active=? where clb_id=?"); //$NON-NLS-1$
-			pStmt.setString(1, collaborator.getLogin());
-			pStmt.setString(2, collaborator.getFirstName());
-			pStmt.setString(3, collaborator.getLastName());
-			pStmt.setBoolean(4, collaborator.getIsActive());
-			pStmt.setLong(5, collaborator.getId());
-
-			// Exécution de la requête
-			int updated = pStmt.executeUpdate();
-			if (updated != 1)
-				throw new SQLException(
-						Strings.getString("DbMgr.errors.SQL_UPDATE_FAILURE")); //$NON-NLS-1$
-
-			// Fermeture du statement
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return collaborator;
+			return collaboratorMapper.update(tx().getConnection(), collaborator);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
 					Strings.getString(
 							"DbMgr.errors.COLLABORATOR_UPDATE_FAILURE", collaborator.getLogin()), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -1910,37 +1407,12 @@ public class DbMgrImpl implements IDbMgr {
 	@Override
 	public Contribution updateContribution(Contribution contribution)
 			throws DbException {
-		PreparedStatement pStmt = null;
 		try {
-			// Préparation de la requête
-			pStmt = tx()
-					.prepareStatement(
-							"update CONTRIBUTION set ctb_duration=? where ctb_year=? and ctb_month=? and ctb_day=? and ctb_contributor=? and ctb_task=?"); //$NON-NLS-1$
-			pStmt.setLong(1, contribution.getDurationId());
-			pStmt.setInt(2, contribution.getYear());
-			pStmt.setInt(3, contribution.getMonth());
-			pStmt.setInt(4, contribution.getDay());
-			pStmt.setLong(5, contribution.getContributorId());
-			pStmt.setLong(6, contribution.getTaskId());
-
-			// Exécution de la requête
-			int updated = pStmt.executeUpdate();
-			if (updated != 1)
-				throw new SQLException(
-						Strings.getString("DbMgr.errors.SQL_UPDATE_FAILURE")); //$NON-NLS-1$
-
-			// Fermeture du statement
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return contribution;
+			return contributionMapper.update(tx().getConnection(), contribution);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
 					Strings.getString("DbMgr.errors.CONTRIBUTION_UPDATE_FAILURE"), e); //$NON-NLS-1$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -1953,80 +1425,13 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public Duration updateDuration(Duration duration) throws DbException {
-		PreparedStatement pStmt = null;
 		try {
-			// Préparation de la requête
-			pStmt = tx().prepareStatement(
-					"update DURATION set dur_is_active=? where dur_id=?"); //$NON-NLS-1$
-			pStmt.setBoolean(1, duration.getIsActive());
-			pStmt.setLong(2, duration.getId());
-
-			// Exécution de la requête
-			int updated = pStmt.executeUpdate();
-			if (updated != 1)
-				throw new SQLException(
-						Strings.getString("DbMgr.errors.SQL_UPDATE_FAILURE")); //$NON-NLS-1$
-
-			// Fermeture du statement
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return duration;
+			return durationMapper.update(tx().getConnection(), duration);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
 					Strings.getString(
 							"DbMgr.errors.DURATION_UPDATE_FAILURE", new Long(duration.getId())), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#changeContributionTask(org.activitymgr.core
-	 * .beans.Contribution, org.activitymgr.core.beans.Task)
-	 */
-	@Override
-	public Contribution changeContributionTask(Contribution contribution,
-			Task newContributionTask) throws DbException {
-		PreparedStatement pStmt = null;
-		try {
-			// Préparation de la requête
-			pStmt = tx()
-					.prepareStatement(
-							"update CONTRIBUTION set ctb_task=? where ctb_year=? and ctb_month=? and ctb_day=? and ctb_contributor=? and ctb_task=?"); //$NON-NLS-1$
-			pStmt.setLong(1, newContributionTask.getId());
-			pStmt.setInt(2, contribution.getYear());
-			pStmt.setInt(3, contribution.getMonth());
-			pStmt.setInt(4, contribution.getDay());
-			pStmt.setLong(5, contribution.getContributorId());
-			pStmt.setLong(6, contribution.getTaskId());
-
-			// Exécution de la requête
-			int updated = pStmt.executeUpdate();
-			if (updated != 1)
-				throw new SQLException(
-						Strings.getString("DbMgr.errors.SQL_UPDATE_FAILURE")); //$NON-NLS-1$
-
-			// Mise à jour de la contribution
-			contribution.setTaskId(newContributionTask.getId());
-
-			// Fermeture du statement
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return contribution;
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString("DbMgr.errors.CONTRIBUTION_UPDATE_FAILURE"), e); //$NON-NLS-1$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -2038,40 +1443,12 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public Task updateTask(Task task) throws DbException {
-		PreparedStatement pStmt = null;
 		try {
-			// Préparation de la requête
-			pStmt = tx()
-					.prepareStatement(
-							"update TASK set tsk_path=?, tsk_number=?, tsk_code=?, tsk_name=?, tsk_budget=?, tsk_initial_cons=?, tsk_todo=?, tsk_comment=? where tsk_id=?"); //$NON-NLS-1$
-			pStmt.setString(1, task.getPath());
-			pStmt.setString(2, StringHelper.toHex(task.getNumber()));
-			pStmt.setString(3, task.getCode());
-			pStmt.setString(4, task.getName());
-			pStmt.setLong(5, task.getBudget());
-			pStmt.setLong(6, task.getInitiallyConsumed());
-			pStmt.setLong(7, task.getTodo());
-			pStmt.setString(8, task.getComment());
-			pStmt.setLong(9, task.getId());
-
-			// Exécution de la requête
-			int updated = pStmt.executeUpdate();
-			if (updated != 1)
-				throw new SQLException(
-						Strings.getString("DbMgr.errors.SQL_UPDATE_FAILURE")); //$NON-NLS-1$
-
-			// Fermeture du statement
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return task;
+			return taskMapper.update(tx().getConnection(), task);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(Strings.getString(
 					"DbMgr.errors.TASK_UPDATE_FAILURE", task.getName()), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
 		}
 	}
 
@@ -2112,30 +1489,18 @@ public class DbMgrImpl implements IDbMgr {
 		}
 	}
 
-	/**
-	 * Retourne l'identifiant généré automatiquement par la base de données.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param pStmt
-	 *            le statement SQL.
-	 * @return l'identifiant généré.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
+	 * @see org.activitymgr.core.IDbMgr#getRootTasksCount()
 	 */
-	private long getGeneratedId(PreparedStatement pStmt) throws DbException {
-		PreparedStatement pStmt1 = null;
+	public int getRootTasksCount() throws DbException {
 		try {
-			// Récupération de l'identifiant généré
-			ResultSet rs = pStmt.getGeneratedKeys();
-			if (!rs.next())
-				throw new DbException(
-						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
-			return rs.getLong(1);
+			return (int) taskMapper.count(tx().getConnection(), new String[] { "Path" }, new Object[] { "" });
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
-					Strings.getString("DbMgr.errors.SQL_AUTOINCREMENT_FAILURE"), e); //$NON-NLS-1$
-		} finally {
-			lastAttemptToClose(pStmt1);
+					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_ID_FAILURE"), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 
@@ -2165,43 +1530,6 @@ public class DbMgrImpl implements IDbMgr {
 				rs.close();
 			} catch (Throwable ignored) {
 			}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.activitymgr.core.IDbMgr#getRootTasksCount()
-	 */
-	public int getRootTasksCount() throws DbException {
-		PreparedStatement pStmt = null;
-		ResultSet rs = null;
-		try {
-			// Request preparation
-			pStmt = tx().prepareStatement(
-					"select count(tsk_id) from TASK where tsk_path=''");
-
-			// Exécution de la requête
-			rs = pStmt.executeQuery();
-
-			// Préparation du résultat
-			if (!rs.next())
-				throw new DbException(
-						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
-			int result = rs.getInt(1);
-
-			// Fermeture du ResultSet
-			pStmt.close();
-			pStmt = null;
-
-			// Retour du résultat
-			return result;
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_ID_FAILURE"), e); //$NON-NLS-1$ //$NON-NLS-2$
-		} finally {
-			lastAttemptToClose(pStmt);
-		}
 	}
 
 }

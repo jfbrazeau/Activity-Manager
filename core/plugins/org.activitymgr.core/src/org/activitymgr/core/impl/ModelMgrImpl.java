@@ -1769,7 +1769,9 @@ public class ModelMgrImpl implements IModelMgr {
 		// Mise à jour des identifiants de tâche
 		for (int i = 0; i < contributions.length; i++) {
 			Contribution contribution = contributions[i];
-			dao.changeContributionTask(contribution, newContributionTask);
+			dao.removeContribution(contribution);
+			contribution.setTaskId(newContributionTask.getId());
+			dao.createContribution(contribution);
 		}
 
 		// Retour de la tache modifiée

@@ -99,7 +99,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Collaborator createCollaborator(Collaborator newCollaborator)
+	<C extends Collaborator> C createCollaborator(C newCollaborator)
 			throws DbException;
 
 	/**
@@ -468,20 +468,6 @@ public interface IDbMgr {
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	Duration updateDuration(Duration duration) throws DbException;
-
-	/**
-	 * Change la tache d'une contribution.
-	 * 
-	 * @param contribution
-	 *            la contribution.
-	 * @param newContributionTask
-	 *            la tache à affecter.
-	 * @return la contribution mise à jour.
-	 * @throws DbException
-	 *             levé en cas d'incident technique d'accès à la base.
-	 */
-	Contribution changeContributionTask(Contribution contribution,
-			Task newContributionTask) throws DbException;
 
 	/**
 	 * Modifie les attributs d'une tache.
