@@ -40,7 +40,7 @@ import org.activitymgr.core.beans.TaskSums;
 /**
  * Composant offrant les services de base de persistence de l'application.
  */
-public interface IDbMgr {
+public interface IDbMgr<COLL extends Collaborator, DURA extends Duration, TASK extends Task, CONT extends Contribution> {
 
 	/**
 	 * Vérifie si les tables existent dans le modèle.
@@ -99,7 +99,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Collaborator createCollaborator(Collaborator newCollaborator)
+	COLL createCollaborator(COLL newCollaborator)
 			throws DbException;
 
 	/**
@@ -111,7 +111,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Contribution createContribution(Contribution newContribution)
+	CONT createContribution(CONT newContribution)
 			throws DbException;
 
 	/**
@@ -123,7 +123,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Duration createDuration(Duration newDuration) throws DbException;
+	DURA createDuration(DURA newDuration) throws DbException;
 
 	/**
 	 * Crée une tache.
@@ -141,7 +141,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Task createTask(Task parentTask, Task newTask) throws DbException;
+	TASK createTask(TASK parentTask, TASK newTask) throws DbException;
 
 	/**
 	 * Vérifie si la durée est utilisée en base.
@@ -152,7 +152,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	boolean durationIsUsed(Duration duration) throws DbException;
+	boolean durationIsUsed(DURA duration) throws DbException;
 
 	/**
 	 * @param parentTaskId
@@ -170,7 +170,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Collaborator getCollaborator(long collaboratorId) throws DbException;
+	COLL getCollaborator(long collaboratorId) throws DbException;
 
 	/**
 	 * @param login
@@ -179,7 +179,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Collaborator getCollaborator(String login) throws DbException;
+	COLL getCollaborator(String login) throws DbException;
 
 	/**
 	 * @param orderByClauseFieldIndex
@@ -193,7 +193,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Collaborator[] getCollaborators(int orderByClauseFieldIndex,
+	COLL[] getCollaborators(int orderByClauseFieldIndex,
 			boolean ascendantSort, boolean onlyActiveCollaborators)
 			throws DbException;
 
@@ -208,7 +208,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Collaborator[] getContributors(Task task, Calendar fromDate, Calendar toDate)
+COLL[] getContributors(TASK task, Calendar fromDate, Calendar toDate)
 			throws DbException;
 
 	/**
@@ -224,7 +224,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Contribution[] getContributions(Collaborator contributor, Task task,
+	CONT[] getContributions(COLL contributor, TASK task,
 			Calendar fromDate, Calendar toDate) throws DbException;
 
 	/**
@@ -240,7 +240,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	int getContributionsCount(Collaborator contributor, Task task,
+	int getContributionsCount(COLL contributor, TASK task,
 			Calendar fromDate, Calendar toDate) throws DbException;
 
 	/**
@@ -256,7 +256,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	long getContributionsSum(Collaborator contributor, Task task,
+	long getContributionsSum(COLL contributor, TASK task,
 			Calendar fromDate, Calendar toDate) throws DbException;
 
 	/**
@@ -266,7 +266,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Duration getDuration(long durationId) throws DbException;
+	DURA getDuration(long durationId) throws DbException;
 
 	/**
 	 * @param onlyActiveDurations
@@ -276,7 +276,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Duration[] getDurations(boolean onlyActiveDurations) throws DbException;
+	DURA[] getDurations(boolean onlyActiveDurations) throws DbException;
 
 	/**
 	 * @param task
@@ -285,7 +285,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Task getParentTask(Task task) throws DbException;
+	TASK getParentTask(TASK task) throws DbException;
 
 	/**
 	 * @return the root tasks count.
@@ -301,7 +301,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Task[] getTasks(String path) throws DbException;
+	TASK[] getTasks(String path) throws DbException;
 
 	/**
 	 * @param parentTask
@@ -310,7 +310,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Task[] getSubTasks(Task parentTask) throws DbException;
+	TASK[] getSubTasks(TASK parentTask) throws DbException;
 
 	/**
 	 * Retourn la liste des taches correspondant au filtre de recherche
@@ -323,7 +323,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Task[] getTasks(TaskSearchFilter filter) throws DbException;
+	TASK[] getTasks(TaskSearchFilter filter) throws DbException;
 
 	/**
 	 * @param tasksIds
@@ -332,7 +332,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Task getTask(long taskId) throws DbException;
+	TASK getTask(long taskId) throws DbException;
 
 	/**
 	 * @param tasksIds
@@ -341,7 +341,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Task[] getTasks(long[] tasksIds) throws DbException;
+	TASK[] getTasks(long[] tasksIds) throws DbException;
 
 	/**
 	 * @param taskPath
@@ -352,7 +352,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Task getTask(String taskPath, byte taskNumber) throws DbException;
+	TASK getTask(String taskPath, byte taskNumber) throws DbException;
 
 	/**
 	 * @param taskPath
@@ -363,7 +363,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Task getTask(String taskPath, String taskCode) throws DbException;
+	TASK getTask(String taskPath, String taskCode) throws DbException;
 
 	/**
 	 * @param contributor
@@ -377,7 +377,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Task[] getContributedTasks(Collaborator contributor, Calendar fromDate,
+	TASK[] getContributedTasks(COLL contributor, Calendar fromDate,
 			Calendar toDate) throws DbException;
 
 	/**
@@ -391,7 +391,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	TaskSums getTaskSums(Task task, Calendar fromDate, Calendar toDate)
+	TaskSums getTaskSums(TASK task, Calendar fromDate, Calendar toDate)
 			throws DbException;
 
 	/**
@@ -402,7 +402,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	void removeCollaborator(Collaborator collaborator) throws DbException;
+	void removeCollaborator(COLL collaborator) throws DbException;
 
 	/**
 	 * Supprime une contribution.
@@ -412,7 +412,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	void removeContribution(Contribution contribution) throws DbException;
+	void removeContribution(CONT contribution) throws DbException;
 
 	/**
 	 * Supprime une durée du référentiel de durées.
@@ -422,7 +422,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	void removeDuration(Duration duration) throws DbException;
+	void removeDuration(DURA duration) throws DbException;
 
 	/**
 	 * Supprime une tache.
@@ -432,7 +432,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	void removeTask(Task task) throws DbException;
+	void removeTask(TASK task) throws DbException;
 
 	/**
 	 * Modifie les attributs d'un collaborateur.
@@ -443,7 +443,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Collaborator updateCollaborator(Collaborator collaborator)
+	COLL updateCollaborator(COLL collaborator)
 			throws DbException;
 
 	/**
@@ -455,7 +455,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Contribution updateContribution(Contribution contribution)
+	CONT updateContribution(CONT contribution)
 			throws DbException;
 
 	/**
@@ -467,7 +467,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Duration updateDuration(Duration duration) throws DbException;
+	DURA updateDuration(DURA duration) throws DbException;
 
 	/**
 	 * Modifie les attributs d'une tache.
@@ -478,7 +478,7 @@ public interface IDbMgr {
 	 * @throws DbException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	Task updateTask(Task task) throws DbException;
+	TASK updateTask(TASK task) throws DbException;
 
 	/**
 	 * Génère un nouveau numéro de tache pour un chemin donné.
