@@ -70,7 +70,7 @@ import com.google.inject.Provider;
  * Classe offrant les services de base de persistence de l'application.
  * TODO 2236 -> 1865 -> 1558
  */
-public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK extends Task, CONT extends Contribution> implements IDbMgr<COLL, DURA, TASK, CONT> {
+public class DbMgrImpl implements IDbMgr {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(DbMgrImpl.class);
@@ -82,16 +82,16 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	private Provider<DbTransaction> tx;
 	
 	/** Database task mapper */
-	private IDbClassMapper<COLL> collaboratorMapper;
+	private IDbClassMapper<Collaborator> collaboratorMapper;
 
 	/** Database task mapper */
-	private IDbClassMapper<TASK> taskMapper;
+	private IDbClassMapper<Task> taskMapper;
 
 	/** Database task mapper */
-	private IDbClassMapper<DURA> durationMapper;
+	private IDbClassMapper<Duration> durationMapper;
 
 	/** Database task mapper */
-	private IDbClassMapper<CONT> contributionMapper;
+	private IDbClassMapper<Contribution> contributionMapper;
 
 	/**
 	 * Default constructor.
@@ -107,10 +107,10 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 			props.load(DbMgrImpl.class.getResourceAsStream("mapping.properties"));
 			DbClassMapping mapping = new DbClassMapping(props);
 			// TODO Move
-			collaboratorMapper = (IDbClassMapper<COLL>) mapping.getMapper(Collaborator.class);
-			taskMapper = (IDbClassMapper<TASK>) mapping.getMapper(Task.class);
-			durationMapper = (IDbClassMapper<DURA>) mapping.getMapper(Duration.class);
-			contributionMapper = (IDbClassMapper<CONT>) mapping.getMapper(Contribution.class);
+			collaboratorMapper = (IDbClassMapper<Collaborator>) mapping.getMapper(Collaborator.class);
+			taskMapper = (IDbClassMapper<Task>) mapping.getMapper(Task.class);
+			durationMapper = (IDbClassMapper<Duration>) mapping.getMapper(Duration.class);
+			contributionMapper = (IDbClassMapper<Contribution>) mapping.getMapper(Contribution.class);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
@@ -291,7 +291,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * .Collaborator)
 	 */
 	@Override
-	public COLL createCollaborator(COLL newCollaborator)
+	public Collaborator createCollaborator(Collaborator newCollaborator)
 			throws DbException {
 		try {
 			return collaboratorMapper.insert(tx().getConnection(), newCollaborator);
@@ -311,7 +311,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * .Contribution)
 	 */
 	@Override
-	public CONT createContribution(CONT newContribution)
+	public Contribution createContribution(Contribution newContribution)
 			throws DbException {
 		try {
 			return contributionMapper.insert(tx().getConnection(), newContribution);
@@ -330,7 +330,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * .Duration)
 	 */
 	@Override
-	public DURA createDuration(DURA newDuration) throws DbException {
+	public Duration createDuration(Duration newDuration) throws DbException {
 		try {
 			return durationMapper.insert(tx().getConnection(), newDuration);
 		} catch (SQLException e) {
@@ -348,7 +348,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * org.activitymgr.core.beans.Task)
 	 */
 	@Override
-	public TASK createTask(TASK parentTask, TASK newTask) throws DbException {
+	public Task createTask(Task parentTask, Task newTask) throws DbException {
 		try {
 			// Mise à jour du chemin de la tâche
 			String parentPath = parentTask == null ? "" : parentTask.getFullPath(); //$NON-NLS-1$
@@ -374,7 +374,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * .Duration)
 	 */
 	@Override
-	public boolean durationIsUsed(DURA duration) throws DbException {
+	public boolean durationIsUsed(Duration duration) throws DbException {
 		try {
 			return contributionMapper.count(tx().getConnection(), new String[] { "DurationId" }, new Object[] { duration.getId()}) > 0;
 		} catch (SQLException e) {
@@ -427,7 +427,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * @see org.activitymgr.core.IDbMgr#getCollaborator(long)
 	 */
 	@Override
-	public COLL getCollaborator(long collaboratorId) throws DbException {
+	public Collaborator getCollaborator(long collaboratorId) throws DbException {
 		try {
 			return collaboratorMapper.selectByPK(tx().getConnection(), new Object[] { collaboratorId });
 		} catch (SQLException e) {
@@ -448,14 +448,14 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 *             levé en cas de problème SQL.
 	 */
 	@Deprecated
-	private COLL rsToCollaborator(ResultSet rs) throws SQLException {
+	private Collaborator rsToCollaborator(ResultSet rs) throws SQLException {
 		Collaborator collaborator = new Collaborator();
 		collaborator.setId(rs.getLong(1));
 		collaborator.setLogin(rs.getString(2));
 		collaborator.setFirstName(rs.getString(3));
 		collaborator.setLastName(rs.getString(4));
 		collaborator.setIsActive(rs.getBoolean(5));
-		return (COLL) collaborator;
+		return (Collaborator) collaborator;
 	}
 
 	/*
@@ -464,9 +464,9 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * @see org.activitymgr.core.IDbMgr#getCollaborator(java.lang.String)
 	 */
 	@Override
-	public COLL getCollaborator(String login) throws DbException {
+	public Collaborator getCollaborator(String login) throws DbException {
 		try {
-			COLL[] collaborators = collaboratorMapper.select(tx().getConnection(), new String[] { "Login" }, new Object[] { login }, null, -1);
+			Collaborator[] collaborators = collaboratorMapper.select(tx().getConnection(), new String[] { "Login" }, new Object[] { login }, null, -1);
 			return collaborators.length > 0 ? collaborators[0] : null;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
@@ -482,7 +482,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * @see org.activitymgr.core.IDbMgr#getCollaborators(int, boolean, boolean)
 	 */
 	@Override
-	public COLL[] getCollaborators(int orderByClauseFieldIndex,
+	public Collaborator[] getCollaborators(int orderByClauseFieldIndex,
 			boolean ascendantSort, boolean onlyActiveCollaborators)
 			throws DbException {
 		try {
@@ -530,7 +530,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 */
 	// TODO rely on ORM
 	@Deprecated
-	private CONT[] rsToContributions(ResultSet rs) throws SQLException {
+	private Contribution[] rsToContributions(ResultSet rs) throws SQLException {
 		// Recherche des sous-taches
 		ArrayList<Contribution> list = new ArrayList<Contribution>();
 		while (rs.next()) {
@@ -545,7 +545,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 			list.add(contribution);
 		}
 		log.debug("  => found " + list.size() + " entrie(s)"); //$NON-NLS-1$ //$NON-NLS-2$
-		return (CONT[]) list.toArray(new Contribution[list.size()]);
+		return (Contribution[]) list.toArray(new Contribution[list.size()]);
 	}
 
 	/*
@@ -557,7 +557,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * java.util.Calendar)
 	 */
 	@Override
-	public CONT[] getContributions(COLL contributor, TASK task,
+	public Contribution[] getContributions(Collaborator contributor, Task task,
 			Calendar fromDate, Calendar toDate) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -571,7 +571,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 			rs = pStmt.executeQuery();
 
 			// Extraction du résultat
-			CONT[] result = rsToContributions(rs);
+			Contribution[] result = rsToContributions(rs);
 
 			// Fermeture du ResultSet
 			pStmt.close();
@@ -597,7 +597,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * java.util.Calendar)
 	 */
 	@Override
-	public long getContributionsSum(COLL contributor, TASK task,
+	public long getContributionsSum(Collaborator contributor, Task task,
 			Calendar fromDate, Calendar toDate) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -636,7 +636,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * java.util.Calendar)
 	 */
 	@Override
-	public int getContributionsCount(COLL contributor, TASK task,
+	public int getContributionsCount(Collaborator contributor, Task task,
 			Calendar fromDate, Calendar toDate) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -687,8 +687,8 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * @return
 	 * @throws SQLException
 	 */
-	private PreparedStatement buildContributionsRequest(TASK task,
-			COLL contributor, Calendar fromDate, Calendar toDate,
+	private PreparedStatement buildContributionsRequest(Task task,
+			Collaborator contributor, Calendar fromDate, Calendar toDate,
 			String fieldsToSelect) throws SQLException {
 		// Préparation de la requête
 		StringBuffer request = new StringBuffer("select ")
@@ -724,7 +724,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 *             thrown if a SQL exception occurs.
 	 */
 	private PreparedStatement buildIntervalRequest(StringBuffer request,
-			COLL contributor, TASK task, Calendar fromDate,
+			Collaborator contributor, Task task, Calendar fromDate,
 			Calendar toDate, boolean insertWhereClause, String orderByClause)
 			throws SQLException {
 		PreparedStatement pStmt;
@@ -807,7 +807,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * @see org.activitymgr.core.IDbMgr#getDuration(long)
 	 */
 	@Override
-	public DURA getDuration(long durationId) throws DbException {
+	public Duration getDuration(long durationId) throws DbException {
 		try {
 			return durationMapper.selectByPK(tx().getConnection(), new Object[] { durationId });
 		} catch (SQLException e) {
@@ -824,7 +824,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * @see org.activitymgr.core.IDbMgr#getDurations(boolean)
 	 */
 	@Override
-	public DURA[] getDurations(boolean onlyActive)
+	public Duration[] getDurations(boolean onlyActive)
 			throws DbException {
 		try {
 			String[] whereClauseAttributeNames = onlyActive ? new String[] { "IsActive" } : null;
@@ -845,8 +845,8 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * Task)
 	 */
 	@Override
-	public TASK getParentTask(TASK task) throws DbException {
-		TASK parentTask = null;
+	public Task getParentTask(Task task) throws DbException {
+		Task parentTask = null;
 		String parentTaskFullPath = task.getPath();
 		// Si le chemin est vide, la tache parent est nulle (tache racine)
 		if (parentTaskFullPath != null && !"".equals(parentTaskFullPath)) { //$NON-NLS-1$
@@ -872,7 +872,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * @see org.activitymgr.core.IDbMgr#getTasks(java.lang.String)
 	 */
 	@Override
-	public TASK[] getTasks(String path) throws DbException {
+	public Task[] getTasks(String path) throws DbException {
 		try {
 			return taskMapper.select(tx().getConnection(), new String[] { "Path" }, new Object[] { path }, new Object[] { new AscendantOrderByClause("NumberAsHex") }, -1);
 		} catch (SQLException e) {
@@ -889,7 +889,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * org.activitymgr.core.IDbMgr#getSubTasks(org.activitymgr.core.beans.Task)
 	 */
 	@Override
-	public TASK[] getSubTasks(TASK parentTask) throws DbException {
+	public Task[] getSubTasks(Task parentTask) throws DbException {
 		// Récupération du chemin à partir de la tache parent
 		String fullpath = parentTask == null ? "" : parentTask.getFullPath(); //$NON-NLS-1$
 		log.debug("Looking for tasks with path='" + fullpath + "'"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -903,7 +903,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * TaskSearchFilter)
 	 */
 	@Override
-	public TASK[] getTasks(TaskSearchFilter filter) throws DbException {
+	public Task[] getTasks(TaskSearchFilter filter) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
@@ -979,7 +979,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 			for (int i = 0; i < taskIds.length; i++) {
 				taskIds[i] = list.get(i);
 			}
-			TASK[] tasks = getTasks(taskIds);
+			Task[] tasks = getTasks(taskIds);
 
 			// On trie les taches manuellement car le tri base de données
 			// pose un problème dans la mesure ou la BDD considère le champ
@@ -1000,8 +1000,8 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 			// numérique 0102 est < à 010101 et à 010102. Par contre, en
 			// comparaison
 			// de chaînes (en java), on a bien 0102 > 010101 et 010102.
-			Arrays.sort(tasks, new Comparator<TASK>() {
-				public int compare(TASK t1, TASK t2) {
+			Arrays.sort(tasks, new Comparator<Task>() {
+				public int compare(Task t1, Task t2) {
 					return t1.getFullPath().compareTo(t2.getFullPath());
 				}
 
@@ -1024,7 +1024,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * @see org.activitymgr.core.IDbMgr#getTask(long)
 	 */
 	@Override
-	public TASK getTask(long taskId) throws DbException {
+	public Task getTask(long taskId) throws DbException {
 		try {
 			return taskMapper.selectByPK(tx().getConnection(), new Object[] { taskId });
 		} catch (SQLException e) {
@@ -1040,7 +1040,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * @see org.activitymgr.core.IDbMgr#getTasks(long[])
 	 */
 	@Override
-	public TASK[] getTasks(long[] tasksIds) throws DbException {
+	public Task[] getTasks(long[] tasksIds) throws DbException {
 		List<Task> result = new ArrayList<Task>();
 		try {
 			if (tasksIds != null && tasksIds.length != 0) {
@@ -1057,13 +1057,13 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 
 				// Then a loop is performed over the sub arrays
 				for (Object[] tasksIdsSubArray : tasksIdsSubArrays) {
-					TASK[] tasks = taskMapper.select(tx().getConnection(), new String[] { "Id" }, new Object[] { new InStatement(tasksIdsSubArray) }, new Object[] { new AscendantOrderByClause("NumberAsHex") }, -1);
+					Task[] tasks = taskMapper.select(tx().getConnection(), new String[] { "Id" }, new Object[] { new InStatement(tasksIdsSubArray) }, new Object[] { new AscendantOrderByClause("NumberAsHex") }, -1);
 					result.addAll(Arrays.asList(tasks));
 				}
 			}
 			// Retour du résultat
 			// FIXME
-			return (TASK[]) result.toArray(new Task[result.size()]);
+			return (Task[]) result.toArray(new Task[result.size()]);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
@@ -1077,9 +1077,9 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * @see org.activitymgr.core.IDbMgr#getTask(java.lang.String, byte)
 	 */
 	@Override
-	public TASK getTask(String taskPath, byte taskNumber) throws DbException {
+	public Task getTask(String taskPath, byte taskNumber) throws DbException {
 		try {
-			TASK[] tasks = taskMapper.select(tx().getConnection(), new String[] { "Path", "NumberAsHex" }, new Object[] { taskPath, StringHelper.toHex(taskNumber) }, null, -1);
+			Task[] tasks = taskMapper.select(tx().getConnection(), new String[] { "Path", "NumberAsHex" }, new Object[] { taskPath, StringHelper.toHex(taskNumber) }, null, -1);
 			return tasks.length > 0 ? tasks[0] : null;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
@@ -1096,9 +1096,9 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * java.lang.String)
 	 */
 	@Override
-	public TASK getTask(String taskPath, String taskCode) throws DbException {
+	public Task getTask(String taskPath, String taskCode) throws DbException {
 		try {
-			TASK[] tasks = taskMapper.select(tx().getConnection(), new String[] { "Path", "Code" }, new Object[] { taskPath, taskCode }, null, -1);
+			Task[] tasks = taskMapper.select(tx().getConnection(), new String[] { "Path", "Code" }, new Object[] { taskPath, taskCode }, null, -1);
 			return tasks.length > 0 ? tasks[0] : null;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
@@ -1111,7 +1111,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * @see org.activitymgr.core.IDbMgr#getContributors(org.activitymgr.core.beans.Task, java.util.Calendar, java.util.Calendar)
 	 */
 	@Override
-	public COLL[] getContributors(TASK task, Calendar fromDate,
+	public Collaborator[] getContributors(Task task, Calendar fromDate,
 			Calendar toDate) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -1141,7 +1141,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 
 			// Retour du résultat
 			// FIXME
-			return (COLL[]) list.toArray(new Collaborator[list.size()]);
+			return (Collaborator[]) list.toArray(new Collaborator[list.size()]);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
@@ -1159,7 +1159,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * , java.util.Calendar, java.util.Calendar)
 	 */
 	@Override
-	public TASK[] getContributedTasks(COLL contributor, Calendar fromDate,
+	public Task[] getContributedTasks(Collaborator contributor, Calendar fromDate,
 			Calendar toDate) throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -1206,7 +1206,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * java.util.Calendar, java.util.Calendar)
 	 */
 	@Override
-	public TaskSums getTaskSums(TASK task, Calendar fromDate, Calendar toDate)
+	public TaskSums getTaskSums(Task task, Calendar fromDate, Calendar toDate)
 			throws DbException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -1313,7 +1313,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * .Collaborator)
 	 */
 	@Override
-	public void removeCollaborator(COLL collaborator)
+	public void removeCollaborator(Collaborator collaborator)
 			throws DbException {
 		try {
 			collaboratorMapper.delete(tx().getConnection(), new String[] { "Id" }, new Object[] { collaborator.getId() });
@@ -1333,7 +1333,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * .Contribution)
 	 */
 	@Override
-	public void removeContribution(CONT contribution)
+	public void removeContribution(Contribution contribution)
 			throws DbException {
 		try {
 			contributionMapper.deleteByPK(tx().getConnection(), contribution);
@@ -1352,7 +1352,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * .Duration)
 	 */
 	@Override
-	public void removeDuration(DURA duration) throws DbException {
+	public void removeDuration(Duration duration) throws DbException {
 		try {
 			durationMapper.deleteByPK(tx().getConnection(), duration);
 		} catch (SQLException e) {
@@ -1370,7 +1370,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * org.activitymgr.core.IDbMgr#removeTask(org.activitymgr.core.beans.Task)
 	 */
 	@Override
-	public void removeTask(TASK task) throws DbException {
+	public void removeTask(Task task) throws DbException {
 		try {
 			// Delete sub tasks
 			taskMapper.delete(tx().getConnection(), new String[] { "Path" }, new Object[] { new LikeStatement(task.getFullPath() + "%") });
@@ -1391,7 +1391,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * .Collaborator)
 	 */
 	@Override
-	public COLL updateCollaborator(COLL collaborator)
+	public Collaborator updateCollaborator(Collaborator collaborator)
 			throws DbException {
 		try {
 			return collaboratorMapper.update(tx().getConnection(), collaborator);
@@ -1411,7 +1411,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * .Contribution)
 	 */
 	@Override
-	public CONT updateContribution(CONT contribution)
+	public Contribution updateContribution(Contribution contribution)
 			throws DbException {
 		try {
 			return contributionMapper.update(tx().getConnection(), contribution);
@@ -1430,7 +1430,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * .Duration)
 	 */
 	@Override
-	public DURA updateDuration(DURA duration) throws DbException {
+	public Duration updateDuration(Duration duration) throws DbException {
 		try {
 			return durationMapper.update(tx().getConnection(), duration);
 		} catch (SQLException e) {
@@ -1448,7 +1448,7 @@ public class DbMgrImpl<COLL extends Collaborator, DURA extends Duration, TASK ex
 	 * org.activitymgr.core.IDbMgr#updateTask(org.activitymgr.core.beans.Task)
 	 */
 	@Override
-	public TASK updateTask(TASK task) throws DbException {
+	public Task updateTask(Task task) throws DbException {
 		try {
 			return taskMapper.update(tx().getConnection(), task);
 		} catch (SQLException e) {
