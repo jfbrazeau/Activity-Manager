@@ -7,6 +7,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -20,6 +22,7 @@ import org.apache.log4j.PropertyConfigurator;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Module;
 import com.google.inject.Provider;
 
 public abstract class AbstractModelTestCase extends TestCase implements
@@ -81,6 +84,9 @@ public abstract class AbstractModelTestCase extends TestCase implements
 	/** The test transaction */
 	private DbTransaction tx;
 
+	/** Guice injector */
+	private Injector injector;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -90,14 +96,8 @@ public abstract class AbstractModelTestCase extends TestCase implements
 		tx = new DbTransaction(datasource.getConnection());
 
 		// Create Guice injector
-		Injector injector = Guice.createInjector(new CoreModule(),
-				new AbstractModule() {
-					@Override
-					protected void configure() {
-						bind(DbTransaction.class).toProvider(
-								AbstractModelTestCase.this);
-					}
-				});
+		List<Module> modules = getGuiceModules();
+		injector = Guice.createInjector(modules);
 
 		// Retrieve model manager instance
 		final IModelMgr modelMgr = injector.getInstance(IModelMgr.class);
@@ -118,6 +118,30 @@ public abstract class AbstractModelTestCase extends TestCase implements
 						}
 					}
 				});
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	protected List<Module> getGuiceModules() {
+		ArrayList<Module> modules = new ArrayList<Module>();
+		modules.add(new CoreModule());
+		modules.add(new AbstractModule() {
+			@Override
+			protected void configure() {
+				bind(DbTransaction.class).toProvider(
+						AbstractModelTestCase.this);
+			}
+		});
+		return modules;
+	}
+
+	/**
+	 * @return the injector instance.
+	 */
+	protected Injector getInjector() {
+		return injector;
 	}
 
 	@Override
