@@ -516,7 +516,7 @@ public class DbClassMapper<TYPE> implements IDbClassMapper<TYPE> {
 			}
 			int updated = pStmt.executeUpdate();
 			if (updated!=1)
-				throw new DbClassMappingException("Row insertion failed");
+				throw new DbClassMappingException("Row update failed");
 			// Fermeture du statement
 			pStmt.close();
 			pStmt = null;
