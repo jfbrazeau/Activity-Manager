@@ -760,7 +760,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public boolean isLeaf(long parentTaskId) throws DbException {
-		return getSubTasksCount(parentTaskId) > 0;
+		return getSubTasksCount(parentTaskId) == 0;
 	}
 	
 	/* (non-Javadoc)
