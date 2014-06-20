@@ -21,7 +21,7 @@
    <extension
          point="org.activitymgr.ui.web.logic.tabLogic">
       <tab
-            class="org.activitymgr.ui.web.logic.impl.internal.ContributionsLogicImpl"
+            class="org.activitymgr.ui.web.logic.impl.internal.ContributionsTabLogicImpl"
             label="Contributions">
       </tab>
    </extension>

@@ -7,7 +7,7 @@ import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.impl.event.DurationChangedEvent;
-import org.activitymgr.ui.web.logic.impl.internal.ContributionsLogicImpl;
+import org.activitymgr.ui.web.logic.impl.internal.ContributionsTabLogicImpl;
 
 public class DefaultContributionCellLogicProvider implements IContributionCellLogicProviderExtension {
 	
@@ -18,7 +18,7 @@ public class DefaultContributionCellLogicProvider implements IContributionCellLo
 			final int dayOfWeek = DAY_COLUMNS_IDENTIFIERS.indexOf(columnId);
 			Contribution c = weekContributions.getContributions()[dayOfWeek];
 			String duration = (c == null) ? "" : StringHelper.hundredthToEntry(c.getDurationId());
-			ITextFieldLogic textFieldLogic = new AbstractTextFieldLogicImpl((ContributionsLogicImpl) parent, duration) {
+			ITextFieldLogic textFieldLogic = new AbstractTextFieldLogicImpl((ContributionsTabLogicImpl) parent, duration) {
 				@Override
 				public void onValueChanged(String newValue) {
 					parent.getContext().getEventBus().fire(new DurationChangedEvent(parent, weekContributions, dayOfWeek, newValue, this));
@@ -28,13 +28,13 @@ public class DefaultContributionCellLogicProvider implements IContributionCellLo
 			return textFieldLogic;
 		}
 		else if (IContributionCellLogicProviderExtension.PATH_COLUMN_ID.equals(columnId)) {
-			return new LabelLogicImpl((ContributionsLogicImpl) parent, weekContributions.getTaskCodePath());
+			return new LabelLogicImpl((ContributionsTabLogicImpl) parent, weekContributions.getTaskCodePath());
 		}
 		else if (IContributionCellLogicProviderExtension.NAME_COLUMN_ID.equals(columnId)) {
-			return new LabelLogicImpl((ContributionsLogicImpl) parent, weekContributions.getTask().getName());
+			return new LabelLogicImpl((ContributionsTabLogicImpl) parent, weekContributions.getTask().getName());
 		}
 		else if (IContributionCellLogicProviderExtension.TOTAL_COLUMN_ID.equals(columnId)) {
-			return new LabelLogicImpl((ContributionsLogicImpl) parent, "");
+			return new LabelLogicImpl((ContributionsTabLogicImpl) parent, "");
 		}
 		else {
 			throw new IllegalArgumentException("Unexpected column identifier '" + columnId + "'");

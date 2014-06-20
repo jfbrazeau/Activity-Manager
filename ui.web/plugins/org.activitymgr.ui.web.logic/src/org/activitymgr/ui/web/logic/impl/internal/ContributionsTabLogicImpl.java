@@ -23,7 +23,7 @@ import org.activitymgr.core.beans.TaskContributions;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.AbstractEvent;
-import org.activitymgr.ui.web.logic.IContributionsLogic;
+import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILogic;
@@ -39,7 +39,7 @@ import org.activitymgr.ui.web.logic.impl.event.DurationChangedEvent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 
-public class ContributionsLogicImpl extends AbstractContributionLogicImpl implements IContributionsLogic, IEventListener {
+public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl implements IContributionsTabLogic, IEventListener {
 	
 	private static final List<String> DEFAULT_COLUMN_IDENTIFIERS = Collections
 			.unmodifiableList(Arrays.asList(new String[] {
@@ -66,13 +66,13 @@ public class ContributionsLogicImpl extends AbstractContributionLogicImpl implem
 	private Collaborator selectedCollaborator;
 	private Map<String, IContributionsActionHandler> actionHandlers = new HashMap<String, IContributionsActionHandler>();
 
-	public ContributionsLogicImpl(AbstractLogicImpl<?> parent) {
+	public ContributionsTabLogicImpl(AbstractLogicImpl<?> parent) {
 		super(parent);
 
 		// Retrieve collaborators list
 		try {
 			Collaborator[] activeCollaborators = getModelMgr().getActiveCollaborators(Collaborator.FIRST_NAME_FIELD_IDX, true);
-			List<ICollaborator> wrappers = new ArrayList<IContributionsLogic.ICollaborator>();
+			List<ICollaborator> wrappers = new ArrayList<IContributionsTabLogic.ICollaborator>();
 			for (Collaborator collaborator : activeCollaborators) {
 				wrappers.add(new CollaboratorWrapper(collaborator));
 			}
@@ -438,6 +438,16 @@ public class ContributionsLogicImpl extends AbstractContributionLogicImpl implem
 		actionHandlers.get(actionId).handle(this);
 	}
 
+	@Override
+	public Collaborator getContributor() {
+		return selectedCollaborator;
+	}
+
+	@Override
+	public AbstractWeekContributionsProviderExtension getContributionsProvider() {
+		return weekContributionsProvider;
+	}
+
 }
 
 class DefaultWeekContributionsProvider extends AbstractWeekContributionsProviderExtension {
@@ -477,7 +487,7 @@ class DefaultWeekContributionsProvider extends AbstractWeekContributionsProvider
 
 }
 
-class CollaboratorWrapper implements IContributionsLogic.ICollaborator {
+class CollaboratorWrapper implements IContributionsTabLogic.ICollaborator {
 
 	private Collaborator collaborator;
 

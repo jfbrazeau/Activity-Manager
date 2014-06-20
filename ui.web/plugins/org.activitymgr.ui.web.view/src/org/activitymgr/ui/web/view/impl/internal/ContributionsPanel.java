@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.activitymgr.ui.web.logic.IContributionsLogic;
-import org.activitymgr.ui.web.logic.IContributionsLogic.ICollaborator;
+import org.activitymgr.ui.web.logic.IContributionsTabLogic;
+import org.activitymgr.ui.web.logic.IContributionsTabLogic.ICollaborator;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.impl.IContributionCellLogicProviderExtension;
 import org.activitymgr.ui.web.view.IContributionColumnViewProviderExtension;
@@ -36,9 +36,9 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
-public class ContributionsPanel extends VerticalLayout implements IContributionsLogic.View, Button.ClickListener {
+public class ContributionsPanel extends VerticalLayout implements IContributionsTabLogic.View, Button.ClickListener {
 
-	private IContributionsLogic logic;
+	private IContributionsTabLogic logic;
 	
 	private IResourceCache resourceCache;
 
@@ -254,7 +254,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	}
 
 	@Override
-	public void registerLogic(IContributionsLogic logic) {
+	public void registerLogic(IContributionsTabLogic logic) {
 		this.logic = logic;
 	}
 

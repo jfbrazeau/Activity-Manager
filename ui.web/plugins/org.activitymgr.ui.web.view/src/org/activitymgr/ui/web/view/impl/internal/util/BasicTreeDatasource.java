@@ -1,30 +1,21 @@
 package org.activitymgr.ui.web.view.impl.internal.util;
 
-import java.util.Arrays;
 import java.util.Collection;
 
-import org.activitymgr.ui.web.logic.ILabelProviderCallback;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.view.IResourceCache;
 
 import com.vaadin.data.Container;
-import com.vaadin.data.Property;
 import com.vaadin.server.Resource;
-import com.vaadin.ui.Label;
 
 @SuppressWarnings("serial")
-public class TreeDatasource extends
-		AbstractContainerDatasource<TreeItem> implements
+public class BasicTreeDatasource extends
+		AbstractContainerDatasource<BasicItem> implements
 		Container.Hierarchical {
-
-	public static final String NAME_PROPERTY_ID = "name";
-	public static final String ICON_PROPERTY_ID = "icon";
-	public static final Collection<String> PROPERTY_IDS = Arrays
-			.asList(new String[] { NAME_PROPERTY_ID, ICON_PROPERTY_ID });
 
 	private ITreeContentProviderCallback contentProvider;
 
-	public TreeDatasource(IResourceCache resourceCache,
+	public BasicTreeDatasource(IResourceCache resourceCache,
 			ITreeContentProviderCallback contentProvider) {
 		super(resourceCache);
 		this.contentProvider = contentProvider;
@@ -46,8 +37,8 @@ public class TreeDatasource extends
 	}
 
 	@Override
-	protected TreeItem createItem(String itemId) {
-		return new TreeItem(getResourceCache(),
+	protected BasicItem createItem(String itemId) {
+		return new BasicItem(getResourceCache(),
 				contentProvider.getLabelProvider(itemId));
 	}
 
@@ -57,12 +48,12 @@ public class TreeDatasource extends
 
 	@Override
 	public final Collection<?> getContainerPropertyIds() {
-		return PROPERTY_IDS;
+		return BasicItem.PROPERTY_IDS;
 	}
 
 	@Override
 	public final Class<?> getType(Object propertyId) {
-		return NAME_PROPERTY_ID.equals(propertyId) ? String.class
+		return BasicItem.NAME_PROPERTY_ID.equals(propertyId) ? String.class
 				: Resource.class;
 	}
 
@@ -111,40 +102,6 @@ public class TreeDatasource extends
 	public final boolean setChildrenAllowed(Object itemId,
 			boolean areChildrenAllowed) throws UnsupportedOperationException {
 		throw new UnsupportedOperationException();
-	}
-
-}
-
-@SuppressWarnings("serial")
-class TreeItem extends AbstractItem {
-	
-	private ILabelProviderCallback labelProvider;
-
-	public TreeItem(IResourceCache resourceCache, ILabelProviderCallback labelProvider) {
-		super(resourceCache);
-		this.labelProvider = labelProvider;
-	}
-	
-	@Override
-	public Property<?> getItemProperty(Object id) {
-		String propertyId = (String) id;
-		Property<?> property = null;
-		if (TreeDatasource.NAME_PROPERTY_ID.equals(propertyId)) {
-			property = new Label(labelProvider.getText());
-		}
-		else if (TreeDatasource.ICON_PROPERTY_ID.equals(propertyId)) {
-			Resource icon = getResourceCache().getIconResource(labelProvider.getIcon());
-			property = new SimpleProperty(icon, Resource.class);
-		}
-		else {
-			throw new IllegalStateException("Unexpected property id " + propertyId + ")");
-		}
-		return property;
-	}
-	
-	@Override
-	public Collection<?> getItemPropertyIds() {
-		return TreeDatasource.PROPERTY_IDS;
 	}
 
 }

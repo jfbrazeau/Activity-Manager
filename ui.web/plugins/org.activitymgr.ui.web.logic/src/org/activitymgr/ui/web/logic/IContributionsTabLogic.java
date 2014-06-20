@@ -4,7 +4,7 @@ import java.util.Calendar;
 import java.util.List;
 
 // TODO clear
-public interface IContributionsLogic extends ILogic<IContributionsLogic.View> {
+public interface IContributionsTabLogic extends ILogic<IContributionsTabLogic.View> {
 
 	static interface ICollaborator {
 		String getLogin();
@@ -30,7 +30,7 @@ public interface IContributionsLogic extends ILogic<IContributionsLogic.View> {
 
 	void onAction(String actionId);
 
-	public interface View extends ILogic.IView<IContributionsLogic> {
+	public interface View extends ILogic.IView<IContributionsTabLogic> {
 		
 		void setCollaborators(List<ICollaborator> collaborators);
 		

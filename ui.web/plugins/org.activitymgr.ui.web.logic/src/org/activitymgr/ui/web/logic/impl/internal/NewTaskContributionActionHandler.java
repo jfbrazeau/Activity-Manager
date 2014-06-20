@@ -16,7 +16,7 @@ public class NewTaskContributionActionHandler extends
 		for (TaskContributions tc : logic.getWeekContributions()) {
 			selectedTaskIds.add(tc.getTask().getId());
 		}
-		new TaskChooserLogicImpl(logic, selectedTaskIds);
+		new TaskChooserLogicImpl(logic, selectedTaskIds, logic.getContributor(), logic.getContributionsProvider(), logic.getFirstDayOfWeek());
 	}
 
 }
