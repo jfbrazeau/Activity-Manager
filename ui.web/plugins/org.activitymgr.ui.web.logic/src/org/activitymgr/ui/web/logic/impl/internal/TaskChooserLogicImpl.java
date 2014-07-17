@@ -3,6 +3,7 @@ package org.activitymgr.ui.web.logic.impl.internal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -75,6 +76,12 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 
 		// Reset button state & status label
 		onSelectionChanged(null);
+
+		// A preload of recent tasks must be performed in the vaadin tree. Otherwise, after
+		// having clicked on a recent task, it does not become selected in the tree.s
+		if (recentTaskIds.size() > 0) {
+			getView().preloadTreeItems(recentTaskIds);
+		}
 	}
 
 	@Override
@@ -82,20 +89,32 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 		try {
 			String newStatus = "";
 			boolean okButtonEnabled = false;
+			boolean newTaskFormEnabled = false;
 			if (taskId != null) {
 				if (alreadySelectedTaskIds.contains(taskId)) {
 					newStatus = "This task is already selected";
-				} else {
-					if (!getModelMgr().isLeaf(taskId)) {
-						newStatus = "You cannot select a container task";
+				} else if (!getModelMgr().isLeaf(taskId)) {
+					newTaskFormEnabled = true;
+					if (getView().isNewTaskChecked()) {
+						String newTaskName = getView().getNewTaskName();
+						if (newTaskName == null || "".equals(newTaskName.trim())) {
+							newStatus = "Enter a task name";
+						}
+						else {
+							okButtonEnabled = true;
+						}
 					}
 					else {
-						okButtonEnabled = true;
+						newStatus = "You cannot select a container task";
 					}
 				}
+				else {
+					okButtonEnabled = true;
+				}
 			}
-			getView().setStatus(newStatus);
+			getView().setStatus(newStatus + "-" + getView().isNewTaskChecked());
 			getView().setOkButtonEnabled(okButtonEnabled);
+			getView().setNewTaskFormEnabled(newTaskFormEnabled);
 		}
 		catch (DbException e) {
 			handleError(e);
@@ -111,16 +130,21 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 	public void onRecentTaskClicked(long taskId) {
 		try {
 			Task cursor = recentTasks.get(taskId);
-			List<Long> ids = new ArrayList<Long>();
-			while (cursor != null) {
-				ids.add(0, cursor.getId());
-				cursor = getModelMgr().getParentTask(cursor);
-			}
+			List<Long> ids = getParentTaskIds(cursor);
 			getView().expandTasks(ids);
 			getView().selectTask(taskId);
 		} catch (DbException e) {
 			handleError(e);
 		}
+	}
+
+	private List<Long> getParentTaskIds(Task task) throws DbException {
+		List<Long> ids = new ArrayList<Long>();
+		while (task != null) {
+			ids.add(0, task.getId());
+			task = getModelMgr().getParentTask(task);
+		}
+		return ids;
 	}
 
 }

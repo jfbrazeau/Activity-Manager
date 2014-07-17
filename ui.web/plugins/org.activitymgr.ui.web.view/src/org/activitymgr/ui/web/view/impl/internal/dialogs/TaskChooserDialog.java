@@ -10,18 +10,20 @@ import org.activitymgr.ui.web.view.impl.internal.util.BasicItem;
 import org.activitymgr.ui.web.view.impl.internal.util.BasicListDatasource;
 import org.activitymgr.ui.web.view.impl.internal.util.BasicTreeDatasource;
 
+import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.event.ShortcutListener;
-import com.vaadin.ui.AbstractSelect;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.ListSelect;
 import com.vaadin.ui.Panel;
+import com.vaadin.ui.TextField;
 import com.vaadin.ui.Tree;
 import com.vaadin.ui.VerticalLayout;
 
@@ -34,6 +36,8 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	private Tree taskTree;
 	private Label statusLabel;
 	private ListSelect recentTasksSelect;
+	private CheckBox newSubTaskCheckbox;
+	private TextField newSubTaskNameField;
 
 	public TaskChooserDialog(IResourceCache resourceCache) {
         super(resourceCache, "Select a task");
@@ -45,35 +49,39 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
         setContent(gl);
         
         // Task tree
-        Panel taskTreeContainerPanel = new Panel();
-        gl.addComponent(taskTreeContainerPanel);
-        taskTreeContainerPanel.setWidth(200, Unit.PIXELS);
-        taskTreeContainerPanel.setHeight(350, Unit.PIXELS);
+        Panel leftContainerPanel = new Panel();
+        gl.addComponent(leftContainerPanel);
+        leftContainerPanel.setWidth(200, Unit.PIXELS);
+        leftContainerPanel.setHeight(350, Unit.PIXELS);
         taskTree = new Tree();
-        taskTreeContainerPanel.setContent(taskTree);
+        leftContainerPanel.setContent(taskTree);
         //taskTree.setWidth(400, Unit.PIXELS);
         taskTree.setSizeUndefined();
         taskTree.setImmediate(true);
         taskTree.setSizeFull();
         
         // Recent tasks
-        VerticalLayout recentTasksContainerPanel = new VerticalLayout();
-        recentTasksContainerPanel.setHeight(350, Unit.PIXELS);
-        recentTasksContainerPanel.setWidth(200, Unit.PIXELS);
-        recentTasksContainerPanel.setHeight(350, Unit.PIXELS);
-        gl.addComponent(recentTasksContainerPanel);
+        VerticalLayout rightContainerPanel = new VerticalLayout();
+        rightContainerPanel.setHeight(350, Unit.PIXELS);
+        rightContainerPanel.setWidth(200, Unit.PIXELS);
+        rightContainerPanel.setHeight(350, Unit.PIXELS);
+        gl.addComponent(rightContainerPanel);
         recentTasksSelect = new ListSelect("Recent :");
         recentTasksSelect.setSizeFull();
         recentTasksSelect.setImmediate(true);
         recentTasksSelect.setNullSelectionAllowed(false);
-        recentTasksContainerPanel.addComponent(recentTasksSelect);
-        recentTasksContainerPanel.addComponent(new Label("dd"));
+        rightContainerPanel.addComponent(recentTasksSelect);
+        newSubTaskCheckbox = new CheckBox("New task");
+        rightContainerPanel.addComponent(newSubTaskCheckbox);
+        newSubTaskNameField = new TextField("Name");
+        rightContainerPanel.addComponent(newSubTaskNameField);
         
         // Buttons
         HorizontalLayout hl = new HorizontalLayout();
         hl.setSizeFull();
         gl.addComponent(hl, 0, 1, 1, 1);
         //vl.setComponentAlignment(hl, Alignment.MIDDLE_RIGHT);
+        
         statusLabel = new Label();
         hl.addComponent(statusLabel);
         hl.setExpandRatio(statusLabel, 1);
@@ -88,12 +96,6 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 			@Override
 			public void valueChange(ValueChangeEvent event) {
 				logic.onSelectionChanged(taskTree.getValue() == null ? null : Long.parseLong((String) taskTree.getValue()));
-			}
-		});
-        taskTree.setNewItemHandler(new AbstractSelect.NewItemHandler() {
-			@Override
-			public void addNewItem(String newItemCaption) {
-				System.out.println("addNewItem(" + newItemCaption + ")");
 			}
 		});
         recentTasksSelect.addValueChangeListener(new Property.ValueChangeListener() {
@@ -145,6 +147,19 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
     	recentTasksSelect.setContainerDataSource(datasource);
     	recentTasksSelect.setItemCaptionPropertyId(BasicItem.NAME_PROPERTY_ID);
     	recentTasksSelect.setItemIconPropertyId(BasicItem.ICON_PROPERTY_ID);
+    	for (Object id : recentTasksSelect.getItemIds()) {
+        	Item item = taskTree.getItem(id);
+        	System.out.println("Preload " + id + " - " + item);
+    	}
+    	
+    }
+    
+    @Override
+    public void preloadTreeItems(Collection<String> ids) {
+    	for (String id : ids) {
+        	Item item = taskTree.getItem(id);
+        	System.out.println("Preloaded " + id + " - " + item);
+    	}
     }
     
 	@Override
@@ -168,15 +183,16 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	}
 
 	@Override
+	public void setNewTaskFormEnabled(boolean enabled) {
+		newSubTaskCheckbox.setEnabled(enabled);
+		newSubTaskNameField.setEnabled(enabled);
+	}
+
+	@Override
 	public void setStatus(String status) {
 		statusLabel.setValue(status);
 	}
 	
-	@Override
-	public void expandTask(long taskId) {
-		taskTree.expandItem(String.valueOf(taskId));
-	}
-
 	@Override
 	public void selectTask(long taskId) {
 		taskTree.setValue(String.valueOf(taskId));
@@ -185,8 +201,18 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	@Override
 	public void expandTasks(Collection<Long> taskIds) {
 		for (Long taskId : taskIds) {
-			expandTask(taskId);
+			taskTree.expandItem(String.valueOf(taskId));
 		}
+	}
+
+	@Override
+	public boolean isNewTaskChecked() {
+		return newSubTaskCheckbox.getValue();
+	}
+	
+	@Override
+	public String getNewTaskName() {
+		return newSubTaskNameField.getValue();
 	}
 
 }
