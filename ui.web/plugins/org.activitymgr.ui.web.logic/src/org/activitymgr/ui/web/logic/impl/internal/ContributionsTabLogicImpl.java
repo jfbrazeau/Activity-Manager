@@ -443,11 +443,6 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 		return selectedCollaborator;
 	}
 
-	@Override
-	public AbstractWeekContributionsProviderExtension getContributionsProvider() {
-		return weekContributionsProvider;
-	}
-
 }
 
 class DefaultWeekContributionsProvider extends AbstractWeekContributionsProviderExtension {

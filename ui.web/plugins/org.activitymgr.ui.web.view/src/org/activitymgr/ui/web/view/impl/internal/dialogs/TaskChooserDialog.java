@@ -13,9 +13,12 @@ import org.activitymgr.ui.web.view.impl.internal.util.BasicTreeDatasource;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.event.FieldEvents;
 import com.vaadin.event.ShortcutListener;
+import com.vaadin.event.FieldEvents.TextChangeEvent;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.AbstractTextField.TextChangeEventMode;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.GridLayout;
@@ -43,7 +46,7 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
         super(resourceCache, "Select a task");
         setModal(true);
 
-        setWidth(420, Unit.PIXELS);
+        setWidth(520, Unit.PIXELS);
 
         GridLayout gl = new GridLayout(2, 2);
         setContent(gl);
@@ -62,8 +65,8 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
         
         // Recent tasks
         VerticalLayout rightContainerPanel = new VerticalLayout();
-        rightContainerPanel.setHeight(350, Unit.PIXELS);
-        rightContainerPanel.setWidth(200, Unit.PIXELS);
+        rightContainerPanel.setMargin(true);
+        rightContainerPanel.setWidth(300, Unit.PIXELS);
         rightContainerPanel.setHeight(350, Unit.PIXELS);
         gl.addComponent(rightContainerPanel);
         recentTasksSelect = new ListSelect("Recent :");
@@ -71,10 +74,18 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
         recentTasksSelect.setImmediate(true);
         recentTasksSelect.setNullSelectionAllowed(false);
         rightContainerPanel.addComponent(recentTasksSelect);
-        newSubTaskCheckbox = new CheckBox("New task");
-        rightContainerPanel.addComponent(newSubTaskCheckbox);
-        newSubTaskNameField = new TextField("Name");
-        rightContainerPanel.addComponent(newSubTaskNameField);
+        VerticalLayout newTaskFormPanel = new VerticalLayout();
+        rightContainerPanel.addComponent(newTaskFormPanel);
+        newSubTaskCheckbox = new CheckBox("Create a new task");
+        newSubTaskCheckbox.setImmediate(true);
+        newTaskFormPanel.addComponent(newSubTaskCheckbox);
+        newSubTaskNameField = new TextField("New task name");
+        newSubTaskNameField.setImmediate(true);
+        newTaskFormPanel.addComponent(newSubTaskNameField);
+
+        //        rightContainerPanel.setExpandRatio(recentTasksSelect, 8f);
+//        rightContainerPanel.setExpandRatio(newSubTaskCheckbox, 1f);
+//        rightContainerPanel.setExpandRatio(newSubTaskNameField, 1f);
         
         // Buttons
         HorizontalLayout hl = new HorizontalLayout();
@@ -104,6 +115,24 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 				logic.onRecentTaskClicked(recentTasksSelect.getValue() == null ? null : Long.parseLong((String) recentTasksSelect.getValue()));
 			}
 		});
+        newSubTaskCheckbox.addValueChangeListener(new Property.ValueChangeListener() {
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				logic.onNewTaskCheckboxClicked();
+			}
+		});
+        newSubTaskNameField.addValueChangeListener(new Property.ValueChangeListener() {
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+			}
+		});
+        newSubTaskNameField.setTextChangeEventMode(TextChangeEventMode.EAGER);
+        newSubTaskNameField.addTextChangeListener(new FieldEvents.TextChangeListener() {
+			@Override
+			public void textChange(TextChangeEvent event) {
+				logic.onNewTaskNameChanged(event.getText());
+			}
+		});
         
         // Key listener
         addShortcutListener(new ShortcutListener("OK", ShortcutListener.KeyCode.ENTER, new int[] {}) {
@@ -113,7 +142,7 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 			        if (getParent() != null) {
 			            close();
 			        }
-		        	logic.onTaskChosen(Long.parseLong((String) taskTree.getValue()));
+		        	logic.onOkButtonClicked(Long.parseLong((String) taskTree.getValue()));
 				}
 				else {
 					taskTree.expandItem(taskTree.getValue());
@@ -168,7 +197,7 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
             close();
         }
         if (event.getSource() == ok) {
-        	logic.onTaskChosen(Long.parseLong((String) taskTree.getValue()));
+        	logic.onOkButtonClicked(Long.parseLong((String) taskTree.getValue()));
         }
 	}
 
@@ -185,6 +214,11 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	@Override
 	public void setNewTaskFormEnabled(boolean enabled) {
 		newSubTaskCheckbox.setEnabled(enabled);
+		newSubTaskNameField.setEnabled(enabled);
+	}
+
+	@Override
+	public void setNewTaskNameEnabled(boolean enabled) {
 		newSubTaskNameField.setEnabled(enabled);
 	}
 
@@ -215,4 +249,8 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 		return newSubTaskNameField.getValue();
 	}
 
+	@Override
+	public String getSelectedTaskId() {
+		return (String) taskTree.getValue();
+	}
 }

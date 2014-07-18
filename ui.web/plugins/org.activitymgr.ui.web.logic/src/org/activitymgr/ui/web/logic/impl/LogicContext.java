@@ -55,7 +55,6 @@ public class LogicContext {
 						new Provider<DbTransaction>() {
 							@Override
 							public DbTransaction get() {
-								System.out.println("get tx from " + Thread.currentThread() + " : " + transactions.get());
 								DbTransactionContext txCtx = transactions.get();
 								return txCtx != null ? txCtx.tx : null;
 							}
@@ -145,7 +144,7 @@ public class LogicContext {
 								sp = txCtx.tx.getConnection().setSavepoint();
 							}
 							txCtx.calls.push(method);
-							log(txCtx, "START");
+							//log(txCtx, "START");
 							// Call the real model manager
 							Object result = method.invoke(wrapped, args);
 
@@ -167,7 +166,7 @@ public class LogicContext {
 							}
 							throw t.getCause();
 						} finally {
-							log(txCtx, "END");
+							//log(txCtx, "END");
 							txCtx.calls.pop();
 							if (txCtx.calls.size() == 0) {
 								// Release the transaction

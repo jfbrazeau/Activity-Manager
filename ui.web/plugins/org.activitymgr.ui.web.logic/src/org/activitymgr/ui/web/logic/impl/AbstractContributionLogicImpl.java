@@ -22,8 +22,6 @@ public abstract class AbstractContributionLogicImpl extends AbstractLogicImpl<IC
 	
 	public abstract Collaborator getContributor();
 	
-	public abstract AbstractWeekContributionsProviderExtension getContributionsProvider();
-	
 	public abstract List<TaskContributions> getWeekContributions();
 
 	public abstract void addTask(Task task, String taskCodePath);

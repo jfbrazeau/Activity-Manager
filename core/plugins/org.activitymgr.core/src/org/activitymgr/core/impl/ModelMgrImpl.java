@@ -918,6 +918,37 @@ public class ModelMgrImpl implements IModelMgr {
 					Strings.getString("ModelMgr.errors.FROM_DATE_MUST_BE_BEFORE_TO_DATE")); //$NON-NLS-1$
 	}
 
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.IModelMgr#getContributedTaskContainers(org.activitymgr.core.beans.Collaborator, java.util.Calendar, java.util.Calendar)
+	 */
+	@Override
+	public Task[] getContributedTaskContainers(Collaborator contributor,
+			Calendar fromDate, Calendar toDate) throws DbException,
+			ModelException {
+		// Control sur la date
+		checkInterval(fromDate, toDate);
+		// Récupération des contributions
+		Contribution[] contributionsArray = dao.getContributions(contributor,
+				null, fromDate, toDate);
+		Map<Long, Task> tasksCache = new HashMap<Long, Task>();
+		Map<String, Task> parentTasksCache = new HashMap<String, Task>();
+		for (Contribution c : contributionsArray) {
+			Task task = tasksCache.get(c.getTaskId());
+			if (task == null) {
+				task = dao.getTask(c.getTaskId());
+				tasksCache.put(c.getTaskId(), task);
+			}
+			String parentTaskFullPath = task.getPath();
+			if (!parentTasksCache.containsKey(parentTaskFullPath)) {
+				Task parent = getParentTask(task);
+				parentTasksCache.put(parentTaskFullPath, parent);
+			}
+		}
+		Task[] result = parentTasksCache.values().toArray(new Task[parentTasksCache.size()]);
+		sort(result);
+		return result;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -974,11 +1005,7 @@ public class ModelMgrImpl implements IModelMgr {
 			tasksIds[idx++] = taskId;
 		}
 		Task[] tasks = dao.getTasks(tasksIds);
-		Arrays.sort(tasks, new Comparator<Task>() {
-			public int compare(Task t1, Task t2) {
-				return t1.getFullPath().compareTo(t2.getFullPath());
-			}
-		});
+		sort(tasks);
 
 		// Result building
 		IntervalContributions result = new IntervalContributions();
@@ -997,6 +1024,18 @@ public class ModelMgrImpl implements IModelMgr {
 
 		// Retour du résultat
 		return result;
+	}
+
+	/**
+	 * Sorts a task list.
+	 * @param tasks the tasks to sort.
+	 */
+	private static void sort(Task[] tasks) {
+		Arrays.sort(tasks, new Comparator<Task>() {
+			public int compare(Task t1, Task t2) {
+				return t1.getFullPath().compareTo(t2.getFullPath());
+			}
+		});
 	}
 
 	/**
