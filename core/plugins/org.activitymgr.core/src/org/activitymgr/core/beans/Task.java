@@ -27,6 +27,8 @@
  */
 package org.activitymgr.core.beans;
 
+import java.text.NumberFormat;
+
 import org.activitymgr.core.util.StringHelper;
 
 /**
@@ -57,8 +59,6 @@ public class Task extends SimpleIdentityBean {
 
 	/** Commentaire sur la tache */
 	private String comment;
-
-	private String numberAsHex;
 
 	/**
 	 * @return le code de la tache.
@@ -99,10 +99,7 @@ public class Task extends SimpleIdentityBean {
 	 * @return le numéro de la tache.
 	 */
 	public String getNumberAsHex() {
-		if (numberAsHex == null) {
-			numberAsHex = StringHelper.toHex(number);
-		}
-		return numberAsHex;
+		return StringHelper.toHex(number);
 	}
 
 	/**
@@ -167,18 +164,6 @@ public class Task extends SimpleIdentityBean {
 	 */
 	public void setNumber(byte number) {
 		this.number = number;
-		this.numberAsHex = null;
-	}
-
-	/**
-	 * Définit le numéro de la tache.
-	 * 
-	 * @param number
-	 *            le nouveau numéro.
-	 */
-	public void setNumberAsHex(String hex) {
-		this.numberAsHex = hex;
-		this.number = StringHelper.toByte(hex);
 	}
 
 	/**

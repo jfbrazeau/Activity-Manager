@@ -16,7 +16,7 @@
 
 	<modules>
 		<module>releng/org.activitymgr.core.feature</module>
-		<module>plugins/org.activitymgr.orm</module>
+		<module>plugins/org.activitymgr.core.orm</module>
 		<module>plugins/org.activitymgr.core</module>
 		<module>plugins/org.activitymgr.core.h2fragment</module>
 		<module>plugins/org.activitymgr.core.hsqldbfragment</module>

@@ -128,7 +128,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
          unpack="false"/>
 
    <plugin
-         id="org.activitymgr.orm"
+         id="org.activitymgr.core.orm"
          download-size="0"
          install-size="0"
          version="0.0.0"

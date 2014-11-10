@@ -10,7 +10,6 @@ public class AllTests {
 	public static Test suite() {
 		TestSuite suite = new TestSuite("Test for org.activitymgr");
 		//$JUnit-BEGIN$
-		suite.addTestSuite(DbModelManagementTest.class);
 		suite.addTestSuite(StringHelperTest.class);
 		suite.addTestSuite(DurationTest.class);
 		suite.addTestSuite(CollaboratorsTest.class);

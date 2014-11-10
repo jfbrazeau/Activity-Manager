@@ -118,6 +118,9 @@ public abstract class AbstractModelTestCase extends TestCase implements
 						}
 					}
 				});
+
+		// If tables don't exist, create it
+		getModelMgr().createTables();
 	}
 
 	/**

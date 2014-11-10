@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Lightweight ORM
+Bundle-SymbolicName: org.activitymgr.core.orm
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Jean-Francois Brazeau
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.apache.log4j
+Export-Package: org.activitymgr.core.orm,
+ org.activitymgr.core.orm.annotation,
+ org.activitymgr.core.orm.query

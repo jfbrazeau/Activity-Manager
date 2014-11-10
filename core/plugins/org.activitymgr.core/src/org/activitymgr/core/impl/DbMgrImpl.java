@@ -53,12 +53,12 @@ import org.activitymgr.core.beans.Duration;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskSearchFilter;
 import org.activitymgr.core.beans.TaskSums;
-import org.activitymgr.core.orm.AscendantOrderByClause;
-import org.activitymgr.core.orm.DbClassMapping;
-import org.activitymgr.core.orm.DescendantOrderByClause;
-import org.activitymgr.core.orm.IDbClassMapper;
-import org.activitymgr.core.orm.InStatement;
-import org.activitymgr.core.orm.LikeStatement;
+import org.activitymgr.core.orm.DAOFactory;
+import org.activitymgr.core.orm.IDAO;
+import org.activitymgr.core.orm.query.AscendantOrderByClause;
+import org.activitymgr.core.orm.query.DescendantOrderByClause;
+import org.activitymgr.core.orm.query.InStatement;
+import org.activitymgr.core.orm.query.LikeStatement;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
 import org.apache.log4j.Logger;
@@ -82,16 +82,16 @@ public class DbMgrImpl implements IDbMgr {
 	private Provider<DbTransaction> tx;
 	
 	/** Database task mapper */
-	private IDbClassMapper<Collaborator> collaboratorMapper;
+	private IDAO<Collaborator> collaboratorMapper;
 
 	/** Database task mapper */
-	private IDbClassMapper<Task> taskMapper;
+	private IDAO<Task> taskMapper;
 
 	/** Database task mapper */
-	private IDbClassMapper<Duration> durationMapper;
+	private IDAO<Duration> durationMapper;
 
 	/** Database task mapper */
-	private IDbClassMapper<Contribution> contributionMapper;
+	private IDAO<Contribution> contributionMapper;
 
 	/**
 	 * Default constructor.
@@ -105,12 +105,12 @@ public class DbMgrImpl implements IDbMgr {
 		try {
 			Properties props = new Properties();
 			props.load(DbMgrImpl.class.getResourceAsStream("mapping.properties"));
-			DbClassMapping mapping = new DbClassMapping(props);
+			DAOFactory mapping = new DAOFactory(props);
 			// TODO Move
-			collaboratorMapper = (IDbClassMapper<Collaborator>) mapping.getMapper(Collaborator.class);
-			taskMapper = (IDbClassMapper<Task>) mapping.getMapper(Task.class);
-			durationMapper = (IDbClassMapper<Duration>) mapping.getMapper(Duration.class);
-			contributionMapper = (IDbClassMapper<Contribution>) mapping.getMapper(Contribution.class);
+			collaboratorMapper = (IDAO<Collaborator>) mapping.getMapper(Collaborator.class);
+			taskMapper = (IDAO<Task>) mapping.getMapper(Task.class);
+			durationMapper = (IDAO<Duration>) mapping.getMapper(Duration.class);
+			contributionMapper = (IDAO<Contribution>) mapping.getMapper(Contribution.class);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
@@ -376,7 +376,7 @@ public class DbMgrImpl implements IDbMgr {
 	@Override
 	public boolean durationIsUsed(Duration duration) throws DbException {
 		try {
-			return contributionMapper.count(tx().getConnection(), new String[] { "DurationId" }, new Object[] { duration.getId()}) > 0;
+			return contributionMapper.count(tx().getConnection(), new String[] { "durationId" }, new Object[] { duration.getId()}) > 0;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(Strings.getString(
@@ -466,7 +466,7 @@ public class DbMgrImpl implements IDbMgr {
 	@Override
 	public Collaborator getCollaborator(String login) throws DbException {
 		try {
-			Collaborator[] collaborators = collaboratorMapper.select(tx().getConnection(), new String[] { "Login" }, new Object[] { login }, null, -1);
+			Collaborator[] collaborators = collaboratorMapper.select(tx().getConnection(), new String[] { "login" }, new Object[] { login }, null, -1);
 			return collaborators.length > 0 ? collaborators[0] : null;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
@@ -486,24 +486,24 @@ public class DbMgrImpl implements IDbMgr {
 			boolean ascendantSort, boolean onlyActiveCollaborators)
 			throws DbException {
 		try {
-			String[] whereClauseAttrNames = onlyActiveCollaborators ? new String[] { "IsActive" } : null;
+			String[] whereClauseAttrNames = onlyActiveCollaborators ? new String[] { "isActive" } : null;
 			Object[] whereClauseAttrValues = onlyActiveCollaborators ? new Object[] { Boolean.TRUE } : null;
 			String orderByClauseFieldName = null;
 			switch (orderByClauseFieldIndex) {
 			case Collaborator.ID_FIELD_IDX:
-				orderByClauseFieldName = "Id"; //$NON-NLS-1$
+				orderByClauseFieldName = "id"; //$NON-NLS-1$
 				break;
 			case Collaborator.LOGIN_FIELD_IDX:
-				orderByClauseFieldName = "Login"; //$NON-NLS-1$
+				orderByClauseFieldName = "login"; //$NON-NLS-1$
 				break;
 			case Collaborator.FIRST_NAME_FIELD_IDX:
-				orderByClauseFieldName = "FirstName"; //$NON-NLS-1$
+				orderByClauseFieldName = "firstName"; //$NON-NLS-1$
 				break;
 			case Collaborator.LAST_NAME_FIELD_IDX:
-				orderByClauseFieldName = "LastName"; //$NON-NLS-1$
+				orderByClauseFieldName = "lastName"; //$NON-NLS-1$
 				break;
 			case Collaborator.IS_ACTIVE_FIELD_IDX:
-				orderByClauseFieldName = "IsActive"; //$NON-NLS-1$
+				orderByClauseFieldName = "isActive"; //$NON-NLS-1$
 				break;
 			default:
 				throw new DbException(
@@ -827,9 +827,9 @@ public class DbMgrImpl implements IDbMgr {
 	public Duration[] getDurations(boolean onlyActive)
 			throws DbException {
 		try {
-			String[] whereClauseAttributeNames = onlyActive ? new String[] { "IsActive" } : null;
+			String[] whereClauseAttributeNames = onlyActive ? new String[] { "isActive" } : null;
 			Object[] whereClauseAttributeValues = onlyActive ? new Object[] { Boolean.TRUE } : null;
-			return durationMapper.select(tx().getConnection(), whereClauseAttributeNames, whereClauseAttributeValues, new Object[] { new AscendantOrderByClause("Id") }, -1);
+			return durationMapper.select(tx().getConnection(), whereClauseAttributeNames, whereClauseAttributeValues, new Object[] { new AscendantOrderByClause("id") }, -1);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
@@ -874,7 +874,7 @@ public class DbMgrImpl implements IDbMgr {
 	@Override
 	public Task[] getTasks(String path) throws DbException {
 		try {
-			return taskMapper.select(tx().getConnection(), new String[] { "Path" }, new Object[] { path }, new Object[] { new AscendantOrderByClause("NumberAsHex") }, -1);
+			return taskMapper.select(tx().getConnection(), new String[] { "path" }, new Object[] { path }, new Object[] { new AscendantOrderByClause("number") }, -1);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(Strings.getString(
@@ -1057,7 +1057,7 @@ public class DbMgrImpl implements IDbMgr {
 
 				// Then a loop is performed over the sub arrays
 				for (Object[] tasksIdsSubArray : tasksIdsSubArrays) {
-					Task[] tasks = taskMapper.select(tx().getConnection(), new String[] { "Id" }, new Object[] { new InStatement(tasksIdsSubArray) }, new Object[] { new AscendantOrderByClause("NumberAsHex") }, -1);
+					Task[] tasks = taskMapper.select(tx().getConnection(), new String[] { "id" }, new Object[] { new InStatement(tasksIdsSubArray) }, new Object[] { new AscendantOrderByClause("number") }, -1);
 					result.addAll(Arrays.asList(tasks));
 				}
 			}
@@ -1079,7 +1079,7 @@ public class DbMgrImpl implements IDbMgr {
 	@Override
 	public Task getTask(String taskPath, byte taskNumber) throws DbException {
 		try {
-			Task[] tasks = taskMapper.select(tx().getConnection(), new String[] { "Path", "NumberAsHex" }, new Object[] { taskPath, StringHelper.toHex(taskNumber) }, null, -1);
+			Task[] tasks = taskMapper.select(tx().getConnection(), new String[] { "path", "number" }, new Object[] { taskPath, taskNumber }, null, -1);
 			return tasks.length > 0 ? tasks[0] : null;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
@@ -1098,7 +1098,7 @@ public class DbMgrImpl implements IDbMgr {
 	@Override
 	public Task getTask(String taskPath, String taskCode) throws DbException {
 		try {
-			Task[] tasks = taskMapper.select(tx().getConnection(), new String[] { "Path", "Code" }, new Object[] { taskPath, taskCode }, null, -1);
+			Task[] tasks = taskMapper.select(tx().getConnection(), new String[] { "path", "code" }, new Object[] { taskPath, taskCode }, null, -1);
 			return tasks.length > 0 ? tasks[0] : null;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
@@ -1316,7 +1316,7 @@ public class DbMgrImpl implements IDbMgr {
 	public void removeCollaborator(Collaborator collaborator)
 			throws DbException {
 		try {
-			collaboratorMapper.delete(tx().getConnection(), new String[] { "Id" }, new Object[] { collaborator.getId() });
+			collaboratorMapper.delete(tx().getConnection(), new String[] { "id" }, new Object[] { collaborator.getId() });
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(
@@ -1373,7 +1373,7 @@ public class DbMgrImpl implements IDbMgr {
 	public void removeTask(Task task) throws DbException {
 		try {
 			// Delete sub tasks
-			taskMapper.delete(tx().getConnection(), new String[] { "Path" }, new Object[] { new LikeStatement(task.getFullPath() + "%") });
+			taskMapper.delete(tx().getConnection(), new String[] { "path" }, new Object[] { new LikeStatement(task.getFullPath() + "%") });
 			// Delete the task
 			taskMapper.deleteByPK(tx().getConnection(), task);
 		} catch (SQLException e) {
@@ -1502,7 +1502,7 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	public int getRootTasksCount() throws DbException {
 		try {
-			return (int) taskMapper.count(tx().getConnection(), new String[] { "Path" }, new Object[] { "" });
+			return (int) taskMapper.count(tx().getConnection(), new String[] { "path" }, new Object[] { "" });
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DbException(

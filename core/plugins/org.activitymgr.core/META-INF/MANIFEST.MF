@@ -8,7 +8,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.apache.log4j,
  com.google.inject;bundle-version="3.0.0";visibility:=reexport,
  javax.inject;bundle-version="1.0.0";visibility:=reexport,
- org.activitymgr.orm;visibility:=reexport
+ org.activitymgr.core.orm;visibility:=reexport
 Export-Package: org.activitymgr.core,
  org.activitymgr.core.beans,
  org.activitymgr.core.util
