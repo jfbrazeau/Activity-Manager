@@ -35,7 +35,7 @@ public class ContributionTest extends AbstractModelTestCase {
 	private Contribution c3;
 
 	private void createSampleObjects(boolean createContributions)
-			throws DbException, ModelException {
+			throws DAOException, ModelException {
 		// Création des tâches de test
 		// ROOT
 		// + T1
@@ -139,7 +139,7 @@ public class ContributionTest extends AbstractModelTestCase {
 
 	}
 
-	protected void removeSampleObjects() throws DbException, ModelException {
+	protected void removeSampleObjects() throws DAOException, ModelException {
 		if (c1 != null)
 			getModelMgr().removeContribution(c1, false);
 		if (c2 != null)
@@ -153,13 +153,13 @@ public class ContributionTest extends AbstractModelTestCase {
 		getModelMgr().removeDuration(duration2);
 	}
 
-	private void removeRecursively(Task task) throws DbException,
+	private void removeRecursively(Task task) throws DAOException,
 			ModelException {
 		// Suppression de la tache
 		getModelMgr().removeTask(task);
 	}
 
-	public void testCreate() throws DbException, ModelException {
+	public void testCreate() throws DAOException, ModelException {
 		// Création des taches de test
 		createSampleObjects(false);
 
@@ -228,7 +228,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		removeSampleObjects();
 	}
 
-	public void testRemove() throws DbException, ModelException {
+	public void testRemove() throws DAOException, ModelException {
 		// Création des taches de test
 		createSampleObjects(false);
 
@@ -272,7 +272,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		removeSampleObjects();
 	}
 
-	public void testUpdate() throws DbException, ModelException {
+	public void testUpdate() throws DAOException, ModelException {
 		// Création des taches de test
 		createSampleObjects(true);
 
@@ -315,7 +315,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		removeSampleObjects();
 	}
 
-	public void testGetContributions() throws DbException, ModelException {
+	public void testGetContributions() throws DAOException, ModelException {
 		// Création des taches de test
 		createSampleObjects(true);
 
@@ -382,7 +382,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		removeSampleObjects();
 	}
 
-	public void testChangeContributionsTask() throws DbException,
+	public void testChangeContributionsTask() throws DAOException,
 			ModelException {
 		// Création des taches de test
 		createSampleObjects(true);
@@ -405,7 +405,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		removeSampleObjects();
 	}
 
-	public void testCountDaysWhenYearHasMoreThan365Days() throws DbException,
+	public void testCountDaysWhenYearHasMoreThan365Days() throws DAOException,
 			ModelException {
 		// Création des taches de test
 		createSampleObjects(true);
@@ -436,7 +436,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		removeSampleObjects();
 	}
 	
-	public void testCountDaysWhenHourChanges() throws DbException,
+	public void testCountDaysWhenHourChanges() throws DAOException,
 			ModelException {
 		// Création des taches de test
 		createSampleObjects(true);
@@ -467,7 +467,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		removeSampleObjects();
 	}
 
-	public void testGetContributedTasks() throws DbException, ModelException {
+	public void testGetContributedTasks() throws DAOException, ModelException {
 		Calendar today = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
 		// Création des taches de test
 		createSampleObjects(true);
@@ -519,7 +519,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		removeSampleObjects();
 	}
 
-	public void testGetContributors() throws DbException, ModelException {
+	public void testGetContributors() throws DAOException, ModelException {
 		Calendar today = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
 		// Création des taches de test
 		createSampleObjects(true);

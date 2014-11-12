@@ -7,13 +7,14 @@ import org.activitymgr.core.orm.impl.AnnotationBasedMappingConfiguration;
 import org.activitymgr.core.orm.impl.DAOImpl;
 import org.activitymgr.core.orm.impl.IMappgingConfiguration;
 import org.activitymgr.core.orm.impl.PropertiesBasedMappingConfiguration;
+import org.activitymgr.core.orm.impl.ReflectionHelper;
 
 /**
  * Mapping de classe.
  * @author jbrazeau
  */
 public class DAOFactory {
-
+	
 	/** Logger */
 	//private static Logger log = Logger.getLogger(DbClassMapping.class);
 
@@ -45,7 +46,7 @@ public class DAOFactory {
 	 * @return l'instance singleton de mappeur de la classe.
 	 */
 	@SuppressWarnings("unchecked")
-	public <TYPE> IDAO<TYPE> getMapper(Class<TYPE> theClass) {
+	public <TYPE> IDAO<TYPE> getDAO(Class<TYPE> theClass) {
 		DAOImpl<TYPE> mapper = (DAOImpl<TYPE>) mappers.get(theClass);
 		if (mapper==null) {
 			synchronized (mappers) {

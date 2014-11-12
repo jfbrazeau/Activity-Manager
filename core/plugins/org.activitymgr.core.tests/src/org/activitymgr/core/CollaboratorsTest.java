@@ -4,11 +4,11 @@ import org.activitymgr.core.beans.Collaborator;
 
 public class CollaboratorsTest extends AbstractModelTestCase {
 
-	public void testGetList() throws DbException {
+	public void testGetList() throws DAOException {
 		getModelMgr().getCollaborators();
 	}
 
-	public void testCreateAnRemove() throws ModelException, DbException {
+	public void testCreateAnRemove() throws ModelException, DAOException {
 		Collaborator collaborator = new Collaborator();
 		collaborator.setFirstName("First name");
 		collaborator.setLastName("Last name");
@@ -33,7 +33,7 @@ public class CollaboratorsTest extends AbstractModelTestCase {
 		assertNull(_collaborator);
 	}
 
-	public void testUniqueLogin() throws DbException, ModelException {
+	public void testUniqueLogin() throws DAOException, ModelException {
 		Collaborator collaborator = new Collaborator();
 		collaborator.setFirstName("First name");
 		collaborator.setLastName("Last name");
@@ -68,7 +68,7 @@ public class CollaboratorsTest extends AbstractModelTestCase {
 		getModelMgr().removeCollaborator(collaborator2);
 	}
 
-	public void testActiveCollaborator() throws DbException, ModelException {
+	public void testActiveCollaborator() throws DAOException, ModelException {
 		Collaborator collaborator = new Collaborator();
 		collaborator.setFirstName("First name");
 		collaborator.setLastName("Last name");
@@ -94,7 +94,7 @@ public class CollaboratorsTest extends AbstractModelTestCase {
 		getModelMgr().removeCollaborator(collaborator);
 	}
 
-	public void testSortCollaborators() throws DbException, ModelException {
+	public void testSortCollaborators() throws DAOException, ModelException {
 		Collaborator c0 = new Collaborator();
 		c0.setFirstName("FN0");
 		c0.setLastName("LN2");

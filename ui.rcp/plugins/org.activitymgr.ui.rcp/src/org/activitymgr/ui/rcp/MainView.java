@@ -31,10 +31,10 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.sql.Connection;
 
 import org.activitymgr.core.CoreModule;
-import org.activitymgr.core.DbException;
-import org.activitymgr.core.DbTransaction;
+import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.DatabaseUI.IDbStatusListener;
@@ -168,15 +168,15 @@ public class MainView extends ViewPart {
 	 */
 	private void initializeModelMgr() {
 		// Create Guice injector
-		final ThreadLocal<DbTransaction> dbTxs = new ThreadLocal<DbTransaction>();
+		final ThreadLocal<Connection> dbTxs = new ThreadLocal<Connection>();
 		Injector injector = Guice.createInjector(new CoreModule(),
 				new AbstractModule() {
 					@Override
 					protected void configure() {
-						bind(DbTransaction.class).toProvider(
-								new Provider<DbTransaction>() {
+						bind(Connection.class).toProvider(
+								new Provider<Connection>() {
 									@Override
-									public DbTransaction get() {
+									public Connection get() {
 										return dbTxs.get();
 									}
 								});
@@ -190,24 +190,24 @@ public class MainView extends ViewPart {
 					@Override
 					public Object invoke(Object proxy, Method method,
 							Object[] args) throws Throwable {
-						DbTransaction tx = null;
+						Connection tx = null;
 						try {
 							// Open the transaction
-							tx = new DbTransaction(databaseUI.getDatasource().getConnection());
+							tx = databaseUI.getDatasource().getConnection();
 							dbTxs.set(tx);
 							// Call the real model manager
 							Object result = method.invoke(wrappedModelMgr, args);
 							// Commit the transaction
-							tx.getConnection().commit();
+							tx.commit();
 							return result;
 						} catch (InvocationTargetException t) {
 							// Rollback the transaction in case of failure
-							tx.getConnection().rollback();
+							tx.rollback();
 							throw t.getCause();
 						} finally {
 							// Release the transaction
 							dbTxs.remove();
-							tx.getConnection().close();
+							tx.close();
 						}
 					}
 				});
@@ -222,10 +222,10 @@ public class MainView extends ViewPart {
 	/**
 	 * Ferme la connexion à la base de données.
 	 * 
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public void closeDatabase() throws UITechException, DbException {
+	public void closeDatabase() throws UITechException, DAOException {
 		if (databaseUI != null) {
 			databaseUI.closeDatabase();
 		}

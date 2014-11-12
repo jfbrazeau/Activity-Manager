@@ -38,27 +38,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Properties;
 
-import org.activitymgr.core.DbException;
-import org.activitymgr.core.DbTransaction;
-import org.activitymgr.core.IDbMgr;
+import org.activitymgr.core.DAOException;
+import org.activitymgr.core.ICoreDAO;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Contribution;
-import org.activitymgr.core.beans.Duration;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskSearchFilter;
 import org.activitymgr.core.beans.TaskSums;
-import org.activitymgr.core.orm.DAOFactory;
-import org.activitymgr.core.orm.IDAO;
-import org.activitymgr.core.orm.query.AscendantOrderByClause;
-import org.activitymgr.core.orm.query.DescendantOrderByClause;
-import org.activitymgr.core.orm.query.InStatement;
-import org.activitymgr.core.orm.query.LikeStatement;
+import org.activitymgr.core.util.DbHelper;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
 import org.apache.log4j.Logger;
@@ -68,58 +57,24 @@ import com.google.inject.Provider;
 
 /**
  * Classe offrant les services de base de persistence de l'application.
- * TODO 2236 -> 1865 -> 1558
+ * TODO 2236 -> 1865 -> 1558 -> 1125
  */
-public class DbMgrImpl implements IDbMgr {
+public class CoreDAOImpl implements ICoreDAO {
 
 	/** Logger */
-	private static Logger log = Logger.getLogger(DbMgrImpl.class);
+	private static Logger log = Logger.getLogger(CoreDAOImpl.class);
 
 	/** Formatteur de date */
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd"); //$NON-NLS-1$
 
 	/** Transaction provider */
-	private Provider<DbTransaction> tx;
-	
-	/** Database task mapper */
-	private IDAO<Collaborator> collaboratorMapper;
-
-	/** Database task mapper */
-	private IDAO<Task> taskMapper;
-
-	/** Database task mapper */
-	private IDAO<Duration> durationMapper;
-
-	/** Database task mapper */
-	private IDAO<Contribution> contributionMapper;
-
-	/**
-	 * Default constructor.
-	 * 
-	 * @param tx
-	 *            transaction provider.
-	 */
 	@Inject
-	public DbMgrImpl(Provider<DbTransaction> tx) {
-		this.tx = tx;
-		try {
-			Properties props = new Properties();
-			props.load(DbMgrImpl.class.getResourceAsStream("mapping.properties"));
-			DAOFactory mapping = new DAOFactory(props);
-			// TODO Move
-			collaboratorMapper = (IDAO<Collaborator>) mapping.getMapper(Collaborator.class);
-			taskMapper = (IDAO<Task>) mapping.getMapper(Task.class);
-			durationMapper = (IDAO<Duration>) mapping.getMapper(Duration.class);
-			contributionMapper = (IDAO<Contribution>) mapping.getMapper(Contribution.class);
-		} catch (IOException e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
+	private Provider<Connection> tx;
+	
 	/**
 	 * @return the current transaction.
 	 */
-	private DbTransaction tx() {
+	private Connection tx() {
 		return tx.get();
 	}
 
@@ -129,7 +84,7 @@ public class DbMgrImpl implements IDbMgr {
 	 * @see org.activitymgr.core.IDbMgr#tablesExist()
 	 */
 	@Override
-	public boolean tablesExist() throws DbException {
+	public boolean tablesExist() throws DAOException {
 		boolean tablesExist = true;
 		tablesExist &= tableExists("COLLABORATOR"); //$NON-NLS-1$
 		tablesExist &= tableExists("CONTRIBUTION"); //$NON-NLS-1$
@@ -144,11 +99,11 @@ public class DbMgrImpl implements IDbMgr {
 	 * @see org.activitymgr.core.IDbMgr#tableExists(java.lang.String)
 	 */
 	@Override
-	public boolean tableExists(String tableName) throws DbException {
+	public boolean tableExists(String tableName) throws DAOException {
 		ResultSet rs = null;
 		try {
 			// Récupération de la connexion
-			Connection con = tx().getConnection();
+			Connection con = tx();
 
 			// Recherche de la table
 			rs = con.getMetaData().getTables(null, null, tableName,
@@ -162,7 +117,7 @@ public class DbMgrImpl implements IDbMgr {
 			return exists;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(Strings.getString(
+			throw new DAOException(Strings.getString(
 					"DbMgr.errors.SQL_TABLES_DETECTION_FAILURE", tableName), e); //$NON-NLS-1$ //$NON-NLS-2$
 		} finally {
 			lastAttemptClose(rs);
@@ -175,15 +130,15 @@ public class DbMgrImpl implements IDbMgr {
 	 * @see org.activitymgr.core.IDbMgr#createTables()
 	 */
 	@Override
-	public void createTables() throws DbException {
+	public void createTables() throws DAOException {
 		// Lecture du fichier SQL de création de la BDD
-		String batchName = (tx().isHsqlOrH2() ? "hsqldb.sql" : "mysqldb.sql"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		InputStream in = DbMgrImpl.class.getResourceAsStream(batchName);
+		String batchName = (DbHelper.isHsqlOrH2(tx()) ? "hsqldb.sql" : "mysqldb.sql"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		InputStream in = CoreDAOImpl.class.getResourceAsStream(batchName);
 		executeScript(in);
 
 		// Test de l'existence des tables
 		if (!tablesExist())
-			throw new DbException(
+			throw new DAOException(
 					Strings.getString("DbMgr.errors.SQL_TABLE_CREATION_FAILURE"), null); //$NON-NLS-1$
 	}
 
@@ -193,7 +148,7 @@ public class DbMgrImpl implements IDbMgr {
 	 * @see org.activitymgr.core.IDbMgr#executeScript(java.io.InputStream)
 	 */
 	@Override
-	public void executeScript(InputStream scriptContent) throws DbException {
+	public void executeScript(InputStream scriptContent) throws DAOException {
 		try {
 			// Script content retrieval
 			String sql = StringHelper.fromInputStream(scriptContent);
@@ -202,7 +157,7 @@ public class DbMgrImpl implements IDbMgr {
 			executeScript(sql);
 		} catch (IOException e) {
 			log.info("I/O error while loading table creation SQL script.", e); //$NON-NLS-1$
-			throw new DbException(
+			throw new DAOException(
 					Strings.getString("DbMgr.errors.SQL_SCRIPT_LOAD_FAILURE"), null); //$NON-NLS-1$
 		}
 	}
@@ -213,7 +168,7 @@ public class DbMgrImpl implements IDbMgr {
 	 * @see org.activitymgr.core.IDbMgr#executeScript(java.lang.String)
 	 */
 	@Override
-	public void executeScript(String scriptContent) throws DbException {
+	public void executeScript(String scriptContent) throws DAOException {
 		Statement stmt = null;
 		try {
 			// Découpage et exécution du batch
@@ -232,7 +187,7 @@ public class DbMgrImpl implements IDbMgr {
 					} catch (IOException e) {
 						log.info(
 								"Unexpected I/O error while reading memory stream!", e); //$NON-NLS-1$
-						throw new DbException(
+						throw new DAOException(
 								Strings.getString("DbMgr.errors.MEMORY_IO_FAILURE"), null); //$NON-NLS-1$
 					}
 					log.debug("Line read : '" + line + "'"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -277,117 +232,16 @@ public class DbMgrImpl implements IDbMgr {
 			stmt = null;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException("Database table creation failure", e); //$NON-NLS-1$
+			throw new DAOException("Database table creation failure", e); //$NON-NLS-1$
 		} finally {
 			lastAttemptToClose(stmt);
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#createCollaborator(org.activitymgr.core.beans
-	 * .Collaborator)
-	 */
-	@Override
-	public Collaborator createCollaborator(Collaborator newCollaborator)
-			throws DbException {
-		try {
-			return collaboratorMapper.insert(tx().getConnection(), newCollaborator);
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString(
-							"DbMgr.errors.COLLABORATOR_CREATION_FAILUE", newCollaborator.getLogin()), e); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#createContribution(org.activitymgr.core.beans
-	 * .Contribution)
-	 */
-	@Override
-	public Contribution createContribution(Contribution newContribution)
-			throws DbException {
-		try {
-			return contributionMapper.insert(tx().getConnection(), newContribution);
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString("DbMgr.errors.CONTRIBUTION_CREATION_FAILUE"), e); //$NON-NLS-1$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#createDuration(org.activitymgr.core.beans
-	 * .Duration)
-	 */
-	@Override
-	public Duration createDuration(Duration newDuration) throws DbException {
-		try {
-			return durationMapper.insert(tx().getConnection(), newDuration);
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(Strings.getString(
-					"DbMgr.errors.DURATION_CREATION_FAILUE", newDuration), e); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#createTask(org.activitymgr.core.beans.Task,
-	 * org.activitymgr.core.beans.Task)
-	 */
-	@Override
-	public Task createTask(Task parentTask, Task newTask) throws DbException {
-		try {
-			// Mise à jour du chemin de la tâche
-			String parentPath = parentTask == null ? "" : parentTask.getFullPath(); //$NON-NLS-1$
-			newTask.setPath(parentPath);
-
-			// Génération du numéro de la tâche
-			byte taskNumber = newTaskNumber(parentPath);
-			newTask.setNumber(taskNumber);
-
-			return taskMapper.insert(tx().getConnection(), newTask);
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(Strings.getString(
-					"DbMgr.errors.TASK_CREATION_FAILURE", newTask.getName()), e); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#durationIsUsed(org.activitymgr.core.beans
-	 * .Duration)
-	 */
-	@Override
-	public boolean durationIsUsed(Duration duration) throws DbException {
-		try {
-			return contributionMapper.count(tx().getConnection(), new String[] { "durationId" }, new Object[] { duration.getId()}) > 0;
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(Strings.getString(
-					"DbMgr.errors.SQL_DURATION_CHECK_FAILURE", duration), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.activitymgr.core.IDbMgr#subTasksCount(long)
 	 */
-	public int getSubTasksCount(long parentTaskId) throws DbException {
+	public int getSubTasksCount(long parentTaskId) throws DAOException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
@@ -402,7 +256,7 @@ public class DbMgrImpl implements IDbMgr {
 
 			// Préparation du résultat
 			if (!rs.next())
-				throw new DbException(
+				throw new DAOException(
 						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
 			int result = rs.getInt(2);
 
@@ -414,27 +268,10 @@ public class DbMgrImpl implements IDbMgr {
 			return result;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
+			throw new DAOException(
 					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_ID_FAILURE"), e); //$NON-NLS-1$ //$NON-NLS-2$
 		} finally {
 			lastAttemptToClose(pStmt);
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.activitymgr.core.IDbMgr#getCollaborator(long)
-	 */
-	@Override
-	public Collaborator getCollaborator(long collaboratorId) throws DbException {
-		try {
-			return collaboratorMapper.selectByPK(tx().getConnection(), new Object[] { collaboratorId });
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString(
-							"DbMgr.errors.COLLABORATOR_SELECTION_BY_ID_FAILURE", new Long(collaboratorId)), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 
@@ -456,67 +293,6 @@ public class DbMgrImpl implements IDbMgr {
 		collaborator.setLastName(rs.getString(4));
 		collaborator.setIsActive(rs.getBoolean(5));
 		return (Collaborator) collaborator;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.activitymgr.core.IDbMgr#getCollaborator(java.lang.String)
-	 */
-	@Override
-	public Collaborator getCollaborator(String login) throws DbException {
-		try {
-			Collaborator[] collaborators = collaboratorMapper.select(tx().getConnection(), new String[] { "login" }, new Object[] { login }, null, -1);
-			return collaborators.length > 0 ? collaborators[0] : null;
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString(
-							"DbMgr.errors.COLLABORATOR_SELECTION_BY_LOGIN_FAILURE", login), e); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.activitymgr.core.IDbMgr#getCollaborators(int, boolean, boolean)
-	 */
-	@Override
-	public Collaborator[] getCollaborators(int orderByClauseFieldIndex,
-			boolean ascendantSort, boolean onlyActiveCollaborators)
-			throws DbException {
-		try {
-			String[] whereClauseAttrNames = onlyActiveCollaborators ? new String[] { "isActive" } : null;
-			Object[] whereClauseAttrValues = onlyActiveCollaborators ? new Object[] { Boolean.TRUE } : null;
-			String orderByClauseFieldName = null;
-			switch (orderByClauseFieldIndex) {
-			case Collaborator.ID_FIELD_IDX:
-				orderByClauseFieldName = "id"; //$NON-NLS-1$
-				break;
-			case Collaborator.LOGIN_FIELD_IDX:
-				orderByClauseFieldName = "login"; //$NON-NLS-1$
-				break;
-			case Collaborator.FIRST_NAME_FIELD_IDX:
-				orderByClauseFieldName = "firstName"; //$NON-NLS-1$
-				break;
-			case Collaborator.LAST_NAME_FIELD_IDX:
-				orderByClauseFieldName = "lastName"; //$NON-NLS-1$
-				break;
-			case Collaborator.IS_ACTIVE_FIELD_IDX:
-				orderByClauseFieldName = "isActive"; //$NON-NLS-1$
-				break;
-			default:
-				throw new DbException(
-						Strings.getString(
-								"DbMgr.errors.UNKNOWN_FIELD_INDEX", new Integer(orderByClauseFieldIndex)), null); //$NON-NLS-1$ //$NON-NLS-2$
-			}
-			Object[] orderByClause = new Object[] { ascendantSort ? new AscendantOrderByClause(orderByClauseFieldName) : new DescendantOrderByClause(orderByClauseFieldName)};
-			return collaboratorMapper.select(tx().getConnection(), whereClauseAttrNames, whereClauseAttrValues, orderByClause, -1);
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString("DbMgr.errors.COLLABORATORS_SELECTION_FAILURE"), e); //$NON-NLS-1$
-		}
 	}
 
 	/**
@@ -558,7 +334,7 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public Contribution[] getContributions(Collaborator contributor, Task task,
-			Calendar fromDate, Calendar toDate) throws DbException {
+			Calendar fromDate, Calendar toDate) throws DAOException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
@@ -581,7 +357,7 @@ public class DbMgrImpl implements IDbMgr {
 			return result;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
+			throw new DAOException(
 					Strings.getString("DbMgr.errors.CONTRIBUTIONS_SELECTION_FAILURE"), e); //$NON-NLS-1$
 		} finally {
 			lastAttemptToClose(pStmt);
@@ -598,7 +374,7 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public long getContributionsSum(Collaborator contributor, Task task,
-			Calendar fromDate, Calendar toDate) throws DbException {
+			Calendar fromDate, Calendar toDate) throws DAOException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
@@ -609,7 +385,7 @@ public class DbMgrImpl implements IDbMgr {
 			// Exécution de le requête et extraction du résultat
 			rs = pStmt.executeQuery();
 			if (!rs.next())
-				throw new DbException(
+				throw new DAOException(
 						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
 			long contributionSums = rs.getLong(1);
 			pStmt.close();
@@ -619,7 +395,7 @@ public class DbMgrImpl implements IDbMgr {
 			return contributionSums;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
+			throw new DAOException(
 					"Erreur lors du calcul du consommé d'un collaborateur sur un intervalle de temps donné",
 					e);
 		} finally {
@@ -637,7 +413,7 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public int getContributionsCount(Collaborator contributor, Task task,
-			Calendar fromDate, Calendar toDate) throws DbException {
+			Calendar fromDate, Calendar toDate) throws DAOException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
@@ -648,7 +424,7 @@ public class DbMgrImpl implements IDbMgr {
 			// Exécution de le requête et extraction du résultat
 			rs = pStmt.executeQuery();
 			if (!rs.next())
-				throw new DbException(
+				throw new DAOException(
 						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
 			int count = rs.getInt(1);
 			pStmt.close();
@@ -658,7 +434,7 @@ public class DbMgrImpl implements IDbMgr {
 			return count;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
+			throw new DAOException(
 					"Erreur lors du calcul du consommé d'un collaborateur sur un intervalle de temps donné",
 					e);
 		} finally {
@@ -804,106 +580,11 @@ public class DbMgrImpl implements IDbMgr {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.activitymgr.core.IDbMgr#getDuration(long)
-	 */
-	@Override
-	public Duration getDuration(long durationId) throws DbException {
-		try {
-			return durationMapper.selectByPK(tx().getConnection(), new Object[] { durationId });
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString(
-							"DbMgr.errors.DURATION_SELECTION_BY_ID", new Long(durationId)), e); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.activitymgr.core.IDbMgr#getDurations(boolean)
-	 */
-	@Override
-	public Duration[] getDurations(boolean onlyActive)
-			throws DbException {
-		try {
-			String[] whereClauseAttributeNames = onlyActive ? new String[] { "isActive" } : null;
-			Object[] whereClauseAttributeValues = onlyActive ? new Object[] { Boolean.TRUE } : null;
-			return durationMapper.select(tx().getConnection(), whereClauseAttributeNames, whereClauseAttributeValues, new Object[] { new AscendantOrderByClause("id") }, -1);
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString("DbMgr.errors.DURATIONS_SELECTION_FAILURE"), e); //$NON-NLS-1$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#getParentTask(org.activitymgr.core.beans.
-	 * Task)
-	 */
-	@Override
-	public Task getParentTask(Task task) throws DbException {
-		Task parentTask = null;
-		String parentTaskFullPath = task.getPath();
-		// Si le chemin est vide, la tache parent est nulle (tache racine)
-		if (parentTaskFullPath != null && !"".equals(parentTaskFullPath)) { //$NON-NLS-1$
-			// Extraction du chemin et du numéro de la tache recherchée
-			log.debug("Fullpath='" + parentTaskFullPath + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-			String path = parentTaskFullPath.substring(0,
-					parentTaskFullPath.length() - 2);
-			byte number = StringHelper.toByte(parentTaskFullPath
-					.substring(parentTaskFullPath.length() - 2));
-			log.debug(" => path=" + path); //$NON-NLS-1$
-			log.debug(" => number=" + number); //$NON-NLS-1$
-
-			// Recherche de la tache
-			parentTask = getTask(path, number);
-		}
-		// Retour du résultat
-		return parentTask;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.activitymgr.core.IDbMgr#getTasks(java.lang.String)
-	 */
-	@Override
-	public Task[] getTasks(String path) throws DbException {
-		try {
-			return taskMapper.select(tx().getConnection(), new String[] { "path" }, new Object[] { path }, new Object[] { new AscendantOrderByClause("number") }, -1);
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(Strings.getString(
-					"DbMgr.errors.TASK_SELECTION_BY_PATH", path), e); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#getSubTasks(org.activitymgr.core.beans.Task)
-	 */
-	@Override
-	public Task[] getSubTasks(Task parentTask) throws DbException {
-		// Récupération du chemin à partir de la tache parent
-		String fullpath = parentTask == null ? "" : parentTask.getFullPath(); //$NON-NLS-1$
-		log.debug("Looking for tasks with path='" + fullpath + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-		return getTasks(fullpath);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
 	 * @see org.activitymgr.core.IDbMgr#getTasks(org.activitymgr.core.beans.
 	 * TaskSearchFilter)
 	 */
 	@Override
-	public Task[] getTasks(TaskSearchFilter filter) throws DbException {
+	public long[] getTaskIds(TaskSearchFilter filter) throws DAOException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
@@ -919,7 +600,7 @@ public class DbMgrImpl implements IDbMgr {
 				request.append("tsk_code"); //$NON-NLS-1$
 				break;
 			default:
-				throw new DbException(
+				throw new DAOException(
 						"Unknown field index '" + filter.getFieldIndex() + "'.", null); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 			// Ajout du critère de comparaison
@@ -933,7 +614,7 @@ public class DbMgrImpl implements IDbMgr {
 				request.append(" like ?"); //$NON-NLS-1$
 				break;
 			default:
-				throw new DbException(
+				throw new DAOException(
 						Strings.getString(
 								"DbMgr.errors.UNKNOWN_CRITERIA_INDEX", new Integer(filter.getCriteriaIndex())), null); //$NON-NLS-1$ //$NON-NLS-2$
 			}
@@ -955,7 +636,7 @@ public class DbMgrImpl implements IDbMgr {
 				parameter = "%" + filter.getFieldValue() + "%"; //$NON-NLS-1$ //$NON-NLS-2$
 				break;
 			default:
-				throw new DbException(
+				throw new DAOException(
 						"Unknown criteria index '" + filter.getCriteriaIndex() + "'.", null); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 			log.debug("Search parameter : '" + parameter + "'"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -979,140 +660,23 @@ public class DbMgrImpl implements IDbMgr {
 			for (int i = 0; i < taskIds.length; i++) {
 				taskIds[i] = list.get(i);
 			}
-			Task[] tasks = getTasks(taskIds);
-
-			// On trie les taches manuellement car le tri base de données
-			// pose un problème dans la mesure ou la BDD considère le champ
-			// tsk_path comme numérique pour le tri ce qui pose un pb
-			// Ex :
-			// ROOT (path : 01)
-			// +- T1 (path : 0101)
-			// | +- T11 (path : 010101)
-			// | +- T12 (path : 010102)
-			// +- T2 (path : 0102)
-			// Si on ramène l'ensemble des sous taches de ROOT, on voudrait
-			// avoir
-			// dans l'ordre T1, T11, T12, T2
-			// Avec un tri base de donnée, on obtiendrait T1, T2, T11, T12 ; T2
-			// ne se
-			// trouve pas ou on l'attend, ceci en raison du fait qu'en
-			// comparaison
-			// numérique 0102 est < à 010101 et à 010102. Par contre, en
-			// comparaison
-			// de chaînes (en java), on a bien 0102 > 010101 et 010102.
-			Arrays.sort(tasks, new Comparator<Task>() {
-				public int compare(Task t1, Task t2) {
-					return t1.getFullPath().compareTo(t2.getFullPath());
-				}
-
-			});
-
-			// Retour du résultat
-			return tasks;
+			return taskIds;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
+			throw new DAOException(
 					Strings.getString("DbMgr.errors.TASKS_SELECTION_FAILURE"), e); //$NON-NLS-1$
 		} finally {
 			lastAttemptToClose(pStmt);
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.activitymgr.core.IDbMgr#getTask(long)
-	 */
-	@Override
-	public Task getTask(long taskId) throws DbException {
-		try {
-			return taskMapper.selectByPK(tx().getConnection(), new Object[] { taskId });
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_ID_FAILURE"), e); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.activitymgr.core.IDbMgr#getTasks(long[])
-	 */
-	@Override
-	public Task[] getTasks(long[] tasksIds) throws DbException {
-		List<Task> result = new ArrayList<Task>();
-		try {
-			if (tasksIds != null && tasksIds.length != 0) {
-				// The task id array is cut in sub arrays of maximum 250 tasks
-				List<Object[]> tasksIdsSubArrays = new ArrayList<Object[]>();
-				for (int i = 0; i < tasksIds.length; i += 250) {
-					Object[] subArray = new Object[Math.min(250, tasksIds.length
-							- i)];
-					for (int j = 0; j < subArray.length; j++) {
-						subArray[j] = tasksIds[i + j];
-					}
-					tasksIdsSubArrays.add(subArray);
-				}
-
-				// Then a loop is performed over the sub arrays
-				for (Object[] tasksIdsSubArray : tasksIdsSubArrays) {
-					Task[] tasks = taskMapper.select(tx().getConnection(), new String[] { "id" }, new Object[] { new InStatement(tasksIdsSubArray) }, new Object[] { new AscendantOrderByClause("number") }, -1);
-					result.addAll(Arrays.asList(tasks));
-				}
-			}
-			// Retour du résultat
-			// FIXME
-			return (Task[]) result.toArray(new Task[result.size()]);
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_ID_FAILURE"), e); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.activitymgr.core.IDbMgr#getTask(java.lang.String, byte)
-	 */
-	@Override
-	public Task getTask(String taskPath, byte taskNumber) throws DbException {
-		try {
-			Task[] tasks = taskMapper.select(tx().getConnection(), new String[] { "path", "number" }, new Object[] { taskPath, taskNumber }, null, -1);
-			return tasks.length > 0 ? tasks[0] : null;
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString(
-							"DbMgr.errors.TASK_SELECTION_BY_NUMBER_FROM_PATH_FAILURE", new Byte(taskNumber), taskPath), e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.activitymgr.core.IDbMgr#getTask(java.lang.String,
-	 * java.lang.String)
-	 */
-	@Override
-	public Task getTask(String taskPath, String taskCode) throws DbException {
-		try {
-			Task[] tasks = taskMapper.select(tx().getConnection(), new String[] { "path", "code" }, new Object[] { taskPath, taskCode }, null, -1);
-			return tasks.length > 0 ? tasks[0] : null;
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(Strings.getString(
-					"DbMgr.errors.TASK_SELECTION_BY_CODE_FAILURE", taskCode), e); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-	}
 
 	/* (non-Javadoc)
 	 * @see org.activitymgr.core.IDbMgr#getContributors(org.activitymgr.core.beans.Task, java.util.Calendar, java.util.Calendar)
 	 */
 	@Override
 	public Collaborator[] getContributors(Task task, Calendar fromDate,
-			Calendar toDate) throws DbException {
+			Calendar toDate) throws DAOException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
@@ -1144,7 +708,7 @@ public class DbMgrImpl implements IDbMgr {
 			return (Collaborator[]) list.toArray(new Collaborator[list.size()]);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
+			throw new DAOException(
 					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_COLLABORATOR_FAILURE"), e); //$NON-NLS-1$
 		} finally {
 			lastAttemptToClose(pStmt);
@@ -1159,8 +723,8 @@ public class DbMgrImpl implements IDbMgr {
 	 * , java.util.Calendar, java.util.Calendar)
 	 */
 	@Override
-	public Task[] getContributedTasks(Collaborator contributor, Calendar fromDate,
-			Calendar toDate) throws DbException {
+	public long[] getContributedTaskIds(Collaborator contributor, Calendar fromDate,
+			Calendar toDate) throws DAOException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
@@ -1188,10 +752,10 @@ public class DbMgrImpl implements IDbMgr {
 			for (int i = 0; i < taskIds.length; i++) {
 				taskIds[i] = list.get(i);
 			}
-			return getTasks(taskIds);
+			return taskIds;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
+			throw new DAOException(
 					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_COLLABORATOR_FAILURE"), e); //$NON-NLS-1$
 		} finally {
 			lastAttemptToClose(pStmt);
@@ -1207,7 +771,7 @@ public class DbMgrImpl implements IDbMgr {
 	 */
 	@Override
 	public TaskSums getTaskSums(Task task, Calendar fromDate, Calendar toDate)
-			throws DbException {
+			throws DAOException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
@@ -1227,7 +791,7 @@ public class DbMgrImpl implements IDbMgr {
 					+ "%");
 			rs = pStmt.executeQuery();
 			if (!rs.next())
-				throw new DbException(
+				throw new DAOException(
 						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
 			taskSums.setBudgetSum(rs.getLong(1));
 			taskSums.setInitiallyConsumedSum(rs.getLong(2));
@@ -1248,7 +812,7 @@ public class DbMgrImpl implements IDbMgr {
 
 			// Extraction du résultat
 			if (!rs.next())
-				throw new DbException(
+				throw new DAOException(
 						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
 			taskSums.setConsumedSum(rs.getLong(1));
 			taskSums.setContributionsNb(rs.getLong(2));
@@ -1276,7 +840,7 @@ public class DbMgrImpl implements IDbMgr {
 
 				// Extraction du résultat
 				if (!rs.next())
-					throw new DbException(
+					throw new DAOException(
 							Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
 				taskSums.setTodoSum(taskSums.getTodoSum() + rs.getLong(1));
 
@@ -1293,7 +857,7 @@ public class DbMgrImpl implements IDbMgr {
 			return taskSums;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
+			throw new DAOException(
 					Strings.getString(
 							"DbMgr.errors.TASK_SUMS_COMPUTATION_FAILURE", new Long(task.getId())), e); //$NON-NLS-1$ //$NON-NLS-2$
 		} finally {
@@ -1308,163 +872,10 @@ public class DbMgrImpl implements IDbMgr {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#removeCollaborator(org.activitymgr.core.beans
-	 * .Collaborator)
-	 */
-	@Override
-	public void removeCollaborator(Collaborator collaborator)
-			throws DbException {
-		try {
-			collaboratorMapper.delete(tx().getConnection(), new String[] { "id" }, new Object[] { collaborator.getId() });
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString(
-							"DbMgr.errors.COLLABORATOR_DELETION_FAILURE", collaborator.getLogin()), e); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#removeContribution(org.activitymgr.core.beans
-	 * .Contribution)
-	 */
-	@Override
-	public void removeContribution(Contribution contribution)
-			throws DbException {
-		try {
-			contributionMapper.deleteByPK(tx().getConnection(), contribution);
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString("DbMgr.errors.CONTRIBUTION_DELETION_FAILURE"), e); //$NON-NLS-1$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#removeDuration(org.activitymgr.core.beans
-	 * .Duration)
-	 */
-	@Override
-	public void removeDuration(Duration duration) throws DbException {
-		try {
-			durationMapper.deleteByPK(tx().getConnection(), duration);
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString(
-							"DbMgr.errors.DURATION_DELETION_FAILURE", new Long(duration.getId())), e); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#removeTask(org.activitymgr.core.beans.Task)
-	 */
-	@Override
-	public void removeTask(Task task) throws DbException {
-		try {
-			// Delete sub tasks
-			taskMapper.delete(tx().getConnection(), new String[] { "path" }, new Object[] { new LikeStatement(task.getFullPath() + "%") });
-			// Delete the task
-			taskMapper.deleteByPK(tx().getConnection(), task);
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(Strings.getString(
-					"DbMgr.errors.TASK_DELETION_FAILURE", task.getName()), e); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#updateCollaborator(org.activitymgr.core.beans
-	 * .Collaborator)
-	 */
-	@Override
-	public Collaborator updateCollaborator(Collaborator collaborator)
-			throws DbException {
-		try {
-			return collaboratorMapper.update(tx().getConnection(), collaborator);
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString(
-							"DbMgr.errors.COLLABORATOR_UPDATE_FAILURE", collaborator.getLogin()), e); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#updateContribution(org.activitymgr.core.beans
-	 * .Contribution)
-	 */
-	@Override
-	public Contribution updateContribution(Contribution contribution)
-			throws DbException {
-		try {
-			return contributionMapper.update(tx().getConnection(), contribution);
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString("DbMgr.errors.CONTRIBUTION_UPDATE_FAILURE"), e); //$NON-NLS-1$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#updateDuration(org.activitymgr.core.beans
-	 * .Duration)
-	 */
-	@Override
-	public Duration updateDuration(Duration duration) throws DbException {
-		try {
-			return durationMapper.update(tx().getConnection(), duration);
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString(
-							"DbMgr.errors.DURATION_UPDATE_FAILURE", new Long(duration.getId())), e); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#updateTask(org.activitymgr.core.beans.Task)
-	 */
-	@Override
-	public Task updateTask(Task task) throws DbException {
-		try {
-			return taskMapper.update(tx().getConnection(), task);
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(Strings.getString(
-					"DbMgr.errors.TASK_UPDATE_FAILURE", task.getName()), e); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
 	 * @see org.activitymgr.core.IDbMgr#newTaskNumber(java.lang.String)
 	 */
 	@Override
-	public byte newTaskNumber(String path) throws DbException {
+	public byte newTaskNumber(String path) throws DAOException {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
@@ -1474,7 +885,7 @@ public class DbMgrImpl implements IDbMgr {
 			pStmt.setString(1, path);
 			rs = pStmt.executeQuery();
 			if (!rs.next())
-				throw new DbException(
+				throw new DAOException(
 						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
 			String maxStr = rs.getString(1);
 			byte max = maxStr != null ? StringHelper.toByte(maxStr) : 0;
@@ -1488,25 +899,10 @@ public class DbMgrImpl implements IDbMgr {
 			return (byte) (max + 1);
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(Strings.getString(
+			throw new DAOException(Strings.getString(
 					"DbMgr.errors.TASK_NUMBER_COMPUTATION_FAILURE", path), e); //$NON-NLS-1$ //$NON-NLS-2$
 		} finally {
 			lastAttemptToClose(pStmt);
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.activitymgr.core.IDbMgr#getRootTasksCount()
-	 */
-	public int getRootTasksCount() throws DbException {
-		try {
-			return (int) taskMapper.count(tx().getConnection(), new String[] { "path" }, new Object[] { "" });
-		} catch (SQLException e) {
-			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DbException(
-					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_ID_FAILURE"), e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 

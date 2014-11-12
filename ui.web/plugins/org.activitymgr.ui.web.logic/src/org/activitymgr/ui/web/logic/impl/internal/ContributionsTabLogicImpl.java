@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.activitymgr.core.DbException;
+import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
@@ -78,7 +78,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 			}
 			getView().setCollaborators(wrappers);
 		}
-		catch (DbException e) {
+		catch (DAOException e) {
 			throw new IllegalStateException("Unable to retrieve collaborators list", e);
 		}
 		
@@ -326,7 +326,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 			// Update totals
 			updateTotals();
 		}
-		catch (DbException e) {
+		catch (DAOException e) {
 			handleError(e);
 		}
 		catch (ModelException e) {
@@ -344,7 +344,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 		try {
 			addTask(getModelMgr().getTask(taskId));
 		}
-		catch (DbException e) {
+		catch (DAOException e) {
 			handleError(e);
 		}
 	}
@@ -354,7 +354,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 		try {
 			addTask(task, getModelMgr().getTaskCodePath(task));
 		}
-		catch (DbException e) {
+		catch (DAOException e) {
 			handleError(e);
 		}
 		catch (ModelException e) {
@@ -417,7 +417,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 				loadContributions();
 			}
 		}
-		catch (DbException e) {
+		catch (DAOException e) {
 			handleError(e);
 		}
 	}
@@ -473,7 +473,7 @@ class DefaultWeekContributionsProvider extends AbstractWeekContributionsProvider
 				tc.setContributions(newContribs);
 			}
 			return weekContributions;
-		} catch (DbException e) {
+		} catch (DAOException e) {
 			throw new IllegalStateException("Unexpected error while retrieving contributions", e);
 		} catch (ModelException e) {
 			throw new IllegalStateException("Unexpected error while retrieving contributions", e);

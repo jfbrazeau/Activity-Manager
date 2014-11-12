@@ -27,10 +27,17 @@
  */
 package org.activitymgr.core.beans;
 
+import org.activitymgr.core.orm.annotation.Column;
+import org.activitymgr.core.orm.annotation.ColumnNamePrefix;
+
 /**
  * Collaborateur.
  */
+@ColumnNamePrefix("CLB_")
 public class Collaborator extends SimpleIdentityBean {
+
+	/** Index de l'attribut 'id' */
+	public static final int ID_FIELD_IDX = 0;
 
 	/** Index de l'attribut 'login' du collaborateur */
 	public static final int LOGIN_FIELD_IDX = 1;
@@ -48,12 +55,15 @@ public class Collaborator extends SimpleIdentityBean {
 	private String login;
 
 	/** Nom */
+	@Column("FIRST_NAME")
 	private String firstName;
 
 	/** Prénom */
+	@Column("LAST_NAME")
 	private String lastName;
 
 	/** Booléen indiquant si le collaborateur est actif ou non */
+	@Column("IS_ACTIVE")
 	private boolean isActive = true;
 
 	/**

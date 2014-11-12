@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.activitymgr.core.DbException;
+import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
@@ -62,7 +62,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				}
 			});
 			
-		} catch (DbException e) {
+		} catch (DAOException e) {
 			throw new IllegalStateException("Unexpected error while retrieving recent tasks", e);
 		} catch (ModelException e) {
 			throw new IllegalStateException("Unexpected error while retrieving recent tasks", e);
@@ -155,7 +155,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 			getView().setNewTaskFormEnabled(newTaskFormEnabled);
 			getView().setNewTaskNameEnabled(newTaskNameEnabled);
 		}
-		catch (DbException e) {
+		catch (DAOException e) {
 			handleError(e);
 		}
 	}
@@ -178,7 +178,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				getModelMgr().createTask(parentTask, newTask);
 				((ContributionsTabLogicImpl) getParent()).addTask(newTask.getId());
 			}
-		} catch (DbException e) {
+		} catch (DAOException e) {
 			handleError(e);
 		} catch (ModelException e) {
 			handleError(e);
@@ -192,12 +192,12 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 			List<Long> ids = getParentTaskIds(cursor);
 			getView().expandTasks(ids);
 			getView().selectTask(taskId);
-		} catch (DbException e) {
+		} catch (DAOException e) {
 			handleError(e);
 		}
 	}
 
-	private List<Long> getParentTaskIds(Task task) throws DbException {
+	private List<Long> getParentTaskIds(Task task) throws DAOException {
 		List<Long> ids = new ArrayList<Long>();
 		while (task != null) {
 			ids.add(0, task.getId());

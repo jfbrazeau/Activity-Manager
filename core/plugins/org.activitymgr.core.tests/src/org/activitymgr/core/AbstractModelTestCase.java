@@ -26,7 +26,7 @@ import com.google.inject.Module;
 import com.google.inject.Provider;
 
 public abstract class AbstractModelTestCase extends TestCase implements
-		Provider<DbTransaction> {
+		Provider<Connection> {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(AbstractModelTestCase.class);
@@ -82,7 +82,7 @@ public abstract class AbstractModelTestCase extends TestCase implements
 	private IModelMgr modelMgr;
 
 	/** The test transaction */
-	private DbTransaction tx;
+	private Connection tx;
 
 	/** Guice injector */
 	private Injector injector;
@@ -93,7 +93,7 @@ public abstract class AbstractModelTestCase extends TestCase implements
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	protected void setUp() throws Exception {
-		tx = new DbTransaction(datasource.getConnection());
+		tx = datasource.getConnection();
 
 		// Create Guice injector
 		List<Module> modules = getGuiceModules();
@@ -109,11 +109,11 @@ public abstract class AbstractModelTestCase extends TestCase implements
 							Object[] args) throws Throwable {
 						try {
 							Object result = method.invoke(modelMgr, args);
-							tx.getConnection().commit();
+							tx.commit();
 							return result;
 						} catch (InvocationTargetException t) {
 							t.getCause().printStackTrace();
-							tx.getConnection().rollback();
+							tx.rollback();
 							throw t.getCause();
 						}
 					}
@@ -133,7 +133,7 @@ public abstract class AbstractModelTestCase extends TestCase implements
 		modules.add(new AbstractModule() {
 			@Override
 			protected void configure() {
-				bind(DbTransaction.class).toProvider(
+				bind(Connection.class).toProvider(
 						AbstractModelTestCase.this);
 			}
 		});
@@ -148,7 +148,7 @@ public abstract class AbstractModelTestCase extends TestCase implements
 	}
 
 	@Override
-	public DbTransaction get() {
+	public Connection get() {
 		return tx;
 	}
 
@@ -170,7 +170,7 @@ public abstract class AbstractModelTestCase extends TestCase implements
 	}
 
 	protected void tearDown() throws Exception {
-		tx.getConnection().close();
+		tx.close();
 	}
 
 	protected IModelMgr getModelMgr() {

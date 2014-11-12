@@ -21,7 +21,7 @@ public class TaskTest extends AbstractModelTestCase {
 	private Task task112;
 	private Task task2;
 
-	public void testCreateRootTask() throws DbException, ModelException {
+	public void testCreateRootTask() throws DAOException, ModelException {
 		// Création des tâches de test
 		Task task = new Task();
 		// Génération d'un code inutilisé
@@ -50,7 +50,7 @@ public class TaskTest extends AbstractModelTestCase {
 		assertNull(getModelMgr().getTask(taskId));
 	}
 	
-	private void createSampleTasks() throws DbException, ModelException {
+	private void createSampleTasks() throws DAOException, ModelException {
 		// Création des tâches de test
 		rootTask = getModelMgr().createNewTask(null);
 		rootTask.setCode("RT");
@@ -101,13 +101,13 @@ public class TaskTest extends AbstractModelTestCase {
 		task2 = getModelMgr().getTask(task2.getId());
 	}
 	
-	public void removeSampleTasks() throws DbException, ModelException {
+	public void removeSampleTasks() throws DAOException, ModelException {
 		removeRecursively(rootTask);
 	}
 	
-	private void removeRecursively(Task task) throws DbException, ModelException {
+	private void removeRecursively(Task task) throws DAOException, ModelException {
 		// Récupération des taches filles
-		Task[] subTasks = getModelMgr().getSubtasks(task);
+		Task[] subTasks = getModelMgr().getSubTasks(task);
 		for (int i=subTasks.length-1; i>=0; i--) {
 			Task subTask = subTasks[i];
 			// Suppression des taches filles
@@ -117,7 +117,7 @@ public class TaskTest extends AbstractModelTestCase {
 		getModelMgr().removeTask(task);
 	}
 	
-	public void testTaskPath() throws DbException, ModelException {
+	public void testTaskPath() throws DAOException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
 		try {
@@ -138,7 +138,7 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 	
-	public void testGetParent() throws DbException, ModelException {
+	public void testGetParent() throws DAOException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
 		try {
@@ -160,32 +160,32 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 
-	public void testGetSubtasks() throws DbException, ModelException {
+	public void testGetSubtasks() throws DAOException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
 		try {
 			// La tache root a-t-elle 2 filles ?
-			Task[] rootTaskSubTasks = getModelMgr().getSubtasks(rootTask);
+			Task[] rootTaskSubTasks = getModelMgr().getSubTasks(rootTask);
 			assertEquals(2, rootTaskSubTasks.length);
 			
 			// La tache1 a-t-elle 1 fille ?
-			Task[] task1SubTasks = getModelMgr().getSubtasks(task1);
+			Task[] task1SubTasks = getModelMgr().getSubTasks(task1);
 			assertEquals(1, task1SubTasks.length);
 			
 			// La tache11 a-t-elle 2 fille ?
-			Task[] task11SubTasks = getModelMgr().getSubtasks(task11);
+			Task[] task11SubTasks = getModelMgr().getSubTasks(task11);
 			assertEquals(2, task11SubTasks.length);
 	
 			// La tache111 a-t-elle 0 filles ?
-			Task[] task111SubTasks = getModelMgr().getSubtasks(task111);
+			Task[] task111SubTasks = getModelMgr().getSubTasks(task111);
 			assertEquals(0, task111SubTasks.length);
 	
 			// La tache112 a-t-elle 0 filles ?
-			Task[] task112SubTasks = getModelMgr().getSubtasks(task112);
+			Task[] task112SubTasks = getModelMgr().getSubTasks(task112);
 			assertEquals(0, task112SubTasks.length);
 	
 			// La tache2 a-t-elle 0 filles ?
-			Task[] task2SubTasks = getModelMgr().getSubtasks(task2);
+			Task[] task2SubTasks = getModelMgr().getSubTasks(task2);
 			assertEquals(0, task2SubTasks.length);
 		}
 		finally {
@@ -194,7 +194,7 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 
-	public void testUpdate() throws DbException, ModelException {
+	public void testUpdate() throws DAOException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
 		try {
@@ -212,7 +212,7 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 	
-	public void testMoveDown() throws DbException, ModelException {
+	public void testMoveDown() throws DAOException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
 		try {
@@ -239,7 +239,7 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 	
-	public void testMoveUp() throws DbException, ModelException {
+	public void testMoveUp() throws DAOException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
 		try {
@@ -266,7 +266,7 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 	
-	public void testMove() throws DbException, ModelException {
+	public void testMove() throws DAOException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
 		try {
@@ -300,7 +300,7 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 	
-	public void testTasksSum() throws DbException, ModelException {
+	public void testTasksSum() throws DAOException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
 
@@ -391,7 +391,7 @@ public class TaskTest extends AbstractModelTestCase {
 		removeSampleTasks();
 	}
 
-	public void testSearchTasks() throws DbException, ModelException {
+	public void testSearchTasks() throws DAOException, ModelException {
 		// Création des taches de test
 		createSampleTasks();
 		try {
@@ -498,7 +498,7 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 
-	public void testMoveUpOrDownTask() throws DbException, ModelException {
+	public void testMoveUpOrDownTask() throws DAOException, ModelException {
 		createSampleTasks();
 		try {
 			// Création d'une tache avec 50 taches filles

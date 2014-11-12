@@ -9,7 +9,7 @@ import org.activitymgr.core.beans.Task;
 
 public class DurationTest extends AbstractModelTestCase {
 
-	public void testGetList() throws DbException, ModelException {
+	public void testGetList() throws DAOException, ModelException {
 		try {
 			createSampleDurations();
 			Duration[] durations = getModelMgr().getDurations();
@@ -28,7 +28,7 @@ public class DurationTest extends AbstractModelTestCase {
 		}
 	}
 
-	public void testNullCreation() throws DbException {
+	public void testNullCreation() throws DAOException {
 		// Création de durée nulle
 		try {
 			Duration duration = new Duration();
@@ -40,7 +40,7 @@ public class DurationTest extends AbstractModelTestCase {
 		}
 	}
 
-	public void testConflictingCreation() throws DbException, ModelException {
+	public void testConflictingCreation() throws DAOException, ModelException {
 		// Création d'une durée
 		Duration newDuration = generateNewDuration();
 		newDuration = getModelMgr().createDuration(newDuration);
@@ -57,7 +57,7 @@ public class DurationTest extends AbstractModelTestCase {
 		}
 	}
 
-	public void testRemove() throws DbException, ModelException {
+	public void testRemove() throws DAOException, ModelException {
 		Duration duration = generateNewDuration();
 
 		// Création
@@ -69,7 +69,7 @@ public class DurationTest extends AbstractModelTestCase {
 		assertFalse(getModelMgr().durationExists(duration));
 	}
 
-	public void testUpdateWithAnExistingDuration() throws DbException,
+	public void testUpdateWithAnExistingDuration() throws DAOException,
 			ModelException {
 		// Création
 		Duration duration = generateNewDuration();
@@ -92,7 +92,7 @@ public class DurationTest extends AbstractModelTestCase {
 		getModelMgr().removeDuration(duration2);
 	}
 
-	public void testUpdateWithAnUnusedDuration() throws DbException,
+	public void testUpdateWithAnUnusedDuration() throws DAOException,
 			ModelException {
 		// Création
 		Duration duration = generateNewDuration();
@@ -108,7 +108,7 @@ public class DurationTest extends AbstractModelTestCase {
 		getModelMgr().removeDuration(duration);
 	}
 
-	public void testUpdateDurationUsedByAContribution() throws DbException,
+	public void testUpdateDurationUsedByAContribution() throws DAOException,
 			ModelException {
 		// Création
 		Duration duration = generateNewDuration();
@@ -141,7 +141,7 @@ public class DurationTest extends AbstractModelTestCase {
 		getModelMgr().removeDuration(duration);
 	}
 
-	public void testSelectActiveDurations() throws DbException,
+	public void testSelectActiveDurations() throws DAOException,
 			ModelException {
 		try {
 			createSampleDurations();
@@ -162,7 +162,7 @@ public class DurationTest extends AbstractModelTestCase {
 		}
 	}
 
-	private Duration generateNewDuration() throws DbException {
+	private Duration generateNewDuration() throws DAOException {
 		Duration duration = new Duration();
 		duration.setId(1);
 		// Recherche d'une durée inexistante en base
@@ -172,19 +172,19 @@ public class DurationTest extends AbstractModelTestCase {
 		return duration;
 	}
 
-	private void createSampleDurations() throws DbException, ModelException {
+	private void createSampleDurations() throws DAOException, ModelException {
 		newDuration(25l);
 		newDuration(50l);
 		newDuration(75l);
 	}
 
-	private void newDuration(long duration) throws DbException, ModelException {
+	private void newDuration(long duration) throws DAOException, ModelException {
 		Duration d = new Duration();
 		d.setId(duration);
 		getModelMgr().createDuration(d);
 	}
 
-	private void removeSampleDurations() throws DbException, ModelException {
+	private void removeSampleDurations() throws DAOException, ModelException {
 		Duration[] durations = getModelMgr().getDurations();
 		for (Duration duration : durations) {
 			getModelMgr().removeDuration(duration);

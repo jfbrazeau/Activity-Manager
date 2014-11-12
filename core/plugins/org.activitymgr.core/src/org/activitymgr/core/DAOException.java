@@ -30,7 +30,7 @@ package org.activitymgr.core;
 /**
  * Exception levée lors d'un incident technique d'accès à la base de données.
  */
-public class DbException extends AbstractException {
+public class DAOException extends AbstractException {
 
 	/** Fake serial version UID */
 	private static final long serialVersionUID = 1L;
@@ -43,7 +43,7 @@ public class DbException extends AbstractException {
 	 * @param cause
 	 *            cause de la levée d'exception.
 	 */
-	public DbException(String message, Throwable cause) {
+	public DAOException(String message, Throwable cause) {
 		super(message, cause);
 	}
 

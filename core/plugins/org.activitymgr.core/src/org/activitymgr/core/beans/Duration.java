@@ -27,12 +27,22 @@
  */
 package org.activitymgr.core.beans;
 
+import org.activitymgr.core.orm.annotation.Column;
+import org.activitymgr.core.orm.annotation.ColumnNamePrefix;
+import org.activitymgr.core.orm.annotation.PrimaryKey;
+
 /**
  * Durée.
  */
-public class Duration extends SimpleIdentityBean {
+@ColumnNamePrefix("DUR_")
+public class Duration {
+
+	/** Identifiant */
+	@PrimaryKey
+	private long id;
 
 	/** Booléen indiquant si la durée est active ou non */
+	@Column("IS_ACTIVE")
 	private boolean isActive = true;
 
 	/**
@@ -53,4 +63,36 @@ public class Duration extends SimpleIdentityBean {
 	public void setIsActive(boolean isActive) {
 		this.isActive = isActive;
 	}
+
+	/**
+	 * @return l'identifiant de l'objet.
+	 */
+	public long getId() {
+		return id;
+	}
+
+	/**
+	 * Définit l'identifiant de l'objet.
+	 * 
+	 * @param id
+	 *            le nouvel identifiant.
+	 */
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object obj) {
+		boolean equals = false;
+		if (obj != null && obj.getClass().equals(Duration.class)) {
+			Duration duration = (Duration) obj;
+			equals = (duration.getId() == id);
+		}
+		return equals;
+	}
+
 }

@@ -28,7 +28,7 @@
 package org.activitymgr.ui.rcp.dialogs;
 
 
-import org.activitymgr.core.DbException;
+import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.util.Strings;
@@ -155,7 +155,7 @@ public class TasksChooserTree extends AbstractTableMgr implements
 		final Task task = (Task) element;
 		try {
 			return modelMgr.getSubTasksCount(task.getId()) > 0;
-		} catch (DbException e) {
+		} catch (DAOException e) {
 			log.error(e);
 			return false;
 		}
@@ -173,7 +173,7 @@ public class TasksChooserTree extends AbstractTableMgr implements
 		final Task parentTask = (Task) parentElement;
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				return modelMgr.getSubtasks(parentTask);
+				return modelMgr.getSubTasks(parentTask);
 			}
 		};
 		Object[] result = (Object[]) safeRunner.run(parent.getShell(),

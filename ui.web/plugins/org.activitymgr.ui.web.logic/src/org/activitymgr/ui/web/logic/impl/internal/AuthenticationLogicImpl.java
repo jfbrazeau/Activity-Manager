@@ -1,6 +1,6 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
-import org.activitymgr.core.DbException;
+import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
@@ -70,7 +70,7 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 				getRoot().getView().showNotification("Invalid credentials.");
 			}
 		}
-		catch (DbException e) {
+		catch (DAOException e) {
 			handleError(e);
 		}
 		
@@ -98,7 +98,7 @@ class DefaultAuthenticator implements IAuthenticatorExtension {
 		try {
 			return modelMgr.getCollaborator(login) != null;
 		}
-		catch (DbException e) {
+		catch (DAOException e) {
 			parent.handleError(e);
 			return false;
 		}

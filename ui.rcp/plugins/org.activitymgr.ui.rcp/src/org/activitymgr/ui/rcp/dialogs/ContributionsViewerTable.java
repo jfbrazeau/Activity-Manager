@@ -31,7 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.activitymgr.core.DbException;
+import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
@@ -249,12 +249,12 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	 * @return le chemin.
 	 * @throws ModelException
 	 *             levé en cas de viloation du modèle.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident associé à l'accès à la base de
 	 *             données.
 	 */
 	private String getCachedTaskCodePath(long taskId) throws ModelException,
-			DbException {
+			DAOException {
 		Long _taskId = new Long(taskId);
 		String taskCodePath = (String) taskCodePathsCache.get(_taskId);
 		if (taskCodePath == null) {
@@ -272,11 +272,11 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	 * @param taskId
 	 *            l'identifiant de la tache.
 	 * @return la tache.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident associé à l'accès à la base de
 	 *             données.
 	 */
-	private Task getCachedTask(long taskId) throws DbException {
+	private Task getCachedTask(long taskId) throws DAOException {
 		Long _taskId = new Long(taskId);
 		Task task = (Task) tasksCache.get(_taskId);
 		if (task == null) {
@@ -293,12 +293,12 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	 * @param collaboratorId
 	 *            l'identifiant du collaborateur.
 	 * @return le collaborateur.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident associé à l'accès à la base de
 	 *             données.
 	 */
 	private Collaborator getCachedCollaborator(long collaboratorId)
-			throws DbException {
+			throws DAOException {
 		Long _collaboratorId = new Long(collaboratorId);
 		Collaborator collaborator = (Collaborator) collaboratorsCache
 				.get(_collaboratorId);

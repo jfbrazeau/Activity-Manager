@@ -12,8 +12,7 @@ import java.util.List;
 import java.util.Stack;
 
 import org.activitymgr.core.CoreModule;
-import org.activitymgr.core.DbException;
-import org.activitymgr.core.DbTransaction;
+import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.ui.web.logic.IEventBus;
@@ -51,10 +50,10 @@ public class LogicContext {
 		modules.add(new AbstractModule() {
 			@Override
 			protected void configure() {
-				bind(DbTransaction.class).toProvider(
-						new Provider<DbTransaction>() {
+				bind(Connection.class).toProvider(
+						new Provider<Connection>() {
 							@Override
-							public DbTransaction get() {
+							public Connection get() {
 								DbTransactionContext txCtx = transactions.get();
 								return txCtx != null ? txCtx.tx : null;
 							}
@@ -89,7 +88,7 @@ public class LogicContext {
 			getComponent(IModelMgr.class).initialize();
 			con.commit();
 		}
-		catch (DbException e) {
+		catch (DAOException e) {
 			con.rollback();
 			throw new IllegalStateException("Couldn't initialize the database access", e);
 		}
@@ -141,7 +140,7 @@ public class LogicContext {
 								transactions.set(txCtx);
 							}
 							else {
-								sp = txCtx.tx.getConnection().setSavepoint();
+								sp = txCtx.tx.setSavepoint();
 							}
 							txCtx.calls.push(method);
 							//log(txCtx, "START");
@@ -150,19 +149,19 @@ public class LogicContext {
 
 							// Commit the transaction (or put a save point)
 							if (txCtx.calls.size() > 1) {
-								sp = txCtx.tx.getConnection().setSavepoint();
+								sp = txCtx.tx.setSavepoint();
 							}
 							else {
-								txCtx.tx.getConnection().commit();
+								txCtx.tx.commit();
 							}
 							return result;
 						} catch (InvocationTargetException t) {
 							// Rollback the transaction in case of failure
 							if (txCtx.calls.size() > 1) {
-								txCtx.tx.getConnection().rollback(sp);
+								txCtx.tx.rollback(sp);
 							}
 							else {
-								txCtx.tx.getConnection().rollback();
+								txCtx.tx.rollback();
 							}
 							throw t.getCause();
 						} finally {
@@ -171,22 +170,18 @@ public class LogicContext {
 							if (txCtx.calls.size() == 0) {
 								// Release the transaction
 								transactions.remove();
-								txCtx.tx.getConnection().close();
+								txCtx.tx.close();
 							}
 						}
-					}
-					private void log(DbTransactionContext ctx, String s) {
-						Method method = ctx.calls.peek();
-						System.out.println(Thread.currentThread() + "-" + (method != null ? method.getName() :"") + "-" + ctx.calls.size() + "-" + s);
 					}
 				});
 	}
 }
 
 class DbTransactionContext {
-	DbTransactionContext(Connection con) {
-		tx = new DbTransaction(con);
-	}
-	DbTransaction tx;
+	Connection tx;
 	Stack<Method> calls = new Stack<Method>();
+	DbTransactionContext(Connection con) {
+		tx = con;
+	}
 }

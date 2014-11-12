@@ -30,27 +30,40 @@ package org.activitymgr.core.beans;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import org.activitymgr.core.orm.annotation.Column;
+import org.activitymgr.core.orm.annotation.ColumnNamePrefix;
+import org.activitymgr.core.orm.annotation.PrimaryKey;
+
 /**
  * Contribution d'un collaborateur à une tache.
  */
+@ColumnNamePrefix("CTB_")
 public class Contribution {
-
+	
 	/** Année */
+	@PrimaryKey
 	private int year;
 
 	/** Mois */
+	@PrimaryKey
 	private int month;
 
 	/** Jour */
+	@PrimaryKey
 	private int day;
 
 	/** Identifiant du collaborateur */
+	@PrimaryKey
+	@Column("CONTRIBUTOR")
 	private long contributorId;
 
 	/** Identifiant de la tache */
+	@PrimaryKey
+	@Column("TASK")
 	private long taskId;
 
 	/** Durée */
+	@Column("DURATION")
 	private long durationId;
 
 	/**

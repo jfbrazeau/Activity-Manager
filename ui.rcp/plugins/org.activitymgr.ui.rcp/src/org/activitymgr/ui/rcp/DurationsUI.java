@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.activitymgr.core.DbException;
+import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Duration;
 import org.activitymgr.core.util.StringFormatException;
@@ -455,7 +455,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 													.getString("DurationsUI.errors.DURATION_ALREADY_EXIST"); //$NON-NLS-1$
 									} catch (StringFormatException e) {
 										errorMsg = e.getMessage();
-									} catch (DbException e) {
+									} catch (DAOException e) {
 										errorMsg = Strings
 												.getString("DurationsUI.errors.DATABASE_CONNECTION_FAILURE_WHILE_DURATION_EXISTENCE_CHECK"); //$NON-NLS-1$
 									}

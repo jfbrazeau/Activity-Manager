@@ -35,7 +35,7 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
-import org.activitymgr.core.DbException;
+import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
@@ -1048,7 +1048,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 					if (modelMgr.isLeaf(selectedTask.getId()))
 						throw new DialogException(
 								Strings.getString("ContributionsUI.errors.PARENT_TASK_SELECTED"), null);//$NON-NLS-1$
-				} catch (DbException e) {
+				} catch (DAOException e) {
 					throw new DialogException(
 							e.getMessage(), null);
 				} 
@@ -1064,12 +1064,12 @@ public class ContributionsUI extends AbstractTableMgr implements
 	 * 
 	 * @param task
 	 *            la tache associée à l'ajout ou la sélection.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levée en cas d'incident technique d'accès à la BDD.
 	 * @throws ModelException
 	 *             levée en cas d'incident fonctionnel.
 	 */
-	private void addNewLineOrSelectTaskLine(Task task) throws DbException,
+	private void addNewLineOrSelectTaskLine(Task task) throws DAOException,
 			ModelException {
 		// La tache est elle déja associée à une semaine de contributions
 		TaskContributions weekContributions = null;

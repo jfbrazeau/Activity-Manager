@@ -3,7 +3,7 @@ package org.activitymgr.core.impl;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.activitymgr.core.DbException;
+import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
@@ -38,14 +38,14 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		 * @param duration
 		 *            la durée à créer.
 		 * @return la durée créée.
-		 * @throws DbException
+		 * @throws DAOException
 		 *             levé en cas d'incident technique d'accès à la base.
 		 * @throws ModelException
 		 *             levé dans la cas ou la durée existe déjà.
 		 * @see IModelMgr#createDuration(Duration)
 		 */
 		public Duration createDuration(Duration duration)
-				throws ModelException, DbException;
+				throws ModelException, DAOException;
 
 		/**
 		 * Crée un collaborateur dans un contexte de transaction.
@@ -53,7 +53,7 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		 * @param collaborator
 		 *            le collaborateur à créer.
 		 * @return le collaborateur après création.
-		 * @throws DbException
+		 * @throws DAOException
 		 *             levé en cas d'incident technique d'accès à la base.
 		 * @throws ModelException
 		 *             levé dans la cas ou la tache de destination ne peut
@@ -61,7 +61,7 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		 * @see IModelMgr#createCollaborator(Collaborator)
 		 */
 		public Collaborator createCollaborator(Collaborator collaborator)
-				throws DbException, ModelException;
+				throws DAOException, ModelException;
 
 		/**
 		 * Crée une nouvelle tache dans un contexte de transaction.
@@ -71,14 +71,14 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		 * @param task
 		 *            la tache à créer.
 		 * @return la tache créée.
-		 * @throws DbException
+		 * @throws DAOException
 		 *             levé en cas d'incident technique d'accès à la base.
 		 * @throws ModelException
 		 *             levé dans la cas ou la tache de destination ne peut
 		 *             recevoir de sous-tache.
 		 * @see IModelMgr#createTask(Task, Task)
 		 */
-		public Task createTask(Task parentTask, Task task) throws DbException,
+		public Task createTask(Task parentTask, Task task) throws DAOException,
 				ModelException;
 
 		/**
@@ -87,7 +87,7 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		 * @param contribution
 		 *            la contribution à créer.
 		 * @return la contribution après création.
-		 * @throws DbException
+		 * @throws DAOException
 		 *             levé en cas d'incident technique d'accès à la base.
 		 * @throws ModelException
 		 *             levé dans la cas ou la tache de destination ne peut
@@ -95,7 +95,7 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		 * @see IModelMgr#createCollaborator(Collaborator)
 		 */
 		public Contribution createContribution(Contribution contribution)
-				throws DbException, ModelException;
+				throws DAOException, ModelException;
 
 		/**
 		 * Retourne la tache associée à un chemin construit à partir de codes de
@@ -104,13 +104,13 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		 * @param codePath
 		 *            le chemin à base de code.
 		 * @return la tache trouvée.
-		 * @throws DbException
+		 * @throws DAOException
 		 *             levé en cas d'incident technique avec la base de données.
 		 * @throws ModelException
 		 *             levé dans le cas ou le chemin de tache est inconnu.
 		 */
 		public Task getTaskByCodePath(String codePath)
-				throws DbException, ModelException;
+				throws DAOException, ModelException;
 
 		/**
 		 * Retourne le collabirateur dont le login est spécifié dans un contexte
@@ -120,11 +120,11 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 		 *            l'identifiant de connexion du collaborateur recherché.
 		 * @return le collaborateur dont l'identifiant de connexion est
 		 *         spécifié.
-		 * @throws DbException
+		 * @throws DAOException
 		 *             levé en cas d'incident technique d'accès à la base.
 		 */
 		public Collaborator getCollaborator(String login)
-				throws DbException;
+				throws DAOException;
 
 	}
 
@@ -401,7 +401,7 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 			log.error("Model violation", e); //$NON-NLS-1$
 			error(new SAXParseException(
 					Strings.getString("XmlHelper.errors.MODEL_VIOLATION") + e.getMessage(), locator, e)); //$NON-NLS-1$
-		} catch (DbException e) {
+		} catch (DAOException e) {
 			log.error("Unexpected database access error", e); //$NON-NLS-1$
 			throw new SAXException(
 					Strings.getString("XmlHelper.errors.DATABASE_ACCESS_ERROR"), e); //$NON-NLS-1$

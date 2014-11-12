@@ -39,7 +39,7 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.activitymgr.core.DbException;
+import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Duration;
@@ -686,13 +686,13 @@ public class DatabaseUI implements ModifyListener {
 	 * @throws IOException
 	 *             levé en cas d'incident I/O lors du chargement de la
 	 *             configuration.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws UITechException
 	 *             levé en cas d'incident inattendu lors de la création des
 	 *             durées.
 	 */
-	private void openDatabase() throws IOException, DbException,
+	private void openDatabase() throws IOException, DAOException,
 			UITechException {
 		// Récupération des paramétres de connexion
 		String databaseType = String.valueOf(dbTypeCombo.getSelectionIndex());
@@ -787,10 +787,10 @@ public class DatabaseUI implements ModifyListener {
 	/**
 	 * Ferme la connexion à la base de données.
 	 * 
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public void closeDatabase() throws UITechException, DbException {
+	public void closeDatabase() throws UITechException, DAOException {
 		// Changement des paramétres de connexion
 		try {
 			Connection con = datasource.getConnection();
@@ -827,13 +827,13 @@ public class DatabaseUI implements ModifyListener {
 	/**
 	 * Réinstalle la base de données (tables drop + creation).
 	 * 
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws UITechException
 	 *             levé en cas d'incident inattendu lors de la création des
 	 *             durées.
 	 */
-	private void reinstallDatabase() throws DbException, UITechException {
+	private void reinstallDatabase() throws DAOException, UITechException {
 		// Suppression et recréation des tables
 		modelMgr.createTables();
 		// Question concernant le référentiel de durées par défaut
@@ -869,13 +869,13 @@ public class DatabaseUI implements ModifyListener {
 	/**
 	 * Réinstalle la base de données (tables drop + creation).
 	 * 
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws UITechException
 	 *             levé en cas d'incident inattendu lors de la création des
 	 *             durées.
 	 */
-	private void reinstallDatabaseWithWarnings() throws DbException,
+	private void reinstallDatabaseWithWarnings() throws DAOException,
 			UITechException {
 		if (MessageDialog.openQuestion(parent.getShell(),
 				Strings.getString("DatabaseUI.labels.CONFIRMATION"), //$NON-NLS-1$
@@ -893,13 +893,13 @@ public class DatabaseUI implements ModifyListener {
 	/**
 	 * Exporte le contenu de la BDD vers un fichier XML.
 	 * 
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws IOException
 	 *             levé en cas d'incident I/O lors de l'écriture dans le fichier
 	 *             XML.
 	 */
-	private void exportToXML() throws DbException, IOException {
+	private void exportToXML() throws DAOException, IOException {
 		String fileName = xmlFileText.getStringValue();
 		if ("".equals(fileName.trim())) { //$NON-NLS-1$
 			MessageDialog
@@ -941,12 +941,12 @@ public class DatabaseUI implements ModifyListener {
 	 *             levé en cas de violation du modèle de données.
 	 * @throws UITechException
 	 *             levé en cas d'incident inattendu.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	private void importFromXML() throws IOException,
 			ParserConfigurationException, SAXException, ModelException,
-			UITechException, DbException {
+			UITechException, DAOException {
 		String fileName = xmlFileText.getStringValue();
 		File xmlFile = new File(fileName);
 		if ("".equals(fileName.trim())) { //$NON-NLS-1$

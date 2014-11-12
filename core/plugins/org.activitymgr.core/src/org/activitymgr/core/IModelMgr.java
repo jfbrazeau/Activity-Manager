@@ -41,6 +41,7 @@ import org.activitymgr.core.beans.IntervalContributions;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskSearchFilter;
 import org.activitymgr.core.beans.TaskSums;
+import org.activitymgr.core.impl.CoreDAOImpl;
 import org.xml.sax.SAXException;
 
 /**
@@ -51,10 +52,10 @@ public interface IModelMgr {
 	/**
 	 * Initializes the database.
 	 * 
-	 * @throws DbException
+	 * @throws DAOException
 	 *             thrown if a database exception occurs.
 	 */
-	public void initialize() throws DbException;
+	public void initialize() throws DAOException;
 
 	/**
 	 * Change la tache d'une liste de contributions.
@@ -64,7 +65,7 @@ public interface IModelMgr {
 	 * @param newContributionTask
 	 *            la tache à affecter.
 	 * @return la liste de contributions mise à jour.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé dans le cas où la tache cible ne peut être acdepter de
@@ -72,20 +73,20 @@ public interface IModelMgr {
 	 * 
 	 */
 	public Contribution[] changeContributionTask(Contribution[] contributions,
-			Task newContributionTask) throws DbException, ModelException;
+			Task newContributionTask) throws DAOException, ModelException;
 
 	/**
 	 * Vérifie si la tache spécifiée peut accueillir des sous-taches.
 	 * 
 	 * @param task
 	 *            la tache à controler.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de sous-tache.
 	 */
-	public void checkAcceptsSubtasks(Task task) throws DbException,
+	public void checkAcceptsSubtasks(Task task) throws DAOException,
 			ModelException;
 
 	/**
@@ -94,14 +95,14 @@ public interface IModelMgr {
 	 * @param collaborator
 	 *            le collaborateur à créer.
 	 * @return le collaborateur après création.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de sous-tache.
 	 */
 	public Collaborator createCollaborator(Collaborator collaborator)
-			throws DbException, ModelException;
+			throws DAOException, ModelException;
 
 	/**
 	 * Crée une contribution.
@@ -111,14 +112,14 @@ public interface IModelMgr {
 	 * @param updateEstimatedTimeToComlete
 	 *            booléen indiquant si le reste à faire doit être décrémenté.
 	 * @return la contribution après création.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de contribution.
 	 */
 	public Contribution createContribution(Contribution contribution,
-			boolean updateEstimatedTimeToComlete) throws DbException,
+			boolean updateEstimatedTimeToComlete) throws DAOException,
 			ModelException;
 
 	/**
@@ -127,22 +128,22 @@ public interface IModelMgr {
 	 * @param duration
 	 *            la durée à créer.
 	 * @return la durée créée.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé dans la cas ou la durée existe déjà.
 	 */
-	public Duration createDuration(Duration duration) throws DbException,
+	public Duration createDuration(Duration duration) throws DAOException,
 			ModelException;
 
 	/**
 	 * Crée un nouveau collaborateur en générant automatiquement ses attributs.
 	 * 
 	 * @return le nouveau collaborateur.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public Collaborator createNewCollaborator() throws DbException;
+	public Collaborator createNewCollaborator() throws DAOException;
 
 	/**
 	 * Crée une nouvelle tache en générant un nom et un code.
@@ -160,23 +161,23 @@ public interface IModelMgr {
 	 * @param parentTask
 	 *            la tache parent de destination.
 	 * @return la tache créée.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de sous-tache.
 	 * @see IModelMgr#checkAcceptsSubtasks(Task)
 	 */
-	public Task createNewTask(Task parentTask) throws DbException,
+	public Task createNewTask(Task parentTask) throws DAOException,
 			ModelException;
 
 	/**
 	 * Crée les tables du modèle de données.
 	 * 
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public void createTables() throws DbException;
+	public void createTables() throws DAOException;
 
 	/**
 	 * Crée une nouvelle tache.
@@ -191,14 +192,14 @@ public interface IModelMgr {
 	 * @param task
 	 *            la tache à créer.
 	 * @return la tache créée.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de sous-tache.
 	 * @see ImodelMgr#checkAcceptsSubtasks(Task)
 	 */
-	public Task createTask(Task parentTask, Task task) throws DbException,
+	public Task createTask(Task parentTask, Task task) throws DAOException,
 			ModelException;
 
 	/**
@@ -207,10 +208,10 @@ public interface IModelMgr {
 	 * @param duration
 	 *            la durée à vérifier.
 	 * @return un booléen indiquant si la durée existe.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public boolean durationExists(Duration duration) throws DbException;
+	public boolean durationExists(Duration duration) throws DAOException;
 
 	/**
 	 * Exporte le contenu de la base dans un fichier XML.
@@ -220,10 +221,10 @@ public interface IModelMgr {
 	 * @throws IOException
 	 *             levé en cas d'incident I/O lors de l'écriture sur le flux de
 	 *             sortie.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident avec la base de données.
 	 */
-	public void exportToXML(OutputStream out) throws IOException, DbException;
+	public void exportToXML(OutputStream out) throws IOException, DAOException;
 
 	/**
 	 * Tells whether the given task is leaf or not.
@@ -231,19 +232,19 @@ public interface IModelMgr {
 	 * @param taskId
 	 *            the task identifier.
 	 * @return <code>true</code> if the task is leaf.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             thrown if a DAO exception occurs.
 	 */
-	boolean isLeaf(long taskId) throws DbException;
+	boolean isLeaf(long taskId) throws DAOException;
 
 	/**
 	 * @param parentTaskId
 	 *            the task identifier.
 	 * @return the sub tasks count.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             thrown if a DAO exception occurs.
 	 */
-	int getSubTasksCount(long parentTaskId) throws DbException;
+	int getSubTasksCount(long parentTaskId) throws DAOException;
 
 	/**
 	 * @param orderByClauseFieldIndex
@@ -251,43 +252,43 @@ public interface IModelMgr {
 	 * @param ascendantSort
 	 *            booléen indiquant si le tri doit être ascendant.
 	 * @return la liste des collaborateurs actifs.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public Collaborator[] getActiveCollaborators(int orderByClauseFieldIndex,
-			boolean ascendantSort) throws DbException;
+			boolean ascendantSort) throws DAOException;
 
 	/**
 	 * @return la liste des durées actives.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public Duration[] getActiveDurations() throws DbException;
+	public Duration[] getActiveDurations() throws DAOException;
 
 	/**
 	 * @param collaboratorId
 	 *            l'identifiant du collaborateur recherché.
 	 * @return le collaborateur dont l'identifiant est spécifié.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public Collaborator getCollaborator(long collaboratorId) throws DbException;
+	public Collaborator getCollaborator(long collaboratorId) throws DAOException;
 
 	/**
 	 * @param login
 	 *            l'identifiant de connexion du collaborateur recherché.
 	 * @return le collaborateur dont l'identifiant de connexion est spécifié.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public Collaborator getCollaborator(String login) throws DbException;
+	public Collaborator getCollaborator(String login) throws DAOException;
 
 	/**
 	 * @return la liste des collaborateurs.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public Collaborator[] getCollaborators() throws DbException;
+	public Collaborator[] getCollaborators() throws DAOException;
 
 	/**
 	 * @param orderByClauseFieldIndex
@@ -295,11 +296,11 @@ public interface IModelMgr {
 	 * @param ascendantSort
 	 *            booléen indiquant si le tri doit être ascendant.
 	 * @return la liste des collaborateurs.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public Collaborator[] getCollaborators(int orderByClauseFieldIndex,
-			boolean ascendantSort) throws DbException;
+			boolean ascendantSort) throws DAOException;
 
 	/**
 	 * @param contributor
@@ -310,11 +311,11 @@ public interface IModelMgr {
 	 *            date de fin.
 	 * @return la liste de taches associées au collaborateur entre les 2 dates
 	 *         spécifiées.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public Task[] getContributedTasks(Collaborator contributor,
-			Calendar fromDate, Calendar toDate) throws DbException;
+			Calendar fromDate, Calendar toDate) throws DAOException;
 
 	/**
 	 * @param contributor
@@ -326,12 +327,12 @@ public interface IModelMgr {
 	 * @param toDate
 	 *            la date de fin.
 	 * @return la liste des contributions associées aux paramétres spécifiés.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 */
 	public Contribution[] getContributions(Collaborator contributor, Task task,
-			Calendar fromDate, Calendar toDate) throws DbException,
+			Calendar fromDate, Calendar toDate) throws DAOException,
 			ModelException;
 
 	/**
@@ -346,18 +347,18 @@ public interface IModelMgr {
 	 * @param toDate
 	 *            la date de fin.
 	 * @return le nombre de contributions.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé en cas d'incohérence des données en entrée avec le
 	 *             modèle.
 	 * 
-	 * @see jfb.tools.activitymgr.core.DbMgrImpl#getContributionsNb(DbTransaction,
+	 * @see CoreDAOImpl.tools.activitymgr.core.DbMgrImpl#getContributionsNb(DbTransaction,
 	 *      Task, Collaborator, Integer, Integer, Integer)
 	 */
 	public int getContributionsCount(Collaborator contributor, Task task,
 			Calendar fromDate, Calendar toDate) throws ModelException,
-			DbException;
+			DAOException;
 
 	/**
 	 * Calcule le total des contributions associée aux paramétres spécifiés.
@@ -371,12 +372,12 @@ public interface IModelMgr {
 	 * @param toDate
 	 *            la date de fin.
 	 * @return la seomme des contributions.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 */
 	public long getContributionsSum(Collaborator contributor, Task task,
-			Calendar fromDate, Calendar toDate) throws DbException,
+			Calendar fromDate, Calendar toDate) throws DAOException,
 			ModelException;
 
 	/**
@@ -387,29 +388,29 @@ public interface IModelMgr {
 	 * @param toDate
 	 *            la date de fin.
 	 * @return the contributors list corresponding to the given date interval.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé si l'interval est incohérent.
 	 */
 	Collaborator[] getContributors(Task task, Calendar fromDate, Calendar toDate)
-			throws DbException, ModelException;
+			throws DAOException, ModelException;
 
 	/**
 	 * @param durationId
 	 *            identifiant de la durée.
 	 * @return la durée dont l'identifiant est spécifiée.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public Duration getDuration(long durationId) throws DbException;
+	public Duration getDuration(long durationId) throws DAOException;
 
 	/**
 	 * @return la liste des durées actives.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public Duration[] getDurations() throws DbException;
+	public Duration[] getDurations() throws DAOException;
 
 	/**
 	 * Retourne la liste des contributions associées à une tache, un
@@ -428,7 +429,7 @@ public interface IModelMgr {
 	 * @param toDate
 	 *            la date de fin.
 	 * @return la liste des contributions.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé dans le cas ou la date de fin spécifiée est antérieure à
@@ -436,7 +437,7 @@ public interface IModelMgr {
 	 */
 	public IntervalContributions getIntervalContributions(
 			Collaborator contributor, Task task, Calendar fromDate,
-			Calendar toDate) throws DbException, ModelException;
+			Calendar toDate) throws DAOException, ModelException;
 
 	/**
 	 * Retourne la liste des conteneurs des taches contribuées dans un
@@ -453,59 +454,59 @@ public interface IModelMgr {
 	 * @param toDate
 	 *            la date de fin.
 	 * @return la liste des conteneurs de tache.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé dans le cas ou la date de fin spécifiée est antérieure à
 	 *             la date de début spécifiée.
 	 */
 	public Task[] getContributedTaskContainers(Collaborator contributor,
-			Calendar fromDate, Calendar toDate) throws DbException,
+			Calendar fromDate, Calendar toDate) throws DAOException,
 			ModelException;
 	
 	/**
 	 * @param task
 	 *            la tache dont on veut connaitre la tache parent.
 	 * @return la tache parent d'une tache spécifiée.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public Task getParentTask(Task task) throws DbException;
+	public Task getParentTask(Task task) throws DAOException;
 
 	/**
 	 * @return the root tasks count.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             thrown if a database exception occurs.
 	 */
-	int getRootTasksCount() throws DbException;
+	int getRootTasksCount() throws DAOException;
 
 	/**
 	 * @param parentTaskId
 	 *            l'identifiant de la tache dont on veut connaître les
 	 *            sous-taches.
 	 * @return la liste des taches associées à un chemin donné.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public Task[] getSubtasks(Long parentTaskId) throws DbException;
+	public Task[] getSubtasks(Long parentTaskId) throws DAOException;
 
 	/**
 	 * @param parentTask
 	 *            la tache dont on veut connaître les sous-taches.
 	 * @return la liste des taches associées à un chemin donné.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public Task[] getSubtasks(Task parentTask) throws DbException;
+	public Task[] getSubTasks(Task parentTask) throws DAOException;
 
 	/**
 	 * @param taskId
 	 *            l'identifiant de la tache recherchée.
 	 * @return la tache dont l'identifiant est spécifié.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public Task getTask(long taskId) throws DbException;
+	public Task getTask(long taskId) throws DAOException;
 
 	/**
 	 * @param taskPath
@@ -513,10 +514,10 @@ public interface IModelMgr {
 	 * @param taskCode
 	 *            le code de la tache recherchée.
 	 * @return la tache dont le code et la tache parent sont spécifiés.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public Task getTask(String taskPath, String taskCode) throws DbException;
+	public Task getTask(String taskPath, String taskCode) throws DAOException;
 
 	/**
 	 * Retourne la tache associée à un chemin construit à partir de codes de
@@ -525,12 +526,12 @@ public interface IModelMgr {
 	 * @param codePath
 	 *            le chemin à base de code.
 	 * @return la tache trouvée.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique avec la base de données.
 	 * @throws ModelException
 	 *             levé dans le cas ou le chemin de tache est inconnu.
 	 */
-	public Task getTaskByCodePath(final String codePath) throws DbException,
+	public Task getTaskByCodePath(final String codePath) throws DAOException,
 			ModelException;
 
 	/**
@@ -542,10 +543,10 @@ public interface IModelMgr {
 	 * @throws ModelException
 	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
 	 *             changé.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique avec la base de données.
 	 */
-	public String getTaskCodePath(Task task) throws ModelException, DbException;
+	public String getTaskCodePath(Task task) throws ModelException, DAOException;
 
 	/**
 	 * Retourn la liste des taches correspondant au filtre de recherche
@@ -555,10 +556,10 @@ public interface IModelMgr {
 	 *            le filtre de recherche.
 	 * @return la liste des taches correspondant au filtre de recherche
 	 *         spécifié.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public Task[] getTasks(TaskSearchFilter filter) throws DbException;
+	public Task[] getTasks(TaskSearchFilter filter) throws DAOException;
 
 	/**
 	 * Retourne la liste des taches associées aux chemins spécifiés.
@@ -566,11 +567,11 @@ public interface IModelMgr {
 	 * @param codePaths
 	 *            la liste des chemins.
 	 * @return la liste des tâches.
-	 * @throws DbException
+	 * @throws DAOException
 	 * @throws ModelException
 	 *             levé dans le cas ou une tache n'existe pas.
 	 */
-	public Task[] getTasksByCodePath(String[] codePaths) throws DbException,
+	public Task[] getTasksByCodePath(String[] codePaths) throws DAOException,
 			ModelException;
 
 	/**
@@ -584,11 +585,11 @@ public interface IModelMgr {
 	 * @throws ModelException
 	 *             levé dans le cas ou le chemin ou le numéro de la tache en
 	 *             base ne sont pas ceux de la tache spécifiée.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public TaskSums getTaskSums(Task task, Calendar fromDate, Calendar toDate)
-			throws ModelException, DbException;
+			throws ModelException, DAOException;
 
 	/**
 	 * Importe le contenu d'un fichier XML.
@@ -598,7 +599,7 @@ public interface IModelMgr {
 	 * @throws IOException
 	 *             levé en cas d'incident I/O lors de la lecture sur le flux
 	 *             d'entrée
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident avec la base de données.
 	 * @throws ParserConfigurationException
 	 *             levé en cas de mauvaise configuration du parser XML.
@@ -607,7 +608,7 @@ public interface IModelMgr {
 	 * @throws ModelException
 	 *             levé en cas d'incohérence des données lors de l'import
 	 */
-	public void importFromXML(InputStream in) throws IOException, DbException,
+	public void importFromXML(InputStream in) throws IOException, DAOException,
 			ParserConfigurationException, SAXException, ModelException;
 
 	/**
@@ -624,10 +625,10 @@ public interface IModelMgr {
 	 * @throws ModelException
 	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
 	 *             changé.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique avec la base de données.
 	 */
-	public void moveDownTask(Task task) throws ModelException, DbException;
+	public void moveDownTask(Task task) throws ModelException, DAOException;
 
 	/**
 	 * Déplace la tache vers un autre endroit dans la hiérarchie des taches.
@@ -651,11 +652,11 @@ public interface IModelMgr {
 	 * @throws ModelException
 	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
 	 *             changé.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique avec la base de données.
 	 */
 	public void moveTask(Task task, Task destParentTask) throws ModelException,
-			DbException;
+			DAOException;
 
 	/**
 	 * Déplace une tache de plus d'un cran (au contraire des méthodes
@@ -667,11 +668,11 @@ public interface IModelMgr {
 	 *            le nouveau numéro de la tâche.
 	 * @throws ModelException
 	 *             levé en cas de violation du modèle.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique avec la base de données.
 	 */
 	public void moveTaskUpOrDown(Task task, int newTaskNumber)
-			throws ModelException, DbException;
+			throws ModelException, DAOException;
 
 	/**
 	 * Déplace la tache d'un cran vers le haut.
@@ -687,10 +688,10 @@ public interface IModelMgr {
 	 * @throws ModelException
 	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
 	 *             changé.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique avec la base de données.
 	 */
-	public void moveUpTask(Task task) throws ModelException, DbException;
+	public void moveUpTask(Task task) throws ModelException, DAOException;
 
 	/**
 	 * Supprime un collaborateur.
@@ -700,11 +701,11 @@ public interface IModelMgr {
 	 * @throws ModelException
 	 *             levé dans le cas ou le collaborateur est associé à des
 	 *             contributions en base.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public void removeCollaborator(Collaborator collaborator)
-			throws ModelException, DbException;
+			throws ModelException, DAOException;
 
 	/**
 	 * Supprime une contribution.
@@ -713,13 +714,13 @@ public interface IModelMgr {
 	 *            la contribution à supprimer.
 	 * @param updateEstimatedTimeToComlete
 	 *            booléen indiquant si le reste à faire doit être incrémenté.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé dans le cas ou la donnée a changé en base de données.
 	 */
 	public void removeContribution(Contribution contribution,
-			boolean updateEstimatedTimeToComlete) throws DbException,
+			boolean updateEstimatedTimeToComlete) throws DAOException,
 			ModelException;
 
 	/**
@@ -727,11 +728,11 @@ public interface IModelMgr {
 	 * 
 	 * @param contributions
 	 *            les contributions à supprimer.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public void removeContributions(Contribution[] contributions)
-			throws DbException;
+			throws DAOException;
 
 	/**
 	 * Supprime une durée du référentiel de durées.
@@ -740,11 +741,11 @@ public interface IModelMgr {
 	 *            la durée à supprimer.
 	 * @throws ModelException
 	 *             levé dans le cas ou la durée n'existe pas en base.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	public void removeDuration(Duration duration) throws ModelException,
-			DbException;
+			DAOException;
 
 	/**
 	 * Supprime une tache.
@@ -756,22 +757,22 @@ public interface IModelMgr {
 	 * 
 	 * @param task
 	 *            la tache à supprimer.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé en cas de violation d'une contrainte d'intégrité du
 	 *             modèle.
 	 */
-	public void removeTask(Task task) throws DbException, ModelException;
+	public void removeTask(Task task) throws DAOException, ModelException;
 
 	/**
 	 * Vérifie si les tables existent dans le modèle.
 	 * 
 	 * @return un booléen indiquant si la table spécifiée existe dans le modèle.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public boolean tablesExist() throws DbException;
+	public boolean tablesExist() throws DAOException;
 
 	/**
 	 * Modifie les attributs d'un collaborateur.
@@ -779,13 +780,13 @@ public interface IModelMgr {
 	 * @param collaborator
 	 *            le collaborateur à modifier.
 	 * @return le collaborateur modifié.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé en cas de non unicité du login.
 	 */
 	public Collaborator updateCollaborator(Collaborator collaborator)
-			throws DbException, ModelException;
+			throws DAOException, ModelException;
 
 	/**
 	 * Modifie les attributs d'une contribution.
@@ -795,13 +796,13 @@ public interface IModelMgr {
 	 * @param updateEstimatedTimeToComlete
 	 *            booléen indiquant si le reste à faire doit être décrémenté.
 	 * @return la contribution modifiée.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé dans le cas ou la donnée a changé en base de données.
 	 */
 	public Contribution updateContribution(Contribution contribution,
-			boolean updateEstimatedTimeToComlete) throws DbException,
+			boolean updateEstimatedTimeToComlete) throws DAOException,
 			ModelException;
 
 	/**
@@ -810,10 +811,10 @@ public interface IModelMgr {
 	 * @param duration
 	 *            la durée à mettre à jour.
 	 * @return la durée mise à jour.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public Duration updateDuration(Duration duration) throws DbException;
+	public Duration updateDuration(Duration duration) throws DAOException;
 
 	/**
 	 * Modifie une durée.
@@ -830,11 +831,11 @@ public interface IModelMgr {
 	 *             levé dans le cas ou la durée à changer est utilisée ou dans
 	 *             le cas ou la nouvelle valeur pour la durée existe déja dans
 	 *             le référentiel.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique avec la base de données.
 	 */
 	public Duration updateDuration(Duration duration, Duration newDuration)
-			throws ModelException, DbException;
+			throws ModelException, DAOException;
 
 	/**
 	 * Met à jour les attributs d'une tache en base.
@@ -851,8 +852,8 @@ public interface IModelMgr {
 	 * @throws ModelException
 	 *             levé dans le cas ou le chemin ou le numéro de la tache ont
 	 *             changé.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique avec la base de données.
 	 */
-	public Task updateTask(Task task) throws ModelException, DbException;
+	public Task updateTask(Task task) throws ModelException, DAOException;
 }

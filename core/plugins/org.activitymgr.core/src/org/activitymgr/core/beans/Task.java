@@ -27,14 +27,24 @@
  */
 package org.activitymgr.core.beans;
 
-import java.text.NumberFormat;
-
+import org.activitymgr.core.impl.TaskNumberConverter;
+import org.activitymgr.core.orm.annotation.Column;
+import org.activitymgr.core.orm.annotation.ColumnNamePrefix;
+import org.activitymgr.core.orm.annotation.Converter;
 import org.activitymgr.core.util.StringHelper;
 
 /**
  * Tâche.
  */
+@ColumnNamePrefix("TSK_")
 public class Task extends SimpleIdentityBean {
+
+	/** Chemin de la tache */
+	private String path;
+
+	/** Numéro de la tâche */
+	@Converter(TaskNumberConverter.class)
+	private byte number;
 
 	/** Code de la tache */
 	private String code;
@@ -42,16 +52,11 @@ public class Task extends SimpleIdentityBean {
 	/** Nom de la tache */
 	private String name;
 
-	/** Chemin de la tache */
-	private String path;
-
-	/** Numéro de la tâche */
-	private byte number;
-
 	/** Budget */
 	private long budget;
 
 	/** Consommation initiale */
+	@Column("INITIAL_CONS")
 	private long initiallyConsumed;
 
 	/** Reste à faire */

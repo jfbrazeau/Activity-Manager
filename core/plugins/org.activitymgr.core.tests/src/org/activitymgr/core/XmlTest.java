@@ -20,27 +20,27 @@ public class XmlTest extends AbstractModelTestCase {
 	/** Logger */
 	private static Logger log = Logger.getLogger(XmlTest.class);
 
-	public void testEmptyFile() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testEmptyFile() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
 		importTestFile();
 	}
 
-	public void testMissingDoctype() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testMissingDoctype() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
 		assertSAXExceptionThrown("Missing DOCTYPE must generate an sax error");
 	}
 
-	public void testBadXmlFormat() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testBadXmlFormat() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
 		assertSAXExceptionThrown("Bad XML format must generate an sax error");
 	}
 
-	public void testCollaboratorInDurations() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testCollaboratorInDurations() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
 		assertSAXExceptionThrown("Wrong collaborator situation in XML file must generate an sax error");
 	}
 
-	public void testMissingCollaboratorLogin() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testMissingCollaboratorLogin() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
 		assertSAXExceptionThrown("Missing collaborator login must generate an sax error");
 	}
 
-	public void testCreateDurations() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testCreateDurations() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de durées
 		Duration[] initialDurations = getModelMgr().getDurations();
 
@@ -62,7 +62,7 @@ public class XmlTest extends AbstractModelTestCase {
 		getModelMgr().removeDuration(duration);
 	}
 	
-	public void testCreateCollaborators() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testCreateCollaborators() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de durées
 		Collaborator[] initialCollaborators = getModelMgr().getCollaborators();
 		assertNotNull(initialCollaborators);
@@ -81,7 +81,7 @@ public class XmlTest extends AbstractModelTestCase {
 		getModelMgr().removeCollaborator(collaborators[1]);
 	}
 	
-	public void testDuplicateCollaboratorLogin() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testDuplicateCollaboratorLogin() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de collaborateurs
 		Collaborator[] initialCollaborators = getModelMgr().getCollaborators();
 		assertNotNull(initialCollaborators);
@@ -97,9 +97,9 @@ public class XmlTest extends AbstractModelTestCase {
 		}
 	}
 
-	public void testCreateTasks() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testCreateTasks() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de taches
-		Task[] initialTasks = getModelMgr().getSubtasks((Task) null);
+		Task[] initialTasks = getModelMgr().getSubTasks((Task) null);
 		assertNotNull(initialTasks);
 		assertEquals(0, initialTasks.length);
 
@@ -107,7 +107,7 @@ public class XmlTest extends AbstractModelTestCase {
 		importTestFile();
 		
 		// Vérification du nombre de durées après import
-		Task[] tasks = getModelMgr().getSubtasks((Task) null);
+		Task[] tasks = getModelMgr().getSubTasks((Task) null);
 		assertNotNull(tasks);
 		assertEquals(1, tasks.length);
 
@@ -115,7 +115,7 @@ public class XmlTest extends AbstractModelTestCase {
 		getModelMgr().removeTask(tasks[0]);
 	}
 	
-	public void testCreateContributions() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testCreateContributions() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de taches
 		Contribution[] initialContributions = getModelMgr().getContributions(null, null, null, null);
 		assertNotNull(initialContributions);
@@ -132,7 +132,7 @@ public class XmlTest extends AbstractModelTestCase {
 		// Suppression des données
 		getModelMgr().removeContribution(contributions[0], false);
 		getModelMgr().removeContribution(contributions[1], false);
-		Task[] tasks = getModelMgr().getSubtasks((Task) null);
+		Task[] tasks = getModelMgr().getSubTasks((Task) null);
 		getModelMgr().removeTask(tasks[1]);
 		getModelMgr().removeTask(tasks[0]);
 		Collaborator[] collaborators = getModelMgr().getCollaborators();
@@ -144,7 +144,7 @@ public class XmlTest extends AbstractModelTestCase {
 		
 	}
 	
-	public void testExportAndImport() throws DbException, ModelException, IOException, ParserConfigurationException, SAXException {
+	public void testExportAndImport() throws DAOException, ModelException, IOException, ParserConfigurationException, SAXException {
 		// Création des objets de test
 		Duration duration = new Duration();
 		duration.setId(100);
@@ -219,7 +219,7 @@ public class XmlTest extends AbstractModelTestCase {
 	 * Méthodes privées 
 	 */
 
-	private void assertSAXExceptionThrown(String testFailMessage) throws DbException, IOException, ParserConfigurationException, ModelException {
+	private void assertSAXExceptionThrown(String testFailMessage) throws DAOException, IOException, ParserConfigurationException, ModelException {
 		try {
 			importTestFile();
 			fail(testFailMessage);
@@ -229,7 +229,7 @@ public class XmlTest extends AbstractModelTestCase {
 		}
 	}
 
-	private void importTestFile() throws DbException, IOException, ParserConfigurationException, SAXException, ModelException {
+	private void importTestFile() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
 		String testName = getName();
 		log.debug("testName='" + testName + "'");
 		String filePostfix = testName.substring(4);

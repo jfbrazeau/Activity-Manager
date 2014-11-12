@@ -1,6 +1,7 @@
 package org.activitymgr.core.orm.impl;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Properties;
 
 import org.activitymgr.core.orm.IConverter;
@@ -66,7 +67,7 @@ public class PropertiesBasedMappingConfiguration implements
 	 * (java.lang.Class)
 	 */
 	@Override
-	public String[] getPrimaryKeyAttributesName(Class<?> theClass) {
+	public List<Field> getPrimaryKeyAttributes(Class<?> theClass) {
 		String className = theClass.getName();
 		int idx = className.lastIndexOf('.');
 		String name = className.substring(idx + 1);
@@ -75,8 +76,8 @@ public class PropertiesBasedMappingConfiguration implements
 		if (pkList == null)
 			throw new IllegalStateException("Cle primaire de la classe '"
 					+ name + "' non defini", null);
-		String[] pkAtrributeNames = pkList.split(" *, *");
-		return pkAtrributeNames;
+		String[] pkAttributeNames = pkList.split(" *, *");
+		return ReflectionHelper.selectFields(theClass, pkAttributeNames);
 	}
 
 	/*
@@ -95,23 +96,6 @@ public class PropertiesBasedMappingConfiguration implements
 		String attributeName = props.getProperty(key);
 		return attributeName != null ? ReflectionHelper.select(theClass,
 				attributeName) : null;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.orm.IMappgingConfiguration#getAttributeFormat(java
-	 * .lang.Class, java.lang.String)
-	 */
-	@Override
-	public String getAttributeFormat(Class<?> theClass, Field attribute) {
-		String className = theClass.getName();
-		int idx = className.lastIndexOf('.');
-		String name = className.substring(idx + 1);
-		String key = name + "." + attribute.getName() + ".format";
-		String format = props.getProperty(key);
-		return format;
 	}
 
 	@SuppressWarnings("unchecked")

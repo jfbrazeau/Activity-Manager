@@ -30,20 +30,24 @@ package org.activitymgr.core.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.activitymgr.core.DbException;
-import org.activitymgr.core.IDbMgr;
+import org.activitymgr.core.DAOException;
+import org.activitymgr.core.ICoreDAO;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
@@ -55,6 +59,12 @@ import org.activitymgr.core.beans.TaskContributions;
 import org.activitymgr.core.beans.TaskSearchFilter;
 import org.activitymgr.core.beans.TaskSums;
 import org.activitymgr.core.impl.XmlHelper.ModelMgrDelegate;
+import org.activitymgr.core.orm.IDAO;
+import org.activitymgr.core.orm.query.AscendantOrderByClause;
+import org.activitymgr.core.orm.query.DescendantOrderByClause;
+import org.activitymgr.core.orm.query.InStatement;
+import org.activitymgr.core.orm.query.LikeStatement;
+import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
 import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
@@ -63,6 +73,7 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * Gestionnaire du modèle.
@@ -80,26 +91,34 @@ public class ModelMgrImpl implements IModelMgr {
 	/** Logger */
 	private static Logger log = Logger.getLogger(ModelMgrImpl.class);
 
-	/** DAO */
-	private IDbMgr dao;
-
-	/**
-	 * Default constructor.
-	 * 
-	 * @param tx
-	 *            the transaction provider;
-	 * @throws DbException
-	 *             thrown if a database error occurs.
-	 */
+	/** Transaction provider */
 	@Inject
-	public ModelMgrImpl(IDbMgr dao) throws DbException {
-		this.dao = dao;
-	}
+	private Provider<Connection> tx;
+	
+	/** DAO */
+	@Inject
+	private ICoreDAO dao;
+
+	/** Collaborators DAO */
+	@Inject
+	private IDAO<Collaborator> collaboratorDAO;
+
+	/** Tasks DAO */
+	@Inject
+	private IDAO<Task> taskDAO;
+
+	/** Durations DAO */
+	@Inject
+	private IDAO<Duration> durationDAO;
+
+	/** Contributions DAO */
+	@Inject
+	private IDAO<Contribution> contributionDAO;
 
 	/* (non-Javadoc)
 	 * @see org.activitymgr.core.IModelMgr#initialize()
 	 */
-	public void initialize() throws DbException {
+	public void initialize() throws DAOException {
 		// Initializes the database if required
 		if (!dao.tablesExist()) {
 			// Create default tables
@@ -113,7 +132,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.IModelMgr#tablesExist()
 	 */
 	@Override
-	public boolean tablesExist() throws DbException {
+	public boolean tablesExist() throws DAOException {
 		return dao.tablesExist();
 	}
 
@@ -123,7 +142,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.IModelMgr#createTables()
 	 */
 	@Override
-	public void createTables() throws DbException {
+	public void createTables() throws DAOException {
 		dao.createTables();
 	}
 
@@ -143,30 +162,34 @@ public class ModelMgrImpl implements IModelMgr {
 	 *            la taille de la portion de chemin à changer.
 	 * @param newPath
 	 *            le nouveau chemin.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	private void changeTasksPaths(Task[] tasks, int oldPathLength,
-			String newPath) throws DbException {
-		// Récupération de la liste des taches
-		Iterator<Task> it = Arrays.asList(tasks).iterator();
-		int newPathLength = newPath.length();
-		StringBuffer buf = new StringBuffer(newPath);
-		while (it.hasNext()) {
-			Task task = it.next();
-			log.debug("Updating path of task '" + task.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-			// Mise à jour des taches filles
-			Task[] subTasks = dao.getSubTasks(task);
-			if (subTasks.length > 0)
-				changeTasksPaths(subTasks, oldPathLength, newPath);
-			// Puis mise à jour de la tache elle-même
-			buf.setLength(newPathLength);
-			buf.append(task.getPath().substring(oldPathLength));
-			log.debug(" - old path : '" + task.getPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-			task.setPath(buf.toString());
-			log.debug(" - new path : '" + task.getPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-			// Mise à jour
-			dao.updateTask(task);
+			String newPath) throws DAOException {
+		try {
+			// Récupération de la liste des taches
+			Iterator<Task> it = Arrays.asList(tasks).iterator();
+			int newPathLength = newPath.length();
+			StringBuffer buf = new StringBuffer(newPath);
+			while (it.hasNext()) {
+				Task task = it.next();
+				log.debug("Updating path of task '" + task.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+				// Mise à jour des taches filles
+				Task[] subTasks = getSubTasks(task);
+				if (subTasks.length > 0)
+					changeTasksPaths(subTasks, oldPathLength, newPath);
+				// Puis mise à jour de la tache elle-même
+				buf.setLength(newPathLength);
+				buf.append(task.getPath().substring(oldPathLength));
+				log.debug(" - old path : '" + task.getPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+				task.setPath(buf.toString());
+				log.debug(" - new path : '" + task.getPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+				// Mise à jour
+				taskDAO.update(tx.get(), task);
+			}
+		} catch (SQLException e) {
+			throw new DAOException(null, e); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 
@@ -178,13 +201,13 @@ public class ModelMgrImpl implements IModelMgr {
 	 * .beans.Task)
 	 */
 	@Override
-	public void checkAcceptsSubtasks(Task task) throws DbException,
+	public void checkAcceptsSubtasks(Task task) throws DAOException,
 			ModelException {
 		// If the task is null, it means it is root task, so it always
 		// accepts sub tasks
 		if (task != null) {
 			// Rafraichissement des attributs de la tache
-			task = dao.getTask(task.getId());
+			task = getTask(task.getId());
 			// Une tâche qui admet déja des sous-taches peut en admettre
 			// d'autres
 			// La suite des controles n'est donc exécutée que si la tache
@@ -219,18 +242,18 @@ public class ModelMgrImpl implements IModelMgr {
 	 * 
 	 * @param task
 	 *            la copie de la tache en mémoire.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé dans la cas ou la tache de destination ne peut recevoir
 	 *             de sous-tache.
 	 */
 	private void checkTaskPath(Task task)
-			throws ModelException, DbException {
+			throws ModelException, DAOException {
 		boolean noErrorOccured = false;
 		Task _task = null;
 		try {
-			_task = dao.getTask(task.getId());
+			_task = getTask(task.getId());
 			if (_task == null)
 				throw new ModelException(
 						Strings.getString("ModelMgr.errors.UNKNOWN_TASK")); //$NON-NLS-1$
@@ -257,15 +280,15 @@ public class ModelMgrImpl implements IModelMgr {
 	 * 
 	 * @param collaborator
 	 *            le collaborateur dont on veut vérifier l'unicité de login.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws ModelException
 	 *             levé dans le cas ou le ogin n'est pas unique.
 	 */
 	private void checkUniqueLogin(Collaborator collaborator)
-			throws DbException, ModelException {
+			throws DAOException, ModelException {
 		// Vérification de l'unicité
-		Collaborator colWithSameLogin = dao.getCollaborator(collaborator
+		Collaborator colWithSameLogin = getCollaborator(collaborator
 				.getLogin());
 		// Vérification du login
 		if (colWithSameLogin != null && !colWithSameLogin.equals(collaborator))
@@ -283,16 +306,17 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public Collaborator createCollaborator(Collaborator collaborator)
-			throws DbException, ModelException {
+			throws DAOException, ModelException {
 		log.info("createCollaborator(" + collaborator + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		// Control de l'unicité du login
 		checkUniqueLogin(collaborator);
 
-		// Création du collaborateur
-		collaborator = dao.createCollaborator(collaborator);
-
-		// Retour du résultat
-		return collaborator;
+		try {
+			// Collaborator creation
+			return collaboratorDAO.insert(tx.get(), collaborator);
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
+		}
 	}
 
 	/*
@@ -304,35 +328,39 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public Contribution createContribution(Contribution contribution,
-			boolean updateEstimatedTimeToComlete) throws DbException,
+			boolean updateEstimatedTimeToComlete) throws DAOException,
 			ModelException {
 		log.info("createContribution(" + contribution + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-		// La tache ne peut accepter une contribution que
-		// si elle n'admet aucune sous-tache
-		if (getSubTasksCount(contribution.getTaskId()) > 0)
-			throw new ModelException(
-					Strings.getString("ModelMgr.errors.TASK_WITH_AT_LEAST_ONE_SUBTASK_CANNOT_ACCEPT_CONTRIBUTIONS")); //$NON-NLS-1$
-		Task task = dao.getTask(contribution.getTaskId());
+		try {
+			// La tache ne peut accepter une contribution que
+			// si elle n'admet aucune sous-tache
+			if (getSubTasksCount(contribution.getTaskId()) > 0)
+				throw new ModelException(
+						Strings.getString("ModelMgr.errors.TASK_WITH_AT_LEAST_ONE_SUBTASK_CANNOT_ACCEPT_CONTRIBUTIONS")); //$NON-NLS-1$
+			Task task = getTask(contribution.getTaskId());
+	
+			// La durée existe-t-elle ?
+			if (getDuration(contribution.getDurationId()) == null) {
+				throw new ModelException(
+						Strings.getString("ModelMgr.errors.INVALID_DURATION")); //$NON-NLS-1$
+			}
 
-		// La durée existe-t-elle ?
-		if (dao.getDuration(contribution.getDurationId()) == null) {
-			throw new ModelException(
-					Strings.getString("ModelMgr.errors.INVALID_DURATION")); //$NON-NLS-1$
+			// Contribution creation
+			contribution = contributionDAO.insert(tx.get(), contribution);
+
+			// Faut-il mettre à jour automatiquement le RAF de la tache ?
+			if (updateEstimatedTimeToComlete) {
+				// Mise à jour du RAF de la tache
+				long newEtc = task.getTodo() - contribution.getDurationId();
+				task.setTodo(newEtc > 0 ? newEtc : 0);
+				taskDAO.update(tx.get(), task);
+			}
+	
+			// Retour du résultat
+			return contribution;
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
 		}
-
-		// Création de la contribution
-		contribution = dao.createContribution(contribution);
-
-		// Faut-il mettre à jour automatiquement le RAF de la tache ?
-		if (updateEstimatedTimeToComlete) {
-			// Mise à jour du RAF de la tache
-			long newEtc = task.getTodo() - contribution.getDurationId();
-			task.setTodo(newEtc > 0 ? newEtc : 0);
-			dao.updateTask(task);
-		}
-
-		// Retour du résultat
-		return contribution;
 	}
 
 	/*
@@ -343,7 +371,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 * .Duration)
 	 */
 	@Override
-	public Duration createDuration(Duration duration) throws DbException,
+	public Duration createDuration(Duration duration) throws DAOException,
 			ModelException {
 		log.info("createDuration(" + duration + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		// Vérification de l'unicité
@@ -356,11 +384,12 @@ public class ModelMgrImpl implements IModelMgr {
 			throw new ModelException(
 					Strings.getString("ModelMgr.errors.NUL_DURATION_FORBIDDEN")); //$NON-NLS-1$
 
-		// Création
-		duration = dao.createDuration(duration);
-
-		// Retour du résultat
-		return duration;
+		try {
+			// Duration creation
+			return durationDAO.insert(tx.get(), duration);
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
+		}
 	}
 
 	/*
@@ -369,7 +398,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.IModelMgr#createNewCollaborator()
 	 */
 	@Override
-	public Collaborator createNewCollaborator() throws DbException {
+	public Collaborator createNewCollaborator() throws DAOException {
 		// Le login doit être unique => il faut vérifier si
 		// celui-ci n'a pas déja été attribué
 		int idx = 0;
@@ -377,7 +406,7 @@ public class ModelMgrImpl implements IModelMgr {
 		String newLogin = null;
 		while (!unique) {
 			newLogin = "<" + Strings.getString("ModelMgr.defaults.COLLABORATOR_LOGIN_PREFIX") + (idx == 0 ? "" : String.valueOf(idx)) + ">"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-			unique = dao.getCollaborator(newLogin) == null;
+			unique = getCollaborator(newLogin) == null;
 			idx++;
 		}
 		// Création du nouveau collaborateur
@@ -387,11 +416,13 @@ public class ModelMgrImpl implements IModelMgr {
 				.setFirstName("<" + Strings.getString("ModelMgr.defaults.COLLABORATOR_FIRST_NAME") + ">"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		collaborator
 				.setLastName("<" + Strings.getString("ModelMgr.defaults.COLLABORATOR_LAST_NAME") + ">"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		// Création en base
-		collaborator = dao.createCollaborator(collaborator);
 
-		// Retour du résultat
-		return collaborator;
+		try {
+			// Collaborator creation
+			return collaboratorDAO.insert(tx.get(), collaborator);
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
+		}
 	}
 
 	/*
@@ -402,7 +433,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 * .Task)
 	 */
 	@Override
-	public synchronized Task createNewTask(Task parentTask) throws DbException,
+	public synchronized Task createNewTask(Task parentTask) throws DAOException,
 			ModelException {
 		// Le code doit être unique => il faut vérifier si
 		// celui-ci n'a pas déja été attribué
@@ -412,7 +443,7 @@ public class ModelMgrImpl implements IModelMgr {
 		String taskPath = parentTask != null ? parentTask.getFullPath() : ""; //$NON-NLS-1$
 		while (!unique) {
 			newCode = "<N" + (idx == 0 ? "" : String.valueOf(idx)) + ">"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			unique = dao.getTask(taskPath, newCode) == null;
+			unique = getTask(taskPath, newCode) == null;
 			idx++;
 		}
 		// Création du nouveau collaborateur
@@ -433,7 +464,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public synchronized Task createTask(Task parentTask, Task task)
-			throws DbException, ModelException {
+			throws DAOException, ModelException {
 		log.info("createTask(" + parentTask + ", " + task + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		// Une tache ne peut admettre une sous-tache que si elle
 		// n'est pas déja associée à un consommé
@@ -441,18 +472,26 @@ public class ModelMgrImpl implements IModelMgr {
 			checkAcceptsSubtasks(parentTask);
 
 		// Check sur l'unicité du code pour le chemin considéré
-		Task sameCodeTask = dao
-				.getTask(
-						parentTask != null ? parentTask.getFullPath() : "", task.getCode()); //$NON-NLS-1$
+		Task sameCodeTask = getTask(
+				parentTask != null ? parentTask.getFullPath() : "", task.getCode()); //$NON-NLS-1$
 		if (sameCodeTask != null && !sameCodeTask.equals(task))
 			throw new ModelException(
 					Strings.getString("ModelMgr.errors.TASK_CODE_ALREADY_IN_USE")); //$NON-NLS-1$
 
-		// Création de la tache
-		task = dao.createTask(parentTask, task);
+		// Mise à jour du chemin de la tâche
+		String parentPath = parentTask == null ? "" : parentTask.getFullPath(); //$NON-NLS-1$
+		task.setPath(parentPath);
 
-		// Retour du résultat
-		return task;
+		// Génération du numéro de la tâche
+		byte taskNumber = dao.newTaskNumber(parentPath);
+		task.setNumber(taskNumber);
+
+		// Création de la tache
+		try {
+			return taskDAO.insert(tx.get(), task);
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
+		}
 	}
 
 	/*
@@ -463,8 +502,8 @@ public class ModelMgrImpl implements IModelMgr {
 	 * .Duration)
 	 */
 	@Override
-	public boolean durationExists(Duration duration) throws DbException {
-		return (dao.getDuration(duration.getId()) != null);
+	public boolean durationExists(Duration duration) throws DAOException {
+		return (getDuration(duration.getId()) != null);
 	}
 
 	/*
@@ -473,7 +512,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.IModelMgr#importFromXML(java.io.InputStream)
 	 */
 	@Override
-	public void importFromXML(InputStream in) throws IOException, DbException,
+	public void importFromXML(InputStream in) throws IOException, DAOException,
 			ParserConfigurationException, SAXException, ModelException {
 		try {
 			// Création du gestionnaire de modèle de données
@@ -483,12 +522,12 @@ public class ModelMgrImpl implements IModelMgr {
 				Map<String, Collaborator> collaboratorsCache = new HashMap<String, Collaborator>();
 
 				public Duration createDuration(Duration duration)
-						throws ModelException, DbException {
+						throws ModelException, DAOException {
 					return modelMgr.createDuration(duration);
 				}
 
 				public Collaborator createCollaborator(Collaborator collaborator)
-						throws DbException, ModelException {
+						throws DAOException, ModelException {
 					collaborator = modelMgr.createCollaborator(collaborator);
 					collaboratorsCache.put(collaborator.getLogin(),
 							collaborator);
@@ -496,7 +535,7 @@ public class ModelMgrImpl implements IModelMgr {
 				}
 
 				public Task createTask(Task parentTask, Task task)
-						throws DbException, ModelException {
+						throws DAOException, ModelException {
 					task = modelMgr.createTask(parentTask, task);
 					String taskPath = modelMgr.buildTaskCodePath(task);
 					taskCache.put(taskPath, task);
@@ -504,12 +543,12 @@ public class ModelMgrImpl implements IModelMgr {
 				}
 
 				public Contribution createContribution(Contribution contribution)
-						throws DbException, ModelException {
+						throws DAOException, ModelException {
 					return modelMgr.createContribution(contribution, false);
 				}
 
 				public Task getTaskByCodePath(String codePath)
-						throws DbException, ModelException {
+						throws DAOException, ModelException {
 					Task task = (Task) taskCache.get(codePath);
 					if (task == null) {
 						task = modelMgr.getTaskByCodePath(codePath);
@@ -519,11 +558,11 @@ public class ModelMgrImpl implements IModelMgr {
 				}
 
 				public Collaborator getCollaborator(String login)
-						throws DbException {
+						throws DAOException {
 					Collaborator collaborator = (Collaborator) collaboratorsCache
 							.get(login);
 					if (collaborator == null) {
-						collaborator = dao.getCollaborator(login);
+						collaborator = modelMgr.getCollaborator(login);
 						collaboratorsCache.put(login, collaborator);
 					}
 					return collaborator;
@@ -554,8 +593,8 @@ public class ModelMgrImpl implements IModelMgr {
 		} catch (SAXParseException e) {
 			if (e.getCause() instanceof ModelException)
 				throw (ModelException) e.getCause();
-			else if (e.getCause() instanceof DbException)
-				throw (DbException) e.getCause();
+			else if (e.getCause() instanceof DAOException)
+				throw (DAOException) e.getCause();
 			else
 				throw e;
 		} finally {
@@ -573,129 +612,132 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.IModelMgr#exportToXML(java.io.OutputStream)
 	 */
 	@Override
-	public void exportToXML(OutputStream out) throws IOException, DbException {
-		// Entête XML
-		XmlHelper.println(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); //$NON-NLS-1$
-		XmlHelper.println(out, "<!DOCTYPE model SYSTEM \"activitymgr.dtd\">"); //$NON-NLS-1$
-
-		// Ajout des sommes de controle
-		Task[] rootTasks = dao.getSubTasks(null);
-		if (rootTasks.length > 0) {
-			XmlHelper.println(out, "<!-- "); //$NON-NLS-1$
-			XmlHelper
-					.println(
-							out,
-							Strings.getString("ModelMgr.xmlexport.comment.ROOT_TASKS_CHECK_SUMS")); //$NON-NLS-1$
-			for (int i = 0; i < rootTasks.length; i++) {
-				Task rootTask = rootTasks[i];
-				TaskSums sums = dao.getTaskSums(rootTask, null, null);
+	public void exportToXML(OutputStream out) throws IOException, DAOException {
+		try {
+			// Entête XML
+			XmlHelper.println(out, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); //$NON-NLS-1$
+			XmlHelper.println(out, "<!DOCTYPE model SYSTEM \"activitymgr.dtd\">"); //$NON-NLS-1$
+	
+			// Ajout des sommes de controle
+			Task[] rootTasks = getSubTasks(null);
+			if (rootTasks.length > 0) {
+				XmlHelper.println(out, "<!-- "); //$NON-NLS-1$
 				XmlHelper
 						.println(
 								out,
-								Strings.getString(
-										"ModelMgr.xmlexport.comment.ROOT_TASK", new Integer(i), rootTask.getCode(), rootTask.getName())); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-				XmlHelper
-						.println(
-								out,
-								Strings.getString("ModelMgr.xmlexport.comment.BUDGET") + (sums.getBudgetSum() / 100d)); //$NON-NLS-1$
-				XmlHelper
-						.println(
-								out,
-								Strings.getString("ModelMgr.xmlexport.comment.INITIALLY_CONSUMED") + (sums.getInitiallyConsumedSum() / 100d)); //$NON-NLS-1$
-				XmlHelper
-						.println(
-								out,
-								Strings.getString("ModelMgr.xmlexport.comment.CONSUMED") + (sums.getConsumedSum() / 100d)); //$NON-NLS-1$
-				XmlHelper
-						.println(
-								out,
-								Strings.getString("ModelMgr.xmlexport.comment.ESTIMATED_TIME_TO_COMPLETE") + (sums.getTodoSum() / 100d)); //$NON-NLS-1$
-				XmlHelper
-						.println(
-								out,
-								Strings.getString("ModelMgr.xmlexport.comment.CONTRIBUTIONS_NUMBER") + sums.getContributionsNb()); //$NON-NLS-1$
+								Strings.getString("ModelMgr.xmlexport.comment.ROOT_TASKS_CHECK_SUMS")); //$NON-NLS-1$
+				for (int i = 0; i < rootTasks.length; i++) {
+					Task rootTask = rootTasks[i];
+					TaskSums sums = dao.getTaskSums(rootTask, null, null);
+					XmlHelper
+							.println(
+									out,
+									Strings.getString(
+											"ModelMgr.xmlexport.comment.ROOT_TASK", new Integer(i), rootTask.getCode(), rootTask.getName())); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+					XmlHelper
+							.println(
+									out,
+									Strings.getString("ModelMgr.xmlexport.comment.BUDGET") + (sums.getBudgetSum() / 100d)); //$NON-NLS-1$
+					XmlHelper
+							.println(
+									out,
+									Strings.getString("ModelMgr.xmlexport.comment.INITIALLY_CONSUMED") + (sums.getInitiallyConsumedSum() / 100d)); //$NON-NLS-1$
+					XmlHelper
+							.println(
+									out,
+									Strings.getString("ModelMgr.xmlexport.comment.CONSUMED") + (sums.getConsumedSum() / 100d)); //$NON-NLS-1$
+					XmlHelper
+							.println(
+									out,
+									Strings.getString("ModelMgr.xmlexport.comment.ESTIMATED_TIME_TO_COMPLETE") + (sums.getTodoSum() / 100d)); //$NON-NLS-1$
+					XmlHelper
+							.println(
+									out,
+									Strings.getString("ModelMgr.xmlexport.comment.CONTRIBUTIONS_NUMBER") + sums.getContributionsNb()); //$NON-NLS-1$
+				}
+				XmlHelper.println(out, "  -->"); //$NON-NLS-1$
 			}
-			XmlHelper.println(out, "  -->"); //$NON-NLS-1$
-		}
-
-		// Ajout du noeud racine
-		XmlHelper.startXmlNode(out, "", XmlHelper.MODEL_NODE); //$NON-NLS-1$
-		final String INDENT = "      "; //$NON-NLS-1$
-
-		// Exportation des durées
-		Duration[] durations = dao.getDurations(false);
-		if (durations.length > 0) {
-			XmlHelper.startXmlNode(out, "  ", XmlHelper.DURATIONS_NODE); //$NON-NLS-1$
-			for (int i = 0; i < durations.length; i++) {
-				Duration duration = durations[i];
-				XmlHelper.startXmlNode(out, "    ", XmlHelper.DURATION_NODE); //$NON-NLS-1$
-				XmlHelper.printTextNode(out, INDENT, XmlHelper.VALUE_NODE,
-						String.valueOf(duration.getId()));
-				XmlHelper.printTextNode(out, INDENT, XmlHelper.IS_ACTIVE_NODE,
-						String.valueOf(duration.getIsActive()));
-				XmlHelper.endXmlNode(out, "    ", XmlHelper.DURATION_NODE); //$NON-NLS-1$
+	
+			// Ajout du noeud racine
+			XmlHelper.startXmlNode(out, "", XmlHelper.MODEL_NODE); //$NON-NLS-1$
+			final String INDENT = "      "; //$NON-NLS-1$
+	
+			// Exportation des durées
+			Duration[] durations = durationDAO.selectAll(tx.get());
+			if (durations.length > 0) {
+				XmlHelper.startXmlNode(out, "  ", XmlHelper.DURATIONS_NODE); //$NON-NLS-1$
+				for (int i = 0; i < durations.length; i++) {
+					Duration duration = durations[i];
+					XmlHelper.startXmlNode(out, "    ", XmlHelper.DURATION_NODE); //$NON-NLS-1$
+					XmlHelper.printTextNode(out, INDENT, XmlHelper.VALUE_NODE,
+							String.valueOf(duration.getId()));
+					XmlHelper.printTextNode(out, INDENT, XmlHelper.IS_ACTIVE_NODE,
+							String.valueOf(duration.getIsActive()));
+					XmlHelper.endXmlNode(out, "    ", XmlHelper.DURATION_NODE); //$NON-NLS-1$
+				}
+				XmlHelper.endXmlNode(out, "  ", XmlHelper.DURATIONS_NODE); //$NON-NLS-1$
 			}
-			XmlHelper.endXmlNode(out, "  ", XmlHelper.DURATIONS_NODE); //$NON-NLS-1$
-		}
-		// Exportation des collaborateurs
-		Collaborator[] collaborators = dao.getCollaborators(
-				Collaborator.LOGIN_FIELD_IDX, true, false);
-		Map<Long, String> collaboratorsLoginsMap = new HashMap<Long, String>();
-		if (collaborators.length > 0) {
-			XmlHelper.startXmlNode(out, "  ", XmlHelper.COLLABORATORS_NODE); //$NON-NLS-1$
-			for (int i = 0; i < collaborators.length; i++) {
-				Collaborator collaborator = collaborators[i];
-				// Enregitrement du login dans le dictionnaire de logins
-				collaboratorsLoginsMap.put(new Long(collaborator.getId()),
-						collaborator.getLogin());
-				XmlHelper
-						.startXmlNode(out, "    ", XmlHelper.COLLABORATOR_NODE); //$NON-NLS-1$
-				XmlHelper.printTextNode(out, INDENT, XmlHelper.LOGIN_NODE,
-						collaborator.getLogin());
-				XmlHelper.printTextNode(out, INDENT, XmlHelper.FIRST_NAME_NODE,
-						collaborator.getFirstName());
-				XmlHelper.printTextNode(out, INDENT, XmlHelper.LAST_NAME_NODE,
-						collaborator.getLastName());
-				XmlHelper.printTextNode(out, INDENT, XmlHelper.IS_ACTIVE_NODE,
-						String.valueOf(collaborator.getIsActive()));
-				XmlHelper.endXmlNode(out, "    ", XmlHelper.COLLABORATOR_NODE); //$NON-NLS-1$
+			// Exportation des collaborateurs
+			Collaborator[] collaborators = getCollaborators();
+			Map<Long, String> collaboratorsLoginsMap = new HashMap<Long, String>();
+			if (collaborators.length > 0) {
+				XmlHelper.startXmlNode(out, "  ", XmlHelper.COLLABORATORS_NODE); //$NON-NLS-1$
+				for (int i = 0; i < collaborators.length; i++) {
+					Collaborator collaborator = collaborators[i];
+					// Enregitrement du login dans le dictionnaire de logins
+					collaboratorsLoginsMap.put(new Long(collaborator.getId()),
+							collaborator.getLogin());
+					XmlHelper
+							.startXmlNode(out, "    ", XmlHelper.COLLABORATOR_NODE); //$NON-NLS-1$
+					XmlHelper.printTextNode(out, INDENT, XmlHelper.LOGIN_NODE,
+							collaborator.getLogin());
+					XmlHelper.printTextNode(out, INDENT, XmlHelper.FIRST_NAME_NODE,
+							collaborator.getFirstName());
+					XmlHelper.printTextNode(out, INDENT, XmlHelper.LAST_NAME_NODE,
+							collaborator.getLastName());
+					XmlHelper.printTextNode(out, INDENT, XmlHelper.IS_ACTIVE_NODE,
+							String.valueOf(collaborator.getIsActive()));
+					XmlHelper.endXmlNode(out, "    ", XmlHelper.COLLABORATOR_NODE); //$NON-NLS-1$
+				}
+				XmlHelper.endXmlNode(out, "  ", XmlHelper.COLLABORATORS_NODE); //$NON-NLS-1$
 			}
-			XmlHelper.endXmlNode(out, "  ", XmlHelper.COLLABORATORS_NODE); //$NON-NLS-1$
-		}
-		// Exportation des taches
-		Map<Long, String> tasksCodePathMap = new HashMap<Long, String>();
-		exportSubTasksToXML(out, INDENT, null, "", tasksCodePathMap); //$NON-NLS-1$
-		// Exportation des contributions
-		Contribution[] contributions = dao.getContributions(null, null, null,
-				null);
-		if (contributions.length > 0) {
-			XmlHelper.startXmlNode(out, "  ", XmlHelper.CONTRIBUTIONS_NODE); //$NON-NLS-1$
-			for (int i = 0; i < contributions.length; i++) {
-				Contribution contribution = contributions[i];
-				XmlHelper.print(out, "    <"); //$NON-NLS-1$
-				XmlHelper.print(out, XmlHelper.CONTRIBUTION_NODE);
-				XmlHelper.printTextAttribute(out, XmlHelper.YEAR_ATTRIBUTE,
-						String.valueOf(contribution.getYear()));
-				XmlHelper.printTextAttribute(out, XmlHelper.MONTH_ATTRIBUTE,
-						String.valueOf(contribution.getMonth()));
-				XmlHelper.printTextAttribute(out, XmlHelper.DAY_ATTRIBUTE,
-						String.valueOf(contribution.getDay()));
-				XmlHelper.printTextAttribute(out, XmlHelper.DURATION_ATTRIBUTE,
-						String.valueOf(contribution.getDurationId()));
-				XmlHelper.println(out, ">"); //$NON-NLS-1$
-				XmlHelper.printTextNode(out, INDENT,
-						XmlHelper.CONTRIBUTOR_REF_NODE,
-						(String) collaboratorsLoginsMap.get(new Long(
-								contribution.getContributorId())));
-				XmlHelper.printTextNode(out, INDENT, XmlHelper.TASK_REF_NODE,
-						(String) tasksCodePathMap.get(new Long(contribution
-								.getTaskId())));
-				XmlHelper.endXmlNode(out, "    ", XmlHelper.CONTRIBUTION_NODE); //$NON-NLS-1$
+			// Exportation des taches
+			Map<Long, String> tasksCodePathMap = new HashMap<Long, String>();
+			exportSubTasksToXML(out, INDENT, null, "", tasksCodePathMap); //$NON-NLS-1$
+			// Exportation des contributions
+			Contribution[] contributions = dao.getContributions(null, null, null,
+					null);
+			if (contributions.length > 0) {
+				XmlHelper.startXmlNode(out, "  ", XmlHelper.CONTRIBUTIONS_NODE); //$NON-NLS-1$
+				for (int i = 0; i < contributions.length; i++) {
+					Contribution contribution = contributions[i];
+					XmlHelper.print(out, "    <"); //$NON-NLS-1$
+					XmlHelper.print(out, XmlHelper.CONTRIBUTION_NODE);
+					XmlHelper.printTextAttribute(out, XmlHelper.YEAR_ATTRIBUTE,
+							String.valueOf(contribution.getYear()));
+					XmlHelper.printTextAttribute(out, XmlHelper.MONTH_ATTRIBUTE,
+							String.valueOf(contribution.getMonth()));
+					XmlHelper.printTextAttribute(out, XmlHelper.DAY_ATTRIBUTE,
+							String.valueOf(contribution.getDay()));
+					XmlHelper.printTextAttribute(out, XmlHelper.DURATION_ATTRIBUTE,
+							String.valueOf(contribution.getDurationId()));
+					XmlHelper.println(out, ">"); //$NON-NLS-1$
+					XmlHelper.printTextNode(out, INDENT,
+							XmlHelper.CONTRIBUTOR_REF_NODE,
+							(String) collaboratorsLoginsMap.get(new Long(
+									contribution.getContributorId())));
+					XmlHelper.printTextNode(out, INDENT, XmlHelper.TASK_REF_NODE,
+							(String) tasksCodePathMap.get(new Long(contribution
+									.getTaskId())));
+					XmlHelper.endXmlNode(out, "    ", XmlHelper.CONTRIBUTION_NODE); //$NON-NLS-1$
+				}
+				XmlHelper.endXmlNode(out, "  ", XmlHelper.CONTRIBUTIONS_NODE); //$NON-NLS-1$
 			}
-			XmlHelper.endXmlNode(out, "  ", XmlHelper.CONTRIBUTIONS_NODE); //$NON-NLS-1$
+			XmlHelper.endXmlNode(out, "", "model"); //$NON-NLS-1$ //$NON-NLS-2$
+			out.flush();
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
 		}
-		XmlHelper.endXmlNode(out, "", "model"); //$NON-NLS-1$ //$NON-NLS-2$
-		out.flush();
 	}
 
 	/**
@@ -714,13 +756,13 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @throws IOException
 	 *             levé en cas d'incident I/O lors de l'écriture sur le flux de
 	 *             sortie.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident avec la base de données.
 	 */
 	private void exportSubTasksToXML(OutputStream out, String indent,
 			Task parentTask, String parentCodePath,
-			Map<Long, String> taskCodesPathMap) throws IOException, DbException {
-		Task[] tasks = dao.getSubTasks(parentTask);
+			Map<Long, String> taskCodesPathMap) throws IOException, DAOException {
+		Task[] tasks = getSubTasks(parentTask);
 		if (tasks.length > 0) {
 			// Cas particulier pour la racine
 			if (parentTask == null)
@@ -759,7 +801,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.IModelMgr#isLeaf(long)
 	 */
 	@Override
-	public boolean isLeaf(long parentTaskId) throws DbException {
+	public boolean isLeaf(long parentTaskId) throws DAOException {
 		return getSubTasksCount(parentTaskId) == 0;
 	}
 	
@@ -767,7 +809,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.IModelMgr#getSubTasksCount(long)
 	 */
 	@Override
-	public int getSubTasksCount(long parentTaskId) throws DbException {
+	public int getSubTasksCount(long parentTaskId) throws DAOException {
 		return dao.getSubTasksCount(parentTaskId);
 	}
 
@@ -777,8 +819,12 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.IModelMgr#getCollaborator(long)
 	 */
 	@Override
-	public Collaborator getCollaborator(long collaboratorId) throws DbException {
-		return dao.getCollaborator(collaboratorId);
+	public Collaborator getCollaborator(long collaboratorId) throws DAOException {
+		try {
+			return collaboratorDAO.selectByPK(tx.get(), new Object[] { collaboratorId });
+		} catch (SQLException e) {
+			throw new DAOException(null, e); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 	}
 
 	/*
@@ -787,9 +833,13 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.IModelMgr#getCollaborator(java.lang.String)
 	 */
 	@Override
-	public Collaborator getCollaborator(String login) throws DbException {
-		// Récupération des collaborateurs
-		return dao.getCollaborator(login);
+	public Collaborator getCollaborator(String login) throws DAOException {
+		try {
+			Collaborator[] collaborators = collaboratorDAO.select(tx.get(), new String[] { "login" }, new Object[] { login }, null, -1);
+			return collaborators.length > 0 ? collaborators[0] : null;
+		} catch (SQLException e) {
+			throw new DAOException(null, e); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 	}
 
 	/*
@@ -798,8 +848,8 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.IModelMgr#getCollaborators()
 	 */
 	@Override
-	public Collaborator[] getCollaborators() throws DbException {
-		return dao.getCollaborators(Collaborator.LOGIN_FIELD_IDX, true, false);
+	public Collaborator[] getCollaborators() throws DAOException {
+		return getCollaborators(Collaborator.LOGIN_FIELD_IDX, true, false);
 	}
 
 	/*
@@ -809,9 +859,46 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public Collaborator[] getActiveCollaborators(int orderByClauseFieldIndex,
-			boolean ascendantSort) throws DbException {
-		return dao.getCollaborators(orderByClauseFieldIndex, ascendantSort,
+			boolean ascendantSort) throws DAOException {
+		return getCollaborators(orderByClauseFieldIndex, ascendantSort,
 				true);
+	}
+
+	private Collaborator[] getCollaborators(int orderByClauseFieldIndex,
+			boolean ascendantSort, boolean onlyActiveCollaborators)
+			throws DAOException {
+		try {
+			String[] whereClauseAttrNames = onlyActiveCollaborators ? new String[] { "isActive" } : null;
+			Object[] whereClauseAttrValues = onlyActiveCollaborators ? new Object[] { Boolean.TRUE } : null;
+			String orderByClauseFieldName = null;
+			switch (orderByClauseFieldIndex) {
+			case Collaborator.ID_FIELD_IDX:
+				orderByClauseFieldName = "id"; //$NON-NLS-1$
+				break;
+			case Collaborator.LOGIN_FIELD_IDX:
+				orderByClauseFieldName = "login"; //$NON-NLS-1$
+				break;
+			case Collaborator.FIRST_NAME_FIELD_IDX:
+				orderByClauseFieldName = "firstName"; //$NON-NLS-1$
+				break;
+			case Collaborator.LAST_NAME_FIELD_IDX:
+				orderByClauseFieldName = "lastName"; //$NON-NLS-1$
+				break;
+			case Collaborator.IS_ACTIVE_FIELD_IDX:
+				orderByClauseFieldName = "isActive"; //$NON-NLS-1$
+				break;
+			default:
+				throw new DAOException(
+						Strings.getString(
+								"DbMgr.errors.UNKNOWN_FIELD_INDEX", new Integer(orderByClauseFieldIndex)), null); //$NON-NLS-1$ //$NON-NLS-2$
+			}
+			Object[] orderByClause = new Object[] { ascendantSort ? new AscendantOrderByClause(orderByClauseFieldName) : new DescendantOrderByClause(orderByClauseFieldName)};
+			return collaboratorDAO.select(tx.get(), whereClauseAttrNames, whereClauseAttrValues, orderByClause, -1);
+		} catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DAOException(
+					Strings.getString("DbMgr.errors.COLLABORATORS_SELECTION_FAILURE"), e); //$NON-NLS-1$
+		}
 	}
 
 	/*
@@ -821,8 +908,8 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public Collaborator[] getCollaborators(int orderByClauseFieldIndex,
-			boolean ascendantSort) throws DbException {
-		return dao.getCollaborators(orderByClauseFieldIndex, ascendantSort,
+			boolean ascendantSort) throws DAOException {
+		return getCollaborators(orderByClauseFieldIndex, ascendantSort,
 				false);
 	}
 
@@ -836,7 +923,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public long getContributionsSum(Collaborator contributor, Task task,
-			Calendar fromDate, Calendar toDate) throws DbException,
+			Calendar fromDate, Calendar toDate) throws DAOException,
 			ModelException {
 		// Control sur la date
 		checkInterval(fromDate, toDate);
@@ -855,7 +942,7 @@ public class ModelMgrImpl implements IModelMgr {
 	@Override
 	public int getContributionsCount(Collaborator contributor, Task task,
 			Calendar fromDate, Calendar toDate) throws ModelException,
-			DbException {
+			DAOException {
 		// Control sur la date
 		checkInterval(fromDate, toDate);
 		// Récupération du compte
@@ -872,7 +959,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public Contribution[] getContributions(Collaborator contributor, Task task,
-			Calendar fromDate, Calendar toDate) throws DbException,
+			Calendar fromDate, Calendar toDate) throws DAOException,
 			ModelException {
 		// Vérification de la tache (le chemin de la tache doit être le bon
 		// pour que le calcul le soit)
@@ -895,7 +982,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public Collaborator[] getContributors(Task task, Calendar fromDate,
-			Calendar toDate) throws DbException, ModelException {
+			Calendar toDate) throws DAOException, ModelException {
 		checkInterval(fromDate, toDate);
 		return dao.getContributors(task, fromDate, toDate);
 	}
@@ -923,7 +1010,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public Task[] getContributedTaskContainers(Collaborator contributor,
-			Calendar fromDate, Calendar toDate) throws DbException,
+			Calendar fromDate, Calendar toDate) throws DAOException,
 			ModelException {
 		// Control sur la date
 		checkInterval(fromDate, toDate);
@@ -935,7 +1022,7 @@ public class ModelMgrImpl implements IModelMgr {
 		for (Contribution c : contributionsArray) {
 			Task task = tasksCache.get(c.getTaskId());
 			if (task == null) {
-				task = dao.getTask(c.getTaskId());
+				task = getTask(c.getTaskId());
 				tasksCache.put(c.getTaskId(), task);
 			}
 			String parentTaskFullPath = task.getPath();
@@ -960,7 +1047,7 @@ public class ModelMgrImpl implements IModelMgr {
 	@Override
 	public IntervalContributions getIntervalContributions(
 			Collaborator contributor, Task task, Calendar fromDate,
-			Calendar toDate) throws DbException, ModelException {
+			Calendar toDate) throws DAOException, ModelException {
 		// If the contributor is missing, error....
 		if (contributor == null) {
 			throw new ModelException(
@@ -1004,7 +1091,7 @@ public class ModelMgrImpl implements IModelMgr {
 		for (Long taskId : taskContributionsCache.keySet()) {
 			tasksIds[idx++] = taskId;
 		}
-		Task[] tasks = dao.getTasks(tasksIds);
+		Task[] tasks = getTasks(tasksIds);
 		sort(tasks);
 
 		// Result building
@@ -1094,8 +1181,13 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.IModelMgr#getDurations()
 	 */
 	@Override
-	public Duration[] getDurations() throws DbException {
-		return dao.getDurations(false);
+	public Duration[] getDurations() throws DAOException {
+		try {
+			return durationDAO.select(tx.get(), null, null,
+					new Object[] { new AscendantOrderByClause("id") }, -1);
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
+		}
 	}
 
 	/*
@@ -1104,8 +1196,14 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.IModelMgr#getActiveDurations()
 	 */
 	@Override
-	public Duration[] getActiveDurations() throws DbException {
-		return dao.getDurations(true);
+	public Duration[] getActiveDurations() throws DAOException {
+		try {
+			return durationDAO.select(tx.get(),
+					new String[] { "isActive" }, new Object[] { Boolean.TRUE },
+					new Object[] { new AscendantOrderByClause("id") }, -1);
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
+		}
 	}
 
 	/*
@@ -1114,8 +1212,12 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.IModelMgr#getDuration(long)
 	 */
 	@Override
-	public Duration getDuration(long durationId) throws DbException {
-		return dao.getDuration(durationId);
+	public Duration getDuration(long durationId) throws DAOException {
+		try {
+			return durationDAO.selectByPK(tx.get(), new Object[] { durationId });
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
+		}
 	}
 
 	/*
@@ -1125,8 +1227,25 @@ public class ModelMgrImpl implements IModelMgr {
 	 * org.activitymgr.core.IModelMgr#getParentTask(org.activitymgr.core.beans
 	 * .Task)
 	 */
-	public Task getParentTask(Task task) throws DbException {
-		return dao.getParentTask(task);
+	public Task getParentTask(Task task) throws DAOException {
+		Task parentTask = null;
+		String parentTaskFullPath = task.getPath();
+		// Si le chemin est vide, la tache parent est nulle (tache racine)
+		if (parentTaskFullPath != null && !"".equals(parentTaskFullPath)) { //$NON-NLS-1$
+			// Extraction du chemin et du numéro de la tache recherchée
+			log.debug("Fullpath='" + parentTaskFullPath + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+			String path = parentTaskFullPath.substring(0,
+					parentTaskFullPath.length() - 2);
+			byte number = StringHelper.toByte(parentTaskFullPath
+					.substring(parentTaskFullPath.length() - 2));
+			log.debug(" => path=" + path); //$NON-NLS-1$
+			log.debug(" => number=" + number); //$NON-NLS-1$
+
+			// Recherche de la tache
+			parentTask = getTask(path, number);
+		}
+		// Retour du résultat
+		return parentTask;
 	}
 
 	/*
@@ -1134,11 +1253,11 @@ public class ModelMgrImpl implements IModelMgr {
 	 * 
 	 * @see org.activitymgr.core.IModelMgr#getSubtasks(java.lang.Long)
 	 */
-	public Task[] getSubtasks(Long parentTaskId) throws DbException {
+	public Task[] getSubtasks(Long parentTaskId) throws DAOException {
 		// Récupération des sous tâches
-		Task parentTask = parentTaskId != null ? dao.getTask(parentTaskId)
+		Task parentTask = parentTaskId != null ? getTask(parentTaskId)
 				: null;
-		return getSubtasks(parentTask);
+		return getSubTasks(parentTask);
 	}
 
 	/*
@@ -1148,8 +1267,15 @@ public class ModelMgrImpl implements IModelMgr {
 	 * org.activitymgr.core.IModelMgr#getSubtasks(org.activitymgr.core.beans
 	 * .Task)
 	 */
-	public Task[] getSubtasks(Task parentTask) throws DbException {
-		return dao.getSubTasks(parentTask);
+	public Task[] getSubTasks(Task parentTask) throws DAOException {
+		// Récupération du chemin à partir de la tache parent
+		String fullpath = parentTask == null ? "" : parentTask.getFullPath(); //$NON-NLS-1$
+		log.debug("Looking for tasks with path='" + fullpath + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+		try {
+			return taskDAO.select(tx.get(), new String[] { "path" }, new Object[] { fullpath }, new Object[] { new AscendantOrderByClause("number") }, -1);
+		} catch (SQLException e) {
+			throw new DAOException(null, e); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 	}
 
 	/*
@@ -1157,8 +1283,12 @@ public class ModelMgrImpl implements IModelMgr {
 	 * 
 	 * @see org.activitymgr.core.IModelMgr#getTask(long)
 	 */
-	public Task getTask(long taskId) throws DbException {
-		return dao.getTask(taskId);
+	public Task getTask(long taskId) throws DAOException {
+		try {
+			return taskDAO.selectByPK(tx.get(), new Object[] { taskId });
+		} catch (SQLException e) {
+			throw new DAOException(null, e); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 	}
 
 	/*
@@ -1167,9 +1297,12 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.IModelMgr#getRootTasksCount()
 	 */
 	@Override
-	public int getRootTasksCount() throws DbException {
-		return dao.getRootTasksCount();
-
+	public int getRootTasksCount() throws DAOException {
+		try {
+			return (int) taskDAO.count(tx.get(), new String[] { "path" }, new Object[] { "" });
+		} catch (SQLException e) {
+			throw new DAOException(null, e); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 	}
 
 	/*
@@ -1179,8 +1312,38 @@ public class ModelMgrImpl implements IModelMgr {
 	 * TaskSearchFilter)
 	 */
 	@Override
-	public Task[] getTasks(TaskSearchFilter filter) throws DbException {
-		return dao.getTasks(filter);
+	public Task[] getTasks(TaskSearchFilter filter) throws DAOException {
+		long[] taskIds = dao.getTaskIds(filter);
+		Task[] tasks = getTasks(taskIds);
+
+		// On trie les taches manuellement car le tri base de données
+		// pose un problème dans la mesure ou la BDD considère le champ
+		// tsk_path comme numérique pour le tri ce qui pose un pb
+		// Ex :
+		// ROOT (path : 01)
+		// +- T1 (path : 0101)
+		// | +- T11 (path : 010101)
+		// | +- T12 (path : 010102)
+		// +- T2 (path : 0102)
+		// Si on ramène l'ensemble des sous taches de ROOT, on voudrait
+		// avoir
+		// dans l'ordre T1, T11, T12, T2
+		// Avec un tri base de donnée, on obtiendrait T1, T2, T11, T12 ; T2
+		// ne se
+		// trouve pas ou on l'attend, ceci en raison du fait qu'en
+		// comparaison
+		// numérique 0102 est < à 010101 et à 010102. Par contre, en
+		// comparaison
+		// de chaînes (en java), on a bien 0102 > 010101 et 010102.
+		Arrays.sort(tasks, new Comparator<Task>() {
+			public int compare(Task t1, Task t2) {
+				return t1.getFullPath().compareTo(t2.getFullPath());
+			}
+
+		});
+
+		// Retour du résultat
+		return tasks;
 	}
 
 	/*
@@ -1190,8 +1353,13 @@ public class ModelMgrImpl implements IModelMgr {
 	 * java.lang.String)
 	 */
 	@Override
-	public Task getTask(String taskPath, String taskCode) throws DbException {
-		return dao.getTask(taskPath, taskCode);
+	public Task getTask(String taskPath, String taskCode) throws DAOException {
+		try {
+			Task[] tasks = taskDAO.select(tx.get(), new String[] { "path", "code" }, new Object[] { taskPath, taskCode }, null, -1);
+			return tasks.length > 0 ? tasks[0] : null;
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
+		}
 	}
 
 	/*
@@ -1200,7 +1368,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.IModelMgr#getTaskByCodePath(java.lang.String)
 	 */
 	@Override
-	public Task getTaskByCodePath(final String codePath) throws DbException,
+	public Task getTaskByCodePath(final String codePath) throws DAOException,
 			ModelException {
 		log.info("getTaskByCodePath(" + codePath + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		if (!codePath.startsWith("/")) //$NON-NLS-1$
@@ -1215,7 +1383,7 @@ public class ModelMgrImpl implements IModelMgr {
 			String taskCode = idx >= 0 ? subpath.substring(0, idx) : subpath;
 			String taskPath = task != null ? task.getFullPath() : ""; //$NON-NLS-1$
 			subpath = idx >= 0 ? subpath.substring(idx + 1) : ""; //$NON-NLS-1$
-			task = dao.getTask(taskPath, taskCode);
+			task = getTask(taskPath, taskCode);
 			if (task == null)
 				throw new ModelException(Strings.getString(
 						"ModelMgr.errors.UNKNOWN_TASK_CODE_PATH", codePath)); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1235,8 +1403,9 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public Task[] getContributedTasks(Collaborator contributor,
-			Calendar fromDate, Calendar toDate) throws DbException {
-		return dao.getContributedTasks(contributor, fromDate, toDate);
+			Calendar fromDate, Calendar toDate) throws DAOException {
+		long[] taskIds = dao.getContributedTaskIds(contributor, fromDate, toDate);
+		return getTasks(taskIds);
 	}
 
 	/*
@@ -1246,7 +1415,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 * org.activitymgr.core.IModelMgr#getTasksByCodePath(java.lang.String[])
 	 */
 	@Override
-	public Task[] getTasksByCodePath(String[] codePaths) throws DbException,
+	public Task[] getTasksByCodePath(String[] codePaths) throws DAOException,
 			ModelException {
 		// Recherche des taches
 		Task[] tasks = new Task[codePaths.length];
@@ -1274,7 +1443,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public TaskSums getTaskSums(Task task, Calendar fromDate, Calendar toDate)
-			throws ModelException, DbException {
+			throws ModelException, DAOException {
 		// Vérification de la tache (le chemin de la tache doit être le bon
 		// pour
 		// que le calcul le soit)
@@ -1296,7 +1465,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 * .Task)
 	 */
 	@Override
-	public String getTaskCodePath(Task task) throws ModelException, DbException {
+	public String getTaskCodePath(Task task) throws ModelException, DAOException {
 		// Le chemin de la tache et son numéro ne doivent pas avoir changés
 		// pour pouvoir invoquer cette méthode (la modification des
 		// attributs
@@ -1314,17 +1483,17 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @param task
 	 *            la tache dont on veut connaître le chemin.
 	 * @return le chemin.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique avec la base de données.
 	 */
-	private String buildTaskCodePath(Task task) throws DbException {
+	private String buildTaskCodePath(Task task) throws DAOException {
 		// Construction
 		StringBuffer taskPath = new StringBuffer(""); //$NON-NLS-1$
 		Task cursor = task;
 		while (cursor != null) {
 			taskPath.insert(0, cursor.getCode());
 			taskPath.insert(0, "/"); //$NON-NLS-1$
-			cursor = dao.getParentTask(cursor);
+			cursor = getParentTask(cursor);
 		}
 
 		// Retour du résultat
@@ -1339,7 +1508,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 * .Task)
 	 */
 	@Override
-	public void moveDownTask(Task task) throws ModelException, DbException {
+	public void moveDownTask(Task task) throws ModelException, DAOException {
 		// Le chemin de la tache et son numéro ne doivent pas avoir changés
 		// pour pouvoir invoquer cette méthode (la modification des
 		// attributs
@@ -1349,7 +1518,7 @@ public class ModelMgrImpl implements IModelMgr {
 
 		// Recherche de la tache à descendre (incrémentation du numéro)
 		byte taskToMoveUpNumber = (byte) (task.getNumber() + 1);
-		Task taskToMoveUp = dao.getTask(task.getPath(), taskToMoveUpNumber);
+		Task taskToMoveUp = getTask(task.getPath(), taskToMoveUpNumber);
 		if (taskToMoveUp == null)
 			throw new ModelException(
 					Strings.getString("ModelMgr.errors.TASK_CANNOT_BE_MOVED_DOWN")); //$NON-NLS-1$
@@ -1367,7 +1536,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public void moveTaskUpOrDown(Task task, int newTaskNumber)
-			throws ModelException, DbException {
+			throws ModelException, DAOException {
 		// Le chemin de la tache et son numéro ne doivent pas avoir changés
 		// pour pouvoir invoquer cette méthode
 		checkTaskPath(task);
@@ -1380,7 +1549,7 @@ public class ModelMgrImpl implements IModelMgr {
 
 		// Récupération de la tache parent, et contrôle du modèle
 		// (le numéro de destination ne peut être hors interval)
-		Task parentTask = dao.getParentTask(task);
+		Task parentTask = getParentTask(task);
 		int subTasksCount = parentTask != null ? getSubTasksCount(parentTask.getId())
 				: getRootTasksCount();
 		if (newTaskNumber > subTasksCount || newTaskNumber < 1)
@@ -1390,7 +1559,7 @@ public class ModelMgrImpl implements IModelMgr {
 		int stepSign = task.getNumber() > newTaskNumber ? -1 : 1;
 		for (int i = task.getNumber() + stepSign; i != newTaskNumber + stepSign; i = i
 				+ stepSign) {
-			Task taskToToggle = dao.getTask(task.getPath(), (byte) i);
+			Task taskToToggle = getTask(task.getPath(), (byte) i);
 			toggleTasks(task, taskToToggle);
 			task.setNumber((byte) i);
 		}
@@ -1405,69 +1574,73 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public synchronized void moveTask(Task task, Task destParentTask)
-			throws ModelException, DbException {
-		/**
-		 * Controles d'intégrité.
-		 */
-
-		// Le chemin de la tache et son numéro ne doivent pas avoir changés
-		// pour pouvoir invoquer cette méthode (la modification des
-		// attributs
-		// n'est autorisée que pour les champs autres que le chemin et le
-		// numéro.
-		checkTaskPath(task);
-		if (destParentTask != null)
-			checkTaskPath(destParentTask);
-
-		// Control : la tache de destination ne doit pas être
-		// une tache fille de la tache à déplacer
-		Task cursor = destParentTask;
-		while (cursor != null) {
-			if (cursor.equals(task))
+			throws ModelException, DAOException {
+		try {
+			/**
+			 * Controles d'intégrité.
+			 */
+	
+			// Le chemin de la tache et son numéro ne doivent pas avoir changés
+			// pour pouvoir invoquer cette méthode (la modification des
+			// attributs
+			// n'est autorisée que pour les champs autres que le chemin et le
+			// numéro.
+			checkTaskPath(task);
+			if (destParentTask != null)
+				checkTaskPath(destParentTask);
+	
+			// Control : la tache de destination ne doit pas être
+			// une tache fille de la tache à déplacer
+			Task cursor = destParentTask;
+			while (cursor != null) {
+				if (cursor.equals(task))
+					throw new ModelException(
+							Strings.getString("ModelMgr.errors.TASK_CANNOT_BE_MOVED_UNDER_ITSELF")); //$NON-NLS-1$
+				cursor = getParentTask(cursor);
+			}
+	
+			// Une tache ne peut admettre une sous-tache que si elle
+			// n'est pas déja associée à un consommé
+			if (destParentTask != null)
+				checkAcceptsSubtasks(destParentTask);
+	
+			// Le code de la tache à déplacer ne doit pas être en conflit
+			// avec un code d'une autre tache fille de la tache parent
+			// de destination
+			String destPath = destParentTask != null ? destParentTask.getFullPath()
+					: ""; //$NON-NLS-1$
+			Task sameCodeTask = getTask(destPath, task.getCode());
+			if (sameCodeTask != null)
 				throw new ModelException(
-						Strings.getString("ModelMgr.errors.TASK_CANNOT_BE_MOVED_UNDER_ITSELF")); //$NON-NLS-1$
-			cursor = dao.getParentTask(cursor);
+						Strings.getString(
+								"ModelMgr.errors.TASK_CODE_EXIST_AT_DESTINATION", task.getCode())); //$NON-NLS-1$ //$NON-NLS-2$
+	
+			/**
+			 * Déplacement de la tache.
+			 */
+	
+			// Récupération de la tache parent et des sous-taches
+			// avant modification de son numéro et de son chemin
+			String initialTaskFullPath = task.getFullPath();
+			Task srcParentTask = getParentTask(task);
+			Task[] subTasksToMove = getSubTasks(task);
+	
+			// Déplacement de la tache
+			byte number = dao.newTaskNumber(destPath);
+			task.setPath(destPath);
+			task.setNumber(number);
+			taskDAO.update(tx.get(), task);
+	
+			// Déplacement des sous-taches
+			changeTasksPaths(subTasksToMove, initialTaskFullPath.length(),
+					task.getFullPath());
+	
+			// Reconstruction des numéros de tâches d'où la tâche provenait
+			// et qui a laissé un 'trou' en étant déplacée
+			rebuildSubtasksNumbers(srcParentTask);
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
 		}
-
-		// Une tache ne peut admettre une sous-tache que si elle
-		// n'est pas déja associée à un consommé
-		if (destParentTask != null)
-			checkAcceptsSubtasks(destParentTask);
-
-		// Le code de la tache à déplacer ne doit pas être en conflit
-		// avec un code d'une autre tache fille de la tache parent
-		// de destination
-		String destPath = destParentTask != null ? destParentTask.getFullPath()
-				: ""; //$NON-NLS-1$
-		Task sameCodeTask = dao.getTask(destPath, task.getCode());
-		if (sameCodeTask != null)
-			throw new ModelException(
-					Strings.getString(
-							"ModelMgr.errors.TASK_CODE_EXIST_AT_DESTINATION", task.getCode())); //$NON-NLS-1$ //$NON-NLS-2$
-
-		/**
-		 * Déplacement de la tache.
-		 */
-
-		// Récupération de la tache parent et des sous-taches
-		// avant modification de son numéro et de son chemin
-		String initialTaskFullPath = task.getFullPath();
-		Task srcParentTask = dao.getParentTask(task);
-		Task[] subTasksToMove = dao.getSubTasks(task);
-
-		// Déplacement de la tache
-		byte number = dao.newTaskNumber(destPath);
-		task.setPath(destPath);
-		task.setNumber(number);
-		dao.updateTask(task);
-
-		// Déplacement des sous-taches
-		changeTasksPaths(subTasksToMove, initialTaskFullPath.length(),
-				task.getFullPath());
-
-		// Reconstruction des numéros de tâches d'où la tâche provenait
-		// et qui a laissé un 'trou' en étant déplacée
-		rebuildSubtasksNumbers(srcParentTask);
 	}
 
 	/*
@@ -1478,7 +1651,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 * Task)
 	 */
 	@Override
-	public void moveUpTask(Task task) throws ModelException, DbException {
+	public void moveUpTask(Task task) throws ModelException, DAOException {
 		// Le chemin de la tache et son numéro ne doivent pas avoir changés
 		// pour pouvoir invoquer cette méthode (la modification des
 		// attributs
@@ -1488,7 +1661,7 @@ public class ModelMgrImpl implements IModelMgr {
 
 		// Recherche de la tache à monter (décrémentation du numéro)
 		byte taskToMoveDownNumber = (byte) (task.getNumber() - 1);
-		Task taskToMoveDown = dao.getTask(task.getPath(), taskToMoveDownNumber);
+		Task taskToMoveDown = getTask(task.getPath(), taskToMoveDownNumber);
 		if (taskToMoveDown == null)
 			throw new ModelException(
 					Strings.getString("ModelMgr.errors.TASK_CANNOT_BE_MOVED_UP")); //$NON-NLS-1$
@@ -1503,23 +1676,27 @@ public class ModelMgrImpl implements IModelMgr {
 	 * 
 	 * @param parentTask
 	 *            la tache parent.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	private void rebuildSubtasksNumbers(Task parentTask) throws DbException {
-		// Récupération des sous-taches
-		Task[] tasks = dao.getSubTasks(parentTask);
-		for (int i = 0; i < tasks.length; i++) {
-			Task task = tasks[i];
-			byte taskNumber = task.getNumber();
-			byte expectedNumber = (byte) (i + 1);
-			if (taskNumber != expectedNumber) {
-				Task[] subTasks = dao.getSubTasks(task);
-				task.setNumber(expectedNumber);
-				String fullPath = task.getFullPath();
-				changeTasksPaths(subTasks, fullPath.length(), fullPath);
-				dao.updateTask(task);
+	private void rebuildSubtasksNumbers(Task parentTask) throws DAOException {
+		try {
+			// Récupération des sous-taches
+			Task[] tasks = getSubTasks(parentTask);
+			for (int i = 0; i < tasks.length; i++) {
+				Task task = tasks[i];
+				byte taskNumber = task.getNumber();
+				byte expectedNumber = (byte) (i + 1);
+				if (taskNumber != expectedNumber) {
+					Task[] subTasks = getSubTasks(task);
+					task.setNumber(expectedNumber);
+					String fullPath = task.getFullPath();
+					changeTasksPaths(subTasks, fullPath.length(), fullPath);
+					taskDAO.update(tx.get(), task);
+				}
 			}
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
 		}
 	}
 
@@ -1532,7 +1709,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public void removeCollaborator(Collaborator collaborator)
-			throws ModelException, DbException {
+			throws ModelException, DAOException {
 		// Vérification que le collaborateur n'est pas utilisé
 		long contribsNb = getContributionsCount(collaborator, null, null, null);
 		if (contribsNb != 0)
@@ -1541,7 +1718,11 @@ public class ModelMgrImpl implements IModelMgr {
 							"ModelMgr.errros.COLLABORATOR_WITH_CONTRIBUTIONS_CANNOT_BE_REMOVED", new Long(contribsNb))); //$NON-NLS-1$ //$NON-NLS-2$
 
 		// Suppression du collaborateur
-		dao.removeCollaborator(collaborator);
+		try {
+			collaboratorDAO.delete(tx.get(), new String[] { "id" }, new Object[] { collaborator.getId() });
+		} catch (SQLException e) {
+			throw new DAOException(null, e); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 	}
 
 	/*
@@ -1553,43 +1734,47 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public void removeContribution(Contribution contribution,
-			boolean updateEstimatedTimeToComlete) throws DbException,
+			boolean updateEstimatedTimeToComlete) throws DAOException,
 			ModelException {
-		// Faut-il mettre à jour automatiquement le RAF de la tache ?
-		if (!updateEstimatedTimeToComlete) {
-			// Suppression de la contribution
-			dao.removeContribution(contribution);
-		} else {
-			// Récupération des éléments de la contribution
-			Collaborator contributor = dao.getCollaborator(contribution
-					.getContributorId());
-			Task task = dao.getTask(contribution.getTaskId());
-			// Récupération de la contribution correspondante en base
-			Contribution[] contributions = dao.getContributions(contributor,
-					task, contribution.getDate(), contribution.getDate());
-			if (contributions.length == 0) {
-				// Si la contribution n'existait pas, il n'y a rien à faire
-				// de plus
-			}
-			// Sinon, il y a forcément une seule contribution
-			else {
-				// On vérifie que la donnée en base est en phase avec
-				// l'entrant
-				// pour s'assurer qu'on ne va pas incrémenter le RAF de la
-				// tache
-				// avec une valeur incohérente
-				if (contribution.getDurationId() != contributions[0]
-						.getDurationId())
-					throw new ModelException(
-							Strings.getString("ModelMgr.errors.CONTRIBUTION_UPDATE_DETECTED")); //$NON-NLS-1$
-
+		try {
+			// Faut-il mettre à jour automatiquement le RAF de la tache ?
+			if (!updateEstimatedTimeToComlete) {
 				// Suppression de la contribution
-				dao.removeContribution(contribution);
-
-				// Mise à jour du RAF de la tache
-				task.setTodo(task.getTodo() + contribution.getDurationId());
-				dao.updateTask(task);
+				contributionDAO.deleteByPK(tx.get(), contribution);
+			} else {
+				// Récupération des éléments de la contribution
+				Collaborator contributor = getCollaborator(contribution
+						.getContributorId());
+				Task task = getTask(contribution.getTaskId());
+				// Récupération de la contribution correspondante en base
+				Contribution[] contributions = dao.getContributions(contributor,
+						task, contribution.getDate(), contribution.getDate());
+				if (contributions.length == 0) {
+					// Si la contribution n'existait pas, il n'y a rien à faire
+					// de plus
+				}
+				// Sinon, il y a forcément une seule contribution
+				else {
+					// On vérifie que la donnée en base est en phase avec
+					// l'entrant
+					// pour s'assurer qu'on ne va pas incrémenter le RAF de la
+					// tache
+					// avec une valeur incohérente
+					if (contribution.getDurationId() != contributions[0]
+							.getDurationId())
+						throw new ModelException(
+								Strings.getString("ModelMgr.errors.CONTRIBUTION_UPDATE_DETECTED")); //$NON-NLS-1$
+	
+					// Suppression de la contribution
+					contributionDAO.deleteByPK(tx.get(), contribution);
+	
+					// Mise à jour du RAF de la tache
+					task.setTodo(task.getTodo() + contribution.getDurationId());
+					taskDAO.update(tx.get(), task);
+				}
 			}
+		} catch (SQLException e) {
+			throw new DAOException(null, e); //$NON-NLS-1$
 		}
 	}
 
@@ -1602,10 +1787,14 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public void removeContributions(Contribution[] contributions)
-			throws DbException {
-		// Suppression de la contribution
-		for (int i = 0; i < contributions.length; i++)
-			dao.removeContribution(contributions[i]);
+			throws DAOException {
+		try {
+			// Suppression de la contribution
+			for (int i = 0; i < contributions.length; i++)
+				contributionDAO.deleteByPK(tx.get(), contributions[i]);
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
+		}
 	}
 
 	/*
@@ -1617,19 +1806,24 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public void removeDuration(Duration duration) throws ModelException,
-			DbException {
-		// Vérification de l'existance
-		if (!durationExists(duration))
-			throw new ModelException(
-					Strings.getString("ModelMgr.errors.DURATION_DOES_NOT_EXIST")); //$NON-NLS-1$
+			DAOException {
+		try {
+			// Vérification de l'existance
+			if (!durationExists(duration))
+				throw new ModelException(
+						Strings.getString("ModelMgr.errors.DURATION_DOES_NOT_EXIST")); //$NON-NLS-1$
 
-		// Vérification de la non utilisation de la durée
-		if (dao.durationIsUsed(duration))
-			throw new ModelException(
-					Strings.getString("ModelMgr.errors.UNMOVEABLE_DURATION")); //$NON-NLS-1$
+			// Vérification de la non utilisation de la durée
+			boolean isUsed = contributionDAO.count(tx.get(), new String[] { "durationId" }, new Object[] { duration.getId()}) > 0;
+			if (isUsed)
+				throw new ModelException(
+						Strings.getString("ModelMgr.errors.UNMOVEABLE_DURATION")); //$NON-NLS-1$
 
-		// Suppression
-		dao.removeDuration(duration);
+			// Suppression
+			durationDAO.deleteByPK(tx.get(), duration);
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
+		}
 	}
 
 	/*
@@ -1640,27 +1834,35 @@ public class ModelMgrImpl implements IModelMgr {
 	 * Task)
 	 */
 	@Override
-	public synchronized void removeTask(Task task) throws DbException,
+	public synchronized void removeTask(Task task) throws DAOException,
 			ModelException {
-		// Vérification de l'adéquation des attibuts de la tache avec les
-		// données en base
-		checkTaskPath(task);
+		try {
+			// Vérification de l'adéquation des attibuts de la tache avec les
+			// données en base
+			checkTaskPath(task);
+	
+			// Vérification que la tache n'est pas utilisé
+			long contribsNb = getContributionsCount(null, task, null, null);
+			if (contribsNb != 0)
+				throw new ModelException(Strings.getString(
+						"ModelMgr.errors.TASK_HAS_SUBTASKS", new Long(contribsNb))); //$NON-NLS-1$ //$NON-NLS-2$
+	
+			// Récupération de la tâche parent pour reconstruction des
+			// numéros de taches
+			Task parentTask = getParentTask(task);
 
-		// Vérification que la tache n'est pas utilisé
-		long contribsNb = getContributionsCount(null, task, null, null);
-		if (contribsNb != 0)
-			throw new ModelException(Strings.getString(
-					"ModelMgr.errors.TASK_HAS_SUBTASKS", new Long(contribsNb))); //$NON-NLS-1$ //$NON-NLS-2$
+			// Delete sub tasks
+			taskDAO.delete(tx.get(), new String[] { "path" }, new Object[] { new LikeStatement(task.getFullPath() + "%") });
 
-		// Récupération de la tâche parent pour reconstruction des
-		// numéros de taches
-		Task parentTask = dao.getParentTask(task);
+			// Delete the task
+			taskDAO.deleteByPK(tx.get(), task);
 
-		// Suppression des taches et sous taches
-		dao.removeTask(task);
+			// Reconstruction des numéros de taches
+			rebuildSubtasksNumbers(parentTask);
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
+		}
 
-		// Reconstruction des numéros de taches
-		rebuildSubtasksNumbers(parentTask);
 	}
 
 	/**
@@ -1670,36 +1872,41 @@ public class ModelMgrImpl implements IModelMgr {
 	 *            la 1° tache.
 	 * @param task2
 	 *            la 2nde tache.
-	 * @throws DbException
+	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	private void toggleTasks(Task task1, Task task2) throws DbException {
-		byte task1InitialNumber = task1.getNumber();
-		byte task2InitialNumber = task2.getNumber();
-		String task1InitialFullpath = task1.getFullPath();
-		String task2InitialFullpath = task2.getFullPath();
+	private void toggleTasks(Task task1, Task task2) throws DAOException {
+		try {
+			byte task1InitialNumber = task1.getNumber();
+			byte task2InitialNumber = task2.getNumber();
+			String task1InitialFullpath = task1.getFullPath();
+			String task2InitialFullpath = task2.getFullPath();
+	
+			// Récupération des taches filles de ces 2 taches
+			Task[] task1subTasks = getSubTasks(task1);
+			Task[] task2subTasks = getSubTasks(task2);
+	
+			// Changement des numéros de la tache 1 avec une valeur fictive
+			task1.setNumber((byte) 0);
+			taskDAO.update(tx.get(), task1);
+			changeTasksPaths(task1subTasks, task1InitialFullpath.length(),
+					task1.getFullPath());
+	
+			// Changement des numéros de la tache 2
+			task2.setNumber(task1InitialNumber);
+			taskDAO.update(tx.get(), task2);
+			changeTasksPaths(task2subTasks, task2InitialFullpath.length(),
+					task2.getFullPath());
+	
+			// Changement des numéros de la tache 1
+			task1.setNumber(task2InitialNumber);
+			taskDAO.update(tx.get(), task1);
+			changeTasksPaths(task1subTasks, task1InitialFullpath.length(),
+					task1.getFullPath());
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
+		}
 
-		// Récupération des taches filles de ces 2 taches
-		Task[] task1subTasks = dao.getSubTasks(task1);
-		Task[] task2subTasks = dao.getSubTasks(task2);
-
-		// Changement des numéros de la tache 1 avec une valeur fictive
-		task1.setNumber((byte) 0);
-		dao.updateTask(task1);
-		changeTasksPaths(task1subTasks, task1InitialFullpath.length(),
-				task1.getFullPath());
-
-		// Changement des numéros de la tache 2
-		task2.setNumber(task1InitialNumber);
-		dao.updateTask(task2);
-		changeTasksPaths(task2subTasks, task2InitialFullpath.length(),
-				task2.getFullPath());
-
-		// Changement des numéros de la tache 1
-		task1.setNumber(task2InitialNumber);
-		dao.updateTask(task1);
-		changeTasksPaths(task1subTasks, task1InitialFullpath.length(),
-				task1.getFullPath());
 	}
 
 	/*
@@ -1711,15 +1918,19 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public Collaborator updateCollaborator(Collaborator collaborator)
-			throws DbException, ModelException {
-		// Control de l'unicité du login
-		checkUniqueLogin(collaborator);
+			throws DAOException, ModelException {
+		try {
+			// Control de l'unicité du login
+			checkUniqueLogin(collaborator);
 
-		// Mise à jour des données
-		collaborator = dao.updateCollaborator(collaborator);
-
-		// Retour du résultat
-		return collaborator;
+			// Mise à jour des données
+			return collaboratorDAO.update(tx.get(), collaborator);
+		} catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DAOException(
+					Strings.getString(
+							"DbMgr.errors.COLLABORATOR_UPDATE_FAILURE", collaborator.getLogin()), e); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 	}
 
 	/*
@@ -1730,8 +1941,12 @@ public class ModelMgrImpl implements IModelMgr {
 	 * .Duration)
 	 */
 	@Override
-	public Duration updateDuration(Duration duration) throws DbException {
-		return dao.updateDuration(duration);
+	public Duration updateDuration(Duration duration) throws DAOException {
+		try {
+			return durationDAO.update(tx.get(), duration);
+		} catch (SQLException e) {
+			throw new DAOException(null, e); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 	}
 
 	/*
@@ -1743,50 +1958,54 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public Contribution updateContribution(Contribution contribution,
-			boolean updateEstimatedTimeToComlete) throws DbException,
+			boolean updateEstimatedTimeToComlete) throws DAOException,
 			ModelException {
 		// La durée existe-t-elle ?
-		if (dao.getDuration(contribution.getDurationId()) == null) {
-			throw new ModelException(
-					Strings.getString("ModelMgr.errors.INVALID_DURATION")); //$NON-NLS-1$
-		}
-
-		Contribution result = null;
-		// Faut-il mettre à jour automatiquement le RAF de la tache ?
-		if (!updateEstimatedTimeToComlete) {
-			// Mise à jour des données
-			result = dao.updateContribution(contribution);
-		} else {
-			// Récupération des éléments de la contribution
-			Collaborator contributor = dao.getCollaborator(contribution
-					.getContributorId());
-			Task task = dao.getTask(contribution.getTaskId());
-			// Récupération de la contribution correspondante en base
-			Contribution[] contributions = dao.getContributions(contributor,
-					task, contribution.getDate(), contribution.getDate());
-			if (contributions.length == 0) {
-				// Si la contribution n'existe pas, c'est qu'il y a
-				// déphasage entre les données de l'appelant et la BDD
+		try {
+			if (getDuration(contribution.getDurationId()) == null) {
 				throw new ModelException(
-						Strings.getString("ModelMgr.errors.CONTRIBUTION_DELETION_DETECTED")); //$NON-NLS-1$
+						Strings.getString("ModelMgr.errors.INVALID_DURATION")); //$NON-NLS-1$
 			}
-			// Sinon, il y a forcément une seule contribution
-			else {
-				long oldDuration = contributions[0].getDurationId();
-				long newDuration = contribution.getDurationId();
-
-				// Mise à jour de la contribution
-				dao.updateContribution(contribution);
-
-				// Mise à jour du RAF de la tache
-				long newEtc = task.getTodo() + oldDuration - newDuration;
-				task.setTodo(newEtc > 0 ? newEtc : 0);
-				dao.updateTask(task);
+	
+			Contribution result = null;
+			// Faut-il mettre à jour automatiquement le RAF de la tache ?
+			if (!updateEstimatedTimeToComlete) {
+				// Mise à jour des données
+				result = contributionDAO.update(tx.get(), contribution);
+			} else {
+				// Récupération des éléments de la contribution
+				Collaborator contributor = getCollaborator(contribution
+						.getContributorId());
+				Task task = getTask(contribution.getTaskId());
+				// Récupération de la contribution correspondante en base
+				Contribution[] contributions = dao.getContributions(contributor,
+						task, contribution.getDate(), contribution.getDate());
+				if (contributions.length == 0) {
+					// Si la contribution n'existe pas, c'est qu'il y a
+					// déphasage entre les données de l'appelant et la BDD
+					throw new ModelException(
+							Strings.getString("ModelMgr.errors.CONTRIBUTION_DELETION_DETECTED")); //$NON-NLS-1$
+				}
+				// Sinon, il y a forcément une seule contribution
+				else {
+					long oldDuration = contributions[0].getDurationId();
+					long newDuration = contribution.getDurationId();
+	
+					// Mise à jour de la contribution
+					result = contributionDAO.update(tx.get(), contribution);
+	
+					// Mise à jour du RAF de la tache
+					long newEtc = task.getTodo() + oldDuration - newDuration;
+					task.setTodo(newEtc > 0 ? newEtc : 0);
+					taskDAO.update(tx.get(), task);
+				}
 			}
+	
+			// Retour du résultat
+			return result;
+		} catch (SQLException e) {
+			throw new DAOException(null, e); //$NON-NLS-1$
 		}
-
-		// Retour du résultat
-		return result;
 	}
 
 	/*
@@ -1798,23 +2017,27 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public Contribution[] changeContributionTask(Contribution[] contributions,
-			Task newContributionTask) throws DbException, ModelException {
-		// La tache ne peut accepter une contribution que
-		// si elle n'admet aucune sous-tache
-		if (getSubTasksCount(newContributionTask.getId()) > 0)
-			throw new ModelException(
-					Strings.getString("ModelMgr.errors.A_TASK_WITH_SUBTASKS_CANNOT_ACCEPT_CONTRIBUTIONS")); //$NON-NLS-1$
+			Task newContributionTask) throws DAOException, ModelException {
+		try {
+			// La tache ne peut accepter une contribution que
+			// si elle n'admet aucune sous-tache
+			if (getSubTasksCount(newContributionTask.getId()) > 0)
+				throw new ModelException(
+						Strings.getString("ModelMgr.errors.A_TASK_WITH_SUBTASKS_CANNOT_ACCEPT_CONTRIBUTIONS")); //$NON-NLS-1$
+	
+			// Mise à jour des identifiants de tâche
+			for (int i = 0; i < contributions.length; i++) {
+				Contribution contribution = contributions[i];
+				contributionDAO.deleteByPK(tx.get(), contribution);
+				contribution.setTaskId(newContributionTask.getId());
+				contributionDAO.insert(tx.get(), contribution);
+			}
 
-		// Mise à jour des identifiants de tâche
-		for (int i = 0; i < contributions.length; i++) {
-			Contribution contribution = contributions[i];
-			dao.removeContribution(contribution);
-			contribution.setTaskId(newContributionTask.getId());
-			dao.createContribution(contribution);
+			// Retour de la tache modifiée
+			return contributions;
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
 		}
-
-		// Retour de la tache modifiée
-		return contributions;
 	}
 
 	/*
@@ -1826,7 +2049,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public Duration updateDuration(Duration duration, Duration newDuration)
-			throws ModelException, DbException {
+			throws ModelException, DAOException {
 		// Si la nouvelle durée est égale à l'ancienne, il n'y a rien
 		// à faire de plus!...
 		if (!newDuration.equals(duration)) {
@@ -1848,28 +2071,73 @@ public class ModelMgrImpl implements IModelMgr {
 	 * Task)
 	 */
 	@Override
-	public Task updateTask(Task task) throws ModelException, DbException {
-		// Le chemin de la tache et son numéro ne doivent pas avoir changés
-		// pour pouvoir invoquer cette méthode (la modification des
-		// attributs
-		// n'est autorisée que pour les champs autres que le chemin et le
-		// numéro.
-		checkTaskPath(task);
+	public Task updateTask(Task task) throws ModelException, DAOException {
+		try {
+			// Le chemin de la tache et son numéro ne doivent pas avoir changés
+			// pour pouvoir invoquer cette méthode (la modification des
+			// attributs
+			// n'est autorisée que pour les champs autres que le chemin et le
+			// numéro.
+			checkTaskPath(task);
+	
+			// Check sur l'unicité du code pour le chemin considéré
+			Task parentTask = getParentTask(task);
+			Task sameCodeTask = getTask(
+							parentTask != null ? parentTask.getFullPath() : "", task.getCode()); //$NON-NLS-1$
+			if (sameCodeTask != null && !sameCodeTask.equals(task))
+				throw new ModelException(
+						Strings.getString("ModelMgr.errors.TASK_CODE_ALREADY_IN_USE")); //$NON-NLS-1$
+	
+			// Mise à jour des données
+			task = taskDAO.update(tx.get(), task);
+	
+			// Retour de la tache modifiée
+			return task;
+		} catch (SQLException e) {
+			throw new DAOException(null, e); //$NON-NLS-1$
+		}
+	}
 
-		// Check sur l'unicité du code pour le chemin considéré
-		Task parentTask = dao.getParentTask(task);
-		Task sameCodeTask = dao
-				.getTask(
-						parentTask != null ? parentTask.getFullPath() : "", task.getCode()); //$NON-NLS-1$
-		if (sameCodeTask != null && !sameCodeTask.equals(task))
-			throw new ModelException(
-					Strings.getString("ModelMgr.errors.TASK_CODE_ALREADY_IN_USE")); //$NON-NLS-1$
+	private Task getTask(String taskPath, byte taskNumber) throws DAOException {
+		try {
+			Task[] tasks = taskDAO.select(tx.get(), new String[] { "path", "number" }, new Object[] { taskPath, taskNumber }, null, -1);
+			return tasks.length > 0 ? tasks[0] : null;
+		} catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DAOException(
+					Strings.getString(
+							"DbMgr.errors.TASK_SELECTION_BY_NUMBER_FROM_PATH_FAILURE", new Byte(taskNumber), taskPath), e); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		}
+	}
 
-		// Mise à jour des données
-		task = dao.updateTask(task);
+	private Task[] getTasks(long[] tasksIds) throws DAOException {
+		List<Task> result = new ArrayList<Task>();
+		try {
+			if (tasksIds != null && tasksIds.length != 0) {
+				// The task id array is cut in sub arrays of maximum 250 tasks
+				List<Object[]> tasksIdsSubArrays = new ArrayList<Object[]>();
+				for (int i = 0; i < tasksIds.length; i += 250) {
+					Object[] subArray = new Object[Math.min(250, tasksIds.length
+							- i)];
+					for (int j = 0; j < subArray.length; j++) {
+						subArray[j] = tasksIds[i + j];
+					}
+					tasksIdsSubArrays.add(subArray);
+				}
 
-		// Retour de la tache modifiée
-		return task;
+				// Then a loop is performed over the sub arrays
+				for (Object[] tasksIdsSubArray : tasksIdsSubArrays) {
+					Task[] tasks = taskDAO.select(tx.get(), new String[] { "id" }, new Object[] { new InStatement(tasksIdsSubArray) }, new Object[] { new AscendantOrderByClause("number") }, -1);
+					result.addAll(Arrays.asList(tasks));
+				}
+			}
+			// Retour du résultat
+			return (Task[]) result.toArray(new Task[result.size()]);
+		} catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DAOException(
+					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_ID_FAILURE"), e); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 	}
 
 }

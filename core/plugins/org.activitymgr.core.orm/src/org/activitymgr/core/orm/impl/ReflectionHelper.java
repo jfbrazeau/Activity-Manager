@@ -1,6 +1,7 @@
 package org.activitymgr.core.orm.impl;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +16,8 @@ public class ReflectionHelper {
 		if (theClass != null) {
 			collectFields(theClass.getSuperclass(), fields);
 			for (Field f : theClass.getDeclaredFields()) {
-				fields.add(f);
+				if (!Modifier.isStatic(f.getModifiers())) 
+					fields.add(f);
 			}
 		}
 		return fields;
@@ -57,7 +59,7 @@ public class ReflectionHelper {
 	private static Field doSelect(Class<?> theClass, String fieldName) {
 		if (theClass != null) {
 			for (Field f : theClass.getDeclaredFields()) {
-				if (fieldName.equals(f.getName())) {
+				if (!Modifier.isStatic(f.getModifiers()) && fieldName.equals(f.getName())) {
 					return f;
 				}
 			}
