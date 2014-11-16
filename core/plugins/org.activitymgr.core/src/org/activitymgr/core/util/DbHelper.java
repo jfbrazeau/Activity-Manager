@@ -3,7 +3,7 @@ package org.activitymgr.core.util;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.activitymgr.core.DAOException;
+import org.activitymgr.core.dao.DAOException;
 
 public class DbHelper {
 

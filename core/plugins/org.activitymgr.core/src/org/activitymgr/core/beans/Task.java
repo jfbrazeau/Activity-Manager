@@ -27,7 +27,7 @@
  */
 package org.activitymgr.core.beans;
 
-import org.activitymgr.core.impl.TaskNumberConverter;
+import org.activitymgr.core.impl.dao.TaskNumberConverter;
 import org.activitymgr.core.orm.annotation.Column;
 import org.activitymgr.core.orm.annotation.ColumnNamePrefix;
 import org.activitymgr.core.orm.annotation.Converter;

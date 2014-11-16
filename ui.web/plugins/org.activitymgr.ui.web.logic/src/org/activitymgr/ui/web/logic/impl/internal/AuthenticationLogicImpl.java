@@ -1,8 +1,8 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
-import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Collaborator;
+import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;

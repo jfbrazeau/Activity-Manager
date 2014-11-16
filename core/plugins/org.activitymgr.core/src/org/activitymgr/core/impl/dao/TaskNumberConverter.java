@@ -1,4 +1,4 @@
-package org.activitymgr.core.impl;
+package org.activitymgr.core.impl.dao;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

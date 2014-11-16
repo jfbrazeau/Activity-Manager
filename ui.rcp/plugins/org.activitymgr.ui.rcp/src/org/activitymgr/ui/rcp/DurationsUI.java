@@ -32,9 +32,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Duration;
+import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;

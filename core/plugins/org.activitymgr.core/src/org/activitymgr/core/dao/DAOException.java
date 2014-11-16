@@ -25,7 +25,9 @@
  * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.activitymgr.core;
+package org.activitymgr.core.dao;
+
+import org.activitymgr.core.AbstractException;
 
 /**
  * Exception levée lors d'un incident technique d'accès à la base de données.

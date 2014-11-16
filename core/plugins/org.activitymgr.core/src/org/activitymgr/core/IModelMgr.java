@@ -41,7 +41,8 @@ import org.activitymgr.core.beans.IntervalContributions;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskSearchFilter;
 import org.activitymgr.core.beans.TaskSums;
-import org.activitymgr.core.impl.CoreDAOImpl;
+import org.activitymgr.core.dao.DAOException;
+import org.activitymgr.core.impl.dao.CoreDAOImpl;
 import org.xml.sax.SAXException;
 
 /**

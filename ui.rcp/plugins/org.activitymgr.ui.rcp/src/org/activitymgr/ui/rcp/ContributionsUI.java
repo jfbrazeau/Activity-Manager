@@ -35,7 +35,6 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
-import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
@@ -44,6 +43,7 @@ import org.activitymgr.core.beans.Duration;
 import org.activitymgr.core.beans.IntervalContributions;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskContributions;
+import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.CollaboratorsUI.ICollaboratorListener;

@@ -34,8 +34,8 @@ import java.lang.reflect.Proxy;
 import java.sql.Connection;
 
 import org.activitymgr.core.CoreModule;
-import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
+import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.DatabaseUI.IDbStatusListener;
 import org.activitymgr.ui.rcp.util.UITechException;

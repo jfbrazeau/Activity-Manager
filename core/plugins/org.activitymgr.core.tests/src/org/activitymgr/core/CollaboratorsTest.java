@@ -1,6 +1,7 @@
 package org.activitymgr.core;
 
 import org.activitymgr.core.beans.Collaborator;
+import org.activitymgr.core.dao.DAOException;
 
 public class CollaboratorsTest extends AbstractModelTestCase {
 

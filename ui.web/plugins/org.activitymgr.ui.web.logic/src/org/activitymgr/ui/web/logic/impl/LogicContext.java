@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Stack;
 
 import org.activitymgr.core.CoreModule;
-import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Collaborator;
+import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.IFeatureAccessManager;
 import org.activitymgr.ui.web.logic.IViewFactory;

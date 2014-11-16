@@ -9,6 +9,7 @@ import org.activitymgr.core.beans.Duration;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskSearchFilter;
 import org.activitymgr.core.beans.TaskSums;
+import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.util.StringHelper;
 
 public class TaskTest extends AbstractModelTestCase {

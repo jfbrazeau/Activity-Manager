@@ -6,6 +6,7 @@ import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Contribution;
 import org.activitymgr.core.beans.Duration;
 import org.activitymgr.core.beans.Task;
+import org.activitymgr.core.dao.DAOException;
 
 public class DurationTest extends AbstractModelTestCase {
 

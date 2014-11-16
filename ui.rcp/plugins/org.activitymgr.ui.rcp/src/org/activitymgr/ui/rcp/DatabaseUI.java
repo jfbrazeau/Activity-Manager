@@ -39,10 +39,10 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Duration;
+import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.util.DbHelper;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.util.SafeRunner;

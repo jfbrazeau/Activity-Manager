@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
@@ -20,6 +19,7 @@ import org.activitymgr.core.beans.Contribution;
 import org.activitymgr.core.beans.IntervalContributions;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskContributions;
+import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.AbstractEvent;

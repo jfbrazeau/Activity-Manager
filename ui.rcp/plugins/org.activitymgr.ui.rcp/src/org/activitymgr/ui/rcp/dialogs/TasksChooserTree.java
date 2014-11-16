@@ -28,9 +28,9 @@
 package org.activitymgr.ui.rcp.dialogs;
 
 
-import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Task;
+import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.util.AbstractTableMgr;
 import org.activitymgr.ui.rcp.util.SafeRunner;

@@ -11,5 +11,6 @@ Require-Bundle: org.apache.log4j,
  org.activitymgr.core.orm;visibility:=reexport
 Export-Package: org.activitymgr.core,
  org.activitymgr.core.beans,
+ org.activitymgr.core.dao,
  org.activitymgr.core.util
 Bundle-ClassPath: .

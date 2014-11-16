@@ -9,11 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Task;
+import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.ui.web.logic.ILabelProviderCallback;
 import org.activitymgr.ui.web.logic.IListContentProviderCallback;
 import org.activitymgr.ui.web.logic.ILogic;

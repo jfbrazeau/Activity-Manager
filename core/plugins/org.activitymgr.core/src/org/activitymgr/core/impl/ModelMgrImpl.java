@@ -44,10 +44,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.activitymgr.core.DAOException;
-import org.activitymgr.core.ICoreDAO;
 import org.activitymgr.core.IModelMgr;
-import org.activitymgr.core.IORMDAOWrapper;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Contribution;
@@ -57,6 +54,12 @@ import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskContributions;
 import org.activitymgr.core.beans.TaskSearchFilter;
 import org.activitymgr.core.beans.TaskSums;
+import org.activitymgr.core.dao.DAOException;
+import org.activitymgr.core.dao.ICollaboratorDAO;
+import org.activitymgr.core.dao.IContributionDAO;
+import org.activitymgr.core.dao.ICoreDAO;
+import org.activitymgr.core.dao.IDurationDAO;
+import org.activitymgr.core.dao.ITaskDAO;
 import org.activitymgr.core.impl.XmlHelper.ModelMgrDelegate;
 import org.activitymgr.core.orm.query.AscendantOrderByClause;
 import org.activitymgr.core.orm.query.DescendantOrderByClause;
@@ -94,19 +97,19 @@ public class ModelMgrImpl implements IModelMgr {
 
 	/** Collaborators DAO */
 	@Inject
-	private IORMDAOWrapper<Collaborator> collaboratorDAO;
+	private ICollaboratorDAO collaboratorDAO;
 
 	/** Tasks DAO */
 	@Inject
-	private IORMDAOWrapper<Task> taskDAO;
+	private ITaskDAO taskDAO;
 
 	/** Durations DAO */
 	@Inject
-	private IORMDAOWrapper<Duration> durationDAO;
+	private IDurationDAO durationDAO;
 
 	/** Contributions DAO */
 	@Inject
-	private IORMDAOWrapper<Contribution> contributionDAO;
+	private IContributionDAO contributionDAO;
 
 	/* (non-Javadoc)
 	 * @see org.activitymgr.core.IModelMgr#initialize()
@@ -206,7 +209,7 @@ public class ModelMgrImpl implements IModelMgr {
 				// Une tache ne peut admettre une sous-tache que si elle
 				// n'est pas déja associée à un consommé (ie: à des
 				// contributions)
-				long contribsNb = dao.getContributionsCount(null, task, null,
+				long contribsNb = contributionDAO.getContributionsCount(null, task, null,
 						null);
 				if (contribsNb != 0)
 					throw new ModelException(
@@ -456,7 +459,7 @@ public class ModelMgrImpl implements IModelMgr {
 		task.setPath(parentPath);
 
 		// Génération du numéro de la tâche
-		byte taskNumber = dao.newTaskNumber(parentPath);
+		byte taskNumber = taskDAO.newTaskNumber(parentPath);
 		task.setNumber(taskNumber);
 
 		// Création de la tache
@@ -596,7 +599,7 @@ public class ModelMgrImpl implements IModelMgr {
 							Strings.getString("ModelMgr.xmlexport.comment.ROOT_TASKS_CHECK_SUMS")); //$NON-NLS-1$
 			for (int i = 0; i < rootTasks.length; i++) {
 				Task rootTask = rootTasks[i];
-				TaskSums sums = dao.getTaskSums(rootTask, null, null);
+				TaskSums sums = contributionDAO.getTaskSums(rootTask, null, null);
 				XmlHelper
 						.println(
 								out,
@@ -673,7 +676,7 @@ public class ModelMgrImpl implements IModelMgr {
 		Map<Long, String> tasksCodePathMap = new HashMap<Long, String>();
 		exportSubTasksToXML(out, INDENT, null, "", tasksCodePathMap); //$NON-NLS-1$
 		// Exportation des contributions
-		Contribution[] contributions = dao.getContributions(null, null, null,
+		Contribution[] contributions = contributionDAO.getContributions(null, null, null,
 				null);
 		if (contributions.length > 0) {
 			XmlHelper.startXmlNode(out, "  ", XmlHelper.CONTRIBUTIONS_NODE); //$NON-NLS-1$
@@ -775,7 +778,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public int getSubTasksCount(long parentTaskId) throws DAOException {
-		return dao.getSubTasksCount(parentTaskId);
+		return taskDAO.getSubTasksCount(parentTaskId);
 	}
 
 	/*
@@ -879,7 +882,7 @@ public class ModelMgrImpl implements IModelMgr {
 		// Control sur la date
 		checkInterval(fromDate, toDate);
 		// Récupération du total
-		return dao.getContributionsSum(contributor, task, fromDate, toDate);
+		return contributionDAO.getContributionsSum(contributor, task, fromDate, toDate);
 	}
 
 	/*
@@ -897,7 +900,7 @@ public class ModelMgrImpl implements IModelMgr {
 		// Control sur la date
 		checkInterval(fromDate, toDate);
 		// Récupération du compte
-		return dao.getContributionsCount(contributor, task, fromDate, toDate);
+		return contributionDAO.getContributionsCount(contributor, task, fromDate, toDate);
 	}
 
 	/*
@@ -921,7 +924,7 @@ public class ModelMgrImpl implements IModelMgr {
 		checkInterval(fromDate, toDate);
 
 		// Retour du résultat
-		return dao.getContributions(contributor, task, fromDate, toDate);
+		return contributionDAO.getContributions(contributor, task, fromDate, toDate);
 	}
 
 	/*
@@ -935,7 +938,7 @@ public class ModelMgrImpl implements IModelMgr {
 	public Collaborator[] getContributors(Task task, Calendar fromDate,
 			Calendar toDate) throws DAOException, ModelException {
 		checkInterval(fromDate, toDate);
-		return dao.getContributors(task, fromDate, toDate);
+		return collaboratorDAO.getContributors(task, fromDate, toDate);
 	}
 
 	/**
@@ -966,7 +969,7 @@ public class ModelMgrImpl implements IModelMgr {
 		// Control sur la date
 		checkInterval(fromDate, toDate);
 		// Récupération des contributions
-		Contribution[] contributionsArray = dao.getContributions(contributor,
+		Contribution[] contributionsArray = contributionDAO.getContributions(contributor,
 				null, fromDate, toDate);
 		Map<Long, Task> tasksCache = new HashMap<Long, Task>();
 		Map<String, Task> parentTasksCache = new HashMap<String, Task>();
@@ -1010,7 +1013,7 @@ public class ModelMgrImpl implements IModelMgr {
 		int daysCount = countDaysBetween(fromDate, toDate) + 1;
 
 		// Récupération des contributions
-		Contribution[] contributionsArray = dao.getContributions(contributor,
+		Contribution[] contributionsArray = contributionDAO.getContributions(contributor,
 				task, fromDate, toDate);
 
 		// Rangement des contributions par identifiant de tache
@@ -1240,7 +1243,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public Task[] getTasks(TaskSearchFilter filter) throws DAOException {
-		long[] taskIds = dao.getTaskIds(filter);
+		long[] taskIds = taskDAO.getTaskIds(filter);
 		Task[] tasks = getTasks(taskIds);
 
 		// On trie les taches manuellement car le tri base de données
@@ -1327,7 +1330,7 @@ public class ModelMgrImpl implements IModelMgr {
 	@Override
 	public Task[] getContributedTasks(Collaborator contributor,
 			Calendar fromDate, Calendar toDate) throws DAOException {
-		long[] taskIds = dao.getContributedTaskIds(contributor, fromDate, toDate);
+		long[] taskIds = taskDAO.getContributedTaskIds(contributor, fromDate, toDate);
 		return getTasks(taskIds);
 	}
 
@@ -1374,7 +1377,7 @@ public class ModelMgrImpl implements IModelMgr {
 			checkTaskPath(task);
 
 		// Calcul des sommes
-		TaskSums sums = dao.getTaskSums(task, fromDate, toDate);
+		TaskSums sums = contributionDAO.getTaskSums(task, fromDate, toDate);
 
 		// Retour du résultat
 		return sums;
@@ -1548,7 +1551,7 @@ public class ModelMgrImpl implements IModelMgr {
 		Task[] subTasksToMove = getSubTasks(task);
 
 		// Déplacement de la tache
-		byte number = dao.newTaskNumber(destPath);
+		byte number = taskDAO.newTaskNumber(destPath);
 		task.setPath(destPath);
 		task.setNumber(number);
 		taskDAO.update(task);
@@ -1657,7 +1660,7 @@ public class ModelMgrImpl implements IModelMgr {
 					.getContributorId());
 			Task task = getTask(contribution.getTaskId());
 			// Récupération de la contribution correspondante en base
-			Contribution[] contributions = dao.getContributions(contributor,
+			Contribution[] contributions = contributionDAO.getContributions(contributor,
 					task, contribution.getDate(), contribution.getDate());
 			if (contributions.length == 0) {
 				// Si la contribution n'existait pas, il n'y a rien à faire
@@ -1856,7 +1859,7 @@ public class ModelMgrImpl implements IModelMgr {
 					.getContributorId());
 			Task task = getTask(contribution.getTaskId());
 			// Récupération de la contribution correspondante en base
-			Contribution[] contributions = dao.getContributions(contributor,
+			Contribution[] contributions = contributionDAO.getContributions(contributor,
 					task, contribution.getDate(), contribution.getDate());
 			if (contributions.length == 0) {
 				// Si la contribution n'existe pas, c'est qu'il y a

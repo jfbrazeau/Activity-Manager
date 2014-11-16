@@ -1,8 +1,8 @@
-package org.activitymgr.core;
+package org.activitymgr.core.dao;
 
 import java.io.OutputStream;
 
-public interface IORMDAOWrapper<TYPE> {
+public interface IDAO<TYPE> {
 
 	public TYPE selectByPK(Object[] pkValue) throws DAOException;
 

@@ -33,12 +33,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Contribution;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskSums;
+import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.ContributionsUI.IContributionListener;

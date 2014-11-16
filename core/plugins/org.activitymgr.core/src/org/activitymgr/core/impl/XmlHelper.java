@@ -3,13 +3,13 @@ package org.activitymgr.core.impl;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Contribution;
 import org.activitymgr.core.beans.Duration;
 import org.activitymgr.core.beans.Task;
+import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.util.Strings;
 import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;

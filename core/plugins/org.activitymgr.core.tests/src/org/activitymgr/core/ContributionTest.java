@@ -10,6 +10,7 @@ import org.activitymgr.core.beans.Duration;
 import org.activitymgr.core.beans.IntervalContributions;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.beans.TaskContributions;
+import org.activitymgr.core.dao.DAOException;
 
 public class ContributionTest extends AbstractModelTestCase {
 

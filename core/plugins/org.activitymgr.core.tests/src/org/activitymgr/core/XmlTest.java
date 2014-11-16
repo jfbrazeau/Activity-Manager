@@ -12,6 +12,7 @@ import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Contribution;
 import org.activitymgr.core.beans.Duration;
 import org.activitymgr.core.beans.Task;
+import org.activitymgr.core.dao.DAOException;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 

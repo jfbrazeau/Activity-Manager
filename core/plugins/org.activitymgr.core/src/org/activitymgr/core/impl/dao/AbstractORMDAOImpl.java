@@ -1,44 +1,22 @@
-package org.activitymgr.core.impl;
+package org.activitymgr.core.impl.dao;
 
 import java.io.OutputStream;
-import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.activitymgr.core.DAOException;
-import org.activitymgr.core.beans.Collaborator;
-import org.activitymgr.core.beans.Contribution;
-import org.activitymgr.core.beans.Duration;
-import org.activitymgr.core.beans.Task;
+import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.orm.IDAO;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
-public abstract class AbstractORMDAOWrapperImpl<TYPE> implements org.activitymgr.core.IORMDAOWrapper<TYPE> {
-
-	public static class TaskDAOWrapper extends AbstractORMDAOWrapperImpl<Task> {
-	}
-	
-	public static class ContributionDAOWrapper extends AbstractORMDAOWrapperImpl<Contribution> {
-	}
-
-	public static class CollaboratorDAOWrapper extends AbstractORMDAOWrapperImpl<Collaborator> {
-	}
-
-	public static class DurationDAOWrapper extends AbstractORMDAOWrapperImpl<Duration> {
-	}
+public abstract class AbstractORMDAOImpl<TYPE> extends AbstractDAOImpl implements org.activitymgr.core.dao.IDAO<TYPE> {
 
 	@Inject
 	private IDAO<TYPE> wrapped;
 
-	/** Transaction provider */
-	@Inject
-	private Provider<Connection> tx;
-	
 	@Override
 	public TYPE selectByPK(Object[] pkValue) throws DAOException {
 		try {
-			return wrapped.selectByPK(tx.get(), pkValue);
+			return wrapped.selectByPK(tx(), pkValue);
 		} catch (SQLException e) {
 			throw new DAOException(null, e);
 		}
@@ -47,7 +25,7 @@ public abstract class AbstractORMDAOWrapperImpl<TYPE> implements org.activitymgr
 	@Override
 	public boolean deleteByPK(TYPE instance) throws DAOException {
 		try {
-			return wrapped.deleteByPK(tx.get(), instance);
+			return wrapped.deleteByPK(tx(), instance);
 		} catch (SQLException e) {
 			throw new DAOException(null, e);
 		}
@@ -57,7 +35,7 @@ public abstract class AbstractORMDAOWrapperImpl<TYPE> implements org.activitymgr
 	public int delete(String[] whereClauseAttributeNames,
 			Object[] whereClauseAttributeValues) throws DAOException {
 		try {
-			return wrapped.delete(tx.get(),
+			return wrapped.delete(tx(),
 					whereClauseAttributeNames, whereClauseAttributeValues);
 		} catch (SQLException e) {
 			throw new DAOException(null, e);
@@ -67,7 +45,7 @@ public abstract class AbstractORMDAOWrapperImpl<TYPE> implements org.activitymgr
 	@Override
 	public TYPE[] selectAll() throws DAOException {
 		try {
-			return wrapped.selectAll(tx.get());
+			return wrapped.selectAll(tx());
 		} catch (SQLException e) {
 			throw new DAOException(null, e);
 		}
@@ -79,7 +57,7 @@ public abstract class AbstractORMDAOWrapperImpl<TYPE> implements org.activitymgr
 			Object[] whereClauseAttributeValues, Object[] orderByClauseItems,
 			int maxRows) throws DAOException {
 		try {
-			wrapped.dump(out, encoding, tx.get(),
+			wrapped.dump(out, encoding, tx(),
 					whereClauseAttributeNames, whereClauseAttributeValues,
 					orderByClauseItems, maxRows);
 		} catch (SQLException e) {
@@ -92,7 +70,7 @@ public abstract class AbstractORMDAOWrapperImpl<TYPE> implements org.activitymgr
 			Object[] whereClauseAttributeValues, Object[] orderByClauseItems,
 			int maxRows) throws DAOException {
 		try {
-			return wrapped.select(tx.get(),
+			return wrapped.select(tx(),
 					whereClauseAttributeNames, whereClauseAttributeValues,
 					orderByClauseItems, maxRows);
 		} catch (SQLException e) {
@@ -103,7 +81,7 @@ public abstract class AbstractORMDAOWrapperImpl<TYPE> implements org.activitymgr
 	@Override
 	public TYPE update(TYPE value) throws DAOException {
 		try {
-			return wrapped.update(tx.get(), value);
+			return wrapped.update(tx(), value);
 		} catch (SQLException e) {
 			throw new DAOException(null, e);
 		}
@@ -112,7 +90,7 @@ public abstract class AbstractORMDAOWrapperImpl<TYPE> implements org.activitymgr
 	@Override
 	public TYPE insert(TYPE value) throws DAOException {
 		try {
-			return wrapped.insert(tx.get(), value);
+			return wrapped.insert(tx(), value);
 		} catch (SQLException e) {
 			throw new DAOException(null, e);
 		}
@@ -121,7 +99,7 @@ public abstract class AbstractORMDAOWrapperImpl<TYPE> implements org.activitymgr
 	@Override
 	public long countAll() throws DAOException {
 		try {
-			return wrapped.countAll(tx.get());
+			return wrapped.countAll(tx());
 		} catch (SQLException e) {
 			throw new DAOException(null, e);
 		}
@@ -131,7 +109,7 @@ public abstract class AbstractORMDAOWrapperImpl<TYPE> implements org.activitymgr
 	public long count(String[] whereClauseAttributeNames,
 			Object[] whereClauseAttributeValues) throws DAOException {
 		try {
-			return wrapped.count(tx.get(),
+			return wrapped.count(tx(),
 					whereClauseAttributeNames, whereClauseAttributeValues);
 		} catch (SQLException e) {
 			throw new DAOException(null, e);

@@ -31,12 +31,12 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.activitymgr.core.DAOException;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Contribution;
 import org.activitymgr.core.beans.Task;
+import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.util.AbstractTableMgr;
