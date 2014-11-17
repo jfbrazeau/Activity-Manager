@@ -1,17 +1,11 @@
 package org.activitymgr.ui.web.view.impl.internal.util;
 
-import java.util.Arrays;
 import java.util.Collection;
 
-import org.activitymgr.ui.web.logic.ILabelProviderCallback;
 import org.activitymgr.ui.web.logic.IListContentProviderCallback;
-import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.view.IResourceCache;
 
-import com.vaadin.data.Container;
-import com.vaadin.data.Property;
 import com.vaadin.server.Resource;
-import com.vaadin.ui.Label;
 
 @SuppressWarnings("serial")
 public class BasicListDatasource extends

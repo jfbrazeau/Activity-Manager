@@ -7,7 +7,6 @@ import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILabelProviderCallback;
 import org.activitymgr.ui.web.logic.IListContentProviderCallback;
 import org.activitymgr.ui.web.logic.ILogic;
-import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 
 public abstract class AbstractSafeListContentProviderCallback extends AbstractSafeCallback implements IListContentProviderCallback {
 	

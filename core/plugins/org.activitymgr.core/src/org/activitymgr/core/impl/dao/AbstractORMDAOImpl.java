@@ -1,6 +1,7 @@
 package org.activitymgr.core.impl.dao;
 
 import java.io.OutputStream;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.activitymgr.core.dao.DAOException;
@@ -13,6 +14,8 @@ public abstract class AbstractORMDAOImpl<TYPE> extends AbstractDAOImpl implement
 	@Inject
 	private IDAO<TYPE> wrapped;
 
+	private String columnNamesRequestFragment;
+	
 	@Override
 	public TYPE selectByPK(Object[] pkValue) throws DAOException {
 		try {
@@ -114,6 +117,19 @@ public abstract class AbstractORMDAOImpl<TYPE> extends AbstractDAOImpl implement
 		} catch (SQLException e) {
 			throw new DAOException(null, e);
 		}
+	}
+
+	@Override
+	public String getColumnNamesRequestFragment() {
+		if (columnNamesRequestFragment == null) {
+			columnNamesRequestFragment = wrapped.getColumnNamesRequestFragment(true);
+		}
+		return columnNamesRequestFragment;
+	}
+
+	@Override
+	public TYPE read(ResultSet rs, int fromIndex) {
+		return wrapped.read(rs, fromIndex);
 	}
 
 }

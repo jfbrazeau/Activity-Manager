@@ -2,6 +2,7 @@ package org.activitymgr.core.orm;
 
 import java.io.OutputStream;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public interface IDAO<TYPE> {
@@ -34,5 +35,9 @@ public interface IDAO<TYPE> {
 
 	public long count(Connection con, String[] whereClauseAttributeNames,
 			Object[] whereClauseAttributeValues) throws SQLException;
+
+	public String getColumnNamesRequestFragment(boolean includePK);
+
+	public TYPE read(ResultSet rs, int fromIndex);
 
 }

@@ -1,6 +1,7 @@
 package org.activitymgr.core.dao;
 
 import java.io.OutputStream;
+import java.sql.ResultSet;
 
 public interface IDAO<TYPE> {
 
@@ -30,5 +31,9 @@ public interface IDAO<TYPE> {
 
 	public long count(String[] whereClauseAttributeNames,
 			Object[] whereClauseAttributeValues) throws DAOException;
+
+	public String getColumnNamesRequestFragment();
+	
+	public TYPE read(ResultSet rs, int fromIndex);
 
 }

@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.activitymgr.ui.web.logic.IEventBus;
-import org.activitymgr.ui.web.logic.ILabelProviderCallback;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 

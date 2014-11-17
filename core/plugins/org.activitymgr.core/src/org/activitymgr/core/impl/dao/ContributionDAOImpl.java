@@ -38,13 +38,17 @@ public class ContributionDAOImpl extends AbstractORMDAOImpl<Contribution> implem
 			// Build the request
 			pStmt = buildContributionsRequest(task, contributor, fromDate,
 					toDate,
-					"ctb_year, ctb_month, ctb_day, ctb_contributor, ctb_task, ctb_duration");
+					getColumnNamesRequestFragment());
 
 			// Exécution de la requête
 			rs = pStmt.executeQuery();
 
 			// Extraction du résultat
-			Contribution[] result = rsToContributions(rs);
+			ArrayList<Contribution> list = new ArrayList<Contribution>();
+			while (rs.next()) {
+				list.add(read(rs, 1));
+			}
+			Contribution[] result = (Contribution[]) list.toArray(new Contribution[list.size()]);
 
 			// Fermeture du ResultSet
 			pStmt.close();
@@ -280,35 +284,5 @@ public class ContributionDAOImpl extends AbstractORMDAOImpl<Contribution> implem
 		return buildIntervalRequest(request, contributor, task, fromDate,
 				toDate, true, null);
 	}
-
-	/**
-	 * Extrait les contributions du resultat de la requête SQL.
-	 * 
-	 * @param rs
-	 *            le résultat de la requête SQL.
-	 * @return les contributions extraites.
-	 * @throws SQLException
-	 *             levé en cas d'incident avec la base de données.
-	 */
-	// TODO rely on ORM
-	@Deprecated
-	private Contribution[] rsToContributions(ResultSet rs) throws SQLException {
-		// Recherche des sous-taches
-		ArrayList<Contribution> list = new ArrayList<Contribution>();
-		while (rs.next()) {
-			// Préparation du résultat
-			Contribution contribution = new Contribution();
-			contribution.setYear(rs.getInt(1));
-			contribution.setMonth(rs.getInt(2));
-			contribution.setDay(rs.getInt(3));
-			contribution.setContributorId(rs.getInt(4));
-			contribution.setTaskId(rs.getInt(5));
-			contribution.setDurationId(rs.getLong(6));
-			list.add(contribution);
-		}
-		log.debug("  => found " + list.size() + " entrie(s)"); //$NON-NLS-1$ //$NON-NLS-2$
-		return (Contribution[]) list.toArray(new Contribution[list.size()]);
-	}
-
 
 }

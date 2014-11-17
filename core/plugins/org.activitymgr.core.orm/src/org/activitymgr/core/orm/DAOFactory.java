@@ -7,7 +7,6 @@ import org.activitymgr.core.orm.impl.AnnotationBasedMappingConfiguration;
 import org.activitymgr.core.orm.impl.DAOImpl;
 import org.activitymgr.core.orm.impl.IMappgingConfiguration;
 import org.activitymgr.core.orm.impl.PropertiesBasedMappingConfiguration;
-import org.activitymgr.core.orm.impl.ReflectionHelper;
 
 /**
  * Mapping de classe.
