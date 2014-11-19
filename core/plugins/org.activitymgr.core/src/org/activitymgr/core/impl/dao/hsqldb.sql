@@ -64,13 +64,3 @@ create table CONTRIBUTION (
 create index CTB_CONTRIBUTOR_IDX on CONTRIBUTION (CTB_CONTRIBUTOR);
 create index CTB_TASK_IDX on CONTRIBUTION (CTB_TASK);
 create index CTB_DURATION_IDX on CONTRIBUTION (CTB_DURATION);
--- set table CONTRIBUTION source "CONTRIBUTION.csv";
-
--- R�f�rentiel des dur�es
--- delete from DURATION;
--- insert into DURATION (DUR_ID) values ( 25);
--- insert into DURATION (DUR_ID) values ( 50);
--- insert into DURATION (DUR_ID) values ( 75);
--- insert into DURATION (DUR_ID) values (100);
-
-

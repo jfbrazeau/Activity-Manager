@@ -66,12 +66,3 @@ create table CONTRIBUTION (
     constraint CTB_TASK_FK foreign key (CTB_TASK) references TASK (TSK_ID),
     constraint CTB_DURATION_FK foreign key (CTB_DURATION) references DURATION (DUR_ID)
 ) engine=innodb;
-
--- R�f�rentiel des dur�es
--- delete from DURATION;
--- insert into DURATION (DUR_ID) values ( 25);
--- insert into DURATION (DUR_ID) values ( 50);
--- insert into DURATION (DUR_ID) values ( 75);
--- insert into DURATION (DUR_ID) values (100);
-
-

@@ -36,6 +36,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.activitymgr.core.dao.AbstractDAOImpl;
 import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.dao.ICoreDAO;
 import org.activitymgr.core.util.DbHelper;
@@ -80,7 +81,9 @@ public class CoreDAOImpl extends AbstractDAOImpl implements ICoreDAO {
 			Connection con = tx();
 
 			// Recherche de la table
-			rs = con.getMetaData().getTables(null, null, tableName,
+			rs = con
+					.getMetaData()
+					.getTables(null, null, tableName,
 					new String[] { "TABLE" }); //$NON-NLS-1$
 
 			// Récupération du résultat
@@ -106,7 +109,7 @@ public class CoreDAOImpl extends AbstractDAOImpl implements ICoreDAO {
 	@Override
 	public void createTables() throws DAOException {
 		// Lecture du fichier SQL de création de la BDD
-		String batchName = (DbHelper.isHsqlOrH2(tx()) ? "hsqldb.sql" : "mysqldb.sql"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		String batchName = isHsqlOrH2() ? "hsqldb.sql" : "mysqldb.sql"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		InputStream in = CoreDAOImpl.class.getResourceAsStream(batchName);
 		executeScript(in);
 
@@ -114,6 +117,11 @@ public class CoreDAOImpl extends AbstractDAOImpl implements ICoreDAO {
 		if (!tablesExist())
 			throw new DAOException(
 					Strings.getString("DbMgr.errors.SQL_TABLE_CREATION_FAILURE"), null); //$NON-NLS-1$
+	}
+
+	@Override
+	public boolean isHsqlOrH2() throws DAOException {
+		return DbHelper.isHsqlOrH2(tx());
 	}
 
 	/*

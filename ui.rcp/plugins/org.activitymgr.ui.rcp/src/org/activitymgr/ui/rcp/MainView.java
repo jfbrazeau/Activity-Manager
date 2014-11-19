@@ -169,7 +169,7 @@ public class MainView extends ViewPart {
 	private void initializeModelMgr() {
 		// Create Guice injector
 		final ThreadLocal<Connection> dbTxs = new ThreadLocal<Connection>();
-		Injector injector = Guice.createInjector(new CoreModule(),
+		final Injector injector = Guice.createInjector(new CoreModule(),
 				new AbstractModule() {
 					@Override
 					protected void configure() {
@@ -183,7 +183,6 @@ public class MainView extends ViewPart {
 					}
 				});
 		// Creates a new model manager wrapper (managing the transaction)
-		final IModelMgr wrappedModelMgr = injector.getInstance(IModelMgr.class);
 		modelMgr = (IModelMgr) Proxy.newProxyInstance(
 				MainView.class.getClassLoader(),
 				new Class<?>[] { IModelMgr.class }, new InvocationHandler() {
@@ -196,6 +195,7 @@ public class MainView extends ViewPart {
 							tx = databaseUI.getDatasource().getConnection();
 							dbTxs.set(tx);
 							// Call the real model manager
+							IModelMgr wrappedModelMgr = injector.getInstance(IModelMgr.class);
 							Object result = method.invoke(wrappedModelMgr, args);
 							// Commit the transaction
 							tx.commit();

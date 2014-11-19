@@ -7,10 +7,13 @@ import java.sql.SQLException;
 
 public interface IDAO<TYPE> {
 
-	public TYPE selectByPK(Connection con, Object[] pkValue)
+	public TYPE selectByPK(Connection con, Object... pkValue)
 			throws SQLException;
 
-	public boolean deleteByPK(Connection con, TYPE instance)
+	public boolean delete(Connection con, TYPE instance)
+			throws SQLException;
+
+	public boolean deleteByPK(Connection con, Object... pkValue)
 			throws SQLException;
 
 	public int delete(Connection con, String[] whereClauseAttributeNames,

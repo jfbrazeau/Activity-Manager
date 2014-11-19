@@ -8,6 +8,7 @@ import java.util.Calendar;
 
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Task;
+import org.activitymgr.core.dao.AbstractORMDAOImpl;
 import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.dao.ICollaboratorDAO;
 import org.activitymgr.core.util.Strings;

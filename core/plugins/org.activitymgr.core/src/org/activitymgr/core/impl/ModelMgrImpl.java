@@ -44,6 +44,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.activitymgr.core.CoreModule.IPostInjectionListener;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
@@ -86,7 +87,7 @@ import com.google.inject.Inject;
  * @author jbrazeau
  * 
  */
-public class ModelMgrImpl implements IModelMgr {
+public class ModelMgrImpl implements IModelMgr, IPostInjectionListener {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(ModelMgrImpl.class);
@@ -111,14 +112,21 @@ public class ModelMgrImpl implements IModelMgr {
 	@Inject
 	private IContributionDAO contributionDAO;
 
+	
 	/* (non-Javadoc)
-	 * @see org.activitymgr.core.IModelMgr#initialize()
+	 * @see org.activitymgr.core.IInjectListener#afterInjection()
 	 */
-	public void initialize() throws DAOException {
+	@Override
+	public void afterInjection() throws DAOException {
 		// Initializes the database if required
 		if (!dao.tablesExist()) {
 			// Create default tables
 			dao.createTables();
+			// Create default durations
+			durationDAO.createDuration(25);
+			durationDAO.createDuration(50);
+			durationDAO.createDuration(75);
+			durationDAO.createDuration(100);
 		}
 	}
 
@@ -1653,7 +1661,7 @@ public class ModelMgrImpl implements IModelMgr {
 		// Faut-il mettre à jour automatiquement le RAF de la tache ?
 		if (!updateEstimatedTimeToComlete) {
 			// Suppression de la contribution
-			contributionDAO.deleteByPK(contribution);
+			contributionDAO.delete(contribution);
 		} else {
 			// Récupération des éléments de la contribution
 			Collaborator contributor = getCollaborator(contribution
@@ -1679,7 +1687,7 @@ public class ModelMgrImpl implements IModelMgr {
 							Strings.getString("ModelMgr.errors.CONTRIBUTION_UPDATE_DETECTED")); //$NON-NLS-1$
 
 				// Suppression de la contribution
-				contributionDAO.deleteByPK(contribution);
+				contributionDAO.delete(contribution);
 
 				// Mise à jour du RAF de la tache
 				task.setTodo(task.getTodo() + contribution.getDurationId());
@@ -1700,7 +1708,7 @@ public class ModelMgrImpl implements IModelMgr {
 			throws DAOException {
 		// Suppression de la contribution
 		for (int i = 0; i < contributions.length; i++)
-			contributionDAO.deleteByPK(contributions[i]);
+			contributionDAO.delete(contributions[i]);
 	}
 
 	/*
@@ -1725,7 +1733,7 @@ public class ModelMgrImpl implements IModelMgr {
 					Strings.getString("ModelMgr.errors.UNMOVEABLE_DURATION")); //$NON-NLS-1$
 
 		// Suppression
-		durationDAO.deleteByPK(duration);
+		durationDAO.delete(duration);
 	}
 
 	/*
@@ -1756,7 +1764,7 @@ public class ModelMgrImpl implements IModelMgr {
 		taskDAO.delete(new String[] { "path" }, new Object[] { new LikeStatement(task.getFullPath() + "%") });
 
 		// Delete the task
-		taskDAO.deleteByPK(task);
+		taskDAO.delete(task);
 
 		// Reconstruction des numéros de taches
 		rebuildSubtasksNumbers(parentTask);
@@ -1905,7 +1913,7 @@ public class ModelMgrImpl implements IModelMgr {
 		// Mise à jour des identifiants de tâche
 		for (int i = 0; i < contributions.length; i++) {
 			Contribution contribution = contributions[i];
-			contributionDAO.deleteByPK(contribution);
+			contributionDAO.delete(contribution);
 			contribution.setTaskId(newContributionTask.getId());
 			contributionDAO.insert(contribution);
 		}

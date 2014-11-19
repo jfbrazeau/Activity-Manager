@@ -51,14 +51,6 @@ import org.xml.sax.SAXException;
 public interface IModelMgr {
 
 	/**
-	 * Initializes the database.
-	 * 
-	 * @throws DAOException
-	 *             thrown if a database exception occurs.
-	 */
-	public void initialize() throws DAOException;
-
-	/**
 	 * Change la tache d'une liste de contributions.
 	 * 
 	 * @param contributions

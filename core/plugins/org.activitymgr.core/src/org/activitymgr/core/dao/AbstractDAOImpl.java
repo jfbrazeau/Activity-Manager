@@ -1,4 +1,4 @@
-package org.activitymgr.core.impl.dao;
+package org.activitymgr.core.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,6 +10,7 @@ import java.util.Calendar;
 
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Task;
+import org.activitymgr.core.impl.dao.TaskDAOImpl;
 import org.apache.log4j.Logger;
 
 import com.google.inject.Inject;

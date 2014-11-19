@@ -82,4 +82,13 @@ public interface ICoreDAO {
 	 */
 	void executeScript(String scriptContent) throws DAOException;
 
+	/**
+	 * Indique si la BDD de données est une base HSQLDB ou H2.
+	 * 
+	 * @return un booléen indiquant si la BDD est de type HSQLDB ou H2.
+	 * @throws DAOException
+	 *             levé en cas d'incident technique d'accès à la base.
+	 */
+	boolean isHsqlOrH2() throws DAOException;
+
 }

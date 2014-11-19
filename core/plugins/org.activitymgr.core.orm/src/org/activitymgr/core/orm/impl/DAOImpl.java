@@ -246,13 +246,14 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 		countAllRequest = buf.toString();
 		if (log.isInfoEnabled())
 			log.info("countAllRequest='" + countAllRequest + "'");
+		System.out.println(selectWithPKRequest);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.activitymgr.core.orm.impl.IDbClassMapper#selectWithPK(java.sql.Connection, java.lang.Object[])
 	 */
 	@Override
-	public TYPE selectByPK(Connection con, Object[] pkValue) throws SQLException {
+	public TYPE selectByPK(Connection con, Object... pkValue) throws SQLException {
 		if (sqlLog.isDebugEnabled())
 			sqlLog.debug(selectWithPKRequest);
 		PreparedStatement pStmt = null;
@@ -308,11 +309,8 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.activitymgr.core.orm.impl.IDbClassMapper#deleteWithPK(java.sql.Connection, TYPE)
-	 */
 	@Override
-	public boolean deleteByPK(Connection con, TYPE instance) throws SQLException {
+	public boolean delete(Connection con, TYPE instance) throws SQLException {
 		if (sqlLog.isDebugEnabled())
 			sqlLog.debug(deletWithPKRequest);
 		PreparedStatement pStmt = null;
@@ -336,6 +334,39 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 			log.error("Error while accessing instance attribute", e);
 			throw new IllegalStateException("Error while accessing instance attribute", e); 
 		} catch (IllegalAccessException e) {
+			log.error("Error while accessing instance attribute", e);
+			throw new IllegalStateException("Error while accessing instance attribute", e); 
+		}
+		finally {
+			if (pStmt!=null) try { pStmt.close(); } catch (SQLException ignored) {}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.orm.impl.IDbClassMapper#deleteWithPK(java.sql.Connection, TYPE)
+	 */
+	@Override
+	public boolean deleteByPK(Connection con, Object... pkValue) throws SQLException {
+		if (sqlLog.isDebugEnabled())
+			sqlLog.debug(deletWithPKRequest);
+		PreparedStatement pStmt = null;
+		try {
+			pStmt = con.prepareStatement(deletWithPKRequest);
+			int parameterIdx = 1;
+			for (Field pkAttribute : pkAttributes) {
+				attributeValueToStatementColumn(pkAttribute, pkValue[parameterIdx - 1], pStmt, parameterIdx);
+				parameterIdx++;
+			}
+			// Construction du r�sultat
+			boolean deleted = pStmt.executeUpdate()==1;
+
+			// Fermeture du statement
+			pStmt.close();
+			pStmt = null;
+			
+			// Retour du r�sultat
+			return deleted;
+		} catch (IllegalArgumentException e) {
 			log.error("Error while accessing instance attribute", e);
 			throw new IllegalStateException("Error while accessing instance attribute", e); 
 		}

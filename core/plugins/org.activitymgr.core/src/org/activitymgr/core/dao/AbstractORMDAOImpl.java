@@ -1,10 +1,10 @@
-package org.activitymgr.core.impl.dao;
+package org.activitymgr.core.dao;
 
 import java.io.OutputStream;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.orm.IDAO;
 
 import com.google.inject.Inject;
@@ -17,18 +17,27 @@ public abstract class AbstractORMDAOImpl<TYPE> extends AbstractDAOImpl implement
 	private String columnNamesRequestFragment;
 	
 	@Override
-	public TYPE selectByPK(Object[] pkValue) throws DAOException {
+	public TYPE selectByPK(Object... pkValues) throws DAOException {
 		try {
-			return wrapped.selectByPK(tx(), pkValue);
+			return wrapped.selectByPK(tx(), pkValues);
 		} catch (SQLException e) {
 			throw new DAOException(null, e);
 		}
 	}
 
 	@Override
-	public boolean deleteByPK(TYPE instance) throws DAOException {
+	public boolean deleteByPK(Object... pkValues) throws DAOException {
 		try {
-			return wrapped.deleteByPK(tx(), instance);
+			return wrapped.deleteByPK(tx(), pkValues);
+		} catch (SQLException e) {
+			throw new DAOException(null, e);
+		}
+	}
+
+	@Override
+	public boolean delete(TYPE instance) throws DAOException {
+		try {
+			return wrapped.delete(tx(), instance);
 		} catch (SQLException e) {
 			throw new DAOException(null, e);
 		}
@@ -130,6 +139,13 @@ public abstract class AbstractORMDAOImpl<TYPE> extends AbstractDAOImpl implement
 	@Override
 	public TYPE read(ResultSet rs, int fromIndex) {
 		return wrapped.read(rs, fromIndex);
+	}
+
+	/**
+	 * @return the active connection.
+	 */
+	protected Connection tx() {
+		return super.tx();
 	}
 
 }

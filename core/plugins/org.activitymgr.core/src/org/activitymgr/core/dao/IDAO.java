@@ -5,9 +5,11 @@ import java.sql.ResultSet;
 
 public interface IDAO<TYPE> {
 
-	public TYPE selectByPK(Object[] pkValue) throws DAOException;
+	public TYPE selectByPK(Object... pkValues) throws DAOException;
 
-	public boolean deleteByPK(TYPE instance) throws DAOException;
+	public boolean delete(TYPE instance) throws DAOException;
+
+	public boolean deleteByPK(Object... pkValues) throws DAOException;
 
 	public int delete(String[] whereClauseAttributeNames,
 			Object[] whereClauseAttributeValues) throws DAOException;
