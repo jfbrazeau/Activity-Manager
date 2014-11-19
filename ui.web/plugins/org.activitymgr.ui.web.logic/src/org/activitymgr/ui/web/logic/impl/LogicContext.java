@@ -14,7 +14,6 @@ import java.util.Stack;
 import org.activitymgr.core.CoreModule;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Collaborator;
-import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.IFeatureAccessManager;
 import org.activitymgr.ui.web.logic.IViewFactory;
@@ -77,20 +76,16 @@ public class LogicContext {
 		datasource.setPassword(jdbcPassword);
 		datasource.setDefaultAutoCommit(false);
 
-		// Create Guice injector
-		transactions = new ThreadLocal<DbTransactionContext>();
-		injector = Guice.createInjector(modules);
-
 		// Initialize the database
+		transactions = new ThreadLocal<DbTransactionContext>();
 		Connection con = datasource.getConnection();
 		transactions.set(new DbTransactionContext(con));
+
+		// Create Guice injector
 		try {
-			getComponent(IModelMgr.class).initialize();
+			injector = Guice.createInjector(modules);
+			injector.getInstance(IModelMgr.class);
 			con.commit();
-		}
-		catch (DAOException e) {
-			con.rollback();
-			throw new IllegalStateException("Couldn't initialize the database access", e);
 		}
 		finally {
 			transactions.remove();
