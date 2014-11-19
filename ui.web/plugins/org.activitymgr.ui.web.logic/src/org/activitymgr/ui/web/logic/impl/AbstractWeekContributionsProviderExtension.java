@@ -11,7 +11,7 @@ public abstract class AbstractWeekContributionsProviderExtension {
 
 	public abstract TaskContributions[] getWeekContributions(LogicContext context, Collaborator contributor, Calendar firstDayOfWeek);
 
-	public TaskContributions newTaskContributions(Task task, String taskCodePath) {
+	public TaskContributions newTaskContributions(Collaborator contributor, Calendar firstDayOfWeek, Task task, String taskCodePath) {
 		TaskContributions tc = new TaskContributions();
 		tc.setTaskCodePath(taskCodePath);
 		tc.setTask(task);

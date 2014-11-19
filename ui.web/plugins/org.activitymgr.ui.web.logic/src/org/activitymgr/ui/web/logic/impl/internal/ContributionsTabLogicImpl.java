@@ -368,7 +368,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 		if (getTasksIds().contains(task.getId())) {
 			return;
 		}
-		TaskContributions tc = weekContributionsProvider.newTaskContributions(task, taskCodePath);
+		TaskContributions tc = weekContributionsProvider.newTaskContributions(getContributor(), getFirstDayOfWeek(), task, taskCodePath);
 		if (tc.getContributions() == null) {
 			tc.setContributions(new Contribution[7]);
 		}
