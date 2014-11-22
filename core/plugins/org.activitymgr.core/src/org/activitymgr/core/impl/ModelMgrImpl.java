@@ -45,6 +45,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.activitymgr.core.CoreModule.IPostInjectionListener;
+import org.activitymgr.core.IBeanFactory;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
@@ -83,10 +84,6 @@ import com.google.inject.Inject;
  * Les services offerts par cette classe garantissent l'intégrité du modèle.
  * </p>
  */
-/**
- * @author jbrazeau
- * 
- */
 public class ModelMgrImpl implements IModelMgr, IPostInjectionListener {
 
 	/** Logger */
@@ -112,7 +109,10 @@ public class ModelMgrImpl implements IModelMgr, IPostInjectionListener {
 	@Inject
 	private IContributionDAO contributionDAO;
 
-	
+	/** Bean factory */
+	@Inject
+	private IBeanFactory factory;
+
 	/* (non-Javadoc)
 	 * @see org.activitymgr.core.IInjectListener#afterInjection()
 	 */
@@ -398,7 +398,7 @@ public class ModelMgrImpl implements IModelMgr, IPostInjectionListener {
 			idx++;
 		}
 		// Création du nouveau collaborateur
-		Collaborator collaborator = new Collaborator();
+		Collaborator collaborator = factory.newCollaborator();
 		collaborator.setLogin(newLogin);
 		collaborator
 				.setFirstName("<" + Strings.getString("ModelMgr.defaults.COLLABORATOR_FIRST_NAME") + ">"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -431,7 +431,7 @@ public class ModelMgrImpl implements IModelMgr, IPostInjectionListener {
 			idx++;
 		}
 		// Création du nouveau collaborateur
-		Task task = new Task();
+		Task task = factory.newTask();
 		task.setName("<" + Strings.getString("ModelMgr.defaults.TASK_NAME") + ">"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		task.setCode(newCode);
 
@@ -547,15 +547,16 @@ public class ModelMgrImpl implements IModelMgr, IPostInjectionListener {
 					}
 					return collaborator;
 				}
+
 			};
 
 			// Import des données
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setValidating(true);
-			factory.setNamespaceAware(false);
-			SAXParser parser = factory.newSAXParser();
+			SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+			saxFactory.setValidating(true);
+			saxFactory.setNamespaceAware(false);
+			SAXParser parser = saxFactory.newSAXParser();
 			XMLReader reader = parser.getXMLReader();
-			XmlHelper xmlHelper = new XmlHelper(modelMgrDelegate);
+			XmlHelper xmlHelper = new XmlHelper(modelMgrDelegate, factory);
 			// La DTD est chargée dans le CLASSPATH
 			reader.setEntityResolver(xmlHelper);
 			// Positionnement du gestionnaire d'erreur

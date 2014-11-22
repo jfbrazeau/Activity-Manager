@@ -67,6 +67,12 @@ public class Collaborator extends SimpleIdentityBean {
 	private boolean isActive = true;
 
 	/**
+	 * Default constructor.
+	 */
+	protected Collaborator() {
+	}
+
+	/**
 	 * @return le prénom du collaborateur.
 	 */
 	public String getFirstName() {

@@ -1,6 +1,8 @@
 package org.activitymgr.core.orm.impl;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,22 +26,26 @@ public class ReflectionHelper {
 	}
 
 	/**
-	 * Creates a new instance of the given class
+	 * Creates a new instance of the given class constructor.
 	 * 
 	 * @param the
 	 *            class to instantiate.
 	 * @return the new instance.
 	 */
-	public static <TYPE> TYPE newInstance(Class<TYPE> theClass) {
+	public static <TYPE> TYPE newInstance(Constructor<TYPE> c, Object... initArgs) {
 		try {
-			return theClass.newInstance();
+			return c.newInstance(initArgs);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalStateException(e);
 		} catch (InstantiationException e) {
 			throw new IllegalStateException(e);
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException(e);
+		} catch (InvocationTargetException e) {
+			throw new IllegalStateException(e);
 		}
 	}
-
+	
 	public static List<Field> selectFields(Class<?> theClass, String... fieldNames) {
 		List<Field> result = new ArrayList<Field>();
 		for (int i=0; i<fieldNames.length; i++) {

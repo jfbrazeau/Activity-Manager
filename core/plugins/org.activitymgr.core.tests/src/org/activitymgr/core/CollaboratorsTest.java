@@ -10,7 +10,7 @@ public class CollaboratorsTest extends AbstractModelTestCase {
 	}
 
 	public void testCreateAnRemove() throws ModelException, DAOException {
-		Collaborator collaborator = new Collaborator();
+		Collaborator collaborator = getFactory().newCollaborator();
 		collaborator.setFirstName("First name");
 		collaborator.setLastName("Last name");
 		collaborator.setLogin("login");
@@ -35,14 +35,14 @@ public class CollaboratorsTest extends AbstractModelTestCase {
 	}
 
 	public void testUniqueLogin() throws DAOException, ModelException {
-		Collaborator collaborator = new Collaborator();
+		Collaborator collaborator = getFactory().newCollaborator();
 		collaborator.setFirstName("First name");
 		collaborator.setLastName("Last name");
 		collaborator.setLogin("login");
 		collaborator.setIsActive(true);
 		collaborator = getModelMgr().createCollaborator(collaborator);
 		
-		Collaborator collaborator2 = new Collaborator();
+		Collaborator collaborator2 = getFactory().newCollaborator();
 		collaborator2.setFirstName("First name2");
 		collaborator2.setLastName("Last name2");
 		collaborator2.setLogin(collaborator.getLogin());
@@ -70,7 +70,7 @@ public class CollaboratorsTest extends AbstractModelTestCase {
 	}
 
 	public void testActiveCollaborator() throws DAOException, ModelException {
-		Collaborator collaborator = new Collaborator();
+		Collaborator collaborator = getFactory().newCollaborator();
 		collaborator.setFirstName("First name");
 		collaborator.setLastName("Last name");
 		collaborator.setLogin("login");
@@ -96,21 +96,21 @@ public class CollaboratorsTest extends AbstractModelTestCase {
 	}
 
 	public void testSortCollaborators() throws DAOException, ModelException {
-		Collaborator c0 = new Collaborator();
+		Collaborator c0 = getFactory().newCollaborator();
 		c0.setFirstName("FN0");
 		c0.setLastName("LN2");
 		c0.setLogin("l0");
 		c0.setIsActive(true);
 		c0 = getModelMgr().createCollaborator(c0);
 		
-		Collaborator c1 = new Collaborator();
+		Collaborator c1 = getFactory().newCollaborator();
 		c1.setFirstName("FN1");
 		c1.setLastName("LN1");
 		c1.setLogin("l1");
 		c1.setIsActive(false);
 		c1 = getModelMgr().createCollaborator(c1);
 
-		Collaborator c2 = new Collaborator();
+		Collaborator c2 = getFactory().newCollaborator();
 		c2.setFirstName("FN2");
 		c2.setLastName("LN0");
 		c2.setLogin("l2");

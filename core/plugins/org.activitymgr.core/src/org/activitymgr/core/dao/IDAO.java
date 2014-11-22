@@ -38,4 +38,5 @@ public interface IDAO<TYPE> {
 	
 	public TYPE read(ResultSet rs, int fromIndex);
 
+	public TYPE newInstance();
 }

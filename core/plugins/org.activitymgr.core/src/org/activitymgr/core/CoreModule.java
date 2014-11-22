@@ -9,6 +9,7 @@ import org.activitymgr.core.dao.IContributionDAO;
 import org.activitymgr.core.dao.ICoreDAO;
 import org.activitymgr.core.dao.IDurationDAO;
 import org.activitymgr.core.dao.ITaskDAO;
+import org.activitymgr.core.impl.BeanFactoryImpl;
 import org.activitymgr.core.impl.ModelMgrImpl;
 import org.activitymgr.core.impl.dao.CollaboratorDAOImpl;
 import org.activitymgr.core.impl.dao.ContributionDAOImpl;
@@ -33,18 +34,47 @@ public class CoreModule extends AbstractModule {
 
 	}
 
+	public static class BeanClassProvider {
+		
+		public Class<Task> getTaskClass() {
+			return Task.class;
+		}
+		
+		public Class<Duration> getDurationClass() {
+			return Duration.class;
+		}
+		
+		public Class<Contribution> getContributionClass() {
+			return Contribution.class;
+		}
+		
+		public Class<Collaborator> getCollaboratorClass() {
+			return Collaborator.class;
+		}
+	}
+	
+	private BeanClassProvider beanClassProvider;
+	
+	public CoreModule(BeanClassProvider beanClassProvider) {
+		this.beanClassProvider = beanClassProvider;
+	}
+	
+	public CoreModule() {
+		this(new BeanClassProvider());
+	}
+
 	@Override
 	protected void configure() {
 		// Bind DAOs
 		DAOFactory daoFactory = new DAOFactory();
 		bind(new TypeLiteral<org.activitymgr.core.orm.IDAO<Collaborator>>(){})
-	      .toInstance(daoFactory.getDAO(Collaborator.class));
+	      .toInstance(daoFactory.getDAO(beanClassProvider.getCollaboratorClass()));
 		bind(new TypeLiteral<org.activitymgr.core.orm.IDAO<Task>>(){})
-	      .toInstance(daoFactory.getDAO(Task.class));
+	      .toInstance(daoFactory.getDAO(beanClassProvider.getTaskClass()));
 		bind(new TypeLiteral<org.activitymgr.core.orm.IDAO<Duration>>(){})
-	      .toInstance(daoFactory.getDAO(Duration.class));
+	      .toInstance(daoFactory.getDAO(beanClassProvider.getDurationClass()));
 		bind(new TypeLiteral<org.activitymgr.core.orm.IDAO<Contribution>>(){})
-	      .toInstance(daoFactory.getDAO(Contribution.class));
+	      .toInstance(daoFactory.getDAO(beanClassProvider.getContributionClass()));
 
 		// Bind wrappers
 		bind(ICollaboratorDAO.class)
@@ -57,7 +87,8 @@ public class CoreModule extends AbstractModule {
 	      .to(ContributionDAOImpl.class).in(Singleton.class);;
 
 		// Bind core DAO & ModelManager
-		bind(ICoreDAO.class).to(CoreDAOImpl.class).in(Singleton.class);
+	    bind(IBeanFactory.class).to(BeanFactoryImpl.class).in(Singleton.class);
+	    bind(ICoreDAO.class).to(CoreDAOImpl.class).in(Singleton.class);
 		bind(IModelMgr.class).to(ModelMgrImpl.class).in(Singleton.class);
 		
 		// Bind post injection listeners

@@ -176,4 +176,8 @@ public abstract class AbstractModelTestCase extends TestCase implements
 	protected IModelMgr getModelMgr() {
 		return modelMgr;
 	}
+
+	protected IBeanFactory getFactory() {
+		return injector.getInstance(IBeanFactory.class);
+	}
 }

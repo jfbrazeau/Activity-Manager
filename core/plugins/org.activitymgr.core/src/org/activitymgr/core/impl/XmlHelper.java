@@ -3,6 +3,7 @@ package org.activitymgr.core.impl;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.activitymgr.core.IBeanFactory;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
@@ -169,9 +170,11 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	private Task currentTask;
 	private Contribution currentContribution;
 	private StringBuffer currentText = new StringBuffer();
+	private IBeanFactory factory;
 
 	/** Pointeur de location dans le fichier XML parsé */
 	private Locator locator;
+
 
 	/**
 	 * Constructeur par défaut.
@@ -181,8 +184,9 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 	 * @param tx
 	 *            contexte de transaction.
 	 */
-	public XmlHelper(ModelMgrDelegate modelMgrDelegate) {
+	public XmlHelper(ModelMgrDelegate modelMgrDelegate, IBeanFactory factory) {
 		this.modelMgrDelegate = modelMgrDelegate;
+		this.factory = factory;
 	}
 
 	/** EntityResolver interface methods */
@@ -255,13 +259,13 @@ public class XmlHelper implements EntityResolver, ErrorHandler, ContentHandler {
 				|| TASK_REF_NODE.equals(qName)) {
 			// Do nothing...
 		} else if (DURATION_NODE.equals(qName)) {
-			currentDuration = new Duration();
+			currentDuration = factory.newDuration();
 		} else if (COLLABORATOR_NODE.equals(qName)) {
-			currentCollaborator = new Collaborator();
+			currentCollaborator = factory.newCollaborator();
 		} else if (TASK_NODE.equals(qName)) {
-			currentTask = new Task();
+			currentTask = factory.newTask();
 		} else if (CONTRIBUTION_NODE.equals(qName)) {
-			currentContribution = new Contribution();
+			currentContribution = factory.newContribution();
 			currentContribution.setYear((int) getNumAttrValue(atts,
 					YEAR_ATTRIBUTE));
 			currentContribution.setMonth((int) getNumAttrValue(atts,

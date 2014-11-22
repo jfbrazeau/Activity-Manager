@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.activitymgr.core.IBeanFactory;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Duration;
 import org.activitymgr.core.dao.DAOException;
@@ -151,6 +152,9 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	/** Icone utilisé pour les durées non actifs */
 	private Image uncheckedIcon;
 
+	/** Bean factory */
+	private IBeanFactory factory;
+
 	/**
 	 * Constructeur permettant de placer l'IHM dans un onglet.
 	 * 
@@ -159,8 +163,8 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	 * @param modelMgr
 	 *            the model manager instance.
 	 */
-	public DurationsUI(TabItem tabItem, IModelMgr modelMgr) {
-		this(tabItem.getParent(), modelMgr);
+	public DurationsUI(TabItem tabItem, IModelMgr modelMgr, IBeanFactory factory) {
+		this(tabItem.getParent(), modelMgr, factory);
 		tabItem.setControl(parent);
 	}
 
@@ -171,9 +175,12 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	 *            composant parent.
 	 * @param modelMgr
 	 *            the model manager instance.
+	 * @param factory
+	 *            bean factory.
 	 */
-	public DurationsUI(Composite parentComposite, IModelMgr modelMgr) {
+	public DurationsUI(Composite parentComposite, IModelMgr modelMgr, IBeanFactory factory) {
 		this.modelMgr = modelMgr;
+		this.factory = factory;
 
 		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
@@ -309,7 +316,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 			public Object runUnsafe() throws Exception {
 				// Création d'un clone dans le cas ou il s'agît
 				// d'une modification de la valeur de la durée
-				Duration oldDuration = new Duration();
+				Duration oldDuration = factory.newDuration();
 				oldDuration.setId(duration.getId());
 				oldDuration.setIsActive(duration.getIsActive());
 				// Booléens indiquant quelles notifications doivent être émises
@@ -324,7 +331,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 					break;
 				case (DURATION_COLUMN_IDX):
 					// Mise à jour en base
-					Duration newDuration = new Duration();
+					Duration newDuration = factory.newDuration();
 					newDuration.setId(StringHelper
 							.entryToHundredth((String) value));
 					newDuration.setIsActive(duration.getIsActive());
@@ -442,7 +449,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 							new IInputValidator() {
 								public String isValid(String newText) {
 									String errorMsg = null;
-									Duration duration = new Duration();
+									Duration duration = factory.newDuration();
 									try {
 										// Parsing de la saisie et contrôle du
 										// format
@@ -465,7 +472,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 							});
 					// Ouverture du dialogue
 					if (dialog.open() == Dialog.OK) {
-						Duration newDuration = new Duration();
+						Duration newDuration = factory.newDuration();
 						newDuration.setId(StringHelper.entryToHundredth(dialog
 								.getValue()));
 						modelMgr.createDuration(newDuration);

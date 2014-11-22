@@ -39,6 +39,7 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.activitymgr.core.IBeanFactory;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Duration;
@@ -150,6 +151,9 @@ public class DatabaseUI implements ModifyListener {
 	private Button xmlExportButton;
 	private Button xmlImportButton;
 
+	/** Bean factory */
+	private IBeanFactory factory;
+
 	/**
 	 * Constructeur permettant de placer l'IHM dans un onglet.
 	 * 
@@ -158,8 +162,8 @@ public class DatabaseUI implements ModifyListener {
 	 * @param modelMgr
 	 *            the model manager instance.
 	 */
-	public DatabaseUI(TabItem tabItem, IModelMgr modelMgr) {
-		this(tabItem.getParent(), modelMgr);
+	public DatabaseUI(TabItem tabItem, IModelMgr modelMgr, IBeanFactory factory) {
+		this(tabItem.getParent(), modelMgr, factory);
 		tabItem.setControl(parent);
 	}
 
@@ -170,9 +174,12 @@ public class DatabaseUI implements ModifyListener {
 	 *            composant parent.
 	 * @param modelMgr
 	 *            the model manager instance.
+	 * @param factory
+	 *            bean factory.
 	 */
-	public DatabaseUI(Composite parentComposite, IModelMgr modelMgr) {
+	public DatabaseUI(Composite parentComposite, IModelMgr modelMgr, IBeanFactory factory) {
 		this.modelMgr = modelMgr;
+		this.factory = factory;
 
 		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
@@ -842,7 +849,7 @@ public class DatabaseUI implements ModifyListener {
 						Strings.getString("DatabaseUI.labels.CONFIRMATION"), //$NON-NLS-1$
 						Strings.getString("DatabaseUI.questions.CREATE_DEFAULT_DURATIONS"))) { //$NON-NLS-1$
 			try {
-				Duration duration = new Duration();
+				Duration duration = factory.newDuration();
 				duration.setId(25);
 				modelMgr.createDuration(duration);
 				duration.setId(50);

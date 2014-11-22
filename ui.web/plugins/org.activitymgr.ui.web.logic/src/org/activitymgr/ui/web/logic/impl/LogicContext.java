@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Stack;
 
 import org.activitymgr.core.CoreModule;
+import org.activitymgr.core.IBeanFactory;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.ui.web.logic.IEventBus;
@@ -170,6 +171,10 @@ public class LogicContext {
 						}
 					}
 				});
+	}
+
+	public IBeanFactory getBeanFactory() {
+		return injector.getInstance(IBeanFactory.class);
 	}
 }
 

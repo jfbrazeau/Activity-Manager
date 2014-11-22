@@ -46,6 +46,12 @@ public class Duration {
 	private boolean isActive = true;
 
 	/**
+	 * Default constructor.
+	 */
+	protected Duration() {
+	}
+	
+	/**
 	 * Retourne un booléen indiquant si la durée est active ou non.
 	 * 
 	 * @return un booléen indiquant si la durée est active ou non.

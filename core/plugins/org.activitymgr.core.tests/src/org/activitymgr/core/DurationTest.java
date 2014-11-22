@@ -32,7 +32,7 @@ public class DurationTest extends AbstractModelTestCase {
 	public void testNullCreation() throws DAOException {
 		// Création de durée nulle
 		try {
-			Duration duration = new Duration();
+			Duration duration = getFactory().newDuration();
 			duration.setId(0);
 			getModelMgr().createDuration(duration);
 			fail("Manage to create a null duration");
@@ -119,7 +119,7 @@ public class DurationTest extends AbstractModelTestCase {
 		// Création d'une contribution
 		Collaborator collaborator = getModelMgr().createNewCollaborator();
 		Task task = getModelMgr().createNewTask(null);
-		Contribution ctb = new Contribution();
+		Contribution ctb = getFactory().newContribution();
 		ctb.setContributorId(collaborator.getId());
 		ctb.setTaskId(task.getId());
 		ctb.setDate(new GregorianCalendar());
@@ -164,7 +164,7 @@ public class DurationTest extends AbstractModelTestCase {
 	}
 
 	private Duration generateNewDuration() throws DAOException {
-		Duration duration = new Duration();
+		Duration duration = getFactory().newDuration();
 		duration.setId(1);
 		// Recherche d'une durée inexistante en base
 		while (getModelMgr().durationExists(duration)) {
@@ -180,7 +180,7 @@ public class DurationTest extends AbstractModelTestCase {
 	}
 
 	private void newDuration(long duration) throws DAOException, ModelException {
-		Duration d = new Duration();
+		Duration d = getFactory().newDuration();
 		d.setId(duration);
 		getModelMgr().createDuration(d);
 	}

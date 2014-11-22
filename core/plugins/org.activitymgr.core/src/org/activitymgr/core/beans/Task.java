@@ -66,6 +66,12 @@ public class Task extends SimpleIdentityBean {
 	private String comment;
 
 	/**
+	 * Default constructor.
+	 */
+	protected Task() {
+	}
+
+	/**
 	 * @return le code de la tache.
 	 */
 	public String getCode() {

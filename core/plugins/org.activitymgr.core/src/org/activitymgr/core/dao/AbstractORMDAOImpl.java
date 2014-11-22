@@ -141,6 +141,11 @@ public abstract class AbstractORMDAOImpl<TYPE> extends AbstractDAOImpl implement
 		return wrapped.read(rs, fromIndex);
 	}
 
+	@Override
+	public TYPE newInstance() {
+		return wrapped.newInstance();
+	}
+	
 	/**
 	 * @return the active connection.
 	 */

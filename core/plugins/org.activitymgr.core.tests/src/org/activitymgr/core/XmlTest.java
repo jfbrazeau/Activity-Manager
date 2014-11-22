@@ -54,7 +54,7 @@ public class XmlTest extends AbstractModelTestCase {
 		assertEquals(initialDurations.length + 3, durations.length);
 
 		// Suppression des durées
-		Duration duration = new Duration();
+		Duration duration = getFactory().newDuration();
 		duration.setId(200);
 		getModelMgr().removeDuration(duration);
 		duration.setId(300);
@@ -147,26 +147,26 @@ public class XmlTest extends AbstractModelTestCase {
 	
 	public void testExportAndImport() throws DAOException, ModelException, IOException, ParserConfigurationException, SAXException {
 		// Création des objets de test
-		Duration duration = new Duration();
+		Duration duration = getFactory().newDuration();
 		duration.setId(100);
 		duration = getModelMgr().createDuration(duration);
-		Collaborator collaborator = new Collaborator();
+		Collaborator collaborator = getFactory().newCollaborator();
 		collaborator.setLogin("login");
 		collaborator.setFirstName("FirstName");
 		collaborator.setLastName("LastName");
 		collaborator = getModelMgr().createCollaborator(collaborator);
-		Task parentTask = new Task();
+		Task parentTask = getFactory().newTask();
 		parentTask.setCode("Par");
 		parentTask.setName("Parent name");
 		parentTask = getModelMgr().createTask(null, parentTask);
-		Task task = new Task();
+		Task task = getFactory().newTask();
 		task.setCode("Code");
 		task.setName("Name");
 		task.setBudget(1);
 		task.setInitiallyConsumed(2);
 		task.setTodo(3);
 		task = getModelMgr().createTask(parentTask, task);
-		Contribution contribution = new Contribution();
+		Contribution contribution = getFactory().newContribution();
 		contribution.setYear(2006);
 		contribution.setMonth(01);
 		contribution.setDay(01);

@@ -24,7 +24,7 @@ public class TaskTest extends AbstractModelTestCase {
 
 	public void testCreateRootTask() throws DAOException, ModelException {
 		// Création des tâches de test
-		Task task = new Task();
+		Task task = getFactory().newTask();
 		// Génération d'un code inutilisé
 		task.setCode(String.valueOf(System.currentTimeMillis()).substring(8));
 		task.setName("Root task");
@@ -58,17 +58,17 @@ public class TaskTest extends AbstractModelTestCase {
 		rootTask.setName("Root task");
 		rootTask = getModelMgr().updateTask(rootTask);
 		
-		task1 = new Task();
+		task1 = getFactory().newTask();
 		task1.setCode("T1");
 		task1.setName("Task 1");
 		task1 = getModelMgr().createTask(rootTask, task1);
 
-		task11 = new Task();
+		task11 = getFactory().newTask();
 		task11.setCode("T11");
 		task11.setName("Task 11");
 		task11 = getModelMgr().createTask(task1, task11);
 
-		task111 = new Task();
+		task111 = getFactory().newTask();
 		task111.setCode("T111");
 		task111.setName("Task 111");
 		task111.setBudget(30);
@@ -76,7 +76,7 @@ public class TaskTest extends AbstractModelTestCase {
 		task111.setTodo(25);
 		task111 = getModelMgr().createTask(task11, task111);
 
-		task112 = new Task();
+		task112 = getFactory().newTask();
 		task112.setCode("T112");
 		task112.setName("Task 112");
 		task112.setBudget(30);
@@ -84,7 +84,7 @@ public class TaskTest extends AbstractModelTestCase {
 		task112.setTodo(25);
 		task112 = getModelMgr().createTask(task11, task112);
 
-		task2 = new Task();
+		task2 = getFactory().newTask();
 		task2.setCode("T2");
 		task2.setName("Task 2");
 		task2.setBudget(60);
@@ -335,17 +335,17 @@ public class TaskTest extends AbstractModelTestCase {
 		tomorrow.add(Calendar.DATE, +1);
 		
 		// Ajout de deux contributions
-		Duration duration = new Duration();
+		Duration duration = getFactory().newDuration();
 		duration.setId(100);
 		getModelMgr().createDuration(duration);
 		Collaborator col = getModelMgr().createNewCollaborator();
-		Contribution c1 = new Contribution();
+		Contribution c1 = getFactory().newContribution();
 		c1.setContributorId(col.getId());
 		c1.setDate(yesterday);
 		c1.setTaskId(task111.getId());
 		c1.setDurationId(100);
 		getModelMgr().createContribution(c1, false);
-		Contribution c2 = new Contribution();
+		Contribution c2 = getFactory().newContribution();
 		c2.setContributorId(col.getId());
 		c2.setDate(today);
 		c2.setTaskId(task111.getId());
@@ -503,12 +503,12 @@ public class TaskTest extends AbstractModelTestCase {
 		createSampleTasks();
 		try {
 			// Création d'une tache avec 50 taches filles
-			Task parentTask = new Task();
+			Task parentTask = getFactory().newTask();
 			parentTask.setCode("PARENT");
 			parentTask.setName("Parent task");
 			parentTask = getModelMgr().createTask(rootTask, parentTask);
 			for (int i=1; i<=50; i++) {
-				Task newTask = new Task();
+				Task newTask = getFactory().newTask();
 				newTask.setCode("CD" + i);
 				newTask.setName("Task # " + i);
 				newTask = getModelMgr().createTask(parentTask, newTask);

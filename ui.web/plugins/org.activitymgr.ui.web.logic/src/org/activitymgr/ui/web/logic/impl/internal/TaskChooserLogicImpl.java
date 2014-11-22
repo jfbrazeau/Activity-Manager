@@ -168,7 +168,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 			}
 			else {
 				Task parentTask = getModelMgr().getTask(taskId);
-				Task newTask = new Task();
+				Task newTask = getContext().getBeanFactory().newTask();
 				newTask.setName(getView().getNewTaskName());
 				String code = newTask.getName().trim().replaceAll(" ", "").toUpperCase();
 				if (code.length() > 7) {

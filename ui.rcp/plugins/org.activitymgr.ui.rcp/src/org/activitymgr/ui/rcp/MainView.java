@@ -34,6 +34,7 @@ import java.lang.reflect.Proxy;
 import java.sql.Connection;
 
 import org.activitymgr.core.CoreModule;
+import org.activitymgr.core.IBeanFactory;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.util.Strings;
@@ -77,6 +78,9 @@ public class MainView extends ViewPart {
 	/** Model manager */
 	private IModelMgr modelMgr;
 
+	/** Factory */
+	private IBeanFactory factory;
+
 	/**
 	 * This is a callback that will allow us to create the viewer and initialize
 	 * it.
@@ -88,18 +92,18 @@ public class MainView extends ViewPart {
 				.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		// TODO move the core module & model manager initialization 
-		initializeModelMgr();
+		initialize();
 		
 		// Création de l'onglet de paramétrage de l'accès à la base de
 		// données
 		databaseTab = new TabItem(tabFolder, SWT.NONE);
 		databaseTab.setText(Strings.getString("Main.tabs.DATABASE")); //$NON-NLS-1$
-		databaseUI = new DatabaseUI(databaseTab, modelMgr);
+		databaseUI = new DatabaseUI(databaseTab, modelMgr, factory);
 
 		// Création de l'onglet de gestion des durées
 		durationsTab = new TabItem(tabFolder, SWT.NONE);
 		durationsTab.setText(Strings.getString("Main.tabs.DURATIONS")); //$NON-NLS-1$
-		durationsUI = new DurationsUI(durationsTab, modelMgr);
+		durationsUI = new DurationsUI(durationsTab, modelMgr, factory);
 
 		// Création de l'onglet de gestion des collaborateurs
 		collaboratorsTab = new TabItem(tabFolder, SWT.NONE);
@@ -116,7 +120,7 @@ public class MainView extends ViewPart {
 		contributionsTab = new TabItem(tabFolder, SWT.NONE);
 		contributionsTab.setText(Strings
 				.getString("Main.tabs.CONTRIBUTIONS")); //$NON-NLS-1$
-		contributionsUI = new ContributionsUI(contributionsTab, modelMgr);
+		contributionsUI = new ContributionsUI(contributionsTab, modelMgr, factory);
 
 		// Création de l'onglet contenant les informations générales
 		aboutTab = new TabItem(tabFolder, SWT.NONE);
@@ -166,7 +170,7 @@ public class MainView extends ViewPart {
 	/**
 	 * Initializes transaction management and model manager.
 	 */
-	private void initializeModelMgr() {
+	private void initialize() {
 		// Create Guice injector
 		final ThreadLocal<Connection> dbTxs = new ThreadLocal<Connection>();
 		final Injector injector = Guice.createInjector(new CoreModule(),
@@ -211,6 +215,7 @@ public class MainView extends ViewPart {
 						}
 					}
 				});
+		factory = injector.getInstance(IBeanFactory.class);
 	}
 
 	/**

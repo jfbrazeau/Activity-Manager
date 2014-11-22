@@ -295,7 +295,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 			if (contribution == null) {
 				if (durationId != 0) {
 					// Let's create the new contribution
-					contribution = new Contribution();
+					contribution = getContext().getBeanFactory().newContribution();
 					contribution.setContributorId(getContext().getConnectedCollaborator().getId());
 					contribution.setDurationId(durationId);
 					contribution.setTaskId(weekContributions.getTask().getId());

@@ -65,6 +65,12 @@ public class Contribution {
 	/** Durée */
 	@Column("DURATION")
 	private long durationId;
+	
+	/**
+	 * Default constructor.
+	 */
+	protected Contribution() {
+	}
 
 	/**
 	 * @return l'identifiant du collaborateur.

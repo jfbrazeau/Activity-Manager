@@ -35,6 +35,7 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
+import org.activitymgr.core.IBeanFactory;
 import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
@@ -242,6 +243,9 @@ public class ContributionsUI extends AbstractTableMgr implements
 	/** Police de caractère utilisée pour la ligne des totaux */
 	private Font italicFont;
 
+	/** Bean factory */
+	private IBeanFactory factory;
+
 	/**
 	 * Constructeur permettant de placer l'IHM dans un onglet.
 	 * 
@@ -249,9 +253,11 @@ public class ContributionsUI extends AbstractTableMgr implements
 	 *            item parent.
 	 * @param modelMgr
 	 *            the model manager instance.
+	 * @param factory
+	 *            bean factory.
 	 */
-	public ContributionsUI(TabItem tabItem, IModelMgr modelMgr) {
-		this(tabItem.getParent(), modelMgr);
+	public ContributionsUI(TabItem tabItem, IModelMgr modelMgr, IBeanFactory factory) {
+		this(tabItem.getParent(), modelMgr, factory);
 		tabItem.setControl(parent);
 	}
 
@@ -262,9 +268,12 @@ public class ContributionsUI extends AbstractTableMgr implements
 	 *            composant parent.
 	 * @param modelMgr
 	 *            the model manager instance.
+	 * @param factory
+	 *            bean factory.
 	 */
-	public ContributionsUI(Composite parentComposite, IModelMgr modelMgr) {
+	public ContributionsUI(Composite parentComposite, IModelMgr modelMgr, IBeanFactory factory) {
 		this.modelMgr = modelMgr;
+		this.factory = factory;
 
 		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
@@ -773,7 +782,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 						if (create) {
 							Collaborator selectedCollaboprator = selectableCollaboratorPanel
 									.getSelectedCollaborator();
-							contribution = new Contribution();
+							contribution = factory.newContribution();
 							contribution.setContributorId(selectedCollaboprator
 									.getId());
 							contribution.setTaskId(weekContributions.getTask()

@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -118,6 +119,9 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 	private String insertRequest;
 	private String countAllRequest;
 
+	/** Class constructor */
+	private Constructor<TYPE> constructor;
+
 	/**
 	 * Constructeur priv�.
 	 * @param mapping mapping de la classe mapp�e.
@@ -130,6 +134,17 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 			log.debug("Descriptor loaded");
 		this.mappedClass = theClass;
 		tableName = mapping.getSQLTableName(theClass);
+
+		// Retrieve mapped class constuctor
+		try {
+			constructor = mappedClass.getDeclaredConstructor();
+			constructor.setAccessible(true);
+		} catch (SecurityException e) {
+			throw new IllegalStateException(e);
+		} catch (NoSuchMethodException e) {
+			throw new IllegalArgumentException("Mapped class must have no args constructor", e);
+		}
+		
 		// R�cup�ration de la liste des attributs de la cl� primaire
 		pkAttributes = mapping.getPrimaryKeyAttributes(mappedClass);
 		pkAttributeNames = new String[pkAttributes.size()];
@@ -266,7 +281,7 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 			if (pkAttributes.size()==attributes.size()) {
 				boolean exists = count(con, pkAttributeNames, pkValue)>0;
 				if (exists) {
-					result = ReflectionHelper.newInstance(mappedClass);
+					result = ReflectionHelper.newInstance(constructor);
 					for (int i=0; i<pkValue.length; i++) {
 						pkAttributes.get(i).set(result, pkValue[i]);
 					}
@@ -282,7 +297,7 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 				}
 				ResultSet rs = pStmt.executeQuery();
 				if (rs.next()) {
-					result = ReflectionHelper.newInstance(mappedClass);
+					result = ReflectionHelper.newInstance(constructor);
 					resultSetToInstanceAttributes(rs, result, false);
 					for (int i=0; i<pkValue.length; i++) {
 						Field pkAttribute = pkAttributes.get(i);
@@ -424,7 +439,7 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 			ResultSet rs = pStmt.executeQuery();
 			List<Object> result = new ArrayList<Object>();
 			while (rs.next()) {
-				TYPE newInstance = ReflectionHelper.newInstance(mappedClass);
+				TYPE newInstance = ReflectionHelper.newInstance(constructor);
 				result.add(newInstance);
 				if (log.isDebugEnabled())
 					log.debug("newInstance=" + newInstance);
@@ -557,7 +572,7 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 			ResultSet rs = pStmt.executeQuery();
 			List<Object> result = new ArrayList<Object>();
 			while (rs.next()) {
-				TYPE newInstance = mappedClass.newInstance();
+				TYPE newInstance = newInstance();
 				result.add(newInstance);
 				if (log.isDebugEnabled())
 					log.debug("newInstance=" + newInstance);
@@ -578,13 +593,15 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 		} catch (IllegalAccessException e) {
 			log.error("Error while accessing instance attribute", e);
 			throw new IllegalStateException("Error while accessing instance attribute", e); 
-		} catch (InstantiationException e) {
-			log.error("Error while accessing instance attribute", e);
-			throw new IllegalStateException("Error while accessing instance attribute", e); 
 		}
 		finally {
 			if (pStmt!=null) try { pStmt.close(); } catch (SQLException ignored) {}
 		}
+	}
+
+	@Override
+	public TYPE newInstance() {
+		return ReflectionHelper.newInstance(constructor);
 	}
 
 	/* (non-Javadoc)
@@ -798,7 +815,7 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 	@Override
 	public TYPE read(ResultSet rs, int fromIndex) {
 		try {
-			TYPE instance = ReflectionHelper.newInstance(mappedClass);
+			TYPE instance = ReflectionHelper.newInstance(constructor);
 			resultSetToInstanceAttributes(rs, fromIndex, instance, true);
 			return instance;
 		} catch (IllegalArgumentException e) {

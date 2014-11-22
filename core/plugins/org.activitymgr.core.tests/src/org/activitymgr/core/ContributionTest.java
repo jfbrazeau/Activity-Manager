@@ -48,17 +48,17 @@ public class ContributionTest extends AbstractModelTestCase {
 		rootTask.setName("Root task");
 		rootTask = getModelMgr().updateTask(rootTask);
 
-		task1 = new Task();
+		task1 = getFactory().newTask();
 		task1.setCode("T1");
 		task1.setName("Task 1");
 		task1 = getModelMgr().createTask(rootTask, task1);
 
-		task11 = new Task();
+		task11 = getFactory().newTask();
 		task11.setCode("T11");
 		task11.setName("Task 11");
 		task11 = getModelMgr().createTask(task1, task11);
 
-		task111 = new Task();
+		task111 = getFactory().newTask();
 		task111.setCode("T111");
 		task111.setName("Task 111");
 		task111.setBudget(30);
@@ -66,7 +66,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		task111.setTodo(1000);
 		task111 = getModelMgr().createTask(task11, task111);
 
-		task112 = new Task();
+		task112 = getFactory().newTask();
 		task112.setCode("T112");
 		task112.setName("Task 112");
 		task112.setBudget(30);
@@ -74,7 +74,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		task112.setTodo(25);
 		task112 = getModelMgr().createTask(task11, task112);
 
-		task2 = new Task();
+		task2 = getFactory().newTask();
 		task2.setCode("T2");
 		task2.setName("Task 2");
 		task2.setBudget(60);
@@ -103,10 +103,10 @@ public class ContributionTest extends AbstractModelTestCase {
 		col2 = getModelMgr().updateCollaborator(col2);
 
 		// Récupération des durées
-		duration1 = new Duration();
+		duration1 = getFactory().newDuration();
 		duration1.setId(100);
 		duration1 = getModelMgr().createDuration(duration1);
-		duration2 = new Duration();
+		duration2 = getFactory().newDuration();
 		duration2.setId(50);
 		duration2 = getModelMgr().createDuration(duration2);
 
@@ -114,7 +114,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		if (createContributions) {
 			Calendar date = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
 
-			c1 = new Contribution();
+			c1 = getFactory().newContribution();
 			c1.setDate(date);
 			c1.setContributorId(col1.getId());
 			c1.setDurationId(duration1.getId());
@@ -122,7 +122,7 @@ public class ContributionTest extends AbstractModelTestCase {
 			getModelMgr().createContribution(c1, false);
 
 			date.add(Calendar.DATE, 1);
-			c2 = new Contribution();
+			c2 = getFactory().newContribution();
 			c2.setDate(date);
 			c2.setContributorId(col2.getId());
 			c2.setDurationId(duration1.getId());
@@ -130,7 +130,7 @@ public class ContributionTest extends AbstractModelTestCase {
 			getModelMgr().createContribution(c2, false);
 
 			date.add(Calendar.MONTH, 1);
-			c3 = new Contribution();
+			c3 = getFactory().newContribution();
 			c3.setDate(date);
 			c3.setContributorId(col2.getId());
 			c3.setDurationId(duration1.getId());
@@ -170,7 +170,7 @@ public class ContributionTest extends AbstractModelTestCase {
 		Calendar cal = new GregorianCalendar(year, month - 1, day);
 
 		// Test...
-		Contribution c = new Contribution();
+		Contribution c = getFactory().newContribution();
 		c.setContributorId(col1.getId());
 		c.setDurationId(duration1.getId());
 		c.setDate(cal);
@@ -235,7 +235,7 @@ public class ContributionTest extends AbstractModelTestCase {
 
 		// Création d'une contribution
 		Calendar date = new GregorianCalendar();
-		Contribution c1 = new Contribution();
+		Contribution c1 = getFactory().newContribution();
 		c1.setDate(date);
 		c1.setContributorId(col1.getId());
 		c1.setDurationId(100);
@@ -413,7 +413,7 @@ public class ContributionTest extends AbstractModelTestCase {
 
 		// A contribution on 1st January 2013
 		Calendar date = new GregorianCalendar(2013, 0, 1);
-		Contribution c = new Contribution();
+		Contribution c = getFactory().newContribution();
 		c.setTaskId(task111.getId());
 		c.setContributorId(col1.getId());
 		c.setDurationId(100);
@@ -444,7 +444,7 @@ public class ContributionTest extends AbstractModelTestCase {
 
 		// A contribution on 27th March 2012
 		Calendar date = new GregorianCalendar(2012, 2, 27);
-		Contribution c = new Contribution();
+		Contribution c = getFactory().newContribution();
 		c.setTaskId(task111.getId());
 		c.setContributorId(col1.getId());
 		c.setDurationId(100);
