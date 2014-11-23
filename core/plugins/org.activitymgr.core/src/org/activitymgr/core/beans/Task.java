@@ -27,15 +27,18 @@
  */
 package org.activitymgr.core.beans;
 
+import org.activitymgr.core.IBeanFactory;
 import org.activitymgr.core.impl.dao.TaskNumberConverter;
 import org.activitymgr.core.orm.annotation.Column;
 import org.activitymgr.core.orm.annotation.ColumnNamePrefix;
 import org.activitymgr.core.orm.annotation.Converter;
+import org.activitymgr.core.orm.annotation.Table;
 import org.activitymgr.core.util.StringHelper;
 
 /**
  * Tâche.
  */
+@Table("TASK")
 @ColumnNamePrefix("TSK_")
 public class Task extends SimpleIdentityBean {
 
@@ -67,6 +70,12 @@ public class Task extends SimpleIdentityBean {
 
 	/**
 	 * Default constructor.
+	 * <p>
+	 * This constructor is protected as this class is not supposed to be
+	 * instantiated directly. One is supposed to use the {@link IBeanFactory
+	 * factory} instead.
+	 * </p>
+	 * @see IBeanFactory
 	 */
 	protected Task() {
 	}

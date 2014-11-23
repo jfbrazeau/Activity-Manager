@@ -27,13 +27,16 @@
  */
 package org.activitymgr.core.beans;
 
+import org.activitymgr.core.IBeanFactory;
 import org.activitymgr.core.orm.annotation.Column;
 import org.activitymgr.core.orm.annotation.ColumnNamePrefix;
 import org.activitymgr.core.orm.annotation.PrimaryKey;
+import org.activitymgr.core.orm.annotation.Table;
 
 /**
  * Durée.
  */
+@Table("DURATION")
 @ColumnNamePrefix("DUR_")
 public class Duration {
 
@@ -47,6 +50,12 @@ public class Duration {
 
 	/**
 	 * Default constructor.
+	 * <p>
+	 * This constructor is protected as this class is not supposed to be
+	 * instantiated directly. One is supposed to use the {@link IBeanFactory
+	 * factory} instead.
+	 * </p>
+	 * @see IBeanFactory
 	 */
 	protected Duration() {
 	}

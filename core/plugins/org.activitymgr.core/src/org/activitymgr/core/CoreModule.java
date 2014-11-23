@@ -17,6 +17,7 @@ import org.activitymgr.core.impl.dao.CoreDAOImpl;
 import org.activitymgr.core.impl.dao.DurationDAOImpl;
 import org.activitymgr.core.impl.dao.TaskDAOImpl;
 import org.activitymgr.core.orm.DAOFactory;
+import org.activitymgr.core.orm.IDAO;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
@@ -36,19 +37,19 @@ public class CoreModule extends AbstractModule {
 
 	public static class BeanClassProvider {
 		
-		public Class<Task> getTaskClass() {
+		public Class<? extends Task> getTaskClass() {
 			return Task.class;
 		}
 		
-		public Class<Duration> getDurationClass() {
+		public Class<? extends Duration> getDurationClass() {
 			return Duration.class;
 		}
 		
-		public Class<Contribution> getContributionClass() {
+		public Class<? extends Contribution> getContributionClass() {
 			return Contribution.class;
 		}
 		
-		public Class<Collaborator> getCollaboratorClass() {
+		public Class<? extends Collaborator> getCollaboratorClass() {
 			return Collaborator.class;
 		}
 	}
@@ -63,18 +64,19 @@ public class CoreModule extends AbstractModule {
 		this(new BeanClassProvider());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void configure() {
 		// Bind DAOs
 		DAOFactory daoFactory = new DAOFactory();
 		bind(new TypeLiteral<org.activitymgr.core.orm.IDAO<Collaborator>>(){})
-	      .toInstance(daoFactory.getDAO(beanClassProvider.getCollaboratorClass()));
+	      .toInstance((IDAO<Collaborator>) daoFactory.getDAO(beanClassProvider.getCollaboratorClass()));
 		bind(new TypeLiteral<org.activitymgr.core.orm.IDAO<Task>>(){})
-	      .toInstance(daoFactory.getDAO(beanClassProvider.getTaskClass()));
+	      .toInstance((IDAO<Task>) daoFactory.getDAO(beanClassProvider.getTaskClass()));
 		bind(new TypeLiteral<org.activitymgr.core.orm.IDAO<Duration>>(){})
-	      .toInstance(daoFactory.getDAO(beanClassProvider.getDurationClass()));
+	      .toInstance((IDAO<Duration>) daoFactory.getDAO(beanClassProvider.getDurationClass()));
 		bind(new TypeLiteral<org.activitymgr.core.orm.IDAO<Contribution>>(){})
-	      .toInstance(daoFactory.getDAO(beanClassProvider.getContributionClass()));
+	      .toInstance((IDAO<Contribution>) daoFactory.getDAO(beanClassProvider.getContributionClass()));
 
 		// Bind wrappers
 		bind(ICollaboratorDAO.class)
