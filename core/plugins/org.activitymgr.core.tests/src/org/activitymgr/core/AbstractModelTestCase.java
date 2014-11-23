@@ -14,6 +14,7 @@ import java.util.Properties;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 
+import org.activitymgr.core.CoreModule.BeanClassProvider;
 import org.activitymgr.core.util.DbHelper;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
@@ -119,17 +120,22 @@ public abstract class AbstractModelTestCase extends TestCase implements
 					}
 				});
 
-		// If tables don't exist, create it
-		getModelMgr().createTables();
+		// Recreate tables
+		if (dropTablesBeforeTest())
+			getModelMgr().createTables();
 	}
 
+	protected boolean dropTablesBeforeTest() {
+		return true;
+	}
+	
 	/**
 	 * 
 	 * @return
 	 */
 	protected List<Module> getGuiceModules() {
 		ArrayList<Module> modules = new ArrayList<Module>();
-		modules.add(new CoreModule());
+		modules.add(new CoreModule(getBeanClassProvider()));
 		modules.add(new AbstractModule() {
 			@Override
 			protected void configure() {
@@ -140,6 +146,10 @@ public abstract class AbstractModelTestCase extends TestCase implements
 		return modules;
 	}
 
+	protected BeanClassProvider getBeanClassProvider() {
+		return new CoreModule.BeanClassProvider();
+	}
+	
 	/**
 	 * @return the injector instance.
 	 */
