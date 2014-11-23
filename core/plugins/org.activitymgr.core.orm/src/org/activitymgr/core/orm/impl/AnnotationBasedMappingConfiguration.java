@@ -1,5 +1,6 @@
 package org.activitymgr.core.orm.impl;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,7 @@ public class AnnotationBasedMappingConfiguration implements IMappgingConfigurati
 
 	@Override
 	public String getSQLTableName(Class<?> theClass) {
-		Table annotation = theClass.getAnnotation(Table.class);
+		Table annotation = getClassAnnotation(theClass, Table.class);
 		return annotation != null ? annotation.value() : theClass.getSimpleName().toUpperCase();
 	}
 
@@ -30,7 +31,7 @@ public class AnnotationBasedMappingConfiguration implements IMappgingConfigurati
 		else {
 			columnName = attribute.getName().toUpperCase();
 		}
-		ColumnNamePrefix prefixAnnotation = theClass.getAnnotation(ColumnNamePrefix.class);
+		ColumnNamePrefix prefixAnnotation = getClassAnnotation(theClass, ColumnNamePrefix.class);
 		if (prefixAnnotation != null) {
 			columnName = prefixAnnotation.value() + columnName;
 		}
@@ -65,6 +66,17 @@ public class AnnotationBasedMappingConfiguration implements IMappgingConfigurati
 			Class<?> theClass, Field attribute) {
 		Converter annotation = attribute.getAnnotation(Converter.class);
 		return annotation != null ? annotation.value() : null;
+	}
+
+	private <TYPE extends Annotation> TYPE getClassAnnotation(Class<?> theClass, Class<TYPE> annotationClass) {
+		TYPE annotation = null;
+		if (theClass.getSuperclass() != null) {
+			annotation = getClassAnnotation(theClass.getSuperclass(), annotationClass);
+		}
+		if (annotation == null) {
+			annotation = theClass.getAnnotation(annotationClass);
+		}
+		return annotation;
 	}
 
 }
