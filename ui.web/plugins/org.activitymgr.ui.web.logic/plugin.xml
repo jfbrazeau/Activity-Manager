@@ -24,5 +24,9 @@
             class="org.activitymgr.ui.web.logic.impl.internal.ContributionsTabLogicImpl"
             label="Contributions">
       </tab>
+      <tab
+            class="org.activitymgr.ui.web.logic.impl.internal.TasksTabLogicImpl"
+            label="Tasks">
+      </tab>
    </extension>
 </plugin>

@@ -2,11 +2,11 @@ package org.activitymgr.ui.web.view.impl.internal.dialogs;
 
 import java.util.Collection;
 
+import org.activitymgr.ui.web.logic.ILabelProviderCallback;
 import org.activitymgr.ui.web.logic.IListContentProviderCallback;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.view.IResourceCache;
-import org.activitymgr.ui.web.view.impl.internal.util.BasicItem;
 import org.activitymgr.ui.web.view.impl.internal.util.BasicListDatasource;
 import org.activitymgr.ui.web.view.impl.internal.util.BasicTreeDatasource;
 
@@ -14,11 +14,11 @@ import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.event.FieldEvents;
-import com.vaadin.event.ShortcutListener;
 import com.vaadin.event.FieldEvents.TextChangeEvent;
+import com.vaadin.event.ShortcutListener;
+import com.vaadin.ui.AbstractTextField.TextChangeEventMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.AbstractTextField.TextChangeEventMode;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.GridLayout;
@@ -157,25 +157,17 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 
     @Override
 	public void setTreeContentProviderCallback(
-			ITreeContentProviderCallback treeContentProviderCallback) {
+			ITreeContentProviderCallback<?> treeContentProviderCallback) {
 		BasicTreeDatasource dataSource = new BasicTreeDatasource(getResourceCache(), treeContentProviderCallback);
 		taskTree.setContainerDataSource(dataSource);
-		taskTree.setItemCaptionPropertyId(BasicItem.NAME_PROPERTY_ID);
-		taskTree.setItemIconPropertyId(BasicItem.ICON_PROPERTY_ID);
-		// TODO preselect another node ?
-		Collection<?> rootItemIds = dataSource.rootItemIds();
-		if (!rootItemIds.isEmpty()) {
-			Object rootItemId = rootItemIds.iterator().next();
-			taskTree.select(rootItemId);
-		}
+		taskTree.setItemCaptionPropertyId(ILabelProviderCallback.NAME_PROPERTY_ID);
 	}
 	
     @Override
-    public void setRecentTasksProviderCallback(IListContentProviderCallback callback) {
+    public void setRecentTasksProviderCallback(IListContentProviderCallback<?> callback) {
     	BasicListDatasource datasource = new BasicListDatasource(getResourceCache(), callback);
     	recentTasksSelect.setContainerDataSource(datasource);
-    	recentTasksSelect.setItemCaptionPropertyId(BasicItem.NAME_PROPERTY_ID);
-    	recentTasksSelect.setItemIconPropertyId(BasicItem.ICON_PROPERTY_ID);
+    	recentTasksSelect.setItemCaptionPropertyId(ILabelProviderCallback.NAME_PROPERTY_ID);
     	for (Object id : recentTasksSelect.getItemIds()) {
         	Item item = taskTree.getItem(id);
         	System.out.println("Preload " + id + " - " + item);
@@ -184,10 +176,10 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
     }
     
     @Override
-    public void preloadTreeItems(Collection<String> ids) {
-    	for (String id : ids) {
-        	Item item = taskTree.getItem(id);
-        	System.out.println("Preloaded " + id + " - " + item);
+    public void preloadTreeItems(Collection<?> elements) {
+    	for (Object element : elements) {
+        	Item item = taskTree.getItem(element);
+        	System.out.println("Preloaded " + element + " - " + item);
     	}
     }
     

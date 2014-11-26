@@ -6,6 +6,7 @@ import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.IRootLogic;
 import org.activitymgr.ui.web.logic.ITabFolderLogic;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
+import org.activitymgr.ui.web.logic.ITasksTabLogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.view.impl.AbstractViewFactoryExtension;
@@ -26,6 +27,8 @@ public class DefaultViewFactoryImpl extends AbstractViewFactoryExtension {
 			return new AuthenticationPanel(getResourceCache(), defaultUser);
 		} else if (IContributionsTabLogic.class.isAssignableFrom(logicType)) {
 			return new ContributionsPanel(getResourceCache());
+		} else if (ITasksTabLogic.class.isAssignableFrom(logicType)) {
+			return new TasksPanel(getResourceCache());
 		} else if (ITaskChooserLogic.class.isAssignableFrom(logicType)) {
 			TaskChooserDialog dialog = new TaskChooserDialog(getResourceCache());
 			((UI)getRootView()).addWindow(dialog);
