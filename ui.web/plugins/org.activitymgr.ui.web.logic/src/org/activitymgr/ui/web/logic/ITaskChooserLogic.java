@@ -19,9 +19,9 @@ public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 	public interface View extends IView<ITaskChooserLogic> {
 
 		public void setTreeContentProviderCallback(
-				ITreeContentProviderCallback callback);
+				ITreeContentProviderCallback<?> callback);
 
-		public void setRecentTasksProviderCallback(IListContentProviderCallback callback);
+		public void setRecentTasksProviderCallback(IListContentProviderCallback<?> callback);
 
 		public void setOkButtonEnabled(boolean enabled);
 
@@ -43,7 +43,7 @@ public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 		 * This pre load trigger is required with vaadin otherwise, when one clicks on a recently selected task, the task does not get selected (due to vaadin).
 		 * @param ids the tree items identifiers.
 		 */
-		public void preloadTreeItems(Collection<String> ids);
+		public void preloadTreeItems(Collection<?> elements);
 
 		public void setNewTaskNameEnabled(boolean enabled);
 	}

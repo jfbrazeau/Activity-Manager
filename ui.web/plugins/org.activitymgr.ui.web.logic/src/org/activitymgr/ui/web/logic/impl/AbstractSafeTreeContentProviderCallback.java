@@ -7,16 +7,16 @@ import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 
-public abstract class AbstractSafeTreeContentProviderCallback extends AbstractSafeListContentProviderCallback implements ITreeContentProviderCallback {
+public abstract class AbstractSafeTreeContentProviderCallback<TYPE> extends AbstractSafeListContentProviderCallback<TYPE> implements ITreeContentProviderCallback<TYPE> {
 	
 	public AbstractSafeTreeContentProviderCallback(ILogic<?> source, IEventBus eventBus) {
 		super(source, eventBus);
 	}
 
 	@Override
-	public final Collection<String> getChildren(String itemId) {
+	public final Collection<TYPE> getChildren(TYPE element) {
 		try {
-			return unsafeGetChildren(itemId);
+			return unsafeGetChildren(element);
 		}
 		catch (Throwable t) {
 			fireCallbackExceptionEvent(t);
@@ -24,12 +24,12 @@ public abstract class AbstractSafeTreeContentProviderCallback extends AbstractSa
 		return Collections.emptyList();
 	}
 
-	protected abstract Collection<String> unsafeGetChildren(String itemId) throws Exception;
+	protected abstract Collection<TYPE> unsafeGetChildren(TYPE element) throws Exception;
 
 	@Override
-	public final boolean isRoot(String itemId) {
+	public final boolean isRoot(TYPE element) {
 		try {
-			return unsafeIsRoot(itemId);
+			return unsafeIsRoot(element);
 		}
 		catch (Throwable t) {
 			fireCallbackExceptionEvent(t);
@@ -37,6 +37,31 @@ public abstract class AbstractSafeTreeContentProviderCallback extends AbstractSa
 		return false;
 	}
 
-	protected abstract boolean unsafeIsRoot(String itemId) throws Exception;
+	protected abstract boolean unsafeIsRoot(TYPE element) throws Exception;
 
+	@Override
+	public TYPE getParent(TYPE element) {
+		try {
+			return unsafeGetParent(element);
+		}
+		catch (Throwable t) {
+			fireCallbackExceptionEvent(t);
+		}
+		return null;
+	}
+	
+	protected abstract TYPE unsafeGetParent(TYPE element) throws Exception;
+
+	@Override
+	public final boolean hasChildren(TYPE element) {
+		try {
+			return unsafeHasChildren(element);
+		}
+		catch (Throwable t) {
+			fireCallbackExceptionEvent(t);
+		}
+		return false;
+	}
+
+	protected abstract boolean unsafeHasChildren(TYPE element) throws Exception;
 }

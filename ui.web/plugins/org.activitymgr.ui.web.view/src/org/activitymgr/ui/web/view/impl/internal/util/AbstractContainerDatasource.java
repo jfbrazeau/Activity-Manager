@@ -13,7 +13,7 @@ import com.vaadin.data.Property;
 public abstract class AbstractContainerDatasource<ITEM_TYPE extends Item> implements Container {
 
 	private IResourceCache resourceCache;
-	private Map<String, ITEM_TYPE> items = new HashMap<String, ITEM_TYPE>();
+	private Map<Object, ITEM_TYPE> items = new HashMap<Object, ITEM_TYPE>();
 
 	protected AbstractContainerDatasource(IResourceCache resourceCache) {
 		this.resourceCache = resourceCache;
@@ -24,17 +24,16 @@ public abstract class AbstractContainerDatasource<ITEM_TYPE extends Item> implem
 	}
 	
 	@Override
-	public final Item getItem(Object itemId) {
-		String castedItemId = (String) itemId;
-		ITEM_TYPE result = items.get(itemId);
+	public final Item getItem(Object value) {
+		ITEM_TYPE result = items.get(value);
 		if (result == null) {
-			result = createItem(castedItemId);
-			items.put(castedItemId, result);
+			result = createItem(value);
+			items.put(value, result);
 		}
 		return result;
 	}
 
-	protected abstract ITEM_TYPE createItem(String itemId);
+	protected abstract ITEM_TYPE createItem(Object value);
 
 	@Override
 	public final boolean removeItem(Object itemId) {

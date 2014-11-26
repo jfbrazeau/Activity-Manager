@@ -2,10 +2,14 @@ package org.activitymgr.ui.web.logic;
 
 import java.util.Collection;
 
-public interface ITreeContentProviderCallback extends IListContentProviderCallback {
+public interface ITreeContentProviderCallback<TYPE> extends IListContentProviderCallback<TYPE> {
 
-	Collection<String> getChildren(String itemId);
+	Collection<TYPE> getChildren(TYPE element);
 
-	boolean isRoot(String itemId);
+	boolean isRoot(TYPE element);
+
+	boolean hasChildren(TYPE element);
+
+	TYPE getParent(TYPE element);
 
 }

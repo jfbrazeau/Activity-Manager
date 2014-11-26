@@ -3,7 +3,6 @@ package org.activitymgr.ui.web.view.impl.internal;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.activitymgr.ui.web.logic.ILabelProviderCallback.Icon;
 import org.activitymgr.ui.web.view.IResourceCache;
 
 import com.vaadin.server.Resource;
@@ -24,8 +23,8 @@ public class ResourceCacheImpl implements IResourceCache {
 		return result;
 	}
 
-	public Resource getIconResource(Icon icon) {
-		return icon == null ? null : getResource(icon.toString().toLowerCase().replaceAll("_",  "-") + ".gif");
+	public Resource getIconResource(String icon) {
+		return icon == null ? null : getResource(icon);
 	}
 
 }

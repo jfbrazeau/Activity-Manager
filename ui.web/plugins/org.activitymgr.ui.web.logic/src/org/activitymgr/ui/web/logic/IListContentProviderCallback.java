@@ -2,10 +2,8 @@ package org.activitymgr.ui.web.logic;
 
 import java.util.Collection;
 
-public interface IListContentProviderCallback {
+public interface IListContentProviderCallback<TYPE> extends ILabelProviderCallback<TYPE> {
 
-	ILabelProviderCallback getLabelProvider(String itemId);
-
-	Collection<String> rootItemIds();
+	Collection<TYPE> getRootElements();
 
 }

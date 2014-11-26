@@ -4,42 +4,19 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.activitymgr.ui.web.logic.IEventBus;
-import org.activitymgr.ui.web.logic.ILabelProviderCallback;
 import org.activitymgr.ui.web.logic.IListContentProviderCallback;
 import org.activitymgr.ui.web.logic.ILogic;
 
-public abstract class AbstractSafeListContentProviderCallback extends AbstractSafeCallback implements IListContentProviderCallback {
+public abstract class AbstractSafeListContentProviderCallback<TYPE> extends AbstractSafeLabelProviderCallback<TYPE> implements IListContentProviderCallback<TYPE> {
 	
 	public AbstractSafeListContentProviderCallback(ILogic<?> source, IEventBus eventBus) {
 		super(source, eventBus);
 	}
 
 	@Override
-	public final ILabelProviderCallback getLabelProvider(String itemId) {
+	public final Collection<TYPE> getRootElements() {
 		try {
-			return unsafeGetLabelProvider(itemId);
-		}
-		catch (Throwable t) {
-			fireCallbackExceptionEvent(t);
-		}
-		return new ILabelProviderCallback() {
-			@Override
-			public Icon getIcon() {
-				return Icon.ERROR;
-			}
-			@Override
-			public String getText() {
-				return AbstractSafeLabelProviderCallback.ERROR;
-			}
-		};
-	}
-
-	protected abstract ILabelProviderCallback unsafeGetLabelProvider(String itemId) throws Exception;
-
-	@Override
-	public final Collection<String> rootItemIds() {
-		try {
-			return unsafeRootItemIds();
+			return unsafeGetRootElements();
 		}
 		catch (Throwable t) {
 			fireCallbackExceptionEvent(t);
@@ -47,6 +24,6 @@ public abstract class AbstractSafeListContentProviderCallback extends AbstractSa
 		return Collections.emptyList();
 	}
 
-	protected abstract Collection<String> unsafeRootItemIds() throws Exception;
-
+	protected abstract Collection<TYPE> unsafeGetRootElements() throws Exception;
+	
 }

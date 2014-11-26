@@ -6,40 +6,41 @@ import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.view.IResourceCache;
 
 import com.vaadin.data.Container;
-import com.vaadin.server.Resource;
 
 @SuppressWarnings("serial")
 public class BasicTreeDatasource extends
-		AbstractContainerDatasource<BasicItem> implements
+		BasicListDatasource implements
 		Container.Hierarchical {
 
-	private ITreeContentProviderCallback contentProvider;
+	private ITreeContentProviderCallback<Object> contentProvider;
 
+	@SuppressWarnings("unchecked")
 	public BasicTreeDatasource(IResourceCache resourceCache,
-			ITreeContentProviderCallback contentProvider) {
-		super(resourceCache);
-		this.contentProvider = contentProvider;
+			ITreeContentProviderCallback<?> contentProvider) {
+		super(resourceCache, contentProvider);
+		this.contentProvider = (ITreeContentProviderCallback<Object>) contentProvider;
 	}
 
 	@Override
-	public Collection<?> getChildren(Object itemId) {
-		return contentProvider.getChildren((String) itemId);
+	public Collection<?> getChildren(Object element) {
+		System.out.println("getChildren(" + element + ")");
+		return contentProvider.getChildren(element);
 	}
 
 	@Override
 	public Collection<?> rootItemIds() {
-		return contentProvider.rootItemIds();
+		return contentProvider.getRootElements();
 	}
 
 	@Override
-	public boolean isRoot(Object itemId) {
-		return contentProvider.isRoot((String) itemId);
+	public boolean isRoot(Object element) {
+		return contentProvider.isRoot(element);
 	}
 
 	@Override
-	protected BasicItem createItem(String itemId) {
-		return new BasicItem(getResourceCache(),
-				contentProvider.getLabelProvider(itemId));
+	protected BasicItem createItem(Object value) {
+		return new BasicItem(getResourceCache(), value,
+				contentProvider);
 	}
 
 	/*
@@ -47,24 +48,13 @@ public class BasicTreeDatasource extends
 	 */
 
 	@Override
-	public final Collection<?> getContainerPropertyIds() {
-		return BasicItem.PROPERTY_IDS;
+	public final boolean areChildrenAllowed(Object element) {
+		return hasChildren(element);
 	}
 
 	@Override
-	public final Class<?> getType(Object propertyId) {
-		return BasicItem.NAME_PROPERTY_ID.equals(propertyId) ? String.class
-				: Resource.class;
-	}
-
-	@Override
-	public final boolean areChildrenAllowed(Object itemId) {
-		return hasChildren(itemId);
-	}
-
-	@Override
-	public final boolean hasChildren(Object itemId) {
-		return getChildren(itemId).size() > 0;
+	public final boolean hasChildren(Object element) {
+		return contentProvider.hasChildren(element);
 	}
 
 	/*
@@ -72,20 +62,9 @@ public class BasicTreeDatasource extends
 	 */
 
 	@Override
-	public final Object getParent(Object itemId) {
-		throw new IllegalStateException(
-				"Method is not implemented {getParent(Object itemId)}");
-	}
-
-	@Override
-	public final Collection<?> getItemIds() {
-		throw new IllegalStateException(
-				"Method is not implemented {getItemIds()}");
-	}
-
-	@Override
-	public final int size() {
-		throw new IllegalStateException("Method is not implemented {size()}");
+	public final Object getParent(Object element) {
+		System.out.println("getParent(" + element + ")");
+		return contentProvider.getParent(element);
 	}
 
 	/*

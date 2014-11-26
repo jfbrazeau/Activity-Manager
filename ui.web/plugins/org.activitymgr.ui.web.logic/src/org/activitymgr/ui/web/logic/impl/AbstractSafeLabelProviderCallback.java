@@ -4,7 +4,7 @@ import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILabelProviderCallback;
 import org.activitymgr.ui.web.logic.ILogic;
 
-public abstract class AbstractSafeLabelProviderCallback extends AbstractSafeCallback implements ILabelProviderCallback {
+public abstract class AbstractSafeLabelProviderCallback<TYPE> extends AbstractSafeCallback implements ILabelProviderCallback<TYPE> {
 	
 	public static final String ERROR = "<UNREACHABLE LABEL>";
 
@@ -13,29 +13,16 @@ public abstract class AbstractSafeLabelProviderCallback extends AbstractSafeCall
 	}
 
 	@Override
-	public String getText() {
+	public String getText(TYPE object, String propertyId) {
 		try {
-			return unsafeGetText();
+			return unsafeGetText(object, propertyId);
 		}
 		catch (Throwable t) {
 			fireCallbackExceptionEvent(t);
 		}
 		return ERROR;
 	}
-
-	protected abstract String unsafeGetText() throws Exception;
 	
-	@Override
-	public Icon getIcon() {
-		try {
-			return unsafeGetIcon();
-		}
-		catch (Throwable t) {
-			fireCallbackExceptionEvent(t);
-		}
-		return Icon.ERROR;
-	}
-
-	protected abstract Icon unsafeGetIcon() throws Exception;
+	public abstract String unsafeGetText(TYPE object, String propertyId) throws Exception;
 
 }

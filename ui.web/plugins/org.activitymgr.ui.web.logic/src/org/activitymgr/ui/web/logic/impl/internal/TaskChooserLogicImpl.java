@@ -1,29 +1,23 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.activitymgr.core.IModelMgr;
 import org.activitymgr.core.ModelException;
 import org.activitymgr.core.beans.Collaborator;
 import org.activitymgr.core.beans.Task;
 import org.activitymgr.core.dao.DAOException;
-import org.activitymgr.ui.web.logic.ILabelProviderCallback;
 import org.activitymgr.ui.web.logic.IListContentProviderCallback;
-import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
-import org.activitymgr.ui.web.logic.impl.AbstractSafeLabelProviderCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeListContentProviderCallback;
-import org.activitymgr.ui.web.logic.impl.AbstractSafeTreeContentProviderCallback;
-import org.activitymgr.ui.web.logic.impl.LogicContext;
 
 public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.View> implements ITaskChooserLogic {
 	
@@ -40,67 +34,55 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 		
 		// Retrieve recent tasks labels
 		recentTasks = new HashMap<Long, Task>();
-		final List<String> recentTaskIds = new ArrayList<String>();
 		Calendar from = (Calendar) monday.clone();
 		from.add(Calendar.DATE, -7);
 		Calendar to = (Calendar) monday.clone();
 		to.add(Calendar.DATE, 6);
-		final Map<String, String> tasksCodePathMap = new HashMap<String, String>();
+		final Map<Long, String> tasksCodePathMap = new HashMap<Long, String>();
 		try {
-			Task[] recentTasksList = getModelMgr().getContributedTaskContainers(contributor, from, to);
-			for (Task recentTask : recentTasksList) {
-				String taskId = String.valueOf(recentTask.getId());
-				recentTaskIds.add(taskId);
-				recentTasks.put(recentTask.getId(), recentTask);
+			Task[] recentTasks = getModelMgr().getContributedTaskContainers(contributor, from, to);
+			for (Task recentTask : recentTasks) {
 				String taskCodePath = getModelMgr().getTaskCodePath(recentTask);
-				tasksCodePathMap.put(taskId, taskCodePath);
+				tasksCodePathMap.put(recentTask.getId(), taskCodePath);
 			}
-			Collections.sort(recentTaskIds, new Comparator<String>() {
+			Arrays.sort(recentTasks, new Comparator<Task>() {
 				@Override
-				public int compare(String id1, String id2) {
-					return tasksCodePathMap.get(id1).compareTo(tasksCodePathMap.get(id2));
+				public int compare(Task t1, Task t2) {
+					System.out.println("compare(" + t1 + ", " + t2 + ")");
+					return tasksCodePathMap.get(t1.getId()).compareTo(tasksCodePathMap.get(t2.getId()));
 				}
 			});
+			final List<Task> recentTasksList = Arrays.asList(recentTasks);
+			IListContentProviderCallback<Task> recentTaskCallback = new AbstractSafeListContentProviderCallback<Task>(this, getContext().getEventBus()) {
+				@Override
+				protected Collection<Task> unsafeGetRootElements() throws Exception {
+					return recentTasksList;
+				}
+				@Override
+				public String unsafeGetText(Task task, String propertyId) {
+					return "[" + tasksCodePathMap.get(task.getId()) + "] " + task.getName();
+				}
+				@Override
+				public Collection<String> getPropertyIds() {
+					return DEFAULT_PROPERTY_IDS;
+				}
+			};
+			getView().setRecentTasksProviderCallback(recentTaskCallback);
+
+			// Reset button state & status label
+			onSelectionChanged(null);
 			
+			// A preload of recent tasks must be performed in the vaadin tree. Otherwise, after
+			// having clicked on a recent task, it does not become selected in the tree.
+			if (recentTasksList.size() > 0) {
+				getView().preloadTreeItems(recentTasksList);
+			}
 		} catch (DAOException e) {
 			throw new IllegalStateException("Unexpected error while retrieving recent tasks", e);
 		} catch (ModelException e) {
 			throw new IllegalStateException("Unexpected error while retrieving recent tasks", e);
 		}
-		IListContentProviderCallback recentTaskCallback = new AbstractSafeListContentProviderCallback(this, getContext().getEventBus()) {
-			@Override
-			protected Collection<String> unsafeRootItemIds() throws Exception {
-				return recentTaskIds;
-			}
-			
-			@Override
-			protected ILabelProviderCallback unsafeGetLabelProvider(final String itemId)
-					throws Exception {
-				final Task task = recentTasks.get(Long.parseLong(itemId));
-				AbstractSafeLabelProviderCallback callback = new AbstractSafeLabelProviderCallback(getSource(), getEventBus()) {
-					@Override
-					protected String unsafeGetText() throws Exception {
-						return "[" + tasksCodePathMap.get(itemId) + "] " + task.getName();
-					}
-					
-					@Override
-					protected Icon unsafeGetIcon() throws Exception {
-						return null;
-					}
-				};
-				return getContext().buildTransactionalWrapper(callback, ILabelProviderCallback.class);
-			}
-		};
-		getView().setRecentTasksProviderCallback(recentTaskCallback);
 
-		// Reset button state & status label
-		onSelectionChanged(null);
-
-		// A preload of recent tasks must be performed in the vaadin tree. Otherwise, after
-		// having clicked on a recent task, it does not become selected in the tree.s
-		if (recentTaskIds.size() > 0) {
-			getView().preloadTreeItems(recentTaskIds);
-		}
 	}
 
 	@Override
@@ -206,56 +188,4 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 		return ids;
 	}
 
-}
-
-class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback {
-
-	private IModelMgr modelMgr;
-	private LogicContext context;
-
-	public TaskTreeContentProvider(ILogic<?> source, LogicContext context, IModelMgr modelMgr) {
-		super(source, context.getEventBus());
-		this.modelMgr = modelMgr;
-		this.context = context;
-	}
-
-	@Override
-	protected ILabelProviderCallback unsafeGetLabelProvider(final String itemId)
-			throws Exception {
-		AbstractSafeLabelProviderCallback callback = new AbstractSafeLabelProviderCallback(getSource(), getEventBus()) {
-			
-			@Override
-			protected String unsafeGetText() throws Exception {
-				return modelMgr.getTask(Long.parseLong(itemId)).getName();
-			}
-			
-			@Override
-			protected Icon unsafeGetIcon() throws Exception {
-				return null;
-			}
-		};
-		return context.buildTransactionalWrapper(callback, ILabelProviderCallback.class);
-	}
-
-	@Override
-	protected Collection<String> unsafeGetChildren(String itemId)
-			throws Exception {
-		Task[] subTasks = modelMgr.getSubtasks(itemId == null ? null : Long.parseLong(itemId));
-		Collection<String> result = new ArrayList<String>();
-		for (Task subTask : subTasks) {
-			result.add(String.valueOf(subTask.getId()));
-		}
-		return result;
-	}
-
-	@Override
-	protected Collection<String> unsafeRootItemIds() throws Exception {
-		return unsafeGetChildren(null);
-	}
-
-	@Override
-	protected boolean unsafeIsRoot(String itemId) throws Exception {
-		return unsafeRootItemIds().contains(itemId);
-	}
-	
 }

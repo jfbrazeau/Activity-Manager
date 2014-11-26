@@ -5,24 +5,22 @@ import java.util.Collection;
 import org.activitymgr.ui.web.logic.IListContentProviderCallback;
 import org.activitymgr.ui.web.view.IResourceCache;
 
-import com.vaadin.server.Resource;
-
 @SuppressWarnings("serial")
 public class BasicListDatasource extends
 		AbstractContainerDatasource<BasicItem> {
 
-	private IListContentProviderCallback contentProvider;
+	private IListContentProviderCallback<?> contentProvider;
 
 	public BasicListDatasource(IResourceCache resourceCache,
-			IListContentProviderCallback contentProvider) {
+			IListContentProviderCallback<?> contentProvider) {
 		super(resourceCache);
 		this.contentProvider = contentProvider;
 	}
 
 	@Override
-	protected BasicItem createItem(String itemId) {
-		return new BasicItem(getResourceCache(),
-				contentProvider.getLabelProvider(itemId));
+	protected BasicItem createItem(Object value) {
+		return new BasicItem(getResourceCache(), value,
+				contentProvider);
 	}
 
 	/*
@@ -31,18 +29,17 @@ public class BasicListDatasource extends
 
 	@Override
 	public final Collection<?> getContainerPropertyIds() {
-		return BasicItem.PROPERTY_IDS;
+		return contentProvider.getPropertyIds();
 	}
 
 	@Override
 	public final Class<?> getType(Object propertyId) {
-		return BasicItem.NAME_PROPERTY_ID.equals(propertyId) ? String.class
-				: Resource.class;
+		return String.class;
 	}
 
 	@Override
 	public final Collection<?> getItemIds() {
-		return contentProvider.rootItemIds();
+		return contentProvider.getRootElements();
 	}
 
 	@Override

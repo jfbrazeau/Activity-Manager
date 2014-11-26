@@ -1,13 +1,16 @@
 package org.activitymgr.ui.web.logic;
 
-public interface ILabelProviderCallback {
+import java.util.Arrays;
+import java.util.Collection;
 
-	enum Icon {
-		ERROR, EOBJECT, REPOSITORY_ON, REPOSITORY_OFF, BRANCH, FOLDER, FILE
-	}
+public interface ILabelProviderCallback<TYPE> {
+	
+	public static final String NAME_PROPERTY_ID = "NAME";
+	public static final Collection<String> DEFAULT_PROPERTY_IDS = Arrays
+			.asList(new String[] { NAME_PROPERTY_ID });
 
-	String getText();
-
-	Icon getIcon();
+	String getText(TYPE object, String propertyId);
+	
+	Collection<String> getPropertyIds();
 
 }

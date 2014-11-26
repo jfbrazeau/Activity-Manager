@@ -38,6 +38,10 @@ import com.vaadin.ui.VerticalLayout;
 @SuppressWarnings("serial")
 public class ContributionsPanel extends VerticalLayout implements IContributionsTabLogic.View, Button.ClickListener {
 
+	private static final String LNAME = "LNAME";
+
+	private static final String FNAME = "FNAME";
+
 	private IContributionsTabLogic logic;
 	
 	private IResourceCache resourceCache;
@@ -130,12 +134,12 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		 */
 		collaboratorsTable = new Table();
 		hl.addComponent(collaboratorsTable);
-		collaboratorsTable.addContainerProperty("FNAME", String.class, null);
-		collaboratorsTable.setColumnHeader("FNAME", "Fist name");
-		collaboratorsTable.setColumnWidth("FNAME", 70);
-		collaboratorsTable.addContainerProperty("LNAME", String.class, null);
-		collaboratorsTable.setColumnHeader("LNAME", "Last name");
-		collaboratorsTable.setColumnWidth("LNAME", 70);
+		collaboratorsTable.addContainerProperty(FNAME, String.class, null);
+		collaboratorsTable.setColumnHeader(FNAME, "Fist name");
+		collaboratorsTable.setColumnWidth(FNAME, 70);
+		collaboratorsTable.addContainerProperty(LNAME, String.class, null);
+		collaboratorsTable.setColumnHeader(LNAME, "Last name");
+		collaboratorsTable.setColumnWidth(LNAME, 70);
 		collaboratorsTable.setSelectable(true);
 		collaboratorsTable.setImmediate(true);
 		collaboratorsTable.setNullSelectionAllowed(false);
