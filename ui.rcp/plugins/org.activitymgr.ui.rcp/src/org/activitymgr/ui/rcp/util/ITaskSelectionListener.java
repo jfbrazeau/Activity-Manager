@@ -27,7 +27,7 @@
  */
 package org.activitymgr.ui.rcp.util;
 
-import org.activitymgr.core.beans.Task;
+import org.activitymgr.core.dto.Task;
 
 /**
  * Interface d'écoute de sélection de taches.

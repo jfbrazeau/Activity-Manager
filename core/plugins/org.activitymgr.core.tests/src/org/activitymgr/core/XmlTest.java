@@ -8,11 +8,11 @@ import java.io.InputStream;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.activitymgr.core.beans.Collaborator;
-import org.activitymgr.core.beans.Contribution;
-import org.activitymgr.core.beans.Duration;
-import org.activitymgr.core.beans.Task;
-import org.activitymgr.core.dao.DAOException;
+import org.activitymgr.core.dto.Collaborator;
+import org.activitymgr.core.dto.Contribution;
+import org.activitymgr.core.dto.Duration;
+import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.model.ModelException;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
@@ -21,27 +21,27 @@ public class XmlTest extends AbstractModelTestCase {
 	/** Logger */
 	private static Logger log = Logger.getLogger(XmlTest.class);
 
-	public void testEmptyFile() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testEmptyFile() throws IOException, ParserConfigurationException, SAXException, ModelException {
 		importTestFile();
 	}
 
-	public void testMissingDoctype() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testMissingDoctype() throws IOException, ParserConfigurationException, SAXException, ModelException {
 		assertSAXExceptionThrown("Missing DOCTYPE must generate an sax error");
 	}
 
-	public void testBadXmlFormat() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testBadXmlFormat() throws IOException, ParserConfigurationException, SAXException, ModelException {
 		assertSAXExceptionThrown("Bad XML format must generate an sax error");
 	}
 
-	public void testCollaboratorInDurations() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testCollaboratorInDurations() throws IOException, ParserConfigurationException, SAXException, ModelException {
 		assertSAXExceptionThrown("Wrong collaborator situation in XML file must generate an sax error");
 	}
 
-	public void testMissingCollaboratorLogin() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testMissingCollaboratorLogin() throws IOException, ParserConfigurationException, SAXException, ModelException {
 		assertSAXExceptionThrown("Missing collaborator login must generate an sax error");
 	}
 
-	public void testCreateDurations() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testCreateDurations() throws IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de durées
 		Duration[] initialDurations = getModelMgr().getDurations();
 
@@ -63,7 +63,7 @@ public class XmlTest extends AbstractModelTestCase {
 		getModelMgr().removeDuration(duration);
 	}
 	
-	public void testCreateCollaborators() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testCreateCollaborators() throws IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de durées
 		Collaborator[] initialCollaborators = getModelMgr().getCollaborators();
 		assertNotNull(initialCollaborators);
@@ -82,7 +82,7 @@ public class XmlTest extends AbstractModelTestCase {
 		getModelMgr().removeCollaborator(collaborators[1]);
 	}
 	
-	public void testDuplicateCollaboratorLogin() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testDuplicateCollaboratorLogin() throws IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de collaborateurs
 		Collaborator[] initialCollaborators = getModelMgr().getCollaborators();
 		assertNotNull(initialCollaborators);
@@ -98,7 +98,7 @@ public class XmlTest extends AbstractModelTestCase {
 		}
 	}
 
-	public void testCreateTasks() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testCreateTasks() throws IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de taches
 		Task[] initialTasks = getModelMgr().getSubTasks((Task) null);
 		assertNotNull(initialTasks);
@@ -116,7 +116,7 @@ public class XmlTest extends AbstractModelTestCase {
 		getModelMgr().removeTask(tasks[0]);
 	}
 	
-	public void testCreateContributions() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
+	public void testCreateContributions() throws IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de taches
 		Contribution[] initialContributions = getModelMgr().getContributions(null, null, null, null);
 		assertNotNull(initialContributions);
@@ -145,7 +145,7 @@ public class XmlTest extends AbstractModelTestCase {
 		
 	}
 	
-	public void testExportAndImport() throws DAOException, ModelException, IOException, ParserConfigurationException, SAXException {
+	public void testExportAndImport() throws ModelException, IOException, ParserConfigurationException, SAXException {
 		// Création des objets de test
 		Duration duration = getFactory().newDuration();
 		duration.setId(100);
@@ -220,7 +220,7 @@ public class XmlTest extends AbstractModelTestCase {
 	 * Méthodes privées 
 	 */
 
-	private void assertSAXExceptionThrown(String testFailMessage) throws DAOException, IOException, ParserConfigurationException, ModelException {
+	private void assertSAXExceptionThrown(String testFailMessage) throws IOException, ParserConfigurationException, ModelException {
 		try {
 			importTestFile();
 			fail(testFailMessage);
@@ -230,7 +230,7 @@ public class XmlTest extends AbstractModelTestCase {
 		}
 	}
 
-	private void importTestFile() throws DAOException, IOException, ParserConfigurationException, SAXException, ModelException {
+	private void importTestFile() throws IOException, ParserConfigurationException, SAXException, ModelException {
 		String testName = getName();
 		log.debug("testName='" + testName + "'");
 		String filePostfix = testName.substring(4);

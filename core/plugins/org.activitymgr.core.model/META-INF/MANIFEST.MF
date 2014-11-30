@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Activity Manager Core
+Bundle-SymbolicName: org.activitymgr.core.model;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Jean-Francois Brazeau
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.activitymgr.core.util;bundle-version="1.0.0",
+ org.activitymgr.core.dao;bundle-version="1.0.0",
+ org.activitymgr.core.orm;bundle-version="1.0.0",
+ org.activitymgr.core.dto;bundle-version="1.0.0";visibility:=reexport
+Export-Package: org.activitymgr.core.model
+Bundle-ClassPath: .

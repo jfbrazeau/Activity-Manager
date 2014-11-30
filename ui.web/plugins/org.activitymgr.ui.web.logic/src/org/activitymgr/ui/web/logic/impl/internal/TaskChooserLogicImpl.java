@@ -9,10 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.activitymgr.core.ModelException;
-import org.activitymgr.core.beans.Collaborator;
-import org.activitymgr.core.beans.Task;
-import org.activitymgr.core.dao.DAOException;
+import org.activitymgr.core.dto.Collaborator;
+import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.model.ModelException;
 import org.activitymgr.ui.web.logic.IListContentProviderCallback;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
@@ -22,7 +21,6 @@ import org.activitymgr.ui.web.logic.impl.AbstractSafeListContentProviderCallback
 public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.View> implements ITaskChooserLogic {
 	
 	private List<Long> alreadySelectedTaskIds;
-	private HashMap<Long, Task> recentTasks;
 
 	public TaskChooserLogicImpl(AbstractLogicImpl<?> parent, List<Long> selectedTaskIds, Collaborator contributor, Calendar monday) {
 		super(parent);
@@ -33,7 +31,6 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 		getView().setTreeContentProviderCallback(getContext().buildTransactionalWrapper(treeContentCallback, ITreeContentProviderCallback.class));
 		
 		// Retrieve recent tasks labels
-		recentTasks = new HashMap<Long, Task>();
 		Calendar from = (Calendar) monday.clone();
 		from.add(Calendar.DATE, -7);
 		Calendar to = (Calendar) monday.clone();
@@ -77,8 +74,6 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 			if (recentTasksList.size() > 0) {
 				getView().preloadTreeItems(recentTasksList);
 			}
-		} catch (DAOException e) {
-			throw new IllegalStateException("Unexpected error while retrieving recent tasks", e);
 		} catch (ModelException e) {
 			throw new IllegalStateException("Unexpected error while retrieving recent tasks", e);
 		}
@@ -86,70 +81,63 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 	}
 
 	@Override
-	public void onSelectionChanged(Long taskId) {
-		checkDialogRules(taskId, getView().getNewTaskName());
+	public void onSelectionChanged(Task task) {
+		checkDialogRules((Task) task, getView().getNewTaskName());
 	}
 
 	@Override
 	public void onNewTaskCheckboxClicked() {
-		String selectedTaskId = getView().getSelectedTaskId();
-		checkDialogRules(selectedTaskId != null ? Long.parseLong(selectedTaskId) : null, getView().getNewTaskName());
+		Task selectedTask = (Task) getView().getSelectedTask();
+		checkDialogRules(selectedTask, getView().getNewTaskName());
 	}
 	
 	@Override
 	public void onNewTaskNameChanged(String newTaskName) {
-		String selectedTaskId = getView().getSelectedTaskId();
-		checkDialogRules(selectedTaskId != null ? Long.parseLong(selectedTaskId) : null, newTaskName);
+		Task selectedTask = (Task) getView().getSelectedTask();
+		checkDialogRules(selectedTask, newTaskName);
 	}
 
-	private void checkDialogRules(Long selectedTaskId, String newTaskName) {
-		System.out.println("checkDialogRules(" + selectedTaskId + ")");
-		try {
-			String newStatus = "";
-			boolean okButtonEnabled = false;
-			boolean newTaskFormEnabled = false;
-			boolean newTaskNameEnabled = false;
-			if (selectedTaskId != null) {
-				if (alreadySelectedTaskIds.contains(selectedTaskId)) {
-					newStatus = "This task is already selected";
-				} else if (!getModelMgr().isLeaf(selectedTaskId)) {
-					newTaskFormEnabled = true;
-					if (getView().isNewTaskChecked()) {
-						newTaskNameEnabled = true;
-						System.out.println("New task name: '" + newTaskName + "'");
-						if (newTaskName == null || "".equals(newTaskName.trim())) {
-							newStatus = "Enter a task name";
-						}
-						else {
-							okButtonEnabled = true;
-						}
+	private void checkDialogRules(Task selectedTask, String newTaskName) {
+		String newStatus = "";
+		boolean okButtonEnabled = false;
+		boolean newTaskFormEnabled = false;
+		boolean newTaskNameEnabled = false;
+		if (selectedTask != null) {
+			if (alreadySelectedTaskIds.contains(selectedTask.getId())) {
+				newStatus = "This task is already selected";
+			} else if (!getModelMgr().isLeaf(selectedTask.getId())) {
+				newTaskFormEnabled = true;
+				if (getView().isNewTaskChecked()) {
+					newTaskNameEnabled = true;
+					System.out.println("New task name: '" + newTaskName + "'");
+					if (newTaskName == null || "".equals(newTaskName.trim())) {
+						newStatus = "Enter a task name";
 					}
 					else {
-						newStatus = "You cannot select a container task";
+						okButtonEnabled = true;
 					}
 				}
 				else {
-					okButtonEnabled = true;
+					newStatus = "You cannot select a container task";
 				}
 			}
-			getView().setStatus(newStatus);
-			getView().setOkButtonEnabled(okButtonEnabled);
-			getView().setNewTaskFormEnabled(newTaskFormEnabled);
-			getView().setNewTaskNameEnabled(newTaskNameEnabled);
+			else {
+				okButtonEnabled = true;
+			}
 		}
-		catch (DAOException e) {
-			handleError(e);
-		}
+		getView().setStatus(newStatus);
+		getView().setOkButtonEnabled(okButtonEnabled);
+		getView().setNewTaskFormEnabled(newTaskFormEnabled);
+		getView().setNewTaskNameEnabled(newTaskNameEnabled);
 	}
 
 	@Override
-	public void onOkButtonClicked(long taskId) {
+	public void onOkButtonClicked(Task task) {
 		try {
-			if (getModelMgr().isLeaf(taskId)) {
-				((ContributionsTabLogicImpl) getParent()).addTask(taskId);
+			if (getModelMgr().isLeaf(task.getId())) {
+				((ContributionsTabLogicImpl) getParent()).addTask(task);
 			}
 			else {
-				Task parentTask = getModelMgr().getTask(taskId);
 				Task newTask = getContext().getBeanFactory().newTask();
 				newTask.setName(getView().getNewTaskName());
 				String code = newTask.getName().trim().replaceAll(" ", "").toUpperCase();
@@ -157,35 +145,28 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 					code = code.substring(0, 7);
 				}
 				newTask.setCode('$' + code);
-				getModelMgr().createTask(parentTask, newTask);
-				((ContributionsTabLogicImpl) getParent()).addTask(newTask.getId());
+				getModelMgr().createTask(task, newTask);
+				((ContributionsTabLogicImpl) getParent()).addTask(newTask);
 			}
-		} catch (DAOException e) {
-			handleError(e);
 		} catch (ModelException e) {
 			handleError(e);
 		}
 	}
 
 	@Override
-	public void onRecentTaskClicked(long taskId) {
-		try {
-			Task cursor = recentTasks.get(taskId);
-			List<Long> ids = getParentTaskIds(cursor);
-			getView().expandTasks(ids);
-			getView().selectTask(taskId);
-		} catch (DAOException e) {
-			handleError(e);
-		}
+	public void onRecentTaskClicked(Task task) {
+		List<Task> tasks = getParentTasks(task);
+		getView().expandTasks(tasks);
+		getView().selectTask(task);
 	}
 
-	private List<Long> getParentTaskIds(Task task) throws DAOException {
-		List<Long> ids = new ArrayList<Long>();
+	private List<Task> getParentTasks(Task task) {
+		List<Task> tasks = new ArrayList<Task>();
 		while (task != null) {
-			ids.add(0, task.getId());
+			tasks.add(0, task);
 			task = getModelMgr().getParentTask(task);
 		}
-		return ids;
+		return tasks;
 	}
 
 }

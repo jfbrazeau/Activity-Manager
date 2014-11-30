@@ -11,10 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import org.activitymgr.core.CoreModule;
-import org.activitymgr.core.IBeanFactory;
-import org.activitymgr.core.IModelMgr;
-import org.activitymgr.core.beans.Collaborator;
+import org.activitymgr.core.dto.Collaborator;
+import org.activitymgr.core.dto.IDTOFactory;
+import org.activitymgr.core.model.CoreModelModule;
+import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.IFeatureAccessManager;
 import org.activitymgr.ui.web.logic.IViewFactory;
@@ -46,7 +46,7 @@ public class LogicContext {
 		this.accessManager = accessManager;
 
 		List<AbstractModule> modules = new ArrayList<AbstractModule>();
-		modules.add(new CoreModule());
+		modules.add(new CoreModelModule());
 		modules.add(new AbstractModule() {
 			@Override
 			protected void configure() {
@@ -173,8 +173,8 @@ public class LogicContext {
 				});
 	}
 
-	public IBeanFactory getBeanFactory() {
-		return injector.getInstance(IBeanFactory.class);
+	public IDTOFactory getBeanFactory() {
+		return injector.getInstance(IDTOFactory.class);
 	}
 }
 

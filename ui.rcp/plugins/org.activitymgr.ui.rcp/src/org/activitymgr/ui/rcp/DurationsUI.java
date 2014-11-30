@@ -32,10 +32,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.activitymgr.core.IBeanFactory;
-import org.activitymgr.core.IModelMgr;
-import org.activitymgr.core.beans.Duration;
-import org.activitymgr.core.dao.DAOException;
+import org.activitymgr.core.dto.Duration;
+import org.activitymgr.core.dto.IDTOFactory;
+import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
@@ -153,7 +152,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	private Image uncheckedIcon;
 
 	/** Bean factory */
-	private IBeanFactory factory;
+	private IDTOFactory factory;
 
 	/**
 	 * Constructeur permettant de placer l'IHM dans un onglet.
@@ -163,7 +162,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	 * @param modelMgr
 	 *            the model manager instance.
 	 */
-	public DurationsUI(TabItem tabItem, IModelMgr modelMgr, IBeanFactory factory) {
+	public DurationsUI(TabItem tabItem, IModelMgr modelMgr, IDTOFactory factory) {
 		this(tabItem.getParent(), modelMgr, factory);
 		tabItem.setControl(parent);
 	}
@@ -178,7 +177,7 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 	 * @param factory
 	 *            bean factory.
 	 */
-	public DurationsUI(Composite parentComposite, IModelMgr modelMgr, IBeanFactory factory) {
+	public DurationsUI(Composite parentComposite, IModelMgr modelMgr, IDTOFactory factory) {
 		this.modelMgr = modelMgr;
 		this.factory = factory;
 
@@ -462,9 +461,6 @@ public class DurationsUI extends AbstractTableMgr implements IDbStatusListener,
 													.getString("DurationsUI.errors.DURATION_ALREADY_EXIST"); //$NON-NLS-1$
 									} catch (StringFormatException e) {
 										errorMsg = e.getMessage();
-									} catch (DAOException e) {
-										errorMsg = Strings
-												.getString("DurationsUI.errors.DATABASE_CONNECTION_FAILURE_WHILE_DURATION_EXISTENCE_CHECK"); //$NON-NLS-1$
 									}
 									// Retour du résultat
 									return errorMsg;

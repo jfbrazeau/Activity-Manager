@@ -1,6 +1,6 @@
 package org.activitymgr.ui.web.logic.impl.event;
 
-import org.activitymgr.core.beans.TaskContributions;
+import org.activitymgr.core.dto.misc.TaskContributions;
 import org.activitymgr.ui.web.logic.AbstractEvent;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;

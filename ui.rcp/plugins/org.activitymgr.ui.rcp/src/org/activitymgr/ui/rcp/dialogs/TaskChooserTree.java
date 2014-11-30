@@ -28,9 +28,8 @@
 package org.activitymgr.ui.rcp.dialogs;
 
 
-import org.activitymgr.core.IModelMgr;
-import org.activitymgr.core.beans.Task;
-import org.activitymgr.core.dao.DAOException;
+import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.util.AbstractTableMgr;
 import org.activitymgr.ui.rcp.util.SafeRunner;
@@ -156,12 +155,7 @@ public class TaskChooserTree extends AbstractTableMgr implements
 	public boolean hasChildren(Object element) {
 		log.debug("ITreeContentProvider.getChildren(" + element + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		final Task task = (Task) element;
-		try {
-			return modelMgr.getSubTasksCount(task.getId()) > 0;
-		} catch (DAOException e) {
-			log.error(e);
-			return false;
-		}
+		return modelMgr.getSubTasksCount(task.getId()) > 0;
 	}
 
 	/*

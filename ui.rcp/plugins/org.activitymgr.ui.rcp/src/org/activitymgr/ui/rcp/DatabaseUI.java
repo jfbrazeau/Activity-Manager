@@ -39,11 +39,10 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.activitymgr.core.IBeanFactory;
-import org.activitymgr.core.IModelMgr;
-import org.activitymgr.core.ModelException;
-import org.activitymgr.core.beans.Duration;
-import org.activitymgr.core.dao.DAOException;
+import org.activitymgr.core.dto.Duration;
+import org.activitymgr.core.dto.IDTOFactory;
+import org.activitymgr.core.model.IModelMgr;
+import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.DbHelper;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.util.SafeRunner;
@@ -152,7 +151,7 @@ public class DatabaseUI implements ModifyListener {
 	private Button xmlImportButton;
 
 	/** Bean factory */
-	private IBeanFactory factory;
+	private IDTOFactory factory;
 
 	/**
 	 * Constructeur permettant de placer l'IHM dans un onglet.
@@ -162,7 +161,7 @@ public class DatabaseUI implements ModifyListener {
 	 * @param modelMgr
 	 *            the model manager instance.
 	 */
-	public DatabaseUI(TabItem tabItem, IModelMgr modelMgr, IBeanFactory factory) {
+	public DatabaseUI(TabItem tabItem, IModelMgr modelMgr, IDTOFactory factory) {
 		this(tabItem.getParent(), modelMgr, factory);
 		tabItem.setControl(parent);
 	}
@@ -177,7 +176,7 @@ public class DatabaseUI implements ModifyListener {
 	 * @param factory
 	 *            bean factory.
 	 */
-	public DatabaseUI(Composite parentComposite, IModelMgr modelMgr, IBeanFactory factory) {
+	public DatabaseUI(Composite parentComposite, IModelMgr modelMgr, IDTOFactory factory) {
 		this.modelMgr = modelMgr;
 		this.factory = factory;
 
@@ -693,13 +692,11 @@ public class DatabaseUI implements ModifyListener {
 	 * @throws IOException
 	 *             levé en cas d'incident I/O lors du chargement de la
 	 *             configuration.
-	 * @throws DAOException
-	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws UITechException
 	 *             levé en cas d'incident inattendu lors de la création des
 	 *             durées.
 	 */
-	private void openDatabase() throws IOException, DAOException,
+	private void openDatabase() throws IOException,
 			UITechException {
 		// Récupération des paramétres de connexion
 		String databaseType = String.valueOf(dbTypeCombo.getSelectionIndex());
@@ -793,20 +790,19 @@ public class DatabaseUI implements ModifyListener {
 
 	/**
 	 * Ferme la connexion à la base de données.
-	 * 
-	 * @throws DAOException
-	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public void closeDatabase() throws UITechException, DAOException {
+	public void closeDatabase() throws UITechException {
 		// Changement des paramétres de connexion
 		try {
-			Connection con = datasource.getConnection();
-			if (DbHelper.isEmbeddedHsqlOrH2(con, jdbcUrlText.getText().trim())) {
-				DbHelper.shutdowHsqlOrH2(con);
+			if (datasource != null) {
+				Connection con = datasource.getConnection();
+				if (DbHelper.isEmbeddedHsqlOrH2(con, jdbcUrlText.getText().trim())) {
+					DbHelper.shutdowHsqlOrH2(con);
+				}
+				con.close();
+				datasource.close();
+				datasource = null;
 			}
-			con.close();
-			datasource.close();
-			datasource = null;
 		} catch (SQLException e) {
 			throw new UITechException("Unexpected error while closing the database",e); // TODO internationalize
 		}
@@ -834,13 +830,11 @@ public class DatabaseUI implements ModifyListener {
 	/**
 	 * Réinstalle la base de données (tables drop + creation).
 	 * 
-	 * @throws DAOException
-	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws UITechException
 	 *             levé en cas d'incident inattendu lors de la création des
 	 *             durées.
 	 */
-	private void reinstallDatabase() throws DAOException, UITechException {
+	private void reinstallDatabase() throws UITechException {
 		// Suppression et recréation des tables
 		modelMgr.createTables();
 		// Question concernant le référentiel de durées par défaut
@@ -876,14 +870,11 @@ public class DatabaseUI implements ModifyListener {
 	/**
 	 * Réinstalle la base de données (tables drop + creation).
 	 * 
-	 * @throws DAOException
-	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws UITechException
 	 *             levé en cas d'incident inattendu lors de la création des
 	 *             durées.
 	 */
-	private void reinstallDatabaseWithWarnings() throws DAOException,
-			UITechException {
+	private void reinstallDatabaseWithWarnings() throws UITechException {
 		if (MessageDialog.openQuestion(parent.getShell(),
 				Strings.getString("DatabaseUI.labels.CONFIRMATION"), //$NON-NLS-1$
 				Strings.getString("DatabaseUI.questions.RESET_CONFIRMATION_1"))) { //$NON-NLS-1$
@@ -900,13 +891,11 @@ public class DatabaseUI implements ModifyListener {
 	/**
 	 * Exporte le contenu de la BDD vers un fichier XML.
 	 * 
-	 * @throws DAOException
-	 *             levé en cas d'incident technique d'accès à la base.
 	 * @throws IOException
 	 *             levé en cas d'incident I/O lors de l'écriture dans le fichier
 	 *             XML.
 	 */
-	private void exportToXML() throws DAOException, IOException {
+	private void exportToXML() throws IOException {
 		String fileName = xmlFileText.getStringValue();
 		if ("".equals(fileName.trim())) { //$NON-NLS-1$
 			MessageDialog
@@ -948,12 +937,10 @@ public class DatabaseUI implements ModifyListener {
 	 *             levé en cas de violation du modèle de données.
 	 * @throws UITechException
 	 *             levé en cas d'incident inattendu.
-	 * @throws DAOException
-	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	private void importFromXML() throws IOException,
 			ParserConfigurationException, SAXException, ModelException,
-			UITechException, DAOException {
+			UITechException {
 		String fileName = xmlFileText.getStringValue();
 		File xmlFile = new File(fileName);
 		if ("".equals(fileName.trim())) { //$NON-NLS-1$

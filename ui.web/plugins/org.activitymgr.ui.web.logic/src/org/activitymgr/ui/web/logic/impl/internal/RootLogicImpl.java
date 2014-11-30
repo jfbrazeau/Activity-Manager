@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.activitymgr.core.beans.Collaborator;
+import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.ui.web.logic.AbstractEvent;
 import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.IFeatureAccessManager;

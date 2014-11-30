@@ -6,9 +6,10 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jean-Francois Brazeau
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.eclipse.osgi,
- org.activitymgr.core,
+ org.activitymgr.core.model,
  org.eclipse.equinox.registry,
- org.apache.commons.dbcp;bundle-version="1.4.0"
+ org.apache.commons.dbcp;bundle-version="1.4.0",
+ org.activitymgr.core.util;bundle-version="1.0.0"
 Export-Package: org.activitymgr.ui.web.logic,
  org.activitymgr.ui.web.logic.impl,
  org.activitymgr.ui.web.logic.impl.event

@@ -5,8 +5,9 @@ Bundle-SymbolicName: org.activitymgr.core.tests
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jean-Francois Brazeau
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.activitymgr.core;visibility:=reexport,
- org.apache.log4j;visibility:=reexport,
+Require-Bundle: org.activitymgr.core.model;visibility:=reexport,
  org.junit;bundle-version="3.8.2";visibility:=reexport,
- org.apache.commons.dbcp;bundle-version="1.4.0";visibility:=reexport
+ org.apache.commons.dbcp;bundle-version="1.4.0";visibility:=reexport,
+ org.activitymgr.core.util;bundle-version="1.0.0",
+ org.apache.commons.pool;bundle-version="1.6.0"
 Export-Package: org.activitymgr.core

@@ -27,9 +27,9 @@
  */
 package org.activitymgr.ui.rcp.dialogs;
 
-import org.activitymgr.core.IModelMgr;
-import org.activitymgr.core.beans.Collaborator;
-import org.activitymgr.core.beans.Task;
+import org.activitymgr.core.dto.Collaborator;
+import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.util.Strings;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;

@@ -27,7 +27,7 @@
  */
 package org.activitymgr.ui.rcp.dialogs;
 
-import org.activitymgr.core.beans.Task;
+import org.activitymgr.core.dto.Task;
 
 /**
  * Interface permettant d'adapter le comportement du dialogue de choix d'une

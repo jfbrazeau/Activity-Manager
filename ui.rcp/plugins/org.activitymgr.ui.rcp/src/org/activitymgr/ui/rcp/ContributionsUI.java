@@ -35,16 +35,15 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
-import org.activitymgr.core.IBeanFactory;
-import org.activitymgr.core.IModelMgr;
-import org.activitymgr.core.ModelException;
-import org.activitymgr.core.beans.Collaborator;
-import org.activitymgr.core.beans.Contribution;
-import org.activitymgr.core.beans.Duration;
-import org.activitymgr.core.beans.IntervalContributions;
-import org.activitymgr.core.beans.Task;
-import org.activitymgr.core.beans.TaskContributions;
-import org.activitymgr.core.dao.DAOException;
+import org.activitymgr.core.dto.Collaborator;
+import org.activitymgr.core.dto.Contribution;
+import org.activitymgr.core.dto.Duration;
+import org.activitymgr.core.dto.IDTOFactory;
+import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.dto.misc.IntervalContributions;
+import org.activitymgr.core.dto.misc.TaskContributions;
+import org.activitymgr.core.model.IModelMgr;
+import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.CollaboratorsUI.ICollaboratorListener;
@@ -244,7 +243,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 	private Font italicFont;
 
 	/** Bean factory */
-	private IBeanFactory factory;
+	private IDTOFactory factory;
 
 	/**
 	 * Constructeur permettant de placer l'IHM dans un onglet.
@@ -256,7 +255,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 	 * @param factory
 	 *            bean factory.
 	 */
-	public ContributionsUI(TabItem tabItem, IModelMgr modelMgr, IBeanFactory factory) {
+	public ContributionsUI(TabItem tabItem, IModelMgr modelMgr, IDTOFactory factory) {
 		this(tabItem.getParent(), modelMgr, factory);
 		tabItem.setControl(parent);
 	}
@@ -271,7 +270,7 @@ public class ContributionsUI extends AbstractTableMgr implements
 	 * @param factory
 	 *            bean factory.
 	 */
-	public ContributionsUI(Composite parentComposite, IModelMgr modelMgr, IBeanFactory factory) {
+	public ContributionsUI(Composite parentComposite, IModelMgr modelMgr, IDTOFactory factory) {
 		this.modelMgr = modelMgr;
 		this.factory = factory;
 
@@ -1054,10 +1053,10 @@ public class ContributionsUI extends AbstractTableMgr implements
 			public void validateChoosenTask(Task selectedTask)
 					throws DialogException {
 				try {
-					if (modelMgr.isLeaf(selectedTask.getId()))
+					if (!modelMgr.isLeaf(selectedTask.getId()))
 						throw new DialogException(
 								Strings.getString("ContributionsUI.errors.PARENT_TASK_SELECTED"), null);//$NON-NLS-1$
-				} catch (DAOException e) {
+				} catch (Throwable e) {
 					throw new DialogException(
 							e.getMessage(), null);
 				} 
@@ -1073,13 +1072,10 @@ public class ContributionsUI extends AbstractTableMgr implements
 	 * 
 	 * @param task
 	 *            la tache associée à l'ajout ou la sélection.
-	 * @throws DAOException
-	 *             levée en cas d'incident technique d'accès à la BDD.
 	 * @throws ModelException
 	 *             levée en cas d'incident fonctionnel.
 	 */
-	private void addNewLineOrSelectTaskLine(Task task) throws DAOException,
-			ModelException {
+	private void addNewLineOrSelectTaskLine(Task task) throws ModelException {
 		// La tache est elle déja associée à une semaine de contributions
 		TaskContributions weekContributions = null;
 		TableItem[] items = tableViewer.getTable().getItems();

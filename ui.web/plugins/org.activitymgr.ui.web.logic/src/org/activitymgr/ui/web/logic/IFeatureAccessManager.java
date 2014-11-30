@@ -1,6 +1,6 @@
 package org.activitymgr.ui.web.logic;
 
-import org.activitymgr.core.beans.Collaborator;
+import org.activitymgr.core.dto.Collaborator;
 
 public interface IFeatureAccessManager {
 	

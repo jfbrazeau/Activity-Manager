@@ -31,9 +31,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.activitymgr.core.IModelMgr;
-import org.activitymgr.core.beans.Task;
-import org.activitymgr.core.beans.TaskSearchFilter;
+import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.dto.misc.TaskSearchFilter;
+import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.dialogs.TaskChooserDialog;
 import org.eclipse.jface.dialogs.Dialog;

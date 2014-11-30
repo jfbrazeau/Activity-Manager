@@ -33,12 +33,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.activitymgr.core.IModelMgr;
-import org.activitymgr.core.ModelException;
-import org.activitymgr.core.beans.Contribution;
-import org.activitymgr.core.beans.Task;
-import org.activitymgr.core.beans.TaskSums;
-import org.activitymgr.core.dao.DAOException;
+import org.activitymgr.core.dto.Contribution;
+import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.dto.misc.TaskSums;
+import org.activitymgr.core.model.IModelMgr;
+import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.ContributionsUI.IContributionListener;
@@ -435,11 +434,8 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 * @return les sommes associées à la tache.
 	 * @throws ModelException
 	 *             levé en cas de détection d'incohérence au niveau du modèle.
-	 * @throws DAOException
-	 *             levé en cas d'incident technique d'accès à la base de
-	 *             données.
 	 */
-	private TaskSums getTasksSums(Task task) throws ModelException, DAOException {
+	private TaskSums getTasksSums(Task task) throws ModelException {
 		// 1° lecture dans le cache
 		TaskSums taskSums = (TaskSums) tasksSums.get(task);
 		if (taskSums == null) {
@@ -644,11 +640,8 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 *            l'item de tableau.
 	 * @throws ModelException
 	 *             levée en cas d'invalidité associée au modèle.
-	 * @throws DAOException
-	 *             levé en cas d'incident technique avec la base de données.
 	 */
-	private void updateBranchItemsSums(TreeItem item) throws ModelException,
-			DAOException {
+	private void updateBranchItemsSums(TreeItem item) throws ModelException {
 		List<Task> list = new ArrayList<Task>();
 		// Nettoyage du cache
 		TreeItem cursor = item;
@@ -674,13 +667,8 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 */
 	public boolean hasChildren(Object element) {
 		log.debug("ITreeContentProvider.getChildren(" + element + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-		final Task task = (Task) element;
-		try {
-			return modelMgr.getSubTasksCount(task.getId()) > 0;
-		} catch (DAOException e) {
-			log.error(e);
-			return false;
-		}
+		Task task = (Task) element;
+		return modelMgr.getSubTasksCount(task.getId()) > 0;
 	}
 
 	/*
@@ -887,14 +875,6 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 							} catch (ModelException e) {
 								throw new DialogException(e.getMessage(), null);
 							}
-							// TODO Ajouter au ITaskChooserValidator la levée
-							// d'exception techniques pour ne plus avoir ce
-							// catch
-							catch (DAOException e) {
-								throw new DialogException(
-										Strings.getString(
-												"TasksUI.errors.TECHNICAL_ERROR", e.getMessage()), null); //$NON-NLS-1$ //$NON-NLS-2$
-							}
 						}
 					});
 					// Affichage du popup
@@ -1041,13 +1021,11 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 * 
 	 * @param parentTask
 	 *            la tache parent ou null pour une tache racine.
-	 * @throws DAOException
-	 *             levé en cas d'incident associé à la persistence.
 	 * @throws ModelException
 	 *             levé en cas de violation du modèle de données.
 	 * @return la tache créée.
 	 */
-	private Task newTask(Task parentTask) throws DAOException, ModelException {
+	private Task newTask(Task parentTask) throws ModelException {
 		log.debug("newTask(" + parentTask + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		// Création de la nouvelle tache
 		Task newTask = modelMgr.createNewTask(parentTask);

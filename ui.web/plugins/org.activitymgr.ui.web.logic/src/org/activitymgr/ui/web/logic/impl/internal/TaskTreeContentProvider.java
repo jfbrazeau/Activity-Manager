@@ -5,9 +5,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-import org.activitymgr.core.IModelMgr;
-import org.activitymgr.core.beans.Task;
-import org.activitymgr.core.dao.DAOException;
+import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTreeContentProviderCallback;
 import org.activitymgr.ui.web.logic.impl.LogicContext;
@@ -26,7 +25,7 @@ class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback<Ta
 	}
 
 	@Override
-	protected Collection<Task> unsafeGetChildren(Task task) throws DAOException {
+	protected Collection<Task> unsafeGetChildren(Task task) {
 		Long key = task != null ? task.getId() : null;
 		List<Task> children = childrenMap.get(key);
 		if (children == null) {
@@ -42,7 +41,7 @@ class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback<Ta
 	}
 
 	@Override
-	protected Collection<Task> unsafeGetRootElements() throws DAOException {
+	protected Collection<Task> unsafeGetRootElements() {
 		return unsafeGetChildren(null);
 	}
 
@@ -63,7 +62,7 @@ class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback<Ta
 	}
 
 	@Override
-	protected boolean unsafeHasChildren(Task element) throws DAOException {
+	protected boolean unsafeHasChildren(Task element) {
 		// Root case
 		if (element == null) {
 			return true;
@@ -83,7 +82,7 @@ class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback<Ta
 	}
 
 	@Override
-	protected Task unsafeGetParent(Task element) throws DAOException {
+	protected Task unsafeGetParent(Task element) {
 		return parentsMap.get(element.getId());
 	}
 

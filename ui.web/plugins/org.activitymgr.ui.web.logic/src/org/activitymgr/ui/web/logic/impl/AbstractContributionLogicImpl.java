@@ -3,9 +3,9 @@ package org.activitymgr.ui.web.logic.impl;
 import java.util.Calendar;
 import java.util.List;
 
-import org.activitymgr.core.beans.Collaborator;
-import org.activitymgr.core.beans.Task;
-import org.activitymgr.core.beans.TaskContributions;
+import org.activitymgr.core.dto.Collaborator;
+import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.dto.misc.TaskContributions;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 
 public abstract class AbstractContributionLogicImpl extends AbstractLogicImpl<IContributionsTabLogic.View> {

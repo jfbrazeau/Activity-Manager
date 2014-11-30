@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Activity Manager Data Transfer Objects
+Bundle-SymbolicName: org.activitymgr.core.dto
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Jean-Francois Brazeau
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: org.activitymgr.core.dto,
+ org.activitymgr.core.dto.misc
+Require-Bundle: org.activitymgr.core.util;bundle-version="1.0.0",
+ org.activitymgr.core.orm;bundle-version="1.0.0"

@@ -3,13 +3,13 @@ package org.activitymgr.core;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import org.activitymgr.core.beans.Collaborator;
-import org.activitymgr.core.beans.Contribution;
-import org.activitymgr.core.beans.Duration;
-import org.activitymgr.core.beans.Task;
-import org.activitymgr.core.beans.TaskSearchFilter;
-import org.activitymgr.core.beans.TaskSums;
-import org.activitymgr.core.dao.DAOException;
+import org.activitymgr.core.dto.Collaborator;
+import org.activitymgr.core.dto.Contribution;
+import org.activitymgr.core.dto.Duration;
+import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.dto.misc.TaskSearchFilter;
+import org.activitymgr.core.dto.misc.TaskSums;
+import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.StringHelper;
 
 public class TaskTest extends AbstractModelTestCase {
@@ -22,7 +22,7 @@ public class TaskTest extends AbstractModelTestCase {
 	private Task task112;
 	private Task task2;
 
-	public void testCreateRootTask() throws DAOException, ModelException {
+	public void testCreateRootTask() throws ModelException {
 		// Création des tâches de test
 		Task task = getFactory().newTask();
 		// Génération d'un code inutilisé
@@ -51,7 +51,7 @@ public class TaskTest extends AbstractModelTestCase {
 		assertNull(getModelMgr().getTask(taskId));
 	}
 	
-	private void createSampleTasks() throws DAOException, ModelException {
+	private void createSampleTasks() throws ModelException {
 		// Création des tâches de test
 		rootTask = getModelMgr().createNewTask(null);
 		rootTask.setCode("RT");
@@ -102,11 +102,11 @@ public class TaskTest extends AbstractModelTestCase {
 		task2 = getModelMgr().getTask(task2.getId());
 	}
 	
-	public void removeSampleTasks() throws DAOException, ModelException {
+	public void removeSampleTasks() throws ModelException {
 		removeRecursively(rootTask);
 	}
 	
-	private void removeRecursively(Task task) throws DAOException, ModelException {
+	private void removeRecursively(Task task) throws ModelException {
 		// Récupération des taches filles
 		Task[] subTasks = getModelMgr().getSubTasks(task);
 		for (int i=subTasks.length-1; i>=0; i--) {
@@ -118,7 +118,7 @@ public class TaskTest extends AbstractModelTestCase {
 		getModelMgr().removeTask(task);
 	}
 	
-	public void testTaskPath() throws DAOException, ModelException {
+	public void testTaskPath() throws ModelException {
 		// Création des taches de test
 		createSampleTasks();
 		try {
@@ -139,7 +139,7 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 	
-	public void testGetParent() throws DAOException, ModelException {
+	public void testGetParent() throws ModelException {
 		// Création des taches de test
 		createSampleTasks();
 		try {
@@ -161,7 +161,7 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 
-	public void testGetSubtasks() throws DAOException, ModelException {
+	public void testGetSubtasks() throws ModelException {
 		// Création des taches de test
 		createSampleTasks();
 		try {
@@ -195,7 +195,7 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 
-	public void testUpdate() throws DAOException, ModelException {
+	public void testUpdate() throws ModelException {
 		// Création des taches de test
 		createSampleTasks();
 		try {
@@ -213,7 +213,7 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 	
-	public void testMoveDown() throws DAOException, ModelException {
+	public void testMoveDown() throws ModelException {
 		// Création des taches de test
 		createSampleTasks();
 		try {
@@ -240,7 +240,7 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 	
-	public void testMoveUp() throws DAOException, ModelException {
+	public void testMoveUp() throws ModelException {
 		// Création des taches de test
 		createSampleTasks();
 		try {
@@ -267,7 +267,7 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 	
-	public void testMove() throws DAOException, ModelException {
+	public void testMove() throws ModelException {
 		// Création des taches de test
 		createSampleTasks();
 		try {
@@ -301,7 +301,7 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 	
-	public void testTasksSum() throws DAOException, ModelException {
+	public void testTasksSum() throws ModelException {
 		// Création des taches de test
 		createSampleTasks();
 
@@ -392,7 +392,7 @@ public class TaskTest extends AbstractModelTestCase {
 		removeSampleTasks();
 	}
 
-	public void testSearchTasks() throws DAOException, ModelException {
+	public void testSearchTasks() throws ModelException {
 		// Création des taches de test
 		createSampleTasks();
 		try {
@@ -499,7 +499,7 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 
-	public void testMoveUpOrDownTask() throws DAOException, ModelException {
+	public void testMoveUpOrDownTask() throws ModelException {
 		createSampleTasks();
 		try {
 			// Création d'une tache avec 50 taches filles

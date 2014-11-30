@@ -1,15 +1,15 @@
 package org.activitymgr.core;
 
-import org.activitymgr.core.beans.Collaborator;
-import org.activitymgr.core.dao.DAOException;
+import org.activitymgr.core.model.ModelException;
+import org.activitymgr.core.dto.Collaborator;
 
 public class CollaboratorsTest extends AbstractModelTestCase {
 
-	public void testGetList() throws DAOException {
+	public void testGetList() {
 		getModelMgr().getCollaborators();
 	}
 
-	public void testCreateAnRemove() throws ModelException, DAOException {
+	public void testCreateAnRemove() throws ModelException {
 		Collaborator collaborator = getFactory().newCollaborator();
 		collaborator.setFirstName("First name");
 		collaborator.setLastName("Last name");
@@ -34,7 +34,7 @@ public class CollaboratorsTest extends AbstractModelTestCase {
 		assertNull(_collaborator);
 	}
 
-	public void testUniqueLogin() throws DAOException, ModelException {
+	public void testUniqueLogin() throws ModelException {
 		Collaborator collaborator = getFactory().newCollaborator();
 		collaborator.setFirstName("First name");
 		collaborator.setLastName("Last name");
@@ -69,7 +69,7 @@ public class CollaboratorsTest extends AbstractModelTestCase {
 		getModelMgr().removeCollaborator(collaborator2);
 	}
 
-	public void testActiveCollaborator() throws DAOException, ModelException {
+	public void testActiveCollaborator() throws ModelException {
 		Collaborator collaborator = getFactory().newCollaborator();
 		collaborator.setFirstName("First name");
 		collaborator.setLastName("Last name");
@@ -95,7 +95,7 @@ public class CollaboratorsTest extends AbstractModelTestCase {
 		getModelMgr().removeCollaborator(collaborator);
 	}
 
-	public void testSortCollaborators() throws DAOException, ModelException {
+	public void testSortCollaborators() throws ModelException {
 		Collaborator c0 = getFactory().newCollaborator();
 		c0.setFirstName("FN0");
 		c0.setLastName("LN2");

@@ -27,12 +27,11 @@
  */
 package org.activitymgr.ui.rcp.util;
 
-import org.activitymgr.core.AbstractException;
 
 /**
  * Exception levée en cas d'incident technique dans l'IHM.
  */
-public class UITechException extends AbstractException {
+public class UITechException extends Exception {
 
 	/** Fake serial version UID */
 	private static final long serialVersionUID = 1L;

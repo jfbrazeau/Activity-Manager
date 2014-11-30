@@ -2,10 +2,10 @@ package org.activitymgr.ui.web.logic.impl;
 
 import java.util.Calendar;
 
-import org.activitymgr.core.beans.Collaborator;
-import org.activitymgr.core.beans.Contribution;
-import org.activitymgr.core.beans.Task;
-import org.activitymgr.core.beans.TaskContributions;
+import org.activitymgr.core.dto.Collaborator;
+import org.activitymgr.core.dto.Contribution;
+import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.dto.misc.TaskContributions;
 
 public abstract class AbstractWeekContributionsProviderExtension {
 

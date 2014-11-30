@@ -12,14 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.activitymgr.core.IModelMgr;
-import org.activitymgr.core.ModelException;
-import org.activitymgr.core.beans.Collaborator;
-import org.activitymgr.core.beans.Contribution;
-import org.activitymgr.core.beans.IntervalContributions;
-import org.activitymgr.core.beans.Task;
-import org.activitymgr.core.beans.TaskContributions;
-import org.activitymgr.core.dao.DAOException;
+import org.activitymgr.core.dto.Collaborator;
+import org.activitymgr.core.dto.Contribution;
+import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.dto.misc.IntervalContributions;
+import org.activitymgr.core.dto.misc.TaskContributions;
+import org.activitymgr.core.model.IModelMgr;
+import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.AbstractEvent;
@@ -70,17 +69,12 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 		super(parent);
 
 		// Retrieve collaborators list
-		try {
-			Collaborator[] activeCollaborators = getModelMgr().getActiveCollaborators(Collaborator.FIRST_NAME_FIELD_IDX, true);
-			List<ICollaborator> wrappers = new ArrayList<IContributionsTabLogic.ICollaborator>();
-			for (Collaborator collaborator : activeCollaborators) {
-				wrappers.add(new CollaboratorWrapper(collaborator));
-			}
-			getView().setCollaborators(wrappers);
+		Collaborator[] activeCollaborators = getModelMgr().getActiveCollaborators(Collaborator.FIRST_NAME_FIELD_IDX, true);
+		List<ICollaborator> wrappers = new ArrayList<IContributionsTabLogic.ICollaborator>();
+		for (Collaborator collaborator : activeCollaborators) {
+			wrappers.add(new CollaboratorWrapper(collaborator));
 		}
-		catch (DAOException e) {
-			throw new IllegalStateException("Unable to retrieve collaborators list", e);
-		}
+		getView().setCollaborators(wrappers);
 		
 		// TODO put in an extension point
 		columnIdentifiers = getColumnIdentifiers();
@@ -326,9 +320,6 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 			// Update totals
 			updateTotals();
 		}
-		catch (DAOException e) {
-			handleError(e);
-		}
 		catch (ModelException e) {
 			getRoot().getView().showNotification(e.getMessage());
 			textFieldLogic.getView().focus();
@@ -341,21 +332,13 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 
 	@Override
 	public void addTask(long taskId) {
-		try {
-			addTask(getModelMgr().getTask(taskId));
-		}
-		catch (DAOException e) {
-			handleError(e);
-		}
+		addTask(getModelMgr().getTask(taskId));
 	}
 
 	@Override
 	public void addTask(Task task) {
 		try {
 			addTask(task, getModelMgr().getTaskCodePath(task));
-		}
-		catch (DAOException e) {
-			handleError(e);
 		}
 		catch (ModelException e) {
 			handleError(e);
@@ -404,21 +387,16 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 
 	@Override
 	public void onSelectedCollaboratorChanged(String login) {
-		try {
-			if (selectedCollaborator != null && selectedCollaborator.getLogin().equals(login)) {
-				return;
-			}
-			else {
-				selectedCollaborator = null;
-				if (login != null) {
-					selectedCollaborator = getModelMgr().getCollaborator(login);
-				}
-				// Update contributions
-				loadContributions();
-			}
+		if (selectedCollaborator != null && selectedCollaborator.getLogin().equals(login)) {
+			return;
 		}
-		catch (DAOException e) {
-			handleError(e);
+		else {
+			selectedCollaborator = null;
+			if (login != null) {
+				selectedCollaborator = getModelMgr().getCollaborator(login);
+			}
+			// Update contributions
+			loadContributions();
 		}
 	}
 
@@ -473,8 +451,6 @@ class DefaultWeekContributionsProvider extends AbstractWeekContributionsProvider
 				tc.setContributions(newContribs);
 			}
 			return weekContributions;
-		} catch (DAOException e) {
-			throw new IllegalStateException("Unexpected error while retrieving contributions", e);
 		} catch (ModelException e) {
 			throw new IllegalStateException("Unexpected error while retrieving contributions", e);
 		}

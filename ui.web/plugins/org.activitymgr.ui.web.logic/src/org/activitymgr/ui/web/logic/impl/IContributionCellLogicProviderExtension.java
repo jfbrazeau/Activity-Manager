@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.activitymgr.core.beans.Collaborator;
-import org.activitymgr.core.beans.TaskContributions;
+import org.activitymgr.core.dto.Collaborator;
+import org.activitymgr.core.dto.misc.TaskContributions;
 import org.activitymgr.ui.web.logic.ILogic;
 
 public interface IContributionCellLogicProviderExtension {

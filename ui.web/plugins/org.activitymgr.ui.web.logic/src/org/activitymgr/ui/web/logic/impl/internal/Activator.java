@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.activitymgr.core.IModelMgr;
+import org.activitymgr.core.model.IModelMgr;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.osgi.framework.Bundle;

@@ -33,10 +33,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
 
-import org.activitymgr.core.CoreModule;
-import org.activitymgr.core.IBeanFactory;
-import org.activitymgr.core.IModelMgr;
-import org.activitymgr.core.dao.DAOException;
+import org.activitymgr.core.dto.IDTOFactory;
+import org.activitymgr.core.model.CoreModelModule;
+import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.DatabaseUI.IDbStatusListener;
 import org.activitymgr.ui.rcp.util.UITechException;
@@ -79,7 +78,7 @@ public class MainView extends ViewPart {
 	private IModelMgr modelMgr;
 
 	/** Factory */
-	private IBeanFactory factory;
+	private IDTOFactory factory;
 
 	/**
 	 * This is a callback that will allow us to create the viewer and initialize
@@ -173,7 +172,8 @@ public class MainView extends ViewPart {
 	private void initialize() {
 		// Create Guice injector
 		final ThreadLocal<Connection> dbTxs = new ThreadLocal<Connection>();
-		final Injector injector = Guice.createInjector(new CoreModule(),
+		final Injector injector = Guice.createInjector(
+				new CoreModelModule(),
 				new AbstractModule() {
 					@Override
 					protected void configure() {
@@ -215,7 +215,7 @@ public class MainView extends ViewPart {
 						}
 					}
 				});
-		factory = injector.getInstance(IBeanFactory.class);
+		factory = injector.getInstance(IDTOFactory.class);
 	}
 
 	/**
@@ -226,11 +226,8 @@ public class MainView extends ViewPart {
 
 	/**
 	 * Ferme la connexion à la base de données.
-	 * 
-	 * @throws DAOException
-	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	public void closeDatabase() throws UITechException, DAOException {
+	public void closeDatabase() throws UITechException {
 		if (databaseUI != null) {
 			databaseUI.closeDatabase();
 		}

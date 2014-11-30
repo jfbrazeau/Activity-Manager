@@ -8,7 +8,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.vaadin.osgiappcontainer;visibility:=reexport,
  org.activitymgr.ui.web.logic;visibility:=reexport,
  org.eclipse.equinox.app,
- org.eclipse.core.runtime
+ org.eclipse.core.runtime,
+ org.activitymgr.core.dto
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.activitymgr.ui.web.view.impl.internal.Activator
 Export-Package: org.activitymgr.ui.web.view,

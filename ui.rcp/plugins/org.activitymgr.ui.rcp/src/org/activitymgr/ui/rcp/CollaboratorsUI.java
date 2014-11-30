@@ -32,8 +32,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.activitymgr.core.IModelMgr;
-import org.activitymgr.core.beans.Collaborator;
+import org.activitymgr.core.dto.Collaborator;
+import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.DatabaseUI.IDbStatusListener;
 import org.activitymgr.ui.rcp.dialogs.ContributionsViewerDialog;

@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Activity Manager DAO Layer
+Bundle-SymbolicName: org.activitymgr.core.dao
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.activitymgr.core.dto;bundle-version="1.0.0",
+ org.activitymgr.core.util;bundle-version="1.0.0",
+ org.activitymgr.core.orm;bundle-version="1.0.0"
+Export-Package: org.activitymgr.core.dao

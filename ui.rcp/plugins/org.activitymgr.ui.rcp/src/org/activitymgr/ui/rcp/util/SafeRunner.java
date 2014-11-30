@@ -28,7 +28,7 @@
 package org.activitymgr.ui.rcp.util;
 
 
-import org.activitymgr.core.AbstractException;
+import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.dialogs.ErrorDialog;
 import org.apache.log4j.Logger;
@@ -101,7 +101,7 @@ public abstract class SafeRunner {
 			public void run() {
 				try {
 					result.value = runUnsafe();
-				} catch (AbstractException e) {
+				} catch (ModelException e) {
 					log.info("UI Exception", e); //$NON-NLS-1$
 					new ErrorDialog(
 							parentShell,

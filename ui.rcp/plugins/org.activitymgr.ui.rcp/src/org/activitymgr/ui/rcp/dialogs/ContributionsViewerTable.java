@@ -31,12 +31,11 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.activitymgr.core.IModelMgr;
-import org.activitymgr.core.ModelException;
-import org.activitymgr.core.beans.Collaborator;
-import org.activitymgr.core.beans.Contribution;
-import org.activitymgr.core.beans.Task;
-import org.activitymgr.core.dao.DAOException;
+import org.activitymgr.core.dto.Collaborator;
+import org.activitymgr.core.dto.Contribution;
+import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.model.IModelMgr;
+import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.util.AbstractTableMgr;
@@ -249,12 +248,8 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	 * @return le chemin.
 	 * @throws ModelException
 	 *             levé en cas de viloation du modèle.
-	 * @throws DAOException
-	 *             levé en cas d'incident associé à l'accès à la base de
-	 *             données.
 	 */
-	private String getCachedTaskCodePath(long taskId) throws ModelException,
-			DAOException {
+	private String getCachedTaskCodePath(long taskId) throws ModelException {
 		Long _taskId = new Long(taskId);
 		String taskCodePath = (String) taskCodePathsCache.get(_taskId);
 		if (taskCodePath == null) {
@@ -272,11 +267,8 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	 * @param taskId
 	 *            l'identifiant de la tache.
 	 * @return la tache.
-	 * @throws DAOException
-	 *             levé en cas d'incident associé à l'accès à la base de
-	 *             données.
 	 */
-	private Task getCachedTask(long taskId) throws DAOException {
+	private Task getCachedTask(long taskId) {
 		Long _taskId = new Long(taskId);
 		Task task = (Task) tasksCache.get(_taskId);
 		if (task == null) {
@@ -293,12 +285,8 @@ public class ContributionsViewerTable extends AbstractTableMgr implements
 	 * @param collaboratorId
 	 *            l'identifiant du collaborateur.
 	 * @return le collaborateur.
-	 * @throws DAOException
-	 *             levé en cas d'incident associé à l'accès à la base de
-	 *             données.
 	 */
-	private Collaborator getCachedCollaborator(long collaboratorId)
-			throws DAOException {
+	private Collaborator getCachedCollaborator(long collaboratorId) {
 		Long _collaboratorId = new Long(collaboratorId);
 		Collaborator collaborator = (Collaborator) collaboratorsCache
 				.get(_collaboratorId);
