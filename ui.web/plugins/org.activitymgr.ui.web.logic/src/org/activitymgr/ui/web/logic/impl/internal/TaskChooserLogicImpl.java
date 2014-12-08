@@ -27,8 +27,8 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 		// Remember already selected task ids
 		this.alreadySelectedTaskIds = selectedTaskIds;
 		// Register the tree content provider
-		TaskTreeContentProvider treeContentCallback = new TaskTreeContentProvider(this, getContext(), getModelMgr());
-		getView().setTreeContentProviderCallback(getContext().buildTransactionalWrapper(treeContentCallback, ITreeContentProviderCallback.class));
+		TaskTreeContentProvider treeContentProvider = new TaskTreeContentProvider(this, getContext(), getModelMgr());
+		getView().setTreeContentProviderCallback(getContext().buildTransactionalWrapper(treeContentProvider, ITreeContentProviderCallback.class));
 		
 		// Retrieve recent tasks labels
 		Calendar from = (Calendar) monday.clone();
@@ -45,35 +45,38 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 			Arrays.sort(recentTasks, new Comparator<Task>() {
 				@Override
 				public int compare(Task t1, Task t2) {
-					System.out.println("compare(" + t1 + ", " + t2 + ")");
 					return tasksCodePathMap.get(t1.getId()).compareTo(tasksCodePathMap.get(t2.getId()));
 				}
 			});
-			final List<Task> recentTasksList = Arrays.asList(recentTasks);
-			IListContentProviderCallback<Task> recentTaskCallback = new AbstractSafeListContentProviderCallback<Task>(this, getContext().getEventBus()) {
+			final Map<Long, Task> recentTasksMap = new HashMap<Long, Task>();
+			final List<Long> recentTasksIds = new ArrayList<Long>();
+			for (Task recentTask : recentTasks) {
+				recentTasksIds.add(recentTask.getId());
+				recentTasksMap.put(recentTask.getId(), recentTask);
+			}
+			IListContentProviderCallback<Long> recentTaskCallback = new AbstractSafeListContentProviderCallback<Long>(this, getContext().getEventBus()) {
 				@Override
-				protected Collection<Task> unsafeGetRootElements() throws Exception {
-					return recentTasksList;
+				protected Collection<Long> unsafeGetRootElements() throws Exception {
+					return recentTasksIds;
 				}
 				@Override
-				public String unsafeGetText(Task task, String propertyId) {
-					return "[" + tasksCodePathMap.get(task.getId()) + "] " + task.getName();
+				public String unsafeGetText(Long taskId, String propertyId) {
+					return "[" + tasksCodePathMap.get(taskId) + "] " + recentTasksMap.get(taskId).getName();
 				}
 				@Override
 				public Collection<String> getPropertyIds() {
 					return DEFAULT_PROPERTY_IDS;
 				}
+				@Override
+				protected boolean unsafeContains(Long taskId) {
+					return recentTasksIds.contains(taskId);
+				}
 			};
 			getView().setRecentTasksProviderCallback(recentTaskCallback);
 
 			// Reset button state & status label
-			onSelectionChanged(null);
+			onSelectionChanged(-1);
 			
-			// A preload of recent tasks must be performed in the vaadin tree. Otherwise, after
-			// having clicked on a recent task, it does not become selected in the tree.
-			if (recentTasksList.size() > 0) {
-				getView().preloadTreeItems(recentTasksList);
-			}
 		} catch (ModelException e) {
 			throw new IllegalStateException("Unexpected error while retrieving recent tasks", e);
 		}
@@ -81,23 +84,24 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 	}
 
 	@Override
-	public void onSelectionChanged(Task task) {
-		checkDialogRules((Task) task, getView().getNewTaskName());
+	public void onSelectionChanged(long taskId) {
+		checkDialogRules(taskId, getView().getNewTaskName());
 	}
 
 	@Override
 	public void onNewTaskCheckboxClicked() {
-		Task selectedTask = (Task) getView().getSelectedTask();
-		checkDialogRules(selectedTask, getView().getNewTaskName());
+		Long selectedTaskId = (Long) getView().getSelectedTaskId();
+		checkDialogRules(selectedTaskId, getView().getNewTaskName());
 	}
 	
 	@Override
 	public void onNewTaskNameChanged(String newTaskName) {
-		Task selectedTask = (Task) getView().getSelectedTask();
-		checkDialogRules(selectedTask, newTaskName);
+		Long selectedTaskId = (Long) getView().getSelectedTaskId();
+		checkDialogRules(selectedTaskId, newTaskName);
 	}
 
-	private void checkDialogRules(Task selectedTask, String newTaskName) {
+	private void checkDialogRules(Long selectedTaskId, String newTaskName) {
+		Task selectedTask = getModelMgr().getTask(selectedTaskId);
 		String newStatus = "";
 		boolean okButtonEnabled = false;
 		boolean newTaskFormEnabled = false;
@@ -109,7 +113,6 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				newTaskFormEnabled = true;
 				if (getView().isNewTaskChecked()) {
 					newTaskNameEnabled = true;
-					System.out.println("New task name: '" + newTaskName + "'");
 					if (newTaskName == null || "".equals(newTaskName.trim())) {
 						newStatus = "Enter a task name";
 					}
@@ -132,12 +135,13 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 	}
 
 	@Override
-	public void onOkButtonClicked(Task task) {
+	public void onOkButtonClicked(long taskId) {
 		try {
-			if (getModelMgr().isLeaf(task.getId())) {
-				((ContributionsTabLogicImpl) getParent()).addTask(task);
+			if (getModelMgr().isLeaf(taskId)) {
+				((ContributionsTabLogicImpl) getParent()).addTask(taskId);
 			}
 			else {
+				Task parent = getModelMgr().getTask(taskId);
 				Task newTask = getContext().getBeanFactory().newTask();
 				newTask.setName(getView().getNewTaskName());
 				String code = newTask.getName().trim().replaceAll(" ", "").toUpperCase();
@@ -145,7 +149,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 					code = code.substring(0, 7);
 				}
 				newTask.setCode('$' + code);
-				getModelMgr().createTask(task, newTask);
+				getModelMgr().createTask(parent, newTask);
 				((ContributionsTabLogicImpl) getParent()).addTask(newTask);
 			}
 		} catch (ModelException e) {
@@ -154,19 +158,8 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 	}
 
 	@Override
-	public void onRecentTaskClicked(Task task) {
-		List<Task> tasks = getParentTasks(task);
-		getView().expandTasks(tasks);
-		getView().selectTask(task);
-	}
-
-	private List<Task> getParentTasks(Task task) {
-		List<Task> tasks = new ArrayList<Task>();
-		while (task != null) {
-			tasks.add(0, task);
-			task = getModelMgr().getParentTask(task);
-		}
-		return tasks;
+	public void onRecentTaskClicked(long taskId) {
+		getView().selectTask(taskId);
 	}
 
 }

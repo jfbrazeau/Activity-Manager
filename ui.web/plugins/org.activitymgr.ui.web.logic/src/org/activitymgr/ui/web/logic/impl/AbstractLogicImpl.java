@@ -75,7 +75,6 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 		if (c != Object.class) {
 			result = getILogicInterfaces(c.getSuperclass());
 			for (Class<?> anInterface : c.getInterfaces()) {
-				//System.out.println("  Processing " + anInterface);
 				if (ILogic.class.isAssignableFrom(anInterface)
 						&& (result == null || result
 								.isAssignableFrom(anInterface))) {

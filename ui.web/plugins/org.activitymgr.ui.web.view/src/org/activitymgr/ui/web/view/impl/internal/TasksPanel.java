@@ -1,20 +1,17 @@
 package org.activitymgr.ui.web.view.impl.internal;
 
-import java.util.Collection;
-
-import org.activitymgr.ui.web.logic.ILabelProviderCallback;
 import org.activitymgr.ui.web.logic.ITasksTabLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.internal.util.BasicTreeDatasource;
 
-import com.vaadin.ui.Tree;
 import com.vaadin.ui.TreeTable;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
 public class TasksPanel extends VerticalLayout implements ITasksTabLogic.View {
 
+	@SuppressWarnings("unused")
 	private ITasksTabLogic logic;
 
 	private IResourceCache resourceCache;
@@ -35,16 +32,13 @@ public class TasksPanel extends VerticalLayout implements ITasksTabLogic.View {
 		taskTree.setSizeFull();
 		addComponent(taskTree);
 		taskTree.setImmediate(true);
-		taskTree.addContainerProperty(ITreeContentProviderCallback.NAME_PROPERTY_ID, String.class, null);
-		//taskTree.setColumnHeader(ITreeContentProviderCallback.NAME_PROPERTY_ID, "Task");
 	}
 
     @Override
 	public void setTreeContentProviderCallback(
-			ITreeContentProviderCallback<?> treeContentProviderCallback) {
-		BasicTreeDatasource dataSource = new BasicTreeDatasource(getResourceCache(), treeContentProviderCallback);
+			ITreeContentProviderCallback<Long> tasksProviderCallback) {
+		BasicTreeDatasource dataSource = new BasicTreeDatasource(getResourceCache(), tasksProviderCallback);
 		taskTree.setContainerDataSource(dataSource);
-		taskTree.setItemCaptionPropertyId(ILabelProviderCallback.NAME_PROPERTY_ID);
 	}
     
     protected IResourceCache getResourceCache() {

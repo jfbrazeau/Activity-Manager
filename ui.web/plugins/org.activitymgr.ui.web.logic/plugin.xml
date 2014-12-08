@@ -28,5 +28,9 @@
             class="org.activitymgr.ui.web.logic.impl.internal.TasksTabLogicImpl"
             label="Tasks">
       </tab>
+      <tab
+            class="org.activitymgr.ui.web.logic.impl.internal.CollaboratorsTabLogicImpl"
+            label="Collaborators">
+      </tab>
    </extension>
 </plugin>

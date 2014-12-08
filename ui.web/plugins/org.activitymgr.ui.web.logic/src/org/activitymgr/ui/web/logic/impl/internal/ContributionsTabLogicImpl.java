@@ -3,6 +3,7 @@ package org.activitymgr.ui.web.logic.impl.internal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
@@ -25,6 +26,7 @@ import org.activitymgr.ui.web.logic.AbstractEvent;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.ILabelLogic;
+import org.activitymgr.ui.web.logic.IListContentProviderCallback;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionLogicImpl;
@@ -68,13 +70,14 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 	public ContributionsTabLogicImpl(AbstractLogicImpl<?> parent) {
 		super(parent);
 
-		// Retrieve collaborators list
-		Collaborator[] activeCollaborators = getModelMgr().getActiveCollaborators(Collaborator.FIRST_NAME_FIELD_IDX, true);
-		List<ICollaborator> wrappers = new ArrayList<IContributionsTabLogic.ICollaborator>();
-		for (Collaborator collaborator : activeCollaborators) {
-			wrappers.add(new CollaboratorWrapper(collaborator));
-		}
-		getView().setCollaborators(wrappers);
+		// Collaborators provider
+		CollaboratorsListContentProvider collaboratorsProvider = new CollaboratorsListContentProvider(this, getContext(), getModelMgr()) {
+			@Override
+			public Collection<String> getPropertyIds() {
+				return Arrays.asList(new String[] { FIRST_PROPERTY_NAME_ID, LAST_PROPERTY_NAME_ID });
+			}
+		};
+		getView().setCollaborators(getContext().buildTransactionalWrapper(collaboratorsProvider, IListContentProviderCallback.class));
 		
 		// TODO put in an extension point
 		columnIdentifiers = getColumnIdentifiers();
@@ -129,7 +132,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 		changeFirstDayOfWeekAndUpdateView(Calendar.YEAR, 0);
 		
 		// Connected collaborator selection
-		getView().selectCollaborator(getContext().getConnectedCollaborator().getLogin());
+		getView().selectCollaborator(getContext().getConnectedCollaborator().getId());
 		
 		// Eregister event listener
 		getEventBus().register(DurationChangedEvent.class, this);
@@ -146,7 +149,6 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 				String column = cfg.getAttribute("id");
 				set.add(column);
 			}
-			System.out.println("Result : " + set);
 			return new ArrayList<String>(set);
 		}
 	}
@@ -277,7 +279,6 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 	}
 
 	private void onDurationChanged(TaskContributions weekContributions, int dayOfWeek, String duration, ITextFieldLogic textFieldLogic) {
-		System.out.println("onDurationChanged(" + weekContributions + ", " + dayOfWeek + ", " + duration + ", " + textFieldLogic + ")");
 		try {
 			long durationId = 0;
 			if (duration != null && !"".equals(duration.trim())) {
@@ -386,16 +387,13 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 	}
 
 	@Override
-	public void onSelectedCollaboratorChanged(String login) {
-		if (selectedCollaborator != null && selectedCollaborator.getLogin().equals(login)) {
+	public void onSelectedCollaboratorChanged(long collaboratorId) {
+		if (selectedCollaborator != null && (selectedCollaborator.getId() == collaboratorId)) {
 			return;
 		}
 		else {
-			selectedCollaborator = null;
-			if (login != null) {
-				selectedCollaborator = getModelMgr().getCollaborator(login);
-			}
 			// Update contributions
+			selectedCollaborator = getModelMgr().getCollaborator(collaboratorId);
 			loadContributions();
 		}
 	}
@@ -456,29 +454,4 @@ class DefaultWeekContributionsProvider extends AbstractWeekContributionsProvider
 		}
 	}
 
-}
-
-class CollaboratorWrapper implements IContributionsTabLogic.ICollaborator {
-
-	private Collaborator collaborator;
-
-	CollaboratorWrapper(Collaborator collaborator) {
-		this.collaborator = collaborator;
-	}
-	
-	@Override
-	public String getLogin() {
-		return collaborator.getLogin();
-	}
-
-	@Override
-	public String getFirstName() {
-		return collaborator.getFirstName();
-	}
-
-	@Override
-	public String getLastName() {
-		return collaborator.getLastName();
-	}
-	
 }

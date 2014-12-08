@@ -27,19 +27,6 @@ public abstract class AbstractSafeTreeContentProviderCallback<TYPE> extends Abst
 	protected abstract Collection<TYPE> unsafeGetChildren(TYPE element) throws Exception;
 
 	@Override
-	public final boolean isRoot(TYPE element) {
-		try {
-			return unsafeIsRoot(element);
-		}
-		catch (Throwable t) {
-			fireCallbackExceptionEvent(t);
-		}
-		return false;
-	}
-
-	protected abstract boolean unsafeIsRoot(TYPE element) throws Exception;
-
-	@Override
 	public TYPE getParent(TYPE element) {
 		try {
 			return unsafeGetParent(element);
@@ -64,4 +51,18 @@ public abstract class AbstractSafeTreeContentProviderCallback<TYPE> extends Abst
 	}
 
 	protected abstract boolean unsafeHasChildren(TYPE element) throws Exception;
+
+	@Override
+	public final boolean isRoot(TYPE element) {
+		try {
+			return unsafeIsRoot(element);
+		}
+		catch (Throwable t) {
+			fireCallbackExceptionEvent(t);
+		}
+		return false;
+	}
+
+	protected abstract boolean unsafeIsRoot(TYPE element);
+
 }

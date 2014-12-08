@@ -1,17 +1,14 @@
 package org.activitymgr.ui.web.logic;
 
-import java.util.Collection;
-
-import org.activitymgr.core.dto.Task;
 import org.activitymgr.ui.web.logic.ILogic.IView;
 
 public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 	
-	void onSelectionChanged(Task task);
+	void onSelectionChanged(long taskId);
 
-	void onOkButtonClicked(Task task);
+	void onOkButtonClicked(long taskId);
 
-	void onRecentTaskClicked(Task task);
+	void onRecentTaskClicked(long taskId);
 	
 	void onNewTaskCheckboxClicked();
 
@@ -22,7 +19,7 @@ public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 		public void setTreeContentProviderCallback(
 				ITreeContentProviderCallback<?> callback);
 
-		public void setRecentTasksProviderCallback(IListContentProviderCallback<Task> callback);
+		public void setRecentTasksProviderCallback(IListContentProviderCallback<Long> callback);
 
 		public void setOkButtonEnabled(boolean enabled);
 
@@ -30,21 +27,13 @@ public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 
 		public void setStatus(String status);
 
-		public void expandTasks(Collection<Task> tasks);
-
-		public void selectTask(Task task);
+		public void selectTask(long taskId);
 
 		public boolean isNewTaskChecked();
 
 		public String getNewTaskName();
 		
-		public Task getSelectedTask();
-
-		/**
-		 * This pre load trigger is required with vaadin otherwise, when one clicks on a recently selected task, the task does not get selected (due to vaadin).
-		 * @param ids the tree items identifiers.
-		 */
-		public void preloadTreeItems(Collection<Task> tasks);
+		public long getSelectedTaskId();
 
 		public void setNewTaskNameEnabled(boolean enabled);
 	}

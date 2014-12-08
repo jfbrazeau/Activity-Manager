@@ -11,11 +11,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
-import org.activitymgr.ui.web.logic.IContributionsTabLogic.ICollaborator;
+import org.activitymgr.ui.web.logic.IListContentProviderCallback;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.impl.IContributionCellLogicProviderExtension;
 import org.activitymgr.ui.web.view.IContributionColumnViewProviderExtension;
 import org.activitymgr.ui.web.view.IResourceCache;
+import org.activitymgr.ui.web.view.impl.internal.util.BasicListDatasource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 
@@ -37,10 +38,6 @@ import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
 public class ContributionsPanel extends VerticalLayout implements IContributionsTabLogic.View, Button.ClickListener {
-
-	private static final String LNAME = "LNAME";
-
-	private static final String FNAME = "FNAME";
 
 	private IContributionsTabLogic logic;
 	
@@ -134,12 +131,6 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		 */
 		collaboratorsTable = new Table();
 		hl.addComponent(collaboratorsTable);
-		collaboratorsTable.addContainerProperty(FNAME, String.class, null);
-		collaboratorsTable.setColumnHeader(FNAME, "Fist name");
-		collaboratorsTable.setColumnWidth(FNAME, 70);
-		collaboratorsTable.addContainerProperty(LNAME, String.class, null);
-		collaboratorsTable.setColumnHeader(LNAME, "Last name");
-		collaboratorsTable.setColumnWidth(LNAME, 70);
 		collaboratorsTable.setSelectable(true);
 		collaboratorsTable.setImmediate(true);
 		collaboratorsTable.setNullSelectionAllowed(false);
@@ -190,7 +181,8 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		collaboratorsTable.addValueChangeListener(new Property.ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
-				logic.onSelectedCollaboratorChanged((String) collaboratorsTable.getValue());
+System.out.println("valueChanged : " + collaboratorsTable.getValue());
+				logic.onSelectedCollaboratorChanged((Long) collaboratorsTable.getValue());
 			}
 		});
 
@@ -327,16 +319,15 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	}
 
 	@Override
-	public void setCollaborators(List<ICollaborator> collaborators) {
-		collaboratorsTable.removeAllItems();
-		for (ICollaborator col : collaborators) {
-			collaboratorsTable.addItem(new Object[] { col.getFirstName(), col.getLastName() }, col.getLogin());
-		}
+	public void setCollaborators(
+			IListContentProviderCallback<Long> collaboratorsProvider) {
+		collaboratorsTable.setContainerDataSource(new BasicListDatasource(getResourceCache(), collaboratorsProvider));
 	}
 
 	@Override
-	public void selectCollaborator(String login) {
-		collaboratorsTable.select(login);
+	public void selectCollaborator(final long collaboratorId) {
+		collaboratorsTable.select(collaboratorId);
+		collaboratorsTable.focus();
 	}
 
 	@Override
@@ -381,6 +372,11 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	public void focus() {
 		super.focus();
 	}
+
+    protected IResourceCache getResourceCache() {
+		return resourceCache;
+	}
+
 }
 
 class DefaultColumnProvider implements IContributionColumnViewProviderExtension {
@@ -439,6 +435,5 @@ class DefaultColumnProvider implements IContributionColumnViewProviderExtension 
 	public int getColumnWidth(String id) {
 		return DEFAULT_COLUMN_WIDTHS.containsKey(id) ? DEFAULT_COLUMN_WIDTHS.get(id) : DAY_COLUMN_WIDTH;
 	}
-	
 	
 }

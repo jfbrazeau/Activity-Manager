@@ -9,12 +9,13 @@ import org.activitymgr.ui.web.view.IResourceCache;
 public class BasicListDatasource extends
 		AbstractContainerDatasource<BasicItem> {
 
-	private IListContentProviderCallback<?> contentProvider;
-
+	private IListContentProviderCallback<Object> contentProvider;
+	
+	@SuppressWarnings("unchecked")
 	public BasicListDatasource(IResourceCache resourceCache,
 			IListContentProviderCallback<?> contentProvider) {
 		super(resourceCache);
-		this.contentProvider = contentProvider;
+		this.contentProvider = (IListContentProviderCallback<Object>) contentProvider;
 	}
 
 	@Override
@@ -38,7 +39,13 @@ public class BasicListDatasource extends
 	}
 
 	@Override
-	public final Collection<?> getItemIds() {
+	public boolean containsId(Object itemId) {
+		return contentProvider.contains(itemId);
+	}
+
+
+	@Override
+	public final synchronized Collection<?> getItemIds() {
 		return contentProvider.getRootElements();
 	}
 

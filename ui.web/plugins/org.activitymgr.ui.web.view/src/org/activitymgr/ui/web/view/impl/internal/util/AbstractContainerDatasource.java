@@ -25,6 +25,7 @@ public abstract class AbstractContainerDatasource<ITEM_TYPE extends Item> implem
 	
 	@Override
 	public final Item getItem(Object value) {
+		//System.out.println("getItem(" + value + ")" + value.hashCode());
 		ITEM_TYPE result = items.get(value);
 		if (result == null) {
 			result = createItem(value);
@@ -39,11 +40,6 @@ public abstract class AbstractContainerDatasource<ITEM_TYPE extends Item> implem
 	public final boolean removeItem(Object itemId) {
 		items.remove(itemId);
 		return true;
-	}
-
-	@Override
-	public final boolean containsId(Object itemId) {
-		return items.containsKey(itemId);
 	}
 
 	/*

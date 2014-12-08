@@ -1,23 +1,32 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 
 import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.model.IModelMgr;
+import org.activitymgr.core.util.StringHelper;
+import org.activitymgr.ui.web.logic.ILabelProviderCallback;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTreeContentProviderCallback;
 import org.activitymgr.ui.web.logic.impl.LogicContext;
 
-class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback<Task> {
+class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback<Long> {
+
+	private static final String NAME_PROPERTY_ID = ILabelProviderCallback.NAME_PROPERTY_ID;
+	private static final String CODE_PROPERTY_ID = "CODE";
+	private static final String BUDGET_PROPERTY_ID = "BUDGET";
+	private static final String INITIAL_PROPERTY_ID = "INITIAL";
+	private static final String COSUMMED_PROPERTY_ID = "CONSUMMED";
+	private static final String ETC_PROPERTY_ID = "ETC";
+	private static final String DELTA_PROPERTY_ID = "DELTA";
+	private static final String COMMENT_PROPERTY_ID = "COMMENT";
+	private static final List<String> PROPERTY_IDS = Arrays.asList(new String[] { NAME_PROPERTY_ID, CODE_PROPERTY_ID, BUDGET_PROPERTY_ID, 
+			INITIAL_PROPERTY_ID, COSUMMED_PROPERTY_ID, ETC_PROPERTY_ID, DELTA_PROPERTY_ID, COMMENT_PROPERTY_ID } );
 
 	private IModelMgr modelMgr;
-
-	private HashMap<Long, List<Task>> childrenMap = new HashMap<Long, List<Task>>();
-	
-	private HashMap<Long, Task> parentsMap = new HashMap<Long, Task>();
 
 	public TaskTreeContentProvider(ILogic<?> source, LogicContext context, IModelMgr modelMgr) {
 		super(source, context.getEventBus());
@@ -25,65 +34,78 @@ class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback<Ta
 	}
 
 	@Override
-	protected Collection<Task> unsafeGetChildren(Task task) {
-		Long key = task != null ? task.getId() : null;
-		List<Task> children = childrenMap.get(key);
-		if (children == null) {
-			children = Arrays.asList(modelMgr.getSubTasks(task));
-			System.out.println("loadChildren(" + task + ")=>" + children);
-			childrenMap.put(key, children);
-			// Populate parents map
-			for (Task child : children) {
-				parentsMap.put(child.getId(), task);
-			}
+	protected Collection<Long> unsafeGetChildren(Long taskId) {
+		Task[] subtasks = modelMgr.getSubtasks(taskId);
+		Collection<Long> taskIds = new ArrayList<Long>();
+		for (Task task : subtasks) {
+			taskIds.add(task.getId());
 		}
-		return children;
+		return taskIds;
 	}
 
 	@Override
-	protected Collection<Task> unsafeGetRootElements() {
+	protected Collection<Long> unsafeGetRootElements() {
 		return unsafeGetChildren(null);
 	}
 
 	@Override
-	protected boolean unsafeIsRoot(Task task) {
+	protected boolean unsafeIsRoot(Long taskId) {
+		Task task = modelMgr.getTask(taskId);
 		return task.getPath().length() == 0;
 	}
 
 	@Override
-	public String unsafeGetText(Task task, String propertyId)
+	protected boolean unsafeContains(Long taskId) {
+		return modelMgr.getTask(taskId) != null;
+	}
+
+	@Override
+	public String unsafeGetText(Long taskId, String propertyId)
 			throws Exception {
-		return task.getName();
+		Task task = modelMgr.getTask(taskId);
+		if (NAME_PROPERTY_ID.equals(propertyId)) {
+			return task.getName();
+		}
+		else if (CODE_PROPERTY_ID.equals(propertyId)) {
+			return task.getCode();
+		}
+		else if (BUDGET_PROPERTY_ID.equals(propertyId)) {
+			return StringHelper.hundredthToEntry(task.getBudget());
+		}
+		else if (INITIAL_PROPERTY_ID.equals(propertyId)) {
+			return StringHelper.hundredthToEntry(task.getInitiallyConsumed());
+		}
+		else if (COSUMMED_PROPERTY_ID.equals(propertyId)) {
+			return StringHelper.hundredthToEntry(1234);
+		}
+		else if (ETC_PROPERTY_ID.equals(propertyId)) {
+			return StringHelper.hundredthToEntry(task.getTodo());
+		}
+		else if (DELTA_PROPERTY_ID.equals(propertyId)) {
+			return StringHelper.hundredthToEntry(4321);
+		}
+		else if (COMMENT_PROPERTY_ID.equals(propertyId)) {
+			return task.getComment();
+		}
+		else {
+			return "";
+		}
 	}
 	
 	@Override
 	public Collection<String> getPropertyIds() {
-		return DEFAULT_PROPERTY_IDS;
+		return PROPERTY_IDS;
 	}
 
 	@Override
-	protected boolean unsafeHasChildren(Task element) {
-		// Root case
-		if (element == null) {
-			return true;
-		}
-		else {
-			// If the cache is filled, let's use it
-			List<Task> children = childrenMap.get(element.getId());
-			if (children != null) {
-				return (children.size() > 0);
-			}
-			// Else, let's ask to the model manager
-			else {
-				return modelMgr.getSubTasksCount(element.getId()) > 0;
-			}
-
-		}
+	protected boolean unsafeHasChildren(Long taskId) {
+		return !modelMgr.isLeaf(taskId);
 	}
 
 	@Override
-	protected Task unsafeGetParent(Task element) {
-		return parentsMap.get(element.getId());
+	protected Long unsafeGetParent(Long taskId) {
+		Task parentTask = modelMgr.getParentTask(modelMgr.getTask(taskId));
+		return parentTask != null ? parentTask.getId() : null;
 	}
 
 }

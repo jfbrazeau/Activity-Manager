@@ -261,7 +261,6 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 		countAllRequest = buf.toString();
 		if (log.isInfoEnabled())
 			log.info("countAllRequest='" + countAllRequest + "'");
-		System.out.println(selectWithPKRequest);
 	}
 	
 	/* (non-Javadoc)

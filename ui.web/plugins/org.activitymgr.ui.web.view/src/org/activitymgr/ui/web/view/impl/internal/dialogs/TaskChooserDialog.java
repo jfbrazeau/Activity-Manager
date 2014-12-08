@@ -1,8 +1,7 @@
 package org.activitymgr.ui.web.view.impl.internal.dialogs;
 
-import java.util.Collection;
+import java.util.Stack;
 
-import org.activitymgr.core.dto.Task;
 import org.activitymgr.ui.web.logic.ILabelProviderCallback;
 import org.activitymgr.ui.web.logic.IListContentProviderCallback;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
@@ -11,7 +10,6 @@ import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.internal.util.BasicListDatasource;
 import org.activitymgr.ui.web.view.impl.internal.util.BasicTreeDatasource;
 
-import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.event.FieldEvents;
@@ -59,10 +57,7 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
         leftContainerPanel.setHeight(350, Unit.PIXELS);
         taskTree = new Tree();
         leftContainerPanel.setContent(taskTree);
-        //taskTree.setWidth(400, Unit.PIXELS);
-        taskTree.setSizeUndefined();
         taskTree.setImmediate(true);
-        taskTree.setSizeFull();
         
         // Recent tasks
         VerticalLayout rightContainerPanel = new VerticalLayout();
@@ -84,10 +79,6 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
         newSubTaskNameField.setImmediate(true);
         newTaskFormPanel.addComponent(newSubTaskNameField);
 
-        //        rightContainerPanel.setExpandRatio(recentTasksSelect, 8f);
-//        rightContainerPanel.setExpandRatio(newSubTaskCheckbox, 1f);
-//        rightContainerPanel.setExpandRatio(newSubTaskNameField, 1f);
-        
         // Buttons
         HorizontalLayout hl = new HorizontalLayout();
         hl.setSizeFull();
@@ -107,24 +98,19 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
         taskTree.addValueChangeListener(new Property.ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
-				logic.onSelectionChanged((Task) taskTree.getValue());
+				logic.onSelectionChanged((Long) taskTree.getValue());
 			}
 		});
         recentTasksSelect.addValueChangeListener(new Property.ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
-				logic.onRecentTaskClicked((Task) recentTasksSelect.getValue());
+				logic.onRecentTaskClicked((Long) recentTasksSelect.getValue());
 			}
 		});
         newSubTaskCheckbox.addValueChangeListener(new Property.ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
 				logic.onNewTaskCheckboxClicked();
-			}
-		});
-        newSubTaskNameField.addValueChangeListener(new Property.ValueChangeListener() {
-			@Override
-			public void valueChange(ValueChangeEvent event) {
 			}
 		});
         newSubTaskNameField.setTextChangeEventMode(TextChangeEventMode.EAGER);
@@ -143,7 +129,7 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 			        if (getParent() != null) {
 			            close();
 			        }
-		        	logic.onOkButtonClicked((Task) taskTree.getValue());
+		        	logic.onOkButtonClicked((Long) taskTree.getValue());
 				}
 				else {
 					taskTree.expandItem(taskTree.getValue());
@@ -165,23 +151,10 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	}
 	
     @Override
-    public void setRecentTasksProviderCallback(IListContentProviderCallback<Task> callback) {
+    public void setRecentTasksProviderCallback(IListContentProviderCallback<Long> callback) {
     	BasicListDatasource datasource = new BasicListDatasource(getResourceCache(), callback);
     	recentTasksSelect.setContainerDataSource(datasource);
     	recentTasksSelect.setItemCaptionPropertyId(ILabelProviderCallback.NAME_PROPERTY_ID);
-    	for (Object id : recentTasksSelect.getItemIds()) {
-        	Item item = taskTree.getItem(id);
-        	System.out.println("Preload " + id + " - " + item);
-    	}
-    	
-    }
-    
-    @Override
-    public void preloadTreeItems(Collection<Task> tasks) {
-    	for (Task task : tasks) {
-        	Item item = taskTree.getItem(task);
-        	System.out.println("Preloaded " + task + " - " + item);
-    	}
     }
     
 	@Override
@@ -190,7 +163,7 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
             close();
         }
         if (event.getSource() == ok) {
-        	logic.onOkButtonClicked((Task)taskTree.getValue());
+        	logic.onOkButtonClicked((Long)taskTree.getValue());
         }
 	}
 
@@ -221,14 +194,17 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	}
 	
 	@Override
-	public void selectTask(Task task) {
-		taskTree.setValue(task);
-	}
-
-	@Override
-	public void expandTasks(Collection<Task> tasks) {
-		for (Task task : tasks) {
-			taskTree.expandItem(task);
+	public void selectTask(long taskId) {
+		taskTree.setValue(taskId);
+		// FIXME maybe useless
+		Object parent = taskId;
+		Stack<Object> parents = new Stack<Object>();
+		while ((parent = taskTree.getParent(parent)) != null) {
+			parents.push(parent);
+		}
+		while (!parents.isEmpty()) {
+			Object element = parents.pop();
+			taskTree.expandItem(element);
 		}
 	}
 
@@ -243,7 +219,7 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	}
 
 	@Override
-	public Task getSelectedTask() {
-		return (Task) taskTree.getValue();
+	public long getSelectedTaskId() {
+		return (Long) taskTree.getValue();
 	}
 }

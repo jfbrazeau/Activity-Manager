@@ -6,10 +6,10 @@ public interface ITreeContentProviderCallback<TYPE> extends IListContentProvider
 
 	Collection<TYPE> getChildren(TYPE element);
 
-	boolean isRoot(TYPE element);
-
 	boolean hasChildren(TYPE element);
 
 	TYPE getParent(TYPE element);
+
+	boolean isRoot(TYPE element);
 
 }

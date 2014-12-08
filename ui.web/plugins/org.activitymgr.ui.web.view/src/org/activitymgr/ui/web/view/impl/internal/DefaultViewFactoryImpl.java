@@ -1,6 +1,7 @@
 package org.activitymgr.ui.web.view.impl.internal;
 
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
+import org.activitymgr.ui.web.logic.ICollaboratorsTabLogic;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.IRootLogic;
@@ -27,6 +28,8 @@ public class DefaultViewFactoryImpl extends AbstractViewFactoryExtension {
 			return new AuthenticationPanel(getResourceCache(), defaultUser);
 		} else if (IContributionsTabLogic.class.isAssignableFrom(logicType)) {
 			return new ContributionsPanel(getResourceCache());
+		} else if (ICollaboratorsTabLogic.class.isAssignableFrom(logicType)) {
+			return new CollaboratorsPanel(getResourceCache());
 		} else if (ITasksTabLogic.class.isAssignableFrom(logicType)) {
 			return new TasksPanel(getResourceCache());
 		} else if (ITaskChooserLogic.class.isAssignableFrom(logicType)) {

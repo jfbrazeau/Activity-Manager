@@ -26,4 +26,17 @@ public abstract class AbstractSafeListContentProviderCallback<TYPE> extends Abst
 
 	protected abstract Collection<TYPE> unsafeGetRootElements() throws Exception;
 	
+	@Override
+	public final boolean contains(TYPE element) {
+		try {
+			return unsafeContains(element);
+		}
+		catch (Throwable t) {
+			fireCallbackExceptionEvent(t);
+		}
+		return false;
+	}
+
+	protected abstract boolean unsafeContains(TYPE element);
+
 }

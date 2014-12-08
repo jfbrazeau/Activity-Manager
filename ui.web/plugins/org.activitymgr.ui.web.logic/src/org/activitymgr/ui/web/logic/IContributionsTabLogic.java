@@ -6,12 +6,6 @@ import java.util.List;
 // TODO clear
 public interface IContributionsTabLogic extends ILogic<IContributionsTabLogic.View> {
 
-	static interface ICollaborator {
-		String getLogin();
-		String getFirstName();
-		String getLastName();
-	}
-	
 	void onPreviousYear();
 
 	void onPreviousMonth();
@@ -26,15 +20,15 @@ public interface IContributionsTabLogic extends ILogic<IContributionsTabLogic.Vi
 
 	void onDateChange(Calendar value);
 
-	void onSelectedCollaboratorChanged(String login);
+	void onSelectedCollaboratorChanged(long collaboratorId);
 
 	void onAction(String actionId);
 
 	public interface View extends ILogic.IView<IContributionsTabLogic> {
 		
-		void setCollaborators(List<ICollaborator> collaborators);
+		void setCollaborators(IListContentProviderCallback<Long> collaboratorsProvider);
 		
-		void selectCollaborator(String login);
+		void selectCollaborator(long collaboratorId);
 
 		void setColumnIdentifiers(List<String> ids);
 		

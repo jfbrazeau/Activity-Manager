@@ -53,8 +53,6 @@ public abstract class AbstractModelTestCase extends TestCase implements
 		});
 
 		// Initialisation des logs et chargement de la config
-		PropertyConfigurator.configure(AbstractModelTestCase.class
-				.getResource("tests.properties"));
 		Properties props = new Properties();
 		InputStream in = AbstractModelTestCase.class
 				.getResourceAsStream("tests.properties");
@@ -64,6 +62,7 @@ public abstract class AbstractModelTestCase extends TestCase implements
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
+		PropertyConfigurator.configure(props);
 
 		// Préfixe de config à utiliser
 		String cfg = props.getProperty("dbconfig");
