@@ -4,8 +4,8 @@ import org.activitymgr.ui.web.logic.impl.internal.RootLogicImpl;
 
 public class ActivityManagerLogic {
 
-	public ActivityManagerLogic(IViewFactory viewFactory) {
-		new RootLogicImpl(viewFactory);
+	public ActivityManagerLogic(IRootLogic.View rootView, IViewDescriptor viewDescriptor) {
+		new RootLogicImpl(rootView, viewDescriptor);
 	}
 
 }

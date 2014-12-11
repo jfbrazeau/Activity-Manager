@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.activitymgr.ui.web.view" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.activitymgr.ui.web.logic" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="org.activitymgr.ui.web.view" id="org.activitymgr.ui.web.view.viewFactory" name="View Factory"/>
+         <meta.schema plugin="org.activitymgr.ui.web.logic" id="org.activitymgr.ui.web.logic.viewbinding" name="Activity Manager UI View Binding"/>
       </appinfo>
       <documentation>
          [Enter description of this extension point.]
@@ -17,8 +17,8 @@
          </appinfo>
       </annotation>
       <complexType>
-         <sequence>
-            <element ref="viewFactory"/>
+         <sequence minOccurs="1" maxOccurs="unbounded">
+            <element ref="binding"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,15 +47,25 @@
       </complexType>
    </element>
 
-   <element name="viewFactory">
+   <element name="binding">
       <complexType>
-         <attribute name="class" type="string" use="required">
+         <attribute name="logic" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn="org.activitymgr.ui.web.view.impl.AbstractViewFactoryExtension:"/>
+                  <meta.attribute kind="java" basedOn=":org.activitymgr.ui.web.logic.ILogic"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="view" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn=":org.activitymgr.ui.web.logic.ILogic$IView"/>
                </appinfo>
             </annotation>
          </attribute>

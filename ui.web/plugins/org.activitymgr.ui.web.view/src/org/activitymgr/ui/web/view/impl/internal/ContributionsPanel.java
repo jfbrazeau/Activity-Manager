@@ -41,8 +41,6 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 
 	private IContributionsTabLogic logic;
 	
-	private IResourceCache resourceCache;
-
 	private PopupDateField dateField;
 
 	private Button previousYearButton;
@@ -67,9 +65,10 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 
 	private List<ShortcutListener> actions = new ArrayList<ShortcutListener>();
 
+	private IResourceCache resourceCache;
+
 	public ContributionsPanel(IResourceCache resourceCache) {
 		this.resourceCache = resourceCache;
-
 		setSpacing(true);
 		setMargin(true);
 
@@ -344,7 +343,7 @@ System.out.println("valueChanged : " + collaboratorsTable.getValue());
 			rawModifiers[i++] = ShortcutListener.ModifierKey.ALT;
 		int[] modifiers = new int[i];
 		System.arraycopy(rawModifiers, 0, modifiers, 0, i);
-		Resource iconResource = resourceCache.getResource(iconId + ".gif");
+		Resource iconResource = getResourceCache().getResource(iconId + ".gif");
 		String caption = label + " <em>"
 				+ keyBindingDescription + "</em>";
 		ShortcutListener newAction = new ShortcutListener(caption,
@@ -368,13 +367,13 @@ System.out.println("valueChanged : " + collaboratorsTable.getValue());
 		});
 	}
 
+	protected IResourceCache getResourceCache() {
+		return resourceCache;
+	}
+
 	@Override
 	public void focus() {
 		super.focus();
-	}
-
-    protected IResourceCache getResourceCache() {
-		return resourceCache;
 	}
 
 }

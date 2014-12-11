@@ -9,6 +9,7 @@
    <extension-point id="org.activitymgr.ui.web.logic.additionalModules" name="Additional Guice Modules" schema="schema/org.activitymgr.ui.web.logic.additionalModules.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.tabLogic" name="Tab Logic Provider" schema="schema/org.activitymgr.ui.web.logic.tabLogic.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.featureAccessManager" name="Feature Access Manager" schema="schema/org.activitymgr.ui.web.logic.featureAccessManager.exsd"/>
+   <extension-point id="org.activitymgr.ui.web.logic.viewbinding" name="Activity Manager UI View Binding" schema="schema/org.activitymgr.ui.web.logic.viewbinding.exsd"/>
    <extension
          point="org.activitymgr.ui.web.logic.contributionAction">
       <contributionAction

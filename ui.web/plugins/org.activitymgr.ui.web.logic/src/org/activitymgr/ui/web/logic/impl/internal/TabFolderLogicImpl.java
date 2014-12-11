@@ -5,9 +5,9 @@ import org.activitymgr.ui.web.logic.ITabFolderLogic;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.LogicContext;
 
-public class TableFolderLogicImpl extends AbstractLogicImpl<ITabFolderLogic.View> implements ITabFolderLogic {
+public class TabFolderLogicImpl extends AbstractLogicImpl<ITabFolderLogic.View> implements ITabFolderLogic {
 
-	public TableFolderLogicImpl(ILogic<?> parent, LogicContext context) {
+	public TabFolderLogicImpl(ILogic<?> parent, LogicContext context) {
 		super(parent, context);
 	}
 

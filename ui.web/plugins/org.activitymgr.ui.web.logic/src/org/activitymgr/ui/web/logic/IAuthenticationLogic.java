@@ -8,6 +8,8 @@ public interface IAuthenticationLogic extends ILogic<IAuthenticationLogic.View> 
 	
 	public interface View extends IView<IAuthenticationLogic> {
 		
+		void setDefaults(String login, boolean rememberMe);
+		
 	}
 
 }

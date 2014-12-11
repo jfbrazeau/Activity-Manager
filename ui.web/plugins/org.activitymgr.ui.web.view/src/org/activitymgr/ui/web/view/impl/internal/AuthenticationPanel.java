@@ -18,12 +18,14 @@ public class AuthenticationPanel extends GridLayout implements
 
 	private IAuthenticationLogic logic;
 
-	@SuppressWarnings("unused")
-	private IResourceCache resourceCache;
+	private CheckBox rememberMeCheckBox;
 
-	public AuthenticationPanel(IResourceCache resourceCache, String defaultUser) {
+	private PasswordField passwordField;
+
+	private TextField userField;
+
+	public AuthenticationPanel(IResourceCache resourceCache) {
 		super(1, 1);
-		this.resourceCache = resourceCache;
 
 		setSizeFull();
 		setSpacing(true);
@@ -42,11 +44,8 @@ public class AuthenticationPanel extends GridLayout implements
 		Label userLabel = new Label("User");
 		formPanel.addComponent(userLabel);
 		formPanel.setComponentAlignment(userLabel, Alignment.MIDDLE_RIGHT);
-		final TextField userField = new TextField();
+		userField = new TextField();
 		formPanel.addComponent(userField);
-		if (defaultUser != null) {
-			userField.setValue(defaultUser);
-		}
 		formPanel.addComponent(new Label(""));
 		
 		/* Line 2 */
@@ -55,7 +54,7 @@ public class AuthenticationPanel extends GridLayout implements
 		Label passwordLabel = new Label("Password");
 		formPanel.addComponent(passwordLabel);
 		formPanel.setComponentAlignment(passwordLabel, Alignment.MIDDLE_RIGHT);
-		final PasswordField passwordField = new PasswordField();
+		passwordField = new PasswordField();
 		formPanel.addComponent(passwordField);
 
 		// Button
@@ -66,8 +65,7 @@ public class AuthenticationPanel extends GridLayout implements
 
 		// Remember me
 		formPanel.addComponent(new Label(""));
-		final CheckBox rememberMeCheckBox = new CheckBox("Remember me");
-		rememberMeCheckBox.setValue(defaultUser != null);
+		rememberMeCheckBox = new CheckBox("Remember me");
 		formPanel.addComponent(rememberMeCheckBox);
 
 		// Register listeners
@@ -88,17 +86,24 @@ public class AuthenticationPanel extends GridLayout implements
 		});
 		
 		// Default focus management
-		if (defaultUser == null) {
-			userField.focus();
-		}
-		else {
-			passwordField.focus();
-		}
+		userField.focus();
 	}
 	
 	@Override
 	public void registerLogic(IAuthenticationLogic logic) {
 		this.logic = logic;
+	}
+
+	@Override
+	public void setDefaults(String defaultUser, boolean rememberMe) {
+		userField.setValue(defaultUser != null ? defaultUser : "");
+		rememberMeCheckBox.setValue(rememberMe);
+		if (defaultUser != null) {
+			passwordField.focus();
+		}
+		else {
+			userField.focus();
+		}
 	}
 
 }

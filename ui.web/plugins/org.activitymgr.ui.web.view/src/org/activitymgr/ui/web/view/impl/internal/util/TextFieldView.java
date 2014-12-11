@@ -1,6 +1,7 @@
 package org.activitymgr.ui.web.view.impl.internal.util;
 
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
+import org.activitymgr.ui.web.view.IResourceCache;
 
 import com.vaadin.event.FieldEvents;
 import com.vaadin.event.FieldEvents.BlurEvent;
@@ -11,6 +12,9 @@ public class TextFieldView extends TextField implements ITextFieldLogic.View {
 	
 	private ITextFieldLogic logic;
 	
+	public TextFieldView(IResourceCache resourceCache) {
+	}
+
 	@Override
 	public void registerLogic(ITextFieldLogic newLogic) {
 		this.logic = newLogic;

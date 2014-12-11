@@ -76,7 +76,9 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 
 			// Reset button state & status label
 			onSelectionChanged(-1);
-			
+		
+			// Open the window
+			getRoot().getView().openWindow(getView());
 		} catch (ModelException e) {
 			throw new IllegalStateException("Unexpected error while retrieving recent tasks", e);
 		}

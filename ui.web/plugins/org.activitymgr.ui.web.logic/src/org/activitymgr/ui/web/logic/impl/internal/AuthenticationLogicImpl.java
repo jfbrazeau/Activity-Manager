@@ -42,11 +42,9 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 				authenticator = new NullAuthenticator();
 			}
 		}
-	}
-
-	@Override
-	protected Object[] getViewParameters() {
-		return new String[] { getRoot().getView().getCookie(NAME_COOKIE) };
+		// Init defaults
+		String defaultLogin = getRoot().getView().getCookie(NAME_COOKIE);
+		getView().setDefaults(defaultLogin, defaultLogin != null);
 	}
 
 	@Override

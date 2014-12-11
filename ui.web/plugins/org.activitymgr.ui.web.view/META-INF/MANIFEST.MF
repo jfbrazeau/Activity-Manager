@@ -11,5 +11,4 @@ Require-Bundle: org.vaadin.osgiappcontainer;visibility:=reexport,
  org.eclipse.core.runtime
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.activitymgr.ui.web.view.impl.internal.Activator
-Export-Package: org.activitymgr.ui.web.view,
- org.activitymgr.ui.web.view.impl
+Export-Package: org.activitymgr.ui.web.view

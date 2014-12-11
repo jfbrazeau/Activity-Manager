@@ -29,4 +29,5 @@ public class AbstractDialog extends Window {
 		return resourceCache;
 	}
 
+
 }

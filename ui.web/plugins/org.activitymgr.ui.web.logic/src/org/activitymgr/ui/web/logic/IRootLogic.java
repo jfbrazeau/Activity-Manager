@@ -19,6 +19,8 @@ public interface IRootLogic extends ILogic<IRootLogic.View> {
 		void setCookie(String name, String value);
 
 		void removeCookie(String name);
+
+		void openWindow(IView<?> view);
 	}
 
 }

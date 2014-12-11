@@ -14,10 +14,10 @@ public class CollaboratorsPanel extends VerticalLayout implements ICollaborators
 	@SuppressWarnings("unused")
 	private ICollaboratorsTabLogic logic;
 
-	private IResourceCache resourceCache;
-
 	private Table collaboratorsTable;
 
+	private IResourceCache resourceCache;
+	
 	public CollaboratorsPanel(IResourceCache resourceCache) {
 		this.resourceCache = resourceCache;
 	}
@@ -44,7 +44,7 @@ public class CollaboratorsPanel extends VerticalLayout implements ICollaborators
 		collaboratorsTable.setContainerDataSource(dataSource);
 	}
     
-    protected IResourceCache getResourceCache() {
+	protected IResourceCache getResourceCache() {
 		return resourceCache;
 	}
 

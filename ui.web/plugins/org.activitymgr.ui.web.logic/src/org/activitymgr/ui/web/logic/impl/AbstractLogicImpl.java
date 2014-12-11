@@ -1,16 +1,23 @@
 package org.activitymgr.ui.web.logic.impl;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.IRootLogic;
+import org.activitymgr.ui.web.logic.impl.internal.Activator;
 import org.activitymgr.ui.web.logic.impl.internal.RootLogicImpl;
+import org.eclipse.core.runtime.IConfigurationElement;
 
 
 @SuppressWarnings("rawtypes")
 public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements ILogic<VIEW> {
 
-	private Object[] EMPTY_ARRAY = new Object[0];
 	private LogicContext context;
 	private ILogic<?> parent;
 
@@ -28,13 +35,36 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 		Class<? extends ILogic<?>> iLogicInterface = getILogicInterfaces(getClass());
 		ILogic<VIEW> transactionalWrapper = context.buildTransactionalWrapper(this, iLogicInterface);
 		// Create the view and bind the logic to it
-		view = (VIEW) context.getViewFactory().createView(getClass(), getViewParameters());
-		view.registerLogic(transactionalWrapper);
-	}
-
-	// TODO Javadoc to be overrided
-	protected Object[] getViewParameters() {
-		return EMPTY_ARRAY;
+		Class<VIEW> viewClass = null;
+		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.viewbinding");
+		List<IConfigurationElement> cfgList = new ArrayList<IConfigurationElement>(Arrays.asList(cfgs));
+		try {
+			for (IConfigurationElement cfg : cfgList) {
+				if (iLogicInterface.getName().equals(cfg.getAttribute("logic"))) {
+					viewClass = Activator.getDefault().<VIEW>loadClass(cfg.getContributor().getName(), cfg.getAttribute("view"));
+					break;
+				}
+			}
+			if (viewClass == null) {
+				throw new IllegalStateException("Unknown view implementation for " + iLogicInterface.getName());
+			}
+			Constructor<VIEW> viewConsructor = viewClass.getDeclaredConstructor(context.getViewDescriptor().getConstructorArgTypes());
+			view = viewConsructor.newInstance(context.getViewDescriptor().getConstructorArgs());
+			view.registerLogic(transactionalWrapper);
+		}
+		catch (NoSuchMethodException e) {
+			throw new IllegalStateException(e);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalStateException(e);
+		} catch (InstantiationException e) {
+			throw new IllegalStateException(e);
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		} catch (InvocationTargetException e) {
+			throw new IllegalStateException(e);
+		} catch (ClassNotFoundException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	public VIEW getView() {

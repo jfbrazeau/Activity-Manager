@@ -2,6 +2,7 @@ package org.activitymgr.ui.web.view.impl.internal;
 
 import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.ITabFolderLogic;
+import org.activitymgr.ui.web.view.IResourceCache;
 
 import com.vaadin.ui.Component;
 import com.vaadin.ui.TabSheet;
@@ -15,7 +16,7 @@ public class TabFolderViewImpl extends TabSheet implements ITabFolderLogic.View 
 	
 	private boolean moreThanOneTab = false;
 
-	public TabFolderViewImpl() {
+	public TabFolderViewImpl(IResourceCache resourceCache) {
 		setStyleName(Runo.TABSHEET_SMALL);
 		hideTabs(true);
 	}

@@ -2,7 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="org.activitymgr.ui.web.view.contributionColumnViewProvider" name="Contribution Column View Provider" schema="schema/org.activitymgr.ui.web.view.contributionColumnViewProvider.exsd"/>
-   <extension-point id="org.activitymgr.ui.web.view.viewFactory" name="View Factory" schema="schema/org.activitymgr.ui.web.view.viewFactory.exsd"/>
    <extension
          id="application"
          point="org.eclipse.core.runtime.applications">
@@ -32,9 +31,38 @@
       </vaadin-ui>
    </extension>
    <extension
-         point="org.activitymgr.ui.web.view.viewFactory">
-      <viewFactory
-            class="org.activitymgr.ui.web.view.impl.internal.DefaultViewFactoryImpl">
-      </viewFactory>
+         point="org.activitymgr.ui.web.logic.viewbinding">
+      <binding
+            logic="org.activitymgr.ui.web.logic.IAuthenticationLogic"
+            view="org.activitymgr.ui.web.view.impl.internal.AuthenticationPanel">
+      </binding>
+      <binding
+            logic="org.activitymgr.ui.web.logic.IContributionsTabLogic"
+            view="org.activitymgr.ui.web.view.impl.internal.ContributionsPanel">
+      </binding>
+      <binding
+            logic="org.activitymgr.ui.web.logic.ICollaboratorsTabLogic"
+            view="org.activitymgr.ui.web.view.impl.internal.CollaboratorsPanel">
+      </binding>
+      <binding
+            logic="org.activitymgr.ui.web.logic.ITasksTabLogic"
+            view="org.activitymgr.ui.web.view.impl.internal.TasksPanel">
+      </binding>
+      <binding
+            logic="org.activitymgr.ui.web.logic.ITaskChooserLogic"
+            view="org.activitymgr.ui.web.view.impl.internal.dialogs.TaskChooserDialog">
+      </binding>
+      <binding
+            logic="org.activitymgr.ui.web.logic.ILabelLogic"
+            view="org.activitymgr.ui.web.view.impl.internal.util.LabelView">
+      </binding>
+      <binding
+            logic="org.activitymgr.ui.web.logic.ITextFieldLogic"
+            view="org.activitymgr.ui.web.view.impl.internal.util.TextFieldView">
+      </binding>
+      <binding
+            logic="org.activitymgr.ui.web.logic.ITabFolderLogic"
+            view="org.activitymgr.ui.web.view.impl.internal.TabFolderViewImpl">
+      </binding>
    </extension>
 </plugin>

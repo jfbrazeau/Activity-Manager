@@ -17,7 +17,7 @@ import org.activitymgr.core.model.CoreModelModule;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.IFeatureAccessManager;
-import org.activitymgr.ui.web.logic.IViewFactory;
+import org.activitymgr.ui.web.logic.IViewDescriptor;
 import org.activitymgr.ui.web.logic.impl.event.EventBusImpl;
 import org.activitymgr.ui.web.logic.impl.internal.Activator;
 import org.apache.commons.dbcp.BasicDataSource;
@@ -32,7 +32,7 @@ import com.google.inject.Provider;
 // TODO Inject ?
 public class LogicContext {
 
-	private IViewFactory viewFactory;
+	private IViewDescriptor viewDescriptor;
 	private IEventBus eventBus = new EventBusImpl();
 	private Collaborator connectedCollaborator;
 	// TODO datasource musn't be declined by logic context
@@ -41,8 +41,8 @@ public class LogicContext {
 	private Injector injector;
 	private IFeatureAccessManager accessManager;
 
-	public LogicContext(IViewFactory viewFactory, IFeatureAccessManager accessManager, String jdbcDriver, String jdbcUrl, String jdbcUser, String jdbcPassword) throws SQLException {
-		this.viewFactory = viewFactory;
+	public LogicContext(IViewDescriptor viewDescriptor, IFeatureAccessManager accessManager, String jdbcDriver, String jdbcUrl, String jdbcUser, String jdbcPassword) throws SQLException {
+		this.viewDescriptor = viewDescriptor;
 		this.accessManager = accessManager;
 
 		List<AbstractModule> modules = new ArrayList<AbstractModule>();
@@ -102,8 +102,8 @@ public class LogicContext {
 		return injector.getInstance(c);
 	}
 
-	public IViewFactory getViewFactory() {
-		return viewFactory;
+	public IViewDescriptor getViewDescriptor() {
+		return viewDescriptor;
 	}
 
 	public IEventBus getEventBus() {

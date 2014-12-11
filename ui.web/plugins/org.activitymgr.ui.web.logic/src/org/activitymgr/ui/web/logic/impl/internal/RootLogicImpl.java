@@ -14,7 +14,7 @@ import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.IFeatureAccessManager;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.IRootLogic;
-import org.activitymgr.ui.web.logic.IViewFactory;
+import org.activitymgr.ui.web.logic.IViewDescriptor;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.DefaultFeatureAccessManagerImpl;
 import org.activitymgr.ui.web.logic.impl.LogicContext;
@@ -28,7 +28,7 @@ public class RootLogicImpl implements IRootLogic {
 	private LogicContext context;
 	private IRootLogic.View view;
 	
-	public RootLogicImpl(IViewFactory viewFactory) {
+	public RootLogicImpl(IRootLogic.View rootView, IViewDescriptor viewFactory) {
 		// Retrieve the feature access manager if configured
 		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.featureAccessManager");
 
@@ -70,8 +70,8 @@ public class RootLogicImpl implements IRootLogic {
 			throw new IllegalStateException(e);
 		}
 
-		// View creation
-		view = (IRootLogic.View) viewFactory.createView(getClass());
+		// View registration
+		this.view = rootView;
 		view.registerLogic(this);
 
 		// Model manager retrieval
@@ -90,7 +90,7 @@ public class RootLogicImpl implements IRootLogic {
 			@Override
 			public void handle(AbstractEvent event) {
 				// Create the tab container
-				TableFolderLogicImpl tabFolderLogic = new TableFolderLogicImpl(RootLogicImpl.this, getContext());
+				TabFolderLogicImpl tabFolderLogic = new TabFolderLogicImpl(RootLogicImpl.this, getContext());
 				getView().setContentView(tabFolderLogic.getView());
 				// Iterate over the provided tabs and create it
 				IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.tabLogic");
@@ -136,7 +136,7 @@ public class RootLogicImpl implements IRootLogic {
 		rootView.showErrorNotification(message, details);
 	}
 
-	private void addTabLogic(TableFolderLogicImpl tabFolderLogic,
+	private void addTabLogic(TabFolderLogicImpl tabFolderLogic,
 			IConfigurationElement cfg) {
 		String tabName = cfg.getAttribute("label");
 		// Check user access

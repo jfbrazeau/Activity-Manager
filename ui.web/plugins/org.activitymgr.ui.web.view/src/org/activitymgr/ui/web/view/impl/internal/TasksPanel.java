@@ -14,9 +14,9 @@ public class TasksPanel extends VerticalLayout implements ITasksTabLogic.View {
 	@SuppressWarnings("unused")
 	private ITasksTabLogic logic;
 
-	private IResourceCache resourceCache;
-
 	private TreeTable taskTree;
+
+	private IResourceCache resourceCache;
 
 	public TasksPanel(IResourceCache resourceCache) {
 		this.resourceCache = resourceCache;
@@ -41,7 +41,7 @@ public class TasksPanel extends VerticalLayout implements ITasksTabLogic.View {
 		taskTree.setContainerDataSource(dataSource);
 	}
     
-    protected IResourceCache getResourceCache() {
+	protected IResourceCache getResourceCache() {
 		return resourceCache;
 	}
 
