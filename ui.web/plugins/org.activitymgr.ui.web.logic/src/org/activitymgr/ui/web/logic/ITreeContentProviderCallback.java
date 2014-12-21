@@ -2,7 +2,7 @@ package org.activitymgr.ui.web.logic;
 
 import java.util.Collection;
 
-public interface ITreeContentProviderCallback<TYPE> extends IListContentProviderCallback<TYPE> {
+public interface ITreeContentProviderCallback<TYPE> extends ITableCellProviderCallback<TYPE> {
 
 	Collection<TYPE> getChildren(TYPE element);
 

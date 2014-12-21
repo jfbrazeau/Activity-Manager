@@ -1,10 +1,13 @@
 package org.activitymgr.ui.web.view.impl.internal;
 
 import org.activitymgr.ui.web.logic.ICollaboratorsTabLogic;
-import org.activitymgr.ui.web.logic.IListContentProviderCallback;
+import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.view.IResourceCache;
-import org.activitymgr.ui.web.view.impl.internal.util.BasicListDatasource;
+import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
+import org.activitymgr.ui.web.view.impl.internal.util.TextFieldView;
 
+import com.vaadin.event.LayoutEvents;
+import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 
@@ -30,18 +33,34 @@ public class CollaboratorsPanel extends VerticalLayout implements ICollaborators
 
 		collaboratorsTable = new Table();
 		addComponent(collaboratorsTable);
-		collaboratorsTable.setSelectable(true);
 		collaboratorsTable.setImmediate(true);
 		collaboratorsTable.setNullSelectionAllowed(false);
 		collaboratorsTable.setHeight("500px");
 		collaboratorsTable.setSizeFull();
+		addLayoutClickListener(new LayoutEvents.LayoutClickListener() {
+			@Override
+			public void layoutClick(LayoutClickEvent event) {
+				if (event.getClickedComponent() instanceof TextFieldView) {
+					TextFieldView txtField = (TextFieldView) event.getClickedComponent();
+					txtField.onClick();
+				}
+			}
+		});
 	}
 
     @Override
 	public void setCollaboratorsProviderCallback(
-			IListContentProviderCallback<Long> collaboratorsProviderCallback) {
-		BasicListDatasource dataSource = new BasicListDatasource(getResourceCache(), collaboratorsProviderCallback);
+			final ITableCellProviderCallback<Long> collaboratorsProviderCallback) {
+		TableDatasource<Long> dataSource = new TableDatasource<Long>(getResourceCache(), collaboratorsProviderCallback);
 		collaboratorsTable.setContainerDataSource(dataSource);
+		for (String propertyId : dataSource.getContainerPropertyIds()) {
+			collaboratorsTable.addGeneratedColumn(propertyId, new Table.ColumnGenerator() {
+				@Override
+				public Object generateCell(Table source, Object itemId, Object propertyId) {
+					return collaboratorsProviderCallback.getCell((Long) itemId, (String) propertyId);
+				}
+			});
+		}
 	}
     
 	protected IResourceCache getResourceCache() {

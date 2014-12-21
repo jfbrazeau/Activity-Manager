@@ -119,7 +119,7 @@ public class LogicContext {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T buildTransactionalWrapper(final T wrapped, Class<?> interfaceToWrapp) {
+	public <T> T buildTransactionalWrapper(final T wrapped, final Class<?> interfaceToWrapp) {
 		return (T) Proxy.newProxyInstance(
 				wrapped.getClass().getClassLoader(),
 				// TODO add comments
@@ -127,46 +127,51 @@ public class LogicContext {
 					@Override
 					public Object invoke(Object proxy, Method method,
 							Object[] args) throws Throwable {
-						DbTransactionContext txCtx = transactions.get();
-						Savepoint sp = null;
-						try {
-							// Open the transaction if required and push a savepoint
-							if (txCtx == null) {
-								txCtx = new DbTransactionContext(datasource.getConnection());
-								transactions.set(txCtx);
-							}
-							else {
-								sp = txCtx.tx.setSavepoint();
-							}
-							txCtx.calls.push(method);
-							//log(txCtx, "START");
-							// Call the real model manager
-							Object result = method.invoke(wrapped, args);
-
-							// Commit the transaction (or put a save point)
-							if (txCtx.calls.size() > 1) {
-								sp = txCtx.tx.setSavepoint();
-							}
-							else {
-								txCtx.tx.commit();
-							}
-							return result;
-						} catch (InvocationTargetException t) {
-							// Rollback the transaction in case of failure
-							if (txCtx.calls.size() > 1) {
-								txCtx.tx.rollback(sp);
-							}
-							else {
-								txCtx.tx.rollback();
-							}
-							throw t.getCause();
-						} finally {
-							//log(txCtx, "END");
-							txCtx.calls.pop();
-							if (txCtx.calls.size() == 0) {
-								// Release the transaction
-								transactions.remove();
-								txCtx.tx.close();
+						if (method.getDeclaringClass().equals(Object.class)) {
+							return method.invoke(wrapped, args);
+						}
+						else {
+							DbTransactionContext txCtx = transactions.get();
+							Savepoint sp = null;
+							try {
+								// Open the transaction if required and push a savepoint
+								if (txCtx == null) {
+									txCtx = new DbTransactionContext(datasource.getConnection());
+									transactions.set(txCtx);
+								}
+								else {
+									sp = txCtx.tx.setSavepoint();
+								}
+								txCtx.calls.push(method);
+								//log(txCtx, "START");
+								// Call the real model manager
+								Object result = method.invoke(wrapped, args);
+	
+								// Commit the transaction (or put a save point)
+								if (txCtx.calls.size() > 1) {
+									sp = txCtx.tx.setSavepoint();
+								}
+								else {
+									txCtx.tx.commit();
+								}
+								return result;
+							} catch (InvocationTargetException t) {
+								// Rollback the transaction in case of failure
+								if (txCtx.calls.size() > 1) {
+									txCtx.tx.rollback(sp);
+								}
+								else {
+									txCtx.tx.rollback();
+								}
+								throw t.getCause();
+							} finally {
+								//log(txCtx, "END");
+								txCtx.calls.pop();
+								if (txCtx.calls.size() == 0) {
+									// Release the transaction
+									transactions.remove();
+									txCtx.tx.close();
+								}
 							}
 						}
 					}

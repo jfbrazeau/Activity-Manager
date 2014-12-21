@@ -26,8 +26,8 @@ import org.activitymgr.ui.web.logic.AbstractEvent;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.ILabelLogic;
-import org.activitymgr.ui.web.logic.IListContentProviderCallback;
 import org.activitymgr.ui.web.logic.ILogic;
+import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
@@ -71,13 +71,13 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 		super(parent);
 
 		// Collaborators provider
-		CollaboratorsListContentProvider collaboratorsProvider = new CollaboratorsListContentProvider(this, getContext(), getModelMgr()) {
+		CollaboratorsListContentProvider collaboratorsProvider = new CollaboratorsListContentProvider(this, getContext(), getModelMgr(), false, true) {
 			@Override
-			public Collection<String> getPropertyIds() {
+			protected Collection<String> unsafeGetPropertyIds() {
 				return Arrays.asList(new String[] { FIRST_PROPERTY_NAME_ID, LAST_PROPERTY_NAME_ID });
 			}
 		};
-		getView().setCollaborators(getContext().buildTransactionalWrapper(collaboratorsProvider, IListContentProviderCallback.class));
+		getView().setCollaborators(getContext().buildTransactionalWrapper(collaboratorsProvider, ITableCellProviderCallback.class));
 		
 		// TODO put in an extension point
 		columnIdentifiers = getColumnIdentifiers();

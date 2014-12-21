@@ -2,13 +2,12 @@ package org.activitymgr.ui.web.view.impl.internal.dialogs;
 
 import java.util.Stack;
 
-import org.activitymgr.ui.web.logic.ILabelProviderCallback;
-import org.activitymgr.ui.web.logic.IListContentProviderCallback;
+import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.view.IResourceCache;
-import org.activitymgr.ui.web.view.impl.internal.util.BasicListDatasource;
-import org.activitymgr.ui.web.view.impl.internal.util.BasicTreeDatasource;
+import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
+import org.activitymgr.ui.web.view.impl.internal.util.TreeTableDatasource;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -144,17 +143,17 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 
     @Override
 	public void setTreeContentProviderCallback(
-			ITreeContentProviderCallback<?> treeContentProviderCallback) {
-		BasicTreeDatasource dataSource = new BasicTreeDatasource(getResourceCache(), treeContentProviderCallback);
+			ITreeContentProviderCallback<Long> treeContentProviderCallback) {
+		TreeTableDatasource<Long> dataSource = new TreeTableDatasource<Long>(getResourceCache(), treeContentProviderCallback);
 		taskTree.setContainerDataSource(dataSource);
-		taskTree.setItemCaptionPropertyId(ILabelProviderCallback.NAME_PROPERTY_ID);
+		taskTree.setItemCaptionPropertyId(ITableCellProviderCallback.NAME_PROPERTY_ID);
 	}
 	
     @Override
-    public void setRecentTasksProviderCallback(IListContentProviderCallback<Long> callback) {
-    	BasicListDatasource datasource = new BasicListDatasource(getResourceCache(), callback);
+    public void setRecentTasksProviderCallback(ITableCellProviderCallback<Long> callback) {
+    	TableDatasource<Long> datasource = new TableDatasource<Long>(getResourceCache(), callback);
     	recentTasksSelect.setContainerDataSource(datasource);
-    	recentTasksSelect.setItemCaptionPropertyId(ILabelProviderCallback.NAME_PROPERTY_ID);
+    	recentTasksSelect.setItemCaptionPropertyId(ITableCellProviderCallback.NAME_PROPERTY_ID);
     }
     
 	@Override

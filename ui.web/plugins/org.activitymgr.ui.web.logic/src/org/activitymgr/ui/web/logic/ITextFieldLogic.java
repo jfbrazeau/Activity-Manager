@@ -6,15 +6,23 @@ public interface ITextFieldLogic extends ILogic<ITextFieldLogic.View> {
 	
 	void onValueChanged(String newValue);
 	
+	void onClick();
+
+	void onEnterKeyPressed();
+	
 	public interface View extends IView<ITextFieldLogic> {
 		
 		void setValue(String value);
 
-		void focus();
+		void selectAll();
 
+		void focus();
+		
 		void setNumericFieldStyle();
 
 		void setReadOnly(boolean readOnly);
+
+		void blur();
 		
 	}
 

@@ -8,39 +8,30 @@ import org.activitymgr.ui.web.view.IResourceCache;
 import com.vaadin.data.Container;
 
 @SuppressWarnings("serial")
-public class BasicTreeDatasource extends
-		BasicListDatasource implements
+public class TreeTableDatasource<ITEMID_TYPE> extends
+		AbstractTableDatasource<ITEMID_TYPE, ITreeContentProviderCallback<ITEMID_TYPE>> implements
 		Container.Hierarchical {
 
-	private ITreeContentProviderCallback<Object> contentProvider;
-
-	@SuppressWarnings("unchecked")
-	public BasicTreeDatasource(IResourceCache resourceCache,
-			ITreeContentProviderCallback<?> contentProvider) {
-		super(resourceCache, contentProvider);
-		this.contentProvider = (ITreeContentProviderCallback<Object>) contentProvider;
+	public TreeTableDatasource(IResourceCache resourceCache,
+			ITreeContentProviderCallback<ITEMID_TYPE> cellProvider) {
+		super(resourceCache, cellProvider);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Collection<?> getChildren(Object element) {
-		System.out.println("getChildren(" + element + ")");
-		return contentProvider.getChildren(element);
+		return getCellProvider().getChildren((ITEMID_TYPE) element);
 	}
 
 	@Override
 	public Collection<?> rootItemIds() {
-		return contentProvider.getRootElements();
+		return getItemIds();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean isRoot(Object element) {
-		return contentProvider.isRoot(element);
-	}
-
-	@Override
-	protected BasicItem createItem(Object value) {
-		return new BasicItem(getResourceCache(), value,
-				contentProvider);
+		return getCellProvider().isRoot((ITEMID_TYPE) element);
 	}
 
 	/*
@@ -52,19 +43,20 @@ public class BasicTreeDatasource extends
 		return hasChildren(element);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public final boolean hasChildren(Object element) {
-		return contentProvider.hasChildren(element);
+		return getCellProvider().hasChildren((ITEMID_TYPE) element);
 	}
 
 	/*
 	 * Not implemented
 	 */
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public final Object getParent(Object element) {
-		System.out.println("getParent(" + element + ")");
-		return contentProvider.getParent(element);
+		return getCellProvider().getParent((ITEMID_TYPE) element);
 	}
 
 	/*

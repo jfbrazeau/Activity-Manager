@@ -17,9 +17,9 @@ public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 	public interface View extends IView<ITaskChooserLogic> {
 
 		public void setTreeContentProviderCallback(
-				ITreeContentProviderCallback<?> callback);
+				ITreeContentProviderCallback<Long> callback);
 
-		public void setRecentTasksProviderCallback(IListContentProviderCallback<Long> callback);
+		public void setRecentTasksProviderCallback(ITableCellProviderCallback<Long> callback);
 
 		public void setOkButtonEnabled(boolean enabled);
 

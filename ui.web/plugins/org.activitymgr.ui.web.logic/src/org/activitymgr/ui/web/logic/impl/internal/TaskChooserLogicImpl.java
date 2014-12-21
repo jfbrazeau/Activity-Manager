@@ -12,11 +12,12 @@ import java.util.Map;
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.model.ModelException;
-import org.activitymgr.ui.web.logic.IListContentProviderCallback;
+import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
-import org.activitymgr.ui.web.logic.impl.AbstractSafeListContentProviderCallback;
+import org.activitymgr.ui.web.logic.impl.AbstractSafeTableCellProviderCallback;
+import org.activitymgr.ui.web.logic.impl.LabelLogicImpl;
 
 public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.View> implements ITaskChooserLogic {
 	
@@ -54,17 +55,18 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				recentTasksIds.add(recentTask.getId());
 				recentTasksMap.put(recentTask.getId(), recentTask);
 			}
-			IListContentProviderCallback<Long> recentTaskCallback = new AbstractSafeListContentProviderCallback<Long>(this, getContext().getEventBus()) {
+			ITableCellProviderCallback<Long> recentTaskCallback = new AbstractSafeTableCellProviderCallback<Long>(this, getContext().getEventBus()) {
 				@Override
 				protected Collection<Long> unsafeGetRootElements() throws Exception {
 					return recentTasksIds;
 				}
 				@Override
-				public String unsafeGetText(Long taskId, String propertyId) {
-					return "[" + tasksCodePathMap.get(taskId) + "] " + recentTasksMap.get(taskId).getName();
+				protected IView<?> unsafeGetCell(
+						Long taskId, String propertyId) throws Exception {
+					return new LabelLogicImpl((AbstractLogicImpl<?>) getSource(), "[" + tasksCodePathMap.get(taskId) + "] " + recentTasksMap.get(taskId).getName()).getView();
 				}
 				@Override
-				public Collection<String> getPropertyIds() {
+				protected Collection<String> unsafeGetPropertyIds() {
 					return DEFAULT_PROPERTY_IDS;
 				}
 				@Override

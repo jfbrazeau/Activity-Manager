@@ -11,12 +11,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
-import org.activitymgr.ui.web.logic.IListContentProviderCallback;
 import org.activitymgr.ui.web.logic.ILogic;
+import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.impl.IContributionCellLogicProviderExtension;
 import org.activitymgr.ui.web.view.IContributionColumnViewProviderExtension;
 import org.activitymgr.ui.web.view.IResourceCache;
-import org.activitymgr.ui.web.view.impl.internal.util.BasicListDatasource;
+import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 
@@ -319,8 +319,17 @@ System.out.println("valueChanged : " + collaboratorsTable.getValue());
 
 	@Override
 	public void setCollaborators(
-			IListContentProviderCallback<Long> collaboratorsProvider) {
-		collaboratorsTable.setContainerDataSource(new BasicListDatasource(getResourceCache(), collaboratorsProvider));
+			final ITableCellProviderCallback<Long> collaboratorsProvider) {
+		TableDatasource<Long> dataSource = new TableDatasource<Long>(getResourceCache(), collaboratorsProvider);
+		collaboratorsTable.setContainerDataSource(dataSource);
+		for (String propertyId : dataSource.getContainerPropertyIds()) {
+			collaboratorsTable.addGeneratedColumn(propertyId, new Table.ColumnGenerator() {
+				@Override
+				public Object generateCell(Table source, Object itemId, Object propertyId) {
+					return collaboratorsProvider.getCell((Long) itemId, (String) propertyId);
+				}
+			});
+		}
 	}
 
 	@Override

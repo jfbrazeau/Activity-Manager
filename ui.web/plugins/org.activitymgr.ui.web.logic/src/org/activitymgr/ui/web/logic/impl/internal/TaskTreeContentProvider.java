@@ -8,14 +8,17 @@ import java.util.List;
 import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.util.StringHelper;
-import org.activitymgr.ui.web.logic.ILabelProviderCallback;
+import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.ILogic;
-import org.activitymgr.ui.web.logic.impl.AbstractSafeTreeContentProviderCallback;
+import org.activitymgr.ui.web.logic.ILogic.IView;
+import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
+import org.activitymgr.ui.web.logic.impl.AbstractSafeTreeTableCellProviderCallback;
+import org.activitymgr.ui.web.logic.impl.LabelLogicImpl;
 import org.activitymgr.ui.web.logic.impl.LogicContext;
 
-class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback<Long> {
+class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<Long> {
 
-	private static final String NAME_PROPERTY_ID = ILabelProviderCallback.NAME_PROPERTY_ID;
+	private static final String NAME_PROPERTY_ID = ITableCellProviderCallback.NAME_PROPERTY_ID;
 	private static final String CODE_PROPERTY_ID = "CODE";
 	private static final String BUDGET_PROPERTY_ID = "BUDGET";
 	private static final String INITIAL_PROPERTY_ID = "INITIAL";
@@ -60,40 +63,39 @@ class TaskTreeContentProvider extends AbstractSafeTreeContentProviderCallback<Lo
 	}
 
 	@Override
-	public String unsafeGetText(Long taskId, String propertyId)
+	protected IView<?> unsafeGetCell(Long taskId, String propertyId)
 			throws Exception {
-		Task task = modelMgr.getTask(taskId);
+		final Task task = modelMgr.getTask(taskId);
 		if (NAME_PROPERTY_ID.equals(propertyId)) {
-			return task.getName();
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), task.getName()).getView();
 		}
 		else if (CODE_PROPERTY_ID.equals(propertyId)) {
-			return task.getCode();
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), task.getCode()).getView();
 		}
 		else if (BUDGET_PROPERTY_ID.equals(propertyId)) {
-			return StringHelper.hundredthToEntry(task.getBudget());
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(task.getBudget())).getView();
 		}
 		else if (INITIAL_PROPERTY_ID.equals(propertyId)) {
-			return StringHelper.hundredthToEntry(task.getInitiallyConsumed());
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(task.getInitiallyConsumed())).getView();
 		}
 		else if (COSUMMED_PROPERTY_ID.equals(propertyId)) {
-			return StringHelper.hundredthToEntry(1234);
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(1234)).getView();
 		}
 		else if (ETC_PROPERTY_ID.equals(propertyId)) {
-			return StringHelper.hundredthToEntry(task.getTodo());
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(task.getTodo())).getView();
 		}
 		else if (DELTA_PROPERTY_ID.equals(propertyId)) {
-			return StringHelper.hundredthToEntry(4321);
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(4321)).getView();
 		}
 		else if (COMMENT_PROPERTY_ID.equals(propertyId)) {
-			return task.getComment();
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), task.getComment()).getView();
 		}
 		else {
-			return "";
+			throw new IllegalArgumentException(propertyId);
 		}
 	}
-	
 	@Override
-	public Collection<String> getPropertyIds() {
+	protected Collection<String> unsafeGetPropertyIds() {
 		return PROPERTY_IDS;
 	}
 

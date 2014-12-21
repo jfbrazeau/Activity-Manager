@@ -61,6 +61,10 @@
             view="org.activitymgr.ui.web.view.impl.internal.util.TextFieldView">
       </binding>
       <binding
+            logic="org.activitymgr.ui.web.logic.ICheckBoxFieldLogic"
+            view="org.activitymgr.ui.web.view.impl.internal.util.CheckBoxView">
+      </binding>
+      <binding
             logic="org.activitymgr.ui.web.logic.ITabFolderLogic"
             view="org.activitymgr.ui.web.view.impl.internal.TabFolderViewImpl">
       </binding>

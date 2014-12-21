@@ -7,9 +7,9 @@ import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 
-public abstract class AbstractSafeTreeContentProviderCallback<TYPE> extends AbstractSafeListContentProviderCallback<TYPE> implements ITreeContentProviderCallback<TYPE> {
+public abstract class AbstractSafeTreeTableCellProviderCallback<TYPE> extends AbstractSafeTableCellProviderCallback<TYPE> implements ITreeContentProviderCallback<TYPE> {
 	
-	public AbstractSafeTreeContentProviderCallback(ILogic<?> source, IEventBus eventBus) {
+	public AbstractSafeTreeTableCellProviderCallback(ILogic<?> source, IEventBus eventBus) {
 		super(source, eventBus);
 	}
 

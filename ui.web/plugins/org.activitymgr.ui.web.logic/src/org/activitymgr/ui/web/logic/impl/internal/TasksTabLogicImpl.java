@@ -8,7 +8,6 @@ public class TasksTabLogicImpl extends AbstractLogicImpl<ITasksTabLogic.View> im
 
 	public TasksTabLogicImpl(AbstractLogicImpl<ITasksTabLogic.View> parent) {
 		super(parent);
-
 		TaskTreeContentProvider treeContentCallback = new TaskTreeContentProvider(this, getContext(), getModelMgr());
 		getView().setTreeContentProviderCallback(getContext().buildTransactionalWrapper(treeContentCallback, ITreeContentProviderCallback.class));
 	}

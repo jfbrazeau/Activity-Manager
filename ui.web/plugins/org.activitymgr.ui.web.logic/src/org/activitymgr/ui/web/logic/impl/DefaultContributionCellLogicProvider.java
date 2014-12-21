@@ -18,9 +18,9 @@ public class DefaultContributionCellLogicProvider implements IContributionCellLo
 			final int dayOfWeek = DAY_COLUMNS_IDENTIFIERS.indexOf(columnId);
 			Contribution c = weekContributions.getContributions()[dayOfWeek];
 			String duration = (c == null) ? "" : StringHelper.hundredthToEntry(c.getDurationId());
-			ITextFieldLogic textFieldLogic = new AbstractTextFieldLogicImpl((ContributionsTabLogicImpl) parent, duration) {
+			ITextFieldLogic textFieldLogic = new AbstractSafeTextFieldLogicImpl((ContributionsTabLogicImpl) parent, duration, false) {
 				@Override
-				public void onValueChanged(String newValue) {
+				protected void unsafeOnValueChanged(String newValue) {
 					parent.getContext().getEventBus().fire(new DurationChangedEvent(parent, weekContributions, dayOfWeek, newValue, this));
 				}
 			};

@@ -6,7 +6,7 @@ public interface ICollaboratorsTabLogic extends ILogic<ICollaboratorsTabLogic.Vi
 	public interface View extends ILogic.IView<ICollaboratorsTabLogic> {
 
 		void setCollaboratorsProviderCallback(
-				IListContentProviderCallback<Long> collaboratorsProviderCallback);
+				ITableCellProviderCallback<Long> collaboratorsProviderCallback);
 		
 	}
 

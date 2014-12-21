@@ -3,8 +3,9 @@ package org.activitymgr.ui.web.view.impl.internal;
 import org.activitymgr.ui.web.logic.ITasksTabLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.view.IResourceCache;
-import org.activitymgr.ui.web.view.impl.internal.util.BasicTreeDatasource;
+import org.activitymgr.ui.web.view.impl.internal.util.TreeTableDatasource;
 
+import com.vaadin.ui.Table;
 import com.vaadin.ui.TreeTable;
 import com.vaadin.ui.VerticalLayout;
 
@@ -29,16 +30,24 @@ public class TasksPanel extends VerticalLayout implements ITasksTabLogic.View {
 		setMargin(true);
 
 		taskTree = new TreeTable();
-		taskTree.setSizeFull();
 		addComponent(taskTree);
 		taskTree.setImmediate(true);
+		taskTree.setSizeFull();
 	}
 
     @Override
 	public void setTreeContentProviderCallback(
-			ITreeContentProviderCallback<Long> tasksProviderCallback) {
-		BasicTreeDatasource dataSource = new BasicTreeDatasource(getResourceCache(), tasksProviderCallback);
+			final ITreeContentProviderCallback<Long> tasksProviderCallback) {
+		TreeTableDatasource<Long> dataSource = new TreeTableDatasource<Long>(getResourceCache(), tasksProviderCallback);
 		taskTree.setContainerDataSource(dataSource);
+		for (String propertyId : dataSource.getContainerPropertyIds()) {
+			taskTree.addGeneratedColumn(propertyId, new Table.ColumnGenerator() {
+				@Override
+				public Object generateCell(Table source, Object itemId, Object propertyId) {
+					return tasksProviderCallback.getCell((Long) itemId, (String) propertyId);
+				}
+			});
+		}
 	}
     
 	protected IResourceCache getResourceCache() {
