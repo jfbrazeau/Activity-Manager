@@ -26,7 +26,7 @@ public interface IContributionsTabLogic extends ILogic<IContributionsTabLogic.Vi
 
 	public interface View extends ILogic.IView<IContributionsTabLogic> {
 		
-		void setCollaborators(ITableCellProviderCallback<Long> collaboratorsProvider);
+		void setCollaboratorsProvider(ITableCellProviderCallback<Long> collaboratorsProvider);
 		
 		void selectCollaborator(long collaboratorId);
 

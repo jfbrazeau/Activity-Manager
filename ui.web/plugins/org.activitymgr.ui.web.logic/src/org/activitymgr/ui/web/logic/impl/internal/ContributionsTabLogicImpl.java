@@ -77,7 +77,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 				return Arrays.asList(new String[] { FIRST_PROPERTY_NAME_ID, LAST_PROPERTY_NAME_ID });
 			}
 		};
-		getView().setCollaborators(getContext().buildTransactionalWrapper(collaboratorsProvider, ITableCellProviderCallback.class));
+		getView().setCollaboratorsProvider(getContext().buildTransactionalWrapper(collaboratorsProvider, ITableCellProviderCallback.class));
 		
 		// TODO put in an extension point
 		columnIdentifiers = getColumnIdentifiers();

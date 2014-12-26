@@ -318,7 +318,7 @@ System.out.println("valueChanged : " + collaboratorsTable.getValue());
 	}
 
 	@Override
-	public void setCollaborators(
+	public void setCollaboratorsProvider(
 			final ITableCellProviderCallback<Long> collaboratorsProvider) {
 		TableDatasource<Long> dataSource = new TableDatasource<Long>(getResourceCache(), collaboratorsProvider);
 		collaboratorsTable.setContainerDataSource(dataSource);
