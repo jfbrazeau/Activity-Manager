@@ -26,7 +26,7 @@ public class CollaboratorsPanel extends VerticalLayout implements ICollaborators
 	}
 
 	@Override
-	public void registerLogic(ICollaboratorsTabLogic logic) {
+	public void registerLogic(final ICollaboratorsTabLogic logic) {
 		this.logic = logic;
 		setSpacing(true);
 		setMargin(true);
@@ -34,6 +34,7 @@ public class CollaboratorsPanel extends VerticalLayout implements ICollaborators
 		collaboratorsTable = new Table();
 		addComponent(collaboratorsTable);
 		collaboratorsTable.setImmediate(true);
+		collaboratorsTable.setSelectable(true);
 		collaboratorsTable.setNullSelectionAllowed(false);
 		collaboratorsTable.setHeight("500px");
 		collaboratorsTable.setSizeFull();
@@ -47,7 +48,7 @@ public class CollaboratorsPanel extends VerticalLayout implements ICollaborators
 			}
 		});
 	}
-
+	
     @Override
 	public void setCollaboratorsProviderCallback(
 			final ITableCellProviderCallback<Long> collaboratorsProviderCallback) {
