@@ -2,8 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="org.activitymgr.ui.web.logic.authenticator" name="Authenticator Extension" schema="schema/org.activitymgr.ui.web.logic.authenticator.exsd"/>
-   <extension-point id="org.activitymgr.ui.web.logic.contributionColumns" name="Contribution Columns" schema="schema/org.activitymgr.ui.web.logic.contributionColumns.exsd"/>
-   <extension-point id="org.activitymgr.ui.web.logic.contributionCellLogicProvider" name="Contribution Cell Logic Provider" schema="schema/org.activitymgr.ui.web.logic.contributionCellLogicProvider.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.weekContributionsProvider" name="Week Contributions Provider" schema="schema/org.activitymgr.ui.web.logic.weekContributionsProvider.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.contributionAction" name="ContributionsUI Action" schema="schema/org.activitymgr.ui.web.logic.contributionAction.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.additionalModules" name="Additional Guice Modules" schema="schema/org.activitymgr.ui.web.logic.additionalModules.exsd"/>

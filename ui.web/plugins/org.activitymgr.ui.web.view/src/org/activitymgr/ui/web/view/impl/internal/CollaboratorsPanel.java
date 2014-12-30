@@ -51,16 +51,20 @@ public class CollaboratorsPanel extends VerticalLayout implements ICollaborators
 	
     @Override
 	public void setCollaboratorsProviderCallback(
-			final ITableCellProviderCallback<Long> collaboratorsProviderCallback) {
-		TableDatasource<Long> dataSource = new TableDatasource<Long>(getResourceCache(), collaboratorsProviderCallback);
+			final ITableCellProviderCallback<Long> collaboratorsProvider) {
+		TableDatasource<Long> dataSource = new TableDatasource<Long>(getResourceCache(), collaboratorsProvider);
 		collaboratorsTable.setContainerDataSource(dataSource);
 		for (String propertyId : dataSource.getContainerPropertyIds()) {
 			collaboratorsTable.addGeneratedColumn(propertyId, new Table.ColumnGenerator() {
 				@Override
 				public Object generateCell(Table source, Object itemId, Object propertyId) {
-					return collaboratorsProviderCallback.getCell((Long) itemId, (String) propertyId);
+					return collaboratorsProvider.getCell((Long) itemId, (String) propertyId);
 				}
 			});
+			Integer columnWidth = collaboratorsProvider.getColumnWidth(propertyId);
+			if (columnWidth != null) {
+				collaboratorsTable.setColumnWidth(propertyId, columnWidth);
+			}
 		}
 	}
     

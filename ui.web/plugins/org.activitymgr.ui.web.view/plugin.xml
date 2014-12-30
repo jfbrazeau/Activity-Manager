@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="org.activitymgr.ui.web.view.contributionColumnViewProvider" name="Contribution Column View Provider" schema="schema/org.activitymgr.ui.web.view.contributionColumnViewProvider.exsd"/>
    <extension
          id="application"
          point="org.eclipse.core.runtime.applications">

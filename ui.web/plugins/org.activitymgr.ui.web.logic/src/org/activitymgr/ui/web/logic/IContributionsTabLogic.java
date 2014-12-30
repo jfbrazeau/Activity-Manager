@@ -1,7 +1,6 @@
 package org.activitymgr.ui.web.logic;
 
 import java.util.Calendar;
-import java.util.List;
 
 // TODO clear
 public interface IContributionsTabLogic extends ILogic<IContributionsTabLogic.View> {
@@ -30,17 +29,15 @@ public interface IContributionsTabLogic extends ILogic<IContributionsTabLogic.Vi
 		
 		void selectCollaborator(long collaboratorId);
 
-		void setColumnIdentifiers(List<String> ids);
-		
+		void setContributionsProvider(ITableCellProviderCallback<Long> contributionsProvider);
+
 		void setDate(Calendar lastMonday);
 
-		void removeAllWeekContributions();
-
-		void addWeekContribution(long taskId, List<ILogic.IView<?>> cellViews);
-		
-		void setColumnFooter(String id, String value);
-		
 		void addAction(String actionId, String label, String keyBindingDescription, String iconId, char key, boolean ctrl, boolean shift, boolean alt);
+
+		void reloadContributionTableItems();
+		
+		void reloadContributionTableFooter();
 	}
 
 }

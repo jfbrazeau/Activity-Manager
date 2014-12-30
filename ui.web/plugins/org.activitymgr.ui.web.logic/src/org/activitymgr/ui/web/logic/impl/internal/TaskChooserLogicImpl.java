@@ -21,14 +21,14 @@ import org.activitymgr.ui.web.logic.impl.LabelLogicImpl;
 
 public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.View> implements ITaskChooserLogic {
 	
-	private List<Long> alreadySelectedTaskIds;
+	private Collection<Long> alreadySelectedTaskIds;
 
-	public TaskChooserLogicImpl(AbstractLogicImpl<?> parent, List<Long> selectedTaskIds, Collaborator contributor, Calendar monday) {
+	public TaskChooserLogicImpl(AbstractLogicImpl<?> parent, Collection<Long> selectedTaskIds, Collaborator contributor, Calendar monday) {
 		super(parent);
 		// Remember already selected task ids
 		this.alreadySelectedTaskIds = selectedTaskIds;
 		// Register the tree content provider
-		TaskTreeContentProvider treeContentProvider = new TaskTreeContentProvider(this, getContext(), getModelMgr());
+		TaskTreeContentProvider treeContentProvider = new TaskTreeContentProvider(this, getContext());
 		getView().setTreeContentProviderCallback(getContext().buildTransactionalWrapper(treeContentProvider, ITreeContentProviderCallback.class));
 		
 		// Retrieve recent tasks labels
@@ -55,7 +55,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				recentTasksIds.add(recentTask.getId());
 				recentTasksMap.put(recentTask.getId(), recentTask);
 			}
-			ITableCellProviderCallback<Long> recentTaskCallback = new AbstractSafeTableCellProviderCallback<Long>(this, getContext().getEventBus()) {
+			ITableCellProviderCallback<Long> recentTaskCallback = new AbstractSafeTableCellProviderCallback<Long>(this, getContext()) {
 				@Override
 				protected Collection<Long> unsafeGetRootElements() throws Exception {
 					return recentTasksIds;
@@ -154,7 +154,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				}
 				newTask.setCode('$' + code);
 				getModelMgr().createTask(parent, newTask);
-				((ContributionsTabLogicImpl) getParent()).addTask(newTask);
+				((ContributionsTabLogicImpl) getParent()).addTask(newTask.getId());
 			}
 		} catch (ModelException e) {
 			handleError(e);

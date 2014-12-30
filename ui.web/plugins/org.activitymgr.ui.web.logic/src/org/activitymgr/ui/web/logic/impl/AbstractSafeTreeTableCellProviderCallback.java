@@ -3,14 +3,13 @@ package org.activitymgr.ui.web.logic.impl;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 
 public abstract class AbstractSafeTreeTableCellProviderCallback<TYPE> extends AbstractSafeTableCellProviderCallback<TYPE> implements ITreeContentProviderCallback<TYPE> {
 	
-	public AbstractSafeTreeTableCellProviderCallback(ILogic<?> source, IEventBus eventBus) {
-		super(source, eventBus);
+	public AbstractSafeTreeTableCellProviderCallback(ILogic<?> source, LogicContext context) {
+		super(source, context);
 	}
 
 	@Override
@@ -20,8 +19,8 @@ public abstract class AbstractSafeTreeTableCellProviderCallback<TYPE> extends Ab
 		}
 		catch (Throwable t) {
 			fireCallbackExceptionEvent(t);
+			return Collections.emptyList();
 		}
-		return Collections.emptyList();
 	}
 
 	protected abstract Collection<TYPE> unsafeGetChildren(TYPE element) throws Exception;
@@ -33,8 +32,8 @@ public abstract class AbstractSafeTreeTableCellProviderCallback<TYPE> extends Ab
 		}
 		catch (Throwable t) {
 			fireCallbackExceptionEvent(t);
+			return null;
 		}
-		return null;
 	}
 	
 	protected abstract TYPE unsafeGetParent(TYPE element) throws Exception;
@@ -46,8 +45,8 @@ public abstract class AbstractSafeTreeTableCellProviderCallback<TYPE> extends Ab
 		}
 		catch (Throwable t) {
 			fireCallbackExceptionEvent(t);
+			return false;
 		}
-		return false;
 	}
 
 	protected abstract boolean unsafeHasChildren(TYPE element) throws Exception;
@@ -59,8 +58,8 @@ public abstract class AbstractSafeTreeTableCellProviderCallback<TYPE> extends Ab
 		}
 		catch (Throwable t) {
 			fireCallbackExceptionEvent(t);
+			return false;
 		}
-		return false;
 	}
 
 	protected abstract boolean unsafeIsRoot(TYPE element);

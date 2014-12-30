@@ -1,6 +1,7 @@
 package org.activitymgr.ui.web.logic.impl;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 
 import org.activitymgr.core.dto.Collaborator;
@@ -14,16 +15,12 @@ public abstract class AbstractContributionLogicImpl extends AbstractLogicImpl<IC
 		super(parent);
 	}
 
-	public abstract void addTask(Task task);
-	
 	public abstract void addTask(long taskId);
 
 	public abstract Calendar getFirstDayOfWeek();
 	
 	public abstract Collaborator getContributor();
 	
-	public abstract List<TaskContributions> getWeekContributions();
-
-	public abstract void addTask(Task task, String taskCodePath);
+	public abstract Collection<Long> getTaskIds();
 
 }

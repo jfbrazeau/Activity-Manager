@@ -8,7 +8,7 @@ public class CollaboratorsTabLogicImpl extends AbstractLogicImpl<ICollaboratorsT
 
 	public CollaboratorsTabLogicImpl(AbstractLogicImpl<ICollaboratorsTabLogic.View> parent) {
 		super(parent);
-		CollaboratorsListContentProvider contentProvider = new CollaboratorsListContentProvider(this, getContext(), getModelMgr(), true, false);
+		CollaboratorsListTableCellProvider contentProvider = new CollaboratorsListTableCellProvider(this, getContext(), true, false);
 		getView().setCollaboratorsProviderCallback(getContext().buildTransactionalWrapper(contentProvider, ITableCellProviderCallback.class));
 	}
 

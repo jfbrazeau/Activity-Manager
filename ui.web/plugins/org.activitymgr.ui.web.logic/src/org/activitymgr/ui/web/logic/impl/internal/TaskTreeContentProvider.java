@@ -31,9 +31,9 @@ class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<
 
 	private IModelMgr modelMgr;
 
-	public TaskTreeContentProvider(ILogic<?> source, LogicContext context, IModelMgr modelMgr) {
-		super(source, context.getEventBus());
-		this.modelMgr = modelMgr;
+	public TaskTreeContentProvider(ILogic<?> source, LogicContext context) {
+		super(source, context);
+		this.modelMgr = context.getComponent(IModelMgr.class);
 	}
 
 	@Override

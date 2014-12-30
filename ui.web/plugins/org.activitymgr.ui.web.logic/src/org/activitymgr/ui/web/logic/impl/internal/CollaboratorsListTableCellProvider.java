@@ -17,7 +17,7 @@ import org.activitymgr.ui.web.logic.impl.AbstractSafeTextFieldLogicImpl;
 import org.activitymgr.ui.web.logic.impl.LabelLogicImpl;
 import org.activitymgr.ui.web.logic.impl.LogicContext;
 
-class CollaboratorsListContentProvider extends AbstractSafeTableCellProviderCallback<Long> {
+class CollaboratorsListTableCellProvider extends AbstractSafeTableCellProviderCallback<Long> {
 
 	protected static final String IS_ACTIVE_PROPERTY_NAME_ID = "IS_ACTIVE";
 	protected static final String LOGIN_PROPERTY_ID = "LOGIN";
@@ -29,9 +29,9 @@ class CollaboratorsListContentProvider extends AbstractSafeTableCellProviderCall
 	private boolean showInactiveCollaborators;
 	private boolean readOnly;
 	
-	public CollaboratorsListContentProvider(ILogic<?> source, LogicContext context, IModelMgr modelMgr, boolean showInactiveCollaborators, boolean readOnly) {
-		super(source, context.getEventBus());
-		this.modelMgr = modelMgr;
+	public CollaboratorsListTableCellProvider(ILogic<?> source, LogicContext context, boolean showInactiveCollaborators, boolean readOnly) {
+		super(source, context);
+		this.modelMgr = context.getComponent(IModelMgr.class);
 		this.showInactiveCollaborators = showInactiveCollaborators;
 		this.readOnly = readOnly;
 	}
@@ -137,6 +137,11 @@ class CollaboratorsListContentProvider extends AbstractSafeTableCellProviderCall
 
 	protected boolean isReadOnly() {
 		return readOnly;
+	}
+
+	@Override
+	protected Integer unsafeGetColumnWidth(String propertyId) {
+		return IS_ACTIVE_PROPERTY_NAME_ID.equals(propertyId) ? 30 : null;
 	}
 
 }

@@ -37,16 +37,20 @@ public class TasksPanel extends VerticalLayout implements ITasksTabLogic.View {
 
     @Override
 	public void setTreeContentProviderCallback(
-			final ITreeContentProviderCallback<Long> tasksProviderCallback) {
-		TreeTableDatasource<Long> dataSource = new TreeTableDatasource<Long>(getResourceCache(), tasksProviderCallback);
+			final ITreeContentProviderCallback<Long> tasksProvider) {
+		TreeTableDatasource<Long> dataSource = new TreeTableDatasource<Long>(getResourceCache(), tasksProvider);
 		taskTree.setContainerDataSource(dataSource);
 		for (String propertyId : dataSource.getContainerPropertyIds()) {
 			taskTree.addGeneratedColumn(propertyId, new Table.ColumnGenerator() {
 				@Override
 				public Object generateCell(Table source, Object itemId, Object propertyId) {
-					return tasksProviderCallback.getCell((Long) itemId, (String) propertyId);
+					return tasksProvider.getCell((Long) itemId, (String) propertyId);
 				}
 			});
+			Integer columnWidth = tasksProvider.getColumnWidth(propertyId);
+			if (columnWidth != null) {
+				taskTree.setColumnWidth(propertyId, columnWidth);
+			}
 		}
 	}
     

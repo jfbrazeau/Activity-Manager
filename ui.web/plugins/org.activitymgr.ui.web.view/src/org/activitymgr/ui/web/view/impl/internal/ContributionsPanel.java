@@ -6,19 +6,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
-import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
-import org.activitymgr.ui.web.logic.impl.IContributionCellLogicProviderExtension;
-import org.activitymgr.ui.web.view.IContributionColumnViewProviderExtension;
 import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -33,7 +26,6 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.PopupDateField;
 import com.vaadin.ui.Table;
-import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
@@ -55,8 +47,6 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 
 	private Button nextYearButton;
 
-	private List<IContributionColumnViewProviderExtension> viewProviders = new ArrayList<IContributionColumnViewProviderExtension>();;
-
 	private Table contributionsTable;
 
 	private VerticalLayout actionsContainer;
@@ -66,6 +56,8 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	private List<ShortcutListener> actions = new ArrayList<ShortcutListener>();
 
 	private IResourceCache resourceCache;
+
+	private ITableCellProviderCallback<Long> contributionsProvider;
 
 	public ContributionsPanel(IResourceCache resourceCache) {
 		this.resourceCache = resourceCache;
@@ -150,17 +142,6 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		actionsContainer = new VerticalLayout();
 		hl.addComponent(actionsContainer);
 		
-		// Register the default column view provider
-		viewProviders.add(new DefaultColumnProvider());
-		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.view.contributionColumnViewProvider");
-		for (IConfigurationElement cfg : cfgs) {
-			try {
-				viewProviders.add((IContributionColumnViewProviderExtension) cfg.createExecutableExtension("class"));
-			} catch (CoreException e) {
-				throw new IllegalStateException("Unable to load view provider '" + cfg.getAttribute("class") + "'", e);
-			}
-		}
-
 		// Register listeners
 		previousYearButton.addClickListener(this);
 		previousMonthButton.addClickListener(this);
@@ -180,7 +161,6 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		collaboratorsTable.addValueChangeListener(new Property.ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
-System.out.println("valueChanged : " + collaboratorsTable.getValue());
 				logic.onSelectedCollaboratorChanged((Long) collaboratorsTable.getValue());
 			}
 		});
@@ -254,20 +234,41 @@ System.out.println("valueChanged : " + collaboratorsTable.getValue());
 	}
 
 	@Override
+	public void setContributionsProvider(
+			final ITableCellProviderCallback<Long> contributionsProvider) {
+		this.contributionsProvider = contributionsProvider;
+		TableDatasource<Long> dataSource = new TableDatasource<Long>(getResourceCache(), contributionsProvider);
+		contributionsTable.setContainerDataSource(dataSource);
+		for (String propertyId : dataSource.getContainerPropertyIds()) {
+			contributionsTable.addGeneratedColumn(propertyId, new Table.ColumnGenerator() {
+				@Override
+				public Object generateCell(Table source, Object itemId, Object propertyId) {
+					return contributionsProvider.getCell((Long) itemId, (String) propertyId);
+				}
+			});
+			Integer columnWidth = contributionsProvider.getColumnWidth(propertyId);
+			if (columnWidth != null) {
+				contributionsTable.setColumnWidth(propertyId, columnWidth);
+			}
+		}
+	}
+	
+	@Override
+	public void reloadContributionTableItems() {
+		contributionsTable.refreshRowCache();
+		reloadContributionTableFooter();
+	}
+
+	@Override
+	public void reloadContributionTableFooter() {
+		for (String columnId : contributionsProvider.getPropertyIds()) {
+			contributionsTable.setColumnFooter(columnId, contributionsProvider.getFooter(columnId));
+		}
+	}
+
+	@Override
 	public void setDate(Calendar date) {
 		dateField.setValue(date.getTime());
-	}
-
-	@Override
-	public void addWeekContribution(long taskId, List<ILogic.IView<?>> cellViews) {
-		contributionsTable.addItem(cellViews.toArray(), taskId);
-		// TODO enhance sort management
-		contributionsTable.sort(new Object[] { IContributionCellLogicProviderExtension.PATH_COLUMN_ID }, new boolean[] { true });
-	}
-
-	@Override
-	public void removeAllWeekContributions() {
-		contributionsTable.removeAllItems();
 	}
 
 	@Override
@@ -291,33 +292,6 @@ System.out.println("valueChanged : " + collaboratorsTable.getValue());
 	}
 
 	@Override
-	public void setColumnIdentifiers(List<String> ids) {
-		if (contributionsTable.getContainerPropertyIds().size() > 0) {
-			throw new IllegalStateException("The contribution table cannot be initialized more than once");
-		}
-		for (String id : ids) {
-			IContributionColumnViewProviderExtension provider = getProvider(id);
-			contributionsTable.addContainerProperty(id, provider.getColumnType(id), null);
-			contributionsTable.setColumnHeader(id, provider.getLabel(id));
-			contributionsTable.setColumnWidth(id, provider.getColumnWidth(id));
-		}
-	}
-	
-	private IContributionColumnViewProviderExtension getProvider(String columnId) {
-		for (IContributionColumnViewProviderExtension provider : viewProviders) {
-			if (provider.isProviderFor(columnId)) {
-				return provider;
-			}
-		}
-		throw new IllegalStateException("No view provider for column '" + columnId + "'");
-	}
-
-	@Override
-	public void setColumnFooter(String id, String value) {
-		contributionsTable.setColumnFooter(id, value);
-	}
-
-	@Override
 	public void setCollaboratorsProvider(
 			final ITableCellProviderCallback<Long> collaboratorsProvider) {
 		TableDatasource<Long> dataSource = new TableDatasource<Long>(getResourceCache(), collaboratorsProvider);
@@ -329,6 +303,10 @@ System.out.println("valueChanged : " + collaboratorsTable.getValue());
 					return collaboratorsProvider.getCell((Long) itemId, (String) propertyId);
 				}
 			});
+			Integer columnWidth = collaboratorsProvider.getColumnWidth(propertyId);
+			if (columnWidth != null) {
+				collaboratorsTable.setColumnWidth(propertyId, columnWidth);
+			}
 		}
 	}
 
@@ -385,63 +363,4 @@ System.out.println("valueChanged : " + collaboratorsTable.getValue());
 		super.focus();
 	}
 
-}
-
-class DefaultColumnProvider implements IContributionColumnViewProviderExtension {
-
-	private static final Map<String, String> DEFAULT_COLUMN_NAMES = new HashMap<String, String>();
-	static {
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.PATH_COLUMN_ID, "Path");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.NAME_COLUMN_ID, "Name");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.MON_COLUMN_ID, "MON");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.TUE_COLUMN_ID, "TUE");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.WED_COLUMN_ID, "WED");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.THU_COLUMN_ID, "THU");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.FRI_COLUMN_ID, "FRI");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.SAT_COLUMN_ID, "SAT");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.SUN_COLUMN_ID, "SUN");
-		DEFAULT_COLUMN_NAMES.put(IContributionCellLogicProviderExtension.TOTAL_COLUMN_ID, "Total");
-	}
-	
-	private static final Map<String, Class<?>> DEFAULT_COLUMN_TYPES = new HashMap<String, Class<?>>();
-	static {
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.PATH_COLUMN_ID, Label.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.NAME_COLUMN_ID, Label.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.MON_COLUMN_ID, TextField.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.TUE_COLUMN_ID, TextField.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.WED_COLUMN_ID, TextField.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.THU_COLUMN_ID, TextField.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.FRI_COLUMN_ID, TextField.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.SAT_COLUMN_ID, TextField.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.SUN_COLUMN_ID, TextField.class);
-		DEFAULT_COLUMN_TYPES.put(IContributionCellLogicProviderExtension.TOTAL_COLUMN_ID, Label.class);
-	}
-
-	private static final int DAY_COLUMN_WIDTH = 40;
-	private static final Map<String, Integer> DEFAULT_COLUMN_WIDTHS = new HashMap<String, Integer>();
-	static {
-		DEFAULT_COLUMN_WIDTHS.put(IContributionCellLogicProviderExtension.PATH_COLUMN_ID, 250);
-		DEFAULT_COLUMN_WIDTHS.put(IContributionCellLogicProviderExtension.NAME_COLUMN_ID, 150);
-	}
-
-	@Override
-	public boolean isProviderFor(String columnId) {
-		return DEFAULT_COLUMN_NAMES.containsKey(columnId);
-	}
-
-	@Override
-	public String getLabel(String columnId) {
-		return DEFAULT_COLUMN_NAMES.get(columnId);
-	}
-
-	@Override
-	public Class<?> getColumnType(String columnId) {
-		return DEFAULT_COLUMN_TYPES.get(columnId);
-	}
-
-	@Override
-	public int getColumnWidth(String id) {
-		return DEFAULT_COLUMN_WIDTHS.containsKey(id) ? DEFAULT_COLUMN_WIDTHS.get(id) : DAY_COLUMN_WIDTH;
-	}
-	
 }
