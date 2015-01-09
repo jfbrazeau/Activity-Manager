@@ -14,7 +14,6 @@ import java.util.Properties;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 
-import org.activitymgr.core.dto.DTOClassProvider;
 import org.activitymgr.core.dto.IDTOFactory;
 import org.activitymgr.core.model.CoreModelModule;
 import org.activitymgr.core.model.IModelMgr;
@@ -137,7 +136,7 @@ public abstract class AbstractModelTestCase extends TestCase implements
 	 */
 	protected List<Module> getGuiceModules() {
 		ArrayList<Module> modules = new ArrayList<Module>();
-		modules.add(new CoreModelModule(getBeanClassProvider()));
+		modules.add(new CoreModelModule());
 		modules.add(new AbstractModule() {
 			@Override
 			protected void configure() {
@@ -148,10 +147,6 @@ public abstract class AbstractModelTestCase extends TestCase implements
 		return modules;
 	}
 
-	protected DTOClassProvider getBeanClassProvider() {
-		return new DTOClassProvider();
-	}
-	
 	/**
 	 * @return the injector instance.
 	 */

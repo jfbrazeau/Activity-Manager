@@ -146,14 +146,14 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 			ITreeContentProviderCallback<Long> treeContentProviderCallback) {
 		TreeTableDatasource<Long> dataSource = new TreeTableDatasource<Long>(getResourceCache(), treeContentProviderCallback);
 		taskTree.setContainerDataSource(dataSource);
-		taskTree.setItemCaptionPropertyId(ITableCellProviderCallback.NAME_PROPERTY_ID);
+		taskTree.setItemCaptionPropertyId(treeContentProviderCallback.getPropertyIds().iterator().next());
 	}
 	
     @Override
     public void setRecentTasksProviderCallback(ITableCellProviderCallback<Long> callback) {
     	TableDatasource<Long> datasource = new TableDatasource<Long>(getResourceCache(), callback);
     	recentTasksSelect.setContainerDataSource(datasource);
-    	recentTasksSelect.setItemCaptionPropertyId(ITableCellProviderCallback.NAME_PROPERTY_ID);
+    	recentTasksSelect.setItemCaptionPropertyId(callback.getPropertyIds().iterator().next());
     }
     
 	@Override

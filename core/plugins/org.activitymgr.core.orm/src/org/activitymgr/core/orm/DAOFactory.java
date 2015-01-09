@@ -45,16 +45,11 @@ public class DAOFactory {
 	 * @return l'instance singleton de mappeur de la classe.
 	 */
 	@SuppressWarnings("unchecked")
-	public <TYPE> IDAO<TYPE> getDAO(Class<TYPE> theClass) {
+	public synchronized <TYPE> IDAO<TYPE> getDAO(Class<TYPE> theClass) {
 		DAOImpl<TYPE> mapper = (DAOImpl<TYPE>) mappers.get(theClass);
 		if (mapper==null) {
-			synchronized (mappers) {
-				mapper = (DAOImpl<TYPE>) mappers.get(theClass);
-				if (mapper==null) {
-					mapper = new DAOImpl<TYPE>(mappingConfiguration, theClass);
-					mappers.put(theClass, mapper);
-				}
-			}
+			mapper = new DAOImpl<TYPE>(mappingConfiguration, theClass);
+			mappers.put(theClass, mapper);
 		}
 		return mapper;
 	}

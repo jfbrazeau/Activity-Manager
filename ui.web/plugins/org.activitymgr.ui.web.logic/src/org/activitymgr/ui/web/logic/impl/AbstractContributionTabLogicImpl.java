@@ -2,16 +2,15 @@ package org.activitymgr.ui.web.logic.impl;
 
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.List;
 
 import org.activitymgr.core.dto.Collaborator;
-import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.dto.misc.TaskContributions;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
+import org.activitymgr.ui.web.logic.ILogic;
 
-public abstract class AbstractContributionLogicImpl extends AbstractLogicImpl<IContributionsTabLogic.View> {
+public abstract class AbstractContributionTabLogicImpl extends AbstractLogicImpl<IContributionsTabLogic.View> implements IContributionsTabLogic {
 
-	public AbstractContributionLogicImpl(AbstractLogicImpl<?> parent) {
+	public AbstractContributionTabLogicImpl(AbstractLogicImpl<?> parent) {
 		super(parent);
 	}
 
@@ -22,5 +21,11 @@ public abstract class AbstractContributionLogicImpl extends AbstractLogicImpl<IC
 	public abstract Collaborator getContributor();
 	
 	public abstract Collection<Long> getTaskIds();
+
+	public abstract TaskContributions getWeekContributions(long taskId);
+
+	public abstract void setFooter(String propertyId, String text);
+
+	public abstract ILogic<?> getCellLogic(long taskId, String propertyId);
 
 }

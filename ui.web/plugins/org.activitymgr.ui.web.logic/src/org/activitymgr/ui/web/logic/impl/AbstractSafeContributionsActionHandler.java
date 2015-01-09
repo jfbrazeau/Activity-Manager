@@ -2,7 +2,7 @@ package org.activitymgr.ui.web.logic.impl;
 
 public abstract class AbstractSafeContributionsActionHandler implements IContributionsActionHandler {
 	
-	public final void handle(AbstractContributionLogicImpl logic) {
+	public final void handle(AbstractContributionTabLogicImpl logic) {
 		try {
 			unsafeHandle(logic);
 		}
@@ -11,5 +11,5 @@ public abstract class AbstractSafeContributionsActionHandler implements IContrib
 		}
 	}
 
-	public abstract void unsafeHandle(AbstractContributionLogicImpl logic) throws Exception;
+	public abstract void unsafeHandle(AbstractContributionTabLogicImpl logic) throws Exception;
 }

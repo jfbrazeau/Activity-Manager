@@ -1,7 +1,7 @@
 package org.activitymgr.core.model;
 
 import org.activitymgr.core.dao.CoreDAOModule;
-import org.activitymgr.core.dto.DTOClassProvider;
+import org.activitymgr.core.dao.IDTOClassProvider;
 import org.activitymgr.core.model.impl.ModelMgrImpl;
 
 import com.google.inject.AbstractModule;
@@ -14,16 +14,6 @@ import com.google.inject.spi.TypeListener;
 
 public class CoreModelModule extends AbstractModule {
 
-	private DTOClassProvider dtoClassProvider;
-
-	public CoreModelModule(DTOClassProvider dtoClassProvider) {
-		this.dtoClassProvider = dtoClassProvider;
-	}
-	
-	public CoreModelModule() {
-		this(new DTOClassProvider());
-	}
-	
 	public static interface IPostInjectionListener {
 		
 		void afterInjection() throws Exception;
@@ -33,7 +23,7 @@ public class CoreModelModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		// Bind DAO layer
-		CoreDAOModule daoModule = new CoreDAOModule(dtoClassProvider);
+		CoreDAOModule daoModule = new CoreDAOModule();
 		daoModule.configure(binder());
 		
 		// Bind core ModelManager

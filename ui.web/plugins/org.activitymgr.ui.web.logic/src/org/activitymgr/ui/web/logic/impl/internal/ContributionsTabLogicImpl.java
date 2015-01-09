@@ -3,20 +3,23 @@ package org.activitymgr.ui.web.logic.impl.internal;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.activitymgr.core.dto.Collaborator;
+import org.activitymgr.core.dto.misc.TaskContributions;
 import org.activitymgr.core.model.ModelException;
-import org.activitymgr.ui.web.logic.IContributionsTabLogic;
+import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
-import org.activitymgr.ui.web.logic.impl.AbstractContributionLogicImpl;
+import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
+import org.activitymgr.ui.web.logic.impl.CollaboratorsCellLogicFatory;
 import org.activitymgr.ui.web.logic.impl.IContributionsActionHandler;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 
-public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl implements IContributionsTabLogic {
+public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl {
 	
 	private Map<String, IContributionsActionHandler> actionHandlers = new HashMap<String, IContributionsActionHandler>();
 	private ContributionsListTableCellProvider contributionsProvider;
@@ -26,20 +29,33 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 
 		// Contributions provider
 		contributionsProvider = new ContributionsListTableCellProvider(this, getContext());
-		getView().selectCollaborator(getContext().getConnectedCollaborator().getId());
+		// Set default day
+		try {
+			contributionsProvider.changeFirstDayOfWeek(new GregorianCalendar());
+		} catch (ModelException e) {
+			throw new IllegalStateException("Unexpected error while retrieving contributions", e);
+		}
 		getView().setContributionsProvider(getContext().buildTransactionalWrapper(contributionsProvider, ITableCellProviderCallback.class));
 		
-		// Set the date in the view
-		getView().setDate(contributionsProvider.getFirstDayOfWeek());
-		
 		// Collaborators provider
-		CollaboratorsListTableCellProvider collaboratorsProvider = new CollaboratorsListTableCellProvider(this, getContext(), false, true) {
+		CollaboratorsListTableCellProvider collaboratorsProvider = new CollaboratorsListTableCellProvider(
+				this, getContext(), false, true) {
 			@Override
 			protected Collection<String> unsafeGetPropertyIds() {
-				return Arrays.asList(new String[] { FIRST_PROPERTY_NAME_ID, LAST_PROPERTY_NAME_ID });
+				return Arrays.asList(new String[] {
+						CollaboratorsCellLogicFatory.FIRST_PROPERTY_NAME_ID,
+						CollaboratorsCellLogicFatory.LAST_PROPERTY_NAME_ID });
+			}
+			@Override
+			protected Integer unsafeGetColumnWidth(String propertyId) {
+				return 80;
 			}
 		};
 		getView().setCollaboratorsProvider(getContext().buildTransactionalWrapper(collaboratorsProvider, ITableCellProviderCallback.class));
+		getView().selectCollaborator(contributionsProvider.getContributor().getId());
+		
+		// Set the date in the view
+		getView().setDate(contributionsProvider.getFirstDayOfWeek());
 		
 		// Create actions
 		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.contributionAction");
@@ -152,6 +168,21 @@ public class ContributionsTabLogicImpl extends AbstractContributionLogicImpl imp
 	@Override
 	public Collection<Long> getTaskIds() {
 		return contributionsProvider.getTaskIds();
+	}
+
+	@Override
+	public TaskContributions getWeekContributions(long taskId) {
+		return contributionsProvider.getWeekContributions(taskId);
+	}
+
+	@Override
+	public void setFooter(String propertyId, String text) {
+		contributionsProvider.setFooter(propertyId, text);
+	}
+	
+	@Override
+	public ILogic<?> getCellLogic(long taskId, String propertyId) {
+		return contributionsProvider.getCellLogic(taskId, propertyId);
 	}
 
 }

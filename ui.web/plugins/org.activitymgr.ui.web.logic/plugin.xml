@@ -2,12 +2,13 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="org.activitymgr.ui.web.logic.authenticator" name="Authenticator Extension" schema="schema/org.activitymgr.ui.web.logic.authenticator.exsd"/>
-   <extension-point id="org.activitymgr.ui.web.logic.weekContributionsProvider" name="Week Contributions Provider" schema="schema/org.activitymgr.ui.web.logic.weekContributionsProvider.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.contributionAction" name="ContributionsUI Action" schema="schema/org.activitymgr.ui.web.logic.contributionAction.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.additionalModules" name="Additional Guice Modules" schema="schema/org.activitymgr.ui.web.logic.additionalModules.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.tabLogic" name="Tab Logic Provider" schema="schema/org.activitymgr.ui.web.logic.tabLogic.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.featureAccessManager" name="Feature Access Manager" schema="schema/org.activitymgr.ui.web.logic.featureAccessManager.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.viewbinding" name="Activity Manager UI View Binding" schema="schema/org.activitymgr.ui.web.logic.viewbinding.exsd"/>
+   <extension-point id="org.activitymgr.ui.web.logic.contributionsCellLogicFactory" name="Activity Manager Contributions Cell Logic Factory" schema="schema/org.activitymgr.ui.web.logic.contributionsCellLogicFactory.exsd"/>
+   <extension-point id="org.activitymgr.ui.web.logic.collaboratorsCellLogicFactory" name="Activity Manager Collaborators Cell Logic Factory" schema="schema/org.activitymgr.ui.web.logic.collaboratorsCellLogicFactory.exsd"/>
    <extension
          point="org.activitymgr.ui.web.logic.contributionAction">
       <contributionAction

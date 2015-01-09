@@ -36,7 +36,7 @@ public abstract class AbstractSafeTextFieldLogicImpl extends AbstractLogicImpl<I
 	@Override
 	public final void onValueChanged(String newValue) {
 		try {
-			if (!lastValue.equals(newValue)) {
+			if (lastValue == null || !lastValue.equals(newValue)) {
 				unsafeOnValueChanged(newValue);
 				lastValue = newValue;
 			}

@@ -1,7 +1,5 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -97,7 +95,18 @@ public class RootLogicImpl implements IRootLogic {
 				List<IConfigurationElement> cfgList = new ArrayList<IConfigurationElement>(Arrays.asList(cfgs));
 				Collections.reverse(cfgList);
 				for (IConfigurationElement cfg : cfgList) {
-					addTabLogic(tabFolderLogic, cfg);
+					String tabName = cfg.getAttribute("label");
+					// Check user access
+					if (!getContext().getAccessManager().hasAccessToTab(getContext().getConnectedCollaborator(), tabName)) {
+						return;
+					}
+					try {
+						Class<AbstractLogicImpl<?>> tabLogicClass = Activator.getDefault().<AbstractLogicImpl<?>>loadClass(cfg.getContributor().getName(), cfg.getAttribute("class"));
+						AbstractLogicImpl<?> tabLogic = getContext().newExtensionInstance(tabLogicClass, AbstractLogicImpl.class, tabFolderLogic);
+						tabFolderLogic.addTab(tabName, tabLogic);
+					} catch (ClassNotFoundException e) {
+						throw new IllegalStateException(e);
+					}
 				}
 				
 			}
@@ -134,47 +143,6 @@ public class RootLogicImpl implements IRootLogic {
 		}
 		// FIXME transport the error on the event bus ?
 		rootView.showErrorNotification(message, details);
-	}
-
-	private void addTabLogic(TabFolderLogicImpl tabFolderLogic,
-			IConfigurationElement cfg) {
-		String tabName = cfg.getAttribute("label");
-		// Check user access
-		if (!getContext().getAccessManager().hasAccessToTab(getContext().getConnectedCollaborator(), tabName)) {
-			return;
-		}
-		Exception exc = null;
-		try {
-			Class<AbstractLogicImpl<?>> tabLogicClass = Activator.getDefault().<AbstractLogicImpl<?>>loadClass(cfg.getContributor().getName(), cfg.getAttribute("class"));
-			// Tab logic is supposed whether to have :
-			// * a declared constructor accepting an abstract logic as parent
-			// * or a declared constructor with two parameters : parent logic / logic context
-			Constructor<AbstractLogicImpl<?>> constructor = null;
-			try {
-				// First attempt
-				constructor = tabLogicClass.getDeclaredConstructor(AbstractLogicImpl.class);
-			}
-			catch (NoSuchMethodException e) {
-				// Second attempt
-				constructor = tabLogicClass.getDeclaredConstructor(ILogic.class, LogicContext.class);
-			}
-			AbstractLogicImpl<?> tabLogic = constructor.newInstance(tabFolderLogic);
-			tabFolderLogic.addTab(tabName, tabLogic);
-		} catch (ClassNotFoundException e) {
-			exc = e;
-		} catch (NoSuchMethodException e) {
-			exc = e;
-		} catch (InstantiationException e) {
-			exc = e;
-		} catch (IllegalAccessException e) {
-			exc = e;
-		} catch (InvocationTargetException e) {
-			exc = e;
-		}
-		if (exc !=null) {
-			System.err.println("Couldn't create a tab logic");
-			exc.printStackTrace();
-		}
 	}
 
 }

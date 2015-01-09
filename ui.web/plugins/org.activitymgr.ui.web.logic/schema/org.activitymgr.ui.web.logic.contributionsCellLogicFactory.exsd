@@ -3,7 +3,7 @@
 <schema targetNamespace="org.activitymgr.ui.web.logic" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="org.activitymgr.ui.web.logic" id="org.activitymgr.ui.web.logic.weekContributionsProvider" name="Week Contributions Provider"/>
+         <meta.schema plugin="org.activitymgr.ui.web.logic" id="org.activitymgr.ui.web.logic.contributionsCellLogicFactory" name="Activity Manager Contributions Cell Logic Factory"/>
       </appinfo>
       <documentation>
          [Enter description of this extension point.]
@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence>
-            <element ref="provider"/>
+            <element ref="factory"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,7 +47,7 @@
       </complexType>
    </element>
 
-   <element name="provider">
+   <element name="factory">
       <complexType>
          <attribute name="class" type="string" use="required">
             <annotation>
@@ -55,7 +55,7 @@
                   
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn="org.activitymgr.ui.web.logic.impl.WeekContributionsProviderExtension:"/>
+                  <meta.attribute kind="java" basedOn="org.activitymgr.ui.web.logic.impl.ContributionsCellLogicFatory:"/>
                </appinfo>
             </annotation>
          </attribute>

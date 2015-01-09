@@ -8,7 +8,6 @@ import java.util.List;
 import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.util.StringHelper;
-import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
@@ -18,15 +17,15 @@ import org.activitymgr.ui.web.logic.impl.LogicContext;
 
 class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<Long> {
 
-	private static final String NAME_PROPERTY_ID = ITableCellProviderCallback.NAME_PROPERTY_ID;
-	private static final String CODE_PROPERTY_ID = "CODE";
-	private static final String BUDGET_PROPERTY_ID = "BUDGET";
-	private static final String INITIAL_PROPERTY_ID = "INITIAL";
-	private static final String COSUMMED_PROPERTY_ID = "CONSUMMED";
-	private static final String ETC_PROPERTY_ID = "ETC";
-	private static final String DELTA_PROPERTY_ID = "DELTA";
-	private static final String COMMENT_PROPERTY_ID = "COMMENT";
-	private static final List<String> PROPERTY_IDS = Arrays.asList(new String[] { NAME_PROPERTY_ID, CODE_PROPERTY_ID, BUDGET_PROPERTY_ID, 
+	public static final String NAME_PROPERTY_ID = "NAME";
+	public static final String CODE_PROPERTY_ID = "CODE";
+	public static final String BUDGET_PROPERTY_ID = "BUDGET";
+	public static final String INITIAL_PROPERTY_ID = "INITIAL";
+	public static final String COSUMMED_PROPERTY_ID = "CONSUMMED";
+	public static final String ETC_PROPERTY_ID = "ETC";
+	public static final String DELTA_PROPERTY_ID = "DELTA";
+	public static final String COMMENT_PROPERTY_ID = "COMMENT";
+	public static final List<String> PROPERTY_IDS = Arrays.asList(new String[] { NAME_PROPERTY_ID, CODE_PROPERTY_ID, BUDGET_PROPERTY_ID, 
 			INITIAL_PROPERTY_ID, COSUMMED_PROPERTY_ID, ETC_PROPERTY_ID, DELTA_PROPERTY_ID, COMMENT_PROPERTY_ID } );
 
 	private IModelMgr modelMgr;

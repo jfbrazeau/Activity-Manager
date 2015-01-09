@@ -56,6 +56,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				recentTasksMap.put(recentTask.getId(), recentTask);
 			}
 			ITableCellProviderCallback<Long> recentTaskCallback = new AbstractSafeTableCellProviderCallback<Long>(this, getContext()) {
+				private final Collection<String> PROPERTY_IDS = Arrays.asList(new String[] { TaskTreeContentProvider.NAME_PROPERTY_ID });
 				@Override
 				protected Collection<Long> unsafeGetRootElements() throws Exception {
 					return recentTasksIds;
@@ -67,7 +68,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				}
 				@Override
 				protected Collection<String> unsafeGetPropertyIds() {
-					return DEFAULT_PROPERTY_IDS;
+					return PROPERTY_IDS;
 				}
 				@Override
 				protected boolean unsafeContains(Long taskId) {
