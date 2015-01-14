@@ -12,4 +12,10 @@ public class TasksTabLogicImpl extends AbstractLogicImpl<ITasksTabLogic.View> im
 		getView().setTreeContentProviderCallback(getContext().buildTransactionalWrapper(treeContentCallback, ITreeContentProviderCallback.class));
 	}
 
+	@Override
+	public void onAction(String actionId) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

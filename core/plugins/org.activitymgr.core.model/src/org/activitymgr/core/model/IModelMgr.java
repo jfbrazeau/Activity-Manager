@@ -373,28 +373,6 @@ public interface IModelMgr {
 			throws ModelException;
 
 	/**
-	 * Retourne la liste des conteneurs des taches contribuées dans un
-	 * intervalle de temps donné.
-	 * <p>
-	 * Cette méthode est utilisée pour alimenter les taches
-	 * &quote;récentes&quote; dans le dialogue de choix de tache.
-	 * </p>
-	 * 
-	 * @param contributor
-	 *            le collaborateur associé aux contributions.
-	 * @param fromDate
-	 *            la date de départ.
-	 * @param toDate
-	 *            la date de fin.
-	 * @return la liste des conteneurs de tache.
-	 * @throws ModelException
-	 *             levé dans le cas ou la date de fin spécifiée est antérieure à
-	 *             la date de début spécifiée.
-	 */
-	Task[] getContributedTaskContainers(Collaborator contributor,
-			Calendar fromDate, Calendar toDate) throws ModelException;
-
-	/**
 	 * @param task
 	 *            la tache dont on veut connaitre la tache parent.
 	 * @return la tache parent d'une tache spécifiée.

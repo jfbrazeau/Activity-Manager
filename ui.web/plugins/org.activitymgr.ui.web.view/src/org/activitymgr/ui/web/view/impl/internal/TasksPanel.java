@@ -5,41 +5,33 @@ import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.internal.util.TreeTableDatasource;
 
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.TreeTable;
-import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
-public class TasksPanel extends VerticalLayout implements ITasksTabLogic.View {
-
-	@SuppressWarnings("unused")
-	private ITasksTabLogic logic;
+public class TasksPanel extends AbstractPanelWithActions<ITasksTabLogic> implements ITasksTabLogic.View {
 
 	private TreeTable taskTree;
 
-	private IResourceCache resourceCache;
-
 	public TasksPanel(IResourceCache resourceCache) {
-		this.resourceCache = resourceCache;
+		super(resourceCache);
 	}
 
 	@Override
-	public void registerLogic(ITasksTabLogic logic) {
-		this.logic = logic;
-		setSpacing(true);
-		setMargin(true);
-
+	protected Component createBodyComponent() {
 		taskTree = new TreeTable();
 		addComponent(taskTree);
 		taskTree.setImmediate(true);
-		taskTree.setSizeFull();
+		return taskTree;
 	}
-
+	
     @Override
 	public void setTreeContentProviderCallback(
 			final ITreeContentProviderCallback<Long> tasksProvider) {
 		TreeTableDatasource<Long> dataSource = new TreeTableDatasource<Long>(getResourceCache(), tasksProvider);
 		taskTree.setContainerDataSource(dataSource);
+		int tableWidth = 20;
 		for (String propertyId : dataSource.getContainerPropertyIds()) {
 			taskTree.addGeneratedColumn(propertyId, new Table.ColumnGenerator() {
 				@Override
@@ -47,15 +39,11 @@ public class TasksPanel extends VerticalLayout implements ITasksTabLogic.View {
 					return tasksProvider.getCell((Long) itemId, (String) propertyId);
 				}
 			});
-			Integer columnWidth = tasksProvider.getColumnWidth(propertyId);
-			if (columnWidth != null) {
-				taskTree.setColumnWidth(propertyId, columnWidth);
-			}
+			int columnWidth = tasksProvider.getColumnWidth(propertyId);
+			tableWidth += columnWidth + 10;
+			taskTree.setColumnWidth(propertyId, columnWidth);
 		}
+		taskTree.setWidth(tableWidth + "px");
 	}
     
-	protected IResourceCache getResourceCache() {
-		return resourceCache;
-	}
-
 }

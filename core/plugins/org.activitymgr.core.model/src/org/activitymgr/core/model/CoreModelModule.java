@@ -1,7 +1,6 @@
 package org.activitymgr.core.model;
 
 import org.activitymgr.core.dao.CoreDAOModule;
-import org.activitymgr.core.dao.IDTOClassProvider;
 import org.activitymgr.core.model.impl.ModelMgrImpl;
 
 import com.google.inject.AbstractModule;

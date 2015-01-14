@@ -16,9 +16,9 @@ import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
-import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
+import org.activitymgr.ui.web.logic.impl.event.ContributionChangeEvent;
 
 public class ContributionsCellLogicFatory {
 
@@ -75,7 +75,7 @@ public class ContributionsCellLogicFatory {
 		this.modelMgr = context.getComponent(IModelMgr.class);
 	}
 
-	public ILogic<?> createCellLogic(final Collaborator contributor, final Calendar firstDayOfWeek, final TaskContributions weekContributions, String propertyId) {
+	public ILogic<?> createCellLogic(final Collaborator contributor, final Calendar firstDayOfWeek, final TaskContributions weekContributions, final String propertyId) {
 		ILogic<?> logic = null;
 		if (DAY_COLUMNS_IDENTIFIERS.contains(propertyId)) {
 			final int dayOfWeek = DAY_COLUMNS_IDENTIFIERS.indexOf(propertyId);
@@ -84,7 +84,7 @@ public class ContributionsCellLogicFatory {
 			ITextFieldLogic textFieldLogic = new AbstractSafeTextFieldLogicImpl(parentLogic, duration, false) {
 				@Override
 				protected void unsafeOnValueChanged(String newValue) {
-					onDurationChanged(contributor, firstDayOfWeek, weekContributions, dayOfWeek, newValue, this);
+					onDurationChanged(contributor, firstDayOfWeek, weekContributions, dayOfWeek, newValue, this, propertyId);
 				}
 			};
 			textFieldLogic.getView().setNumericFieldStyle();
@@ -109,13 +109,12 @@ public class ContributionsCellLogicFatory {
 		return context;
 	}
 
-	private void onDurationChanged(Collaborator contributor, Calendar firstDayOfWeek, TaskContributions weekContributions, int dayOfWeek, String duration, ITextFieldLogic textFieldLogic) {
+	private void onDurationChanged(Collaborator contributor, Calendar firstDayOfWeek, TaskContributions weekContributions, int dayOfWeek, String duration, ITextFieldLogic textFieldLogic, String propertyId) {
 		try {
 			long durationId = 0;
 			if (duration != null && !"".equals(duration.trim())) {
 				durationId = StringHelper.entryToHundredth(duration.replaceAll(",", "."));
 			}
-
 			Contribution contribution = weekContributions.getContributions()[dayOfWeek];
 			// First case : the contribution must be created
 			if (contribution == null) {
@@ -149,11 +148,12 @@ public class ContributionsCellLogicFatory {
 			duration = durationId == 0 ? "" : StringHelper.hundredthToEntry(durationId);
 			textFieldLogic.getView().setValue(duration);
 
-			// Update totals
-			updateTotals();
-
-			// Reload the footer on the UI side
-			parentLogic.getView().reloadContributionTableFooter();
+			// FIre a change event
+			long oldDuration = contribution != null ? contribution.getDurationId() : 0;
+			getContext().getEventBus().fire(
+					new ContributionChangeEvent(getContributionLogic(),
+							weekContributions.getTask().getId(), propertyId,
+							oldDuration, durationId));
 		}
 		catch (ModelException e) {
 			textFieldLogic.getView().focus();
@@ -191,45 +191,11 @@ public class ContributionsCellLogicFatory {
 					newContribs, 0, 7);
 			tc.setContributions(newContribs);
 		}
-		// Update totals
-		updateTotals();
 		return Arrays.asList(weekContributions);
 	}
 
 	public Integer getColumnWidth(String propertyId) {
 		return DEFAULT_COLUMN_WIDTHS.containsKey(propertyId) ? DEFAULT_COLUMN_WIDTHS.get(propertyId) : DAY_COLUMN_WIDTH;
-	}
-
-	private void updateTotals() {
-		long total = 0;
-		for (int dayOfWeek=0; dayOfWeek<7; dayOfWeek++) {
-			long dayTotal = 0;
-			for (long taskId : parentLogic.getTaskIds()) {
-				TaskContributions tc = parentLogic.getWeekContributions(taskId);
-				Contribution c = tc.getContributions()[dayOfWeek];
-				if (c != null) {
-					dayTotal += c.getDurationId();
-					total += c.getDurationId();
-				}
-			}
-			parentLogic.setFooter(DAY_COLUMNS_IDENTIFIERS.get(dayOfWeek), StringHelper
-					.hundredthToEntry(dayTotal));
-		}
-		parentLogic.setFooter(TOTAL_COLUMN_ID, StringHelper
-				.hundredthToEntry(total));
-		// Update the week contributions total
-		for (long taskId : parentLogic.getTaskIds()) {
-			TaskContributions tc = parentLogic.getWeekContributions(taskId);
-			long taskTotal = 0;
-			for (int dayOfWeek=0; dayOfWeek<7; dayOfWeek++) {
-				Contribution c = tc.getContributions()[dayOfWeek];
-				if (c != null) {
-					taskTotal += c.getDurationId();
-				}
-			}
-			((ILabelLogic.View)parentLogic.getCellLogic(taskId, TOTAL_COLUMN_ID).getView()).setLabel(taskTotal != 0 ? 
-					StringHelper.hundredthToEntry(taskTotal) : "");
-		}
 	}
 
 	protected AbstractContributionTabLogicImpl getContributionLogic() {

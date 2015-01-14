@@ -16,6 +16,8 @@ import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.dto.misc.TaskContributions;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
+import org.activitymgr.core.util.StringHelper;
+import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
@@ -35,7 +37,6 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 	private Collection<Long> unmodifiableTaskIds = Collections.unmodifiableCollection(taskIds);
 	private Calendar firstDayOfWeek;
 	private Collaborator contributor;
-	private Map<String, String> footer = new HashMap<String, String>();
 	private ContributionsCellLogicFatory cellLogicFactory;
 
 	public ContributionsListTableCellProvider(AbstractContributionTabLogicImpl source, LogicContext context) {
@@ -96,6 +97,26 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 		loadContributions();
 	}
 	
+	protected void updateTaskTotals() {
+		for (long taskId : taskIds) {
+			updateTaskTotal(taskId);
+		}
+	}
+	
+	protected void updateTaskTotal(long taskId) {
+		ILogic<?> cellLogic = getCellLogic(taskId, ContributionsCellLogicFatory.TOTAL_COLUMN_ID);
+		if (cellLogic != null && cellLogic instanceof ILabelLogic) {
+			TaskContributions weekContributions = contributionsMap.get(taskId);
+			long total = 0;
+			for (Contribution c : weekContributions.getContributions()) {
+				if (c != null) {
+					total += c.getDurationId();
+				}
+			}
+			((ILabelLogic) cellLogic).getView().setLabel(StringHelper.hundredthToEntry(total));
+		}
+	}
+
 	protected void addEmptyWeekContribution(long taskId) throws ModelException {
 		Task task = modelMgr.getTask(taskId);
 		TaskContributions weekContribution = new TaskContributions();
@@ -125,6 +146,9 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 
 			// Sort the tasks
 			sortWeekContributions();
+			
+			// Update task totals
+			updateTaskTotals();
 		}
 	}
 
@@ -166,17 +190,39 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 
 	@Override
 	protected String unsafeGetFooter(String propertyId) {
-		return footer.get(propertyId);
+		int dayIdx = ContributionsCellLogicFatory.DAY_COLUMNS_IDENTIFIERS.indexOf(propertyId);
+		if (dayIdx >= 0) {
+			long total = 0;
+			for (TaskContributions tc : contributionsMap.values()) {
+				Contribution contribution = tc.getContributions()[dayIdx];
+				if (contribution != null) {
+					total += contribution.getDurationId();
+				}
+			}
+			return StringHelper.hundredthToEntry(total);
+		}
+		else if (ContributionsCellLogicFatory.TOTAL_COLUMN_ID.equals(propertyId)) {
+			long total = 0;
+			for (TaskContributions tc : contributionsMap.values()) {
+				for (Contribution contribution : tc.getContributions()) {
+					if (contribution != null) {
+						total += contribution.getDurationId();
+					}
+				}
+			}
+			return StringHelper.hundredthToEntry(total);
+		}
+		else {
+			return null;
+		}
 	}
 
+	@Deprecated
 	protected TaskContributions getWeekContributions(long taskId) {
 		return contributionsMap.get(taskId);
 	}
 
-	protected void setFooter(String propertyId, String text) {
-		footer.put(propertyId, text);
-	}
-
+	@Deprecated
 	public ILogic<?> getCellLogic(long taskId, String propertyId) {
 		try {
 			return cellLogics.get(taskId).get(propertyId);

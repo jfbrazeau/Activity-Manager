@@ -8,36 +8,27 @@ import org.activitymgr.ui.web.view.impl.internal.util.TextFieldView;
 
 import com.vaadin.event.LayoutEvents;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Table;
-import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
-public class CollaboratorsPanel extends VerticalLayout implements ICollaboratorsTabLogic.View {
-
-	@SuppressWarnings("unused")
-	private ICollaboratorsTabLogic logic;
+public class CollaboratorsPanel extends AbstractPanelWithActions<ICollaboratorsTabLogic> implements ICollaboratorsTabLogic.View {
 
 	private Table collaboratorsTable;
 
-	private IResourceCache resourceCache;
-	
 	public CollaboratorsPanel(IResourceCache resourceCache) {
-		this.resourceCache = resourceCache;
+		super(resourceCache);
 	}
 
 	@Override
-	public void registerLogic(final ICollaboratorsTabLogic logic) {
-		this.logic = logic;
-		setSpacing(true);
-		setMargin(true);
-
+	protected Component createBodyComponent() {
+		// Collaborators table
 		collaboratorsTable = new Table();
-		addComponent(collaboratorsTable);
 		collaboratorsTable.setImmediate(true);
 		collaboratorsTable.setSelectable(true);
 		collaboratorsTable.setNullSelectionAllowed(false);
 		collaboratorsTable.setHeight("500px");
-		collaboratorsTable.setSizeFull();
+//		/collaboratorsTable.setSizeFull();
 		addLayoutClickListener(new LayoutEvents.LayoutClickListener() {
 			@Override
 			public void layoutClick(LayoutClickEvent event) {
@@ -47,13 +38,14 @@ public class CollaboratorsPanel extends VerticalLayout implements ICollaborators
 				}
 			}
 		});
+		return collaboratorsTable;
 	}
-	
     @Override
 	public void setCollaboratorsProviderCallback(
 			final ITableCellProviderCallback<Long> collaboratorsProvider) {
 		TableDatasource<Long> dataSource = new TableDatasource<Long>(getResourceCache(), collaboratorsProvider);
 		collaboratorsTable.setContainerDataSource(dataSource);
+		int tableWidth = 20;
 		for (String propertyId : dataSource.getContainerPropertyIds()) {
 			collaboratorsTable.addGeneratedColumn(propertyId, new Table.ColumnGenerator() {
 				@Override
@@ -61,15 +53,11 @@ public class CollaboratorsPanel extends VerticalLayout implements ICollaborators
 					return collaboratorsProvider.getCell((Long) itemId, (String) propertyId);
 				}
 			});
-			Integer columnWidth = collaboratorsProvider.getColumnWidth(propertyId);
-			if (columnWidth != null) {
-				collaboratorsTable.setColumnWidth(propertyId, columnWidth);
-			}
+			int columnWidth = collaboratorsProvider.getColumnWidth(propertyId);
+			tableWidth += columnWidth + 10;
+			collaboratorsTable.setColumnWidth(propertyId, columnWidth);
 		}
+		collaboratorsTable.setWidth(tableWidth + "px");
 	}
     
-	protected IResourceCache getResourceCache() {
-		return resourceCache;
-	}
-
 }

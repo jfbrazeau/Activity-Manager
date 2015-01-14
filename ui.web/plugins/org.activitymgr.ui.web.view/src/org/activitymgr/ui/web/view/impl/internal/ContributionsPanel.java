@@ -2,7 +2,6 @@ package org.activitymgr.ui.web.view.impl.internal;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -15,24 +14,21 @@ import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.util.ContainerOrderedWrapper;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.event.Action;
 import com.vaadin.event.ShortcutListener;
-import com.vaadin.server.Resource;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
-import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.PopupDateField;
 import com.vaadin.ui.Table;
-import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
-public class ContributionsPanel extends VerticalLayout implements IContributionsTabLogic.View, Button.ClickListener {
+public class ContributionsPanel extends AbstractPanelWithActions<IContributionsTabLogic> implements IContributionsTabLogic.View, Button.ClickListener {
 
-	private IContributionsTabLogic logic;
-	
 	private PopupDateField dateField;
 
 	private Button previousYearButton;
@@ -49,24 +45,16 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 
 	private Table contributionsTable;
 
-	private VerticalLayout actionsContainer;
-
 	private Table collaboratorsTable;
-
-	private List<ShortcutListener> actions = new ArrayList<ShortcutListener>();
-
-	private IResourceCache resourceCache;
 
 	private ITableCellProviderCallback<Long> contributionsProvider;
 
 	public ContributionsPanel(IResourceCache resourceCache) {
-		this.resourceCache = resourceCache;
-		setSpacing(true);
-		setMargin(true);
+		super(resourceCache);
+	}
 
-		/*
-		 * Controls
-		 */
+	@Override
+	protected Component createHeaderComponent() {
 		GridLayout controlsContainer = new GridLayout(8, 1);
 		addComponent(controlsContainer);
 		Label emptyLabel = new Label();
@@ -98,6 +86,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 				}
 		    }
 		};
+		dateField.setImmediate(true);
 		dateField.setDateFormat("E dd/MM/yyyy");
 		dateField.setStyleName("monday-date-field");
 		controlsContainer.addComponent(dateField);
@@ -111,61 +100,38 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		nextYearButton = new Button("Year >>>");
 		nextYearButton.setDescription("Ctrl+Shift+Alt+Right");
 		controlsContainer.addComponent(nextYearButton);
-
-		// Collaborators list, contribution tables & actions container
-		HorizontalLayout hl = new HorizontalLayout();
-		hl.setSpacing(true);
-		addComponent(hl);
-
+		return controlsContainer;
+	}
+	
+	@Override
+	protected Component createLeftComponent() {
 		/*
-		 * Actions container
+		 * Collaborators table
 		 */
 		collaboratorsTable = new Table();
-		hl.addComponent(collaboratorsTable);
 		collaboratorsTable.setSelectable(true);
 		collaboratorsTable.setImmediate(true);
 		collaboratorsTable.setNullSelectionAllowed(false);
-		collaboratorsTable.setHeight("500px");
+		return collaboratorsTable;
+	}
 
+	@Override
+	protected Component createBodyComponent() {
 		/*
 		 * Contributions table
 		 */
 		contributionsTable = new Table();
-		hl.addComponent(contributionsTable);
 		contributionsTable.setFooterVisible(true);
-		contributionsTable.setHeight("500px");
-		contributionsTable.setWidth("1050px");
-		
-		/*
-		 * Actions container
-		 */
-		actionsContainer = new VerticalLayout();
-		hl.addComponent(actionsContainer);
-		
-		// Register listeners
-		previousYearButton.addClickListener(this);
-		previousMonthButton.addClickListener(this);
-		previousWeekButton.addClickListener(this);
-		nextWeekButton.addClickListener(this);
-		nextMonthButton.addClickListener(this);
-		nextYearButton.addClickListener(this);
-		dateField.setImmediate(true);
-		dateField.addValueChangeListener(new Property.ValueChangeListener() {
-			@Override
-			public void valueChange(ValueChangeEvent event) {
-				Calendar cal = new GregorianCalendar();
-				cal.setTime(dateField.getValue()!= null ? dateField.getValue() : new Date());
-				logic.onDateChange(cal);
-			}
-		});
-		collaboratorsTable.addValueChangeListener(new Property.ValueChangeListener() {
-			@Override
-			public void valueChange(ValueChangeEvent event) {
-				logic.onSelectedCollaboratorChanged((Long) collaboratorsTable.getValue());
-			}
-		});
+		return contributionsTable;
+	}
 
-		// Register action handler		
+	@Override
+	public void registerLogic(final IContributionsTabLogic logic) {
+		super.registerLogic(logic);
+		registerListeners();
+	}
+
+	private void registerListeners() {
 		contributionsTable.addActionHandler(new Action.Handler() {
 			@Override
 			public void handleAction(Action action, Object sender, Object target) {
@@ -173,17 +139,36 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 			}
 			@Override
 			public Action[] getActions(Object target, Object sender) {
+				List<ShortcutListener> actions = ContributionsPanel.this.getActions();
 				return (Action[]) actions.toArray(new Action[actions.size()]);
 			}
 		});
-
-		// Register keyboard shortcut listeners
+		collaboratorsTable.addValueChangeListener(new Property.ValueChangeListener() {
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				getLogic().onSelectedCollaboratorChanged((Long) collaboratorsTable.getValue());
+			}
+		});
+		previousYearButton.addClickListener(this);
+		previousMonthButton.addClickListener(this);
+		previousWeekButton.addClickListener(this);
+		nextWeekButton.addClickListener(this);
+		nextMonthButton.addClickListener(this);
+		nextYearButton.addClickListener(this);
+		dateField.addValueChangeListener(new Property.ValueChangeListener() {
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				Calendar cal = new GregorianCalendar();
+				cal.setTime(dateField.getValue()!= null ? dateField.getValue() : new Date());
+				getLogic().onDateChange(cal);
+			}
+		});
 		addShortcutListener(new ShortcutListener("Previous year",
 				ShortcutListener.KeyCode.ARROW_LEFT,
 				new int[] { ShortcutListener.ModifierKey.CTRL, ShortcutListener.ModifierKey.SHIFT, ShortcutListener.ModifierKey.ALT }) {
 			@Override
 			public void handleAction(Object sender, Object target) {
-				logic.onPreviousYear();
+				getLogic().onPreviousYear();
 			}
 		});
 		addShortcutListener(new ShortcutListener("Previous month",
@@ -191,7 +176,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 				new int[] { ShortcutListener.ModifierKey.CTRL, ShortcutListener.ModifierKey.SHIFT }) {
 			@Override
 			public void handleAction(Object sender, Object target) {
-				logic.onPreviousMonth();
+				getLogic().onPreviousMonth();
 			}
 		});
 		addShortcutListener(new ShortcutListener("Previous week",
@@ -199,7 +184,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 				new int[] { ShortcutListener.ModifierKey.CTRL }) {
 			@Override
 			public void handleAction(Object sender, Object target) {
-				logic.onPreviousWeek();
+				getLogic().onPreviousWeek();
 			}
 		});
 		addShortcutListener(new ShortcutListener("Next week",
@@ -207,7 +192,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 				new int[] { ShortcutListener.ModifierKey.CTRL }) {
 			@Override
 			public void handleAction(Object sender, Object target) {
-				logic.onNextWeek();
+				getLogic().onNextWeek();
 			}
 		});
 		addShortcutListener(new ShortcutListener("Next month",
@@ -215,7 +200,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 				new int[] { ShortcutListener.ModifierKey.CTRL, ShortcutListener.ModifierKey.SHIFT }) {
 			@Override
 			public void handleAction(Object sender, Object target) {
-				logic.onNextMonth();
+				getLogic().onNextMonth();
 			}
 		});
 		addShortcutListener(new ShortcutListener("Next year",
@@ -223,14 +208,9 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 				new int[] { ShortcutListener.ModifierKey.CTRL, ShortcutListener.ModifierKey.SHIFT, ShortcutListener.ModifierKey.ALT  }) {
 			@Override
 			public void handleAction(Object sender, Object target) {
-				logic.onNextYear();
+				getLogic().onNextYear();
 			}
 		});
-	}
-
-	@Override
-	public void registerLogic(IContributionsTabLogic logic) {
-		this.logic = logic;
 	}
 
 	@Override
@@ -239,6 +219,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 		this.contributionsProvider = contributionsProvider;
 		TableDatasource<Long> dataSource = new TableDatasource<Long>(getResourceCache(), contributionsProvider);
 		contributionsTable.setContainerDataSource(dataSource);
+		int tableWidth = 20;
 		for (String propertyId : dataSource.getContainerPropertyIds()) {
 			contributionsTable.addGeneratedColumn(propertyId, new Table.ColumnGenerator() {
 				@Override
@@ -246,15 +227,16 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 					return contributionsProvider.getCell((Long) itemId, (String) propertyId);
 				}
 			});
-			Integer columnWidth = contributionsProvider.getColumnWidth(propertyId);
-			if (columnWidth != null) {
-				contributionsTable.setColumnWidth(propertyId, columnWidth);
-			}
+			int columnWidth = contributionsProvider.getColumnWidth(propertyId);
+			tableWidth += columnWidth + 10;
+			contributionsTable.setColumnWidth(propertyId, columnWidth);
 		}
+		contributionsTable.setWidth(tableWidth + "px");
 	}
 	
 	@Override
 	public void reloadContributionTableItems() {
+		((ContainerOrderedWrapper)contributionsTable.getContainerDataSource()).updateOrderWrapper();
 		contributionsTable.refreshRowCache();
 		reloadContributionTableFooter();
 	}
@@ -274,17 +256,17 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 	@Override
 	public void buttonClick(ClickEvent event) {
 		if (event.getSource() == previousYearButton) {
-			logic.onPreviousYear();
+			getLogic().onPreviousYear();
 		} else if (event.getSource() == previousMonthButton) {
-			logic.onPreviousMonth();
+			getLogic().onPreviousMonth();
 		} else if (event.getSource() == previousWeekButton) {
-			logic.onPreviousWeek();
+			getLogic().onPreviousWeek();
 		} else if (event.getSource() == nextWeekButton) {
-			logic.onNextWeek();
+			getLogic().onNextWeek();
 		} else if (event.getSource() == nextMonthButton) {
-			logic.onNextMonth();
+			getLogic().onNextMonth();
 		} else if (event.getSource() == nextYearButton) {
-			logic.onNextYear();
+			getLogic().onNextYear();
 		}
 		else {
 			throw new IllegalArgumentException("Unexpected button click");
@@ -296,6 +278,7 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 			final ITableCellProviderCallback<Long> collaboratorsProvider) {
 		TableDatasource<Long> dataSource = new TableDatasource<Long>(getResourceCache(), collaboratorsProvider);
 		collaboratorsTable.setContainerDataSource(dataSource);
+		int tableWidth = 20;
 		for (String propertyId : dataSource.getContainerPropertyIds()) {
 			collaboratorsTable.addGeneratedColumn(propertyId, new Table.ColumnGenerator() {
 				@Override
@@ -303,59 +286,17 @@ public class ContributionsPanel extends VerticalLayout implements IContributions
 					return collaboratorsProvider.getCell((Long) itemId, (String) propertyId);
 				}
 			});
-			Integer columnWidth = collaboratorsProvider.getColumnWidth(propertyId);
-			if (columnWidth != null) {
-				collaboratorsTable.setColumnWidth(propertyId, columnWidth);
-			}
+			int columnWidth = collaboratorsProvider.getColumnWidth(propertyId);
+			tableWidth += columnWidth + 10;
+			collaboratorsTable.setColumnWidth(propertyId, columnWidth);
 		}
+		collaboratorsTable.setWidth(tableWidth + "px");
 	}
 
 	@Override
 	public void selectCollaborator(final long collaboratorId) {
 		collaboratorsTable.select(collaboratorId);
 		collaboratorsTable.focus();
-	}
-
-	@Override
-	public void addAction(final String actionId, final String label, final String keyBindingDescription, final String iconId, final char key,
-			final boolean ctrl, final boolean shift, final boolean alt) {
-		// TODO Use standard views ?
-		int[] rawModifiers = new int[3];
-		int i = 0;
-		if (ctrl)
-			rawModifiers[i++] = ShortcutListener.ModifierKey.CTRL;
-		if (shift)
-			rawModifiers[i++] = ShortcutListener.ModifierKey.SHIFT;
-		if (alt)
-			rawModifiers[i++] = ShortcutListener.ModifierKey.ALT;
-		int[] modifiers = new int[i];
-		System.arraycopy(rawModifiers, 0, modifiers, 0, i);
-		Resource iconResource = getResourceCache().getResource(iconId + ".gif");
-		String caption = label + " <em>"
-				+ keyBindingDescription + "</em>";
-		ShortcutListener newAction = new ShortcutListener(caption,
-				iconResource, key, modifiers) {
-			@Override
-			public void handleAction(Object sender, Object target) {
-				logic.onAction(actionId);
-			}
-		};
-		actions.add(newAction);
-		addShortcutListener(newAction);
-		Button button = new Button();
-		button.setIcon(iconResource);
-		button.setDescription(caption);
-		actionsContainer.addComponent(button);
-		button.addClickListener(new Button.ClickListener() {
-			@Override
-			public void buttonClick(ClickEvent event) {
-				logic.onAction(actionId);
-			}
-		});
-	}
-
-	protected IResourceCache getResourceCache() {
-		return resourceCache;
 	}
 
 	@Override

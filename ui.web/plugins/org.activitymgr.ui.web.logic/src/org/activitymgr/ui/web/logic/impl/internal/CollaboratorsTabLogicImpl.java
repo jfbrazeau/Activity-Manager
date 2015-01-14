@@ -12,4 +12,10 @@ public class CollaboratorsTabLogicImpl extends AbstractLogicImpl<ICollaboratorsT
 		getView().setCollaboratorsProviderCallback(getContext().buildTransactionalWrapper(contentProvider, ITableCellProviderCallback.class));
 	}
 
+	@Override
+	public void onAction(String actionId) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

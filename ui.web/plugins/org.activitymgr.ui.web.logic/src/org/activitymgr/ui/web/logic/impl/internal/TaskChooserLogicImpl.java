@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -36,25 +37,37 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 		from.add(Calendar.DATE, -7);
 		Calendar to = (Calendar) monday.clone();
 		to.add(Calendar.DATE, 6);
-		final Map<Long, String> tasksCodePathMap = new HashMap<Long, String>();
 		try {
-			Task[] recentTasks = getModelMgr().getContributedTaskContainers(contributor, from, to);
-			for (Task recentTask : recentTasks) {
-				String taskCodePath = getModelMgr().getTaskCodePath(recentTask);
-				tasksCodePathMap.put(recentTask.getId(), taskCodePath);
-			}
-			Arrays.sort(recentTasks, new Comparator<Task>() {
-				@Override
-				public int compare(Task t1, Task t2) {
-					return tasksCodePathMap.get(t1.getId()).compareTo(tasksCodePathMap.get(t2.getId()));
-				}
-			});
 			final Map<Long, Task> recentTasksMap = new HashMap<Long, Task>();
-			final List<Long> recentTasksIds = new ArrayList<Long>();
+			// Retrieve recent tasks
+			Task[] recentTasks = getModelMgr().getContributedTasks(contributor, from, to);
 			for (Task recentTask : recentTasks) {
-				recentTasksIds.add(recentTask.getId());
 				recentTasksMap.put(recentTask.getId(), recentTask);
 			}
+			// Add selected ID (if missing)
+			for (Long selectedTaskId : alreadySelectedTaskIds) {
+				if (!recentTasksMap.containsKey(selectedTaskId)) {
+					recentTasksMap.put(selectedTaskId, getModelMgr().getTask(selectedTaskId));
+				}
+			}
+			// Retrieve task code path
+			final Map<Long, String> tasksCodePathMap = new HashMap<Long, String>();
+			final List<Long> recentTasksIds = new ArrayList<Long>(recentTasksMap.keySet());
+			for (Long taskId : recentTasksIds) {
+				Task task = recentTasksMap.get(taskId);
+				String taskCodePath = getModelMgr().getTaskCodePath(task);
+				tasksCodePathMap.put(taskId, taskCodePath);
+			}
+			Collections.sort(recentTasksIds, new Comparator<Long>() {
+				@Override
+				public int compare(Long taskId1, Long taskId2) {
+					Task task1 = recentTasksMap.get(taskId1);
+					Task task2 = recentTasksMap.get(taskId2);
+					String fullPath1 = task1.getFullPath();
+					String fullPath2 = task2.getFullPath();
+					return fullPath1.compareTo(fullPath2);
+				}
+			});
 			ITableCellProviderCallback<Long> recentTaskCallback = new AbstractSafeTableCellProviderCallback<Long>(this, getContext()) {
 				private final Collection<String> PROPERTY_IDS = Arrays.asList(new String[] { TaskTreeContentProvider.NAME_PROPERTY_ID });
 				@Override

@@ -31,3 +31,15 @@
 .gwt-FileUpload {
 	vertical-align: top;
 }
+
+.red {
+    background: red;
+}
+
+.green {
+    background: green;
+}
+
+.blue {
+    background: blue;
+}

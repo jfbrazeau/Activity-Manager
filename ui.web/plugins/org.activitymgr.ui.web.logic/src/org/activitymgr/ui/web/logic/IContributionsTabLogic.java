@@ -3,7 +3,7 @@ package org.activitymgr.ui.web.logic;
 import java.util.Calendar;
 
 // TODO clear
-public interface IContributionsTabLogic extends ILogic<IContributionsTabLogic.View> {
+public interface IContributionsTabLogic extends IActionLogic<IContributionsTabLogic.View> {
 
 	void onPreviousYear();
 
@@ -23,7 +23,7 @@ public interface IContributionsTabLogic extends ILogic<IContributionsTabLogic.Vi
 
 	void onAction(String actionId);
 
-	public interface View extends ILogic.IView<IContributionsTabLogic> {
+	public interface View extends IActionLogic.View<IContributionsTabLogic> {
 		
 		void setCollaboratorsProvider(ITableCellProviderCallback<Long> collaboratorsProvider);
 		
@@ -33,11 +33,10 @@ public interface IContributionsTabLogic extends ILogic<IContributionsTabLogic.Vi
 
 		void setDate(Calendar lastMonday);
 
-		void addAction(String actionId, String label, String keyBindingDescription, String iconId, char key, boolean ctrl, boolean shift, boolean alt);
-
 		void reloadContributionTableItems();
-		
+
 		void reloadContributionTableFooter();
+
 	}
 
 }

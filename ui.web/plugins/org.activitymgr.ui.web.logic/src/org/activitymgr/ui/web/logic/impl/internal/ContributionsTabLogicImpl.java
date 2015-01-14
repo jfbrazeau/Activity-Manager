@@ -8,18 +8,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.activitymgr.core.dto.Collaborator;
-import org.activitymgr.core.dto.misc.TaskContributions;
 import org.activitymgr.core.model.ModelException;
-import org.activitymgr.ui.web.logic.ILogic;
+import org.activitymgr.ui.web.logic.AbstractEvent;
+import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.CollaboratorsCellLogicFatory;
 import org.activitymgr.ui.web.logic.impl.IContributionsActionHandler;
+import org.activitymgr.ui.web.logic.impl.event.ContributionChangeEvent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 
-public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl {
+public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl implements IEventListener {
 	
 	private Map<String, IContributionsActionHandler> actionHandlers = new HashMap<String, IContributionsActionHandler>();
 	private ContributionsListTableCellProvider contributionsProvider;
@@ -48,7 +49,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 			}
 			@Override
 			protected Integer unsafeGetColumnWidth(String propertyId) {
-				return 80;
+				return 100;
 			}
 		};
 		getView().setCollaboratorsProvider(getContext().buildTransactionalWrapper(collaboratorsProvider, ITableCellProviderCallback.class));
@@ -74,6 +75,9 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 				throw new IllegalStateException("Unable to load action handler '" + cfg.getAttribute("class") + "'", e);
 			}
 		}
+		
+		// Register the contribution change event
+		getEventBus().register(ContributionChangeEvent.class, this);
 	}
 
 	@Override
@@ -156,6 +160,15 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 	}
 
 	@Override
+	public void handle(AbstractEvent event) {
+		ContributionChangeEvent ccEvent = (ContributionChangeEvent) event;
+		System.out.println("handle(" + ccEvent.getPropertyId() + ", " + ccEvent.getOldDuration() + ", " + ccEvent.getNewDuration() + ")");
+		contributionsProvider.updateTaskTotal(ccEvent.getTaskId());
+		getView().reloadContributionTableFooter();
+	}
+
+
+	@Override
 	public void onAction(String actionId) {
 		actionHandlers.get(actionId).handle(this);
 	}
@@ -168,21 +181,6 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 	@Override
 	public Collection<Long> getTaskIds() {
 		return contributionsProvider.getTaskIds();
-	}
-
-	@Override
-	public TaskContributions getWeekContributions(long taskId) {
-		return contributionsProvider.getWeekContributions(taskId);
-	}
-
-	@Override
-	public void setFooter(String propertyId, String text) {
-		contributionsProvider.setFooter(propertyId, text);
-	}
-	
-	@Override
-	public ILogic<?> getCellLogic(long taskId, String propertyId) {
-		return contributionsProvider.getCellLogic(taskId, propertyId);
 	}
 
 }

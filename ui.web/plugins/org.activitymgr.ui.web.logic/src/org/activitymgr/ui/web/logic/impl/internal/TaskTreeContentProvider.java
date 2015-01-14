@@ -93,6 +93,7 @@ class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<
 			throw new IllegalArgumentException(propertyId);
 		}
 	}
+
 	@Override
 	protected Collection<String> unsafeGetPropertyIds() {
 		return PROPERTY_IDS;
@@ -109,4 +110,34 @@ class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<
 		return parentTask != null ? parentTask.getId() : null;
 	}
 
+	@Override
+	protected Integer unsafeGetColumnWidth(String propertyId) {
+		if (NAME_PROPERTY_ID.equals(propertyId)) {
+			return 200;
+		}
+		else if (CODE_PROPERTY_ID.equals(propertyId)) {
+			return 60;
+		}
+		else if (BUDGET_PROPERTY_ID.equals(propertyId)) {
+			return 60;
+		}
+		else if (INITIAL_PROPERTY_ID.equals(propertyId)) {
+			return 60;
+		}
+		else if (COSUMMED_PROPERTY_ID.equals(propertyId)) {
+			return 60;
+		}
+		else if (ETC_PROPERTY_ID.equals(propertyId)) {
+			return 60;
+		}
+		else if (DELTA_PROPERTY_ID.equals(propertyId)) {
+			return 60;
+		}
+		else if (COMMENT_PROPERTY_ID.equals(propertyId)) {
+			return 300;
+		}
+		else {
+			throw new IllegalArgumentException(propertyId);
+		}
+	}
 }
