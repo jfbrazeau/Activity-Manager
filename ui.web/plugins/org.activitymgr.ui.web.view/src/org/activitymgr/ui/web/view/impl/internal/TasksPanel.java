@@ -2,6 +2,7 @@ package org.activitymgr.ui.web.view.impl.internal;
 
 import org.activitymgr.ui.web.logic.ITasksTabLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
+import org.activitymgr.ui.web.view.AbstractTabPanel;
 import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.internal.util.TreeTableDatasource;
 
@@ -10,7 +11,7 @@ import com.vaadin.ui.Table;
 import com.vaadin.ui.TreeTable;
 
 @SuppressWarnings("serial")
-public class TasksPanel extends AbstractPanelWithActions<ITasksTabLogic> implements ITasksTabLogic.View {
+public class TasksPanel extends AbstractTabPanel<ITasksTabLogic> implements ITasksTabLogic.View {
 
 	private TreeTable taskTree;
 

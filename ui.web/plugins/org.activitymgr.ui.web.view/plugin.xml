@@ -67,5 +67,13 @@
             logic="org.activitymgr.ui.web.logic.ITabFolderLogic"
             view="org.activitymgr.ui.web.view.impl.internal.TabFolderViewImpl">
       </binding>
+      <binding
+            logic="org.activitymgr.ui.web.logic.IButtonLogic"
+            view="org.activitymgr.ui.web.view.impl.internal.util.ButtonView">
+      </binding>
+      <binding
+            logic="org.activitymgr.ui.web.logic.IDownloadButtonLogic"
+            view="org.activitymgr.ui.web.view.impl.internal.util.DownloadButtonView">
+      </binding>
    </extension>
 </plugin>

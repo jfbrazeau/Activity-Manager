@@ -2,6 +2,7 @@ package org.activitymgr.ui.web.view.impl.internal;
 
 import org.activitymgr.ui.web.logic.ICollaboratorsTabLogic;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
+import org.activitymgr.ui.web.view.AbstractTabPanel;
 import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
 import org.activitymgr.ui.web.view.impl.internal.util.TextFieldView;
@@ -12,7 +13,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.Table;
 
 @SuppressWarnings("serial")
-public class CollaboratorsPanel extends AbstractPanelWithActions<ICollaboratorsTabLogic> implements ICollaboratorsTabLogic.View {
+public class CollaboratorsPanel extends AbstractTabPanel<ICollaboratorsTabLogic> implements ICollaboratorsTabLogic.View {
 
 	private Table collaboratorsTable;
 

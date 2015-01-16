@@ -2,7 +2,7 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="org.activitymgr.ui.web.logic.authenticator" name="Authenticator Extension" schema="schema/org.activitymgr.ui.web.logic.authenticator.exsd"/>
-   <extension-point id="org.activitymgr.ui.web.logic.contributionAction" name="ContributionsUI Action" schema="schema/org.activitymgr.ui.web.logic.contributionAction.exsd"/>
+   <extension-point id="org.activitymgr.ui.web.logic.button" name="Button" schema="schema/org.activitymgr.ui.web.logic.button.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.additionalModules" name="Additional Guice Modules" schema="schema/org.activitymgr.ui.web.logic.additionalModules.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.tabLogic" name="Tab Logic Provider" schema="schema/org.activitymgr.ui.web.logic.tabLogic.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.featureAccessManager" name="Feature Access Manager" schema="schema/org.activitymgr.ui.web.logic.featureAccessManager.exsd"/>
@@ -10,26 +10,30 @@
    <extension-point id="org.activitymgr.ui.web.logic.contributionsCellLogicFactory" name="Activity Manager Contributions Cell Logic Factory" schema="schema/org.activitymgr.ui.web.logic.contributionsCellLogicFactory.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.collaboratorsCellLogicFactory" name="Activity Manager Collaborators Cell Logic Factory" schema="schema/org.activitymgr.ui.web.logic.collaboratorsCellLogicFactory.exsd"/>
    <extension
-         point="org.activitymgr.ui.web.logic.contributionAction">
-      <contributionAction
-            handler="org.activitymgr.ui.web.logic.impl.internal.NewTaskContributionActionHandler"
+         point="org.activitymgr.ui.web.logic.button">
+      <button
+            logic="org.activitymgr.ui.web.logic.impl.internal.NewContributionTaskButtonLogic"
             iconId="new"
             label="New task"
+            target="contributions"
             shortcutKey="CTRL+SHIFT+N">
-      </contributionAction>
+      </button>
    </extension>
    <extension
          point="org.activitymgr.ui.web.logic.tabLogic">
       <tab
             class="org.activitymgr.ui.web.logic.impl.internal.ContributionsTabLogicImpl"
+            id="contributions"
             label="Contributions">
       </tab>
       <tab
             class="org.activitymgr.ui.web.logic.impl.internal.TasksTabLogicImpl"
+            id="tasks"
             label="Tasks">
       </tab>
       <tab
             class="org.activitymgr.ui.web.logic.impl.internal.CollaboratorsTabLogicImpl"
+            id="collaborators"
             label="Collaborators">
       </tab>
    </extension>

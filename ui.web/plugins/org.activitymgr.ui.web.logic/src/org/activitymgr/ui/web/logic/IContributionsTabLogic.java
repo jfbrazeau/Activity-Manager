@@ -3,7 +3,7 @@ package org.activitymgr.ui.web.logic;
 import java.util.Calendar;
 
 // TODO clear
-public interface IContributionsTabLogic extends IActionLogic<IContributionsTabLogic.View> {
+public interface IContributionsTabLogic extends ITabLogic<IContributionsTabLogic.View> {
 
 	void onPreviousYear();
 
@@ -21,9 +21,7 @@ public interface IContributionsTabLogic extends IActionLogic<IContributionsTabLo
 
 	void onSelectedCollaboratorChanged(long collaboratorId);
 
-	void onAction(String actionId);
-
-	public interface View extends IActionLogic.View<IContributionsTabLogic> {
+	public interface View extends ITabLogic.View<IContributionsTabLogic> {
 		
 		void setCollaboratorsProvider(ITableCellProviderCallback<Long> collaboratorsProvider);
 		

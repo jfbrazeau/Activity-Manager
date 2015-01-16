@@ -5,10 +5,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.List;
 
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
+import org.activitymgr.ui.web.view.AbstractTabPanel;
 import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
 
@@ -16,7 +16,6 @@ import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.util.ContainerOrderedWrapper;
 import com.vaadin.data.util.converter.Converter;
-import com.vaadin.event.Action;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -27,7 +26,7 @@ import com.vaadin.ui.PopupDateField;
 import com.vaadin.ui.Table;
 
 @SuppressWarnings("serial")
-public class ContributionsPanel extends AbstractPanelWithActions<IContributionsTabLogic> implements IContributionsTabLogic.View, Button.ClickListener {
+public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic> implements IContributionsTabLogic.View, Button.ClickListener {
 
 	private PopupDateField dateField;
 
@@ -132,17 +131,6 @@ public class ContributionsPanel extends AbstractPanelWithActions<IContributionsT
 	}
 
 	private void registerListeners() {
-		contributionsTable.addActionHandler(new Action.Handler() {
-			@Override
-			public void handleAction(Action action, Object sender, Object target) {
-				((ShortcutListener) action).handleAction(sender, target);
-			}
-			@Override
-			public Action[] getActions(Object target, Object sender) {
-				List<ShortcutListener> actions = ContributionsPanel.this.getActions();
-				return (Action[]) actions.toArray(new Action[actions.size()]);
-			}
-		});
 		collaboratorsTable.addValueChangeListener(new Property.ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {

@@ -4,8 +4,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.model.ModelException;
@@ -15,14 +13,10 @@ import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.CollaboratorsCellLogicFatory;
-import org.activitymgr.ui.web.logic.impl.IContributionsActionHandler;
 import org.activitymgr.ui.web.logic.impl.event.ContributionChangeEvent;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
 
 public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl implements IEventListener {
 	
-	private Map<String, IContributionsActionHandler> actionHandlers = new HashMap<String, IContributionsActionHandler>();
 	private ContributionsListTableCellProvider contributionsProvider;
 
 	public ContributionsTabLogicImpl(AbstractLogicImpl<?> parent) {
@@ -57,24 +51,6 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 		
 		// Set the date in the view
 		getView().setDate(contributionsProvider.getFirstDayOfWeek());
-		
-		// Create actions
-		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.contributionAction");
-		for (IConfigurationElement cfg : cfgs) {
-			try {
-				String iconId = cfg.getAttribute("iconId");
-				String label = cfg.getAttribute("label");
-				KeyBinding kb = new KeyBinding(cfg.getAttribute("shortcutKey"));
-				final IContributionsActionHandler handler = ((IContributionsActionHandler) cfg.createExecutableExtension("handler"));
-				// Register the handler
-				String id = handler.getClass().getName();
-				actionHandlers.put(id, handler);
-				// Add the action to the view
-				getView().addAction(id, label, kb.toString(), iconId, kb.getKey(), kb.isCtrl(), kb.isShift(), kb.isAlt()); 
-			} catch (CoreException e) {
-				throw new IllegalStateException("Unable to load action handler '" + cfg.getAttribute("class") + "'", e);
-			}
-		}
 		
 		// Register the contribution change event
 		getEventBus().register(ContributionChangeEvent.class, this);
@@ -167,11 +143,6 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 		getView().reloadContributionTableFooter();
 	}
 
-
-	@Override
-	public void onAction(String actionId) {
-		actionHandlers.get(actionId).handle(this);
-	}
 
 	@Override
 	public Collaborator getContributor() {

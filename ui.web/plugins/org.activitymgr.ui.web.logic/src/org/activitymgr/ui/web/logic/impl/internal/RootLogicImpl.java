@@ -8,18 +8,22 @@ import java.util.List;
 
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.ui.web.logic.AbstractEvent;
+import org.activitymgr.ui.web.logic.IButtonLogic;
+import org.activitymgr.ui.web.logic.IDownloadButtonLogic;
 import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.IFeatureAccessManager;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.IRootLogic;
 import org.activitymgr.ui.web.logic.IViewDescriptor;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
+import org.activitymgr.ui.web.logic.impl.AbstractTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.DefaultFeatureAccessManagerImpl;
 import org.activitymgr.ui.web.logic.impl.LogicContext;
 import org.activitymgr.ui.web.logic.impl.event.CallbackExceptionEvent;
 import org.activitymgr.ui.web.logic.impl.event.ConnectedCollaboratorEvent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.InvalidRegistryObjectException;
 
 public class RootLogicImpl implements IRootLogic {
 
@@ -95,15 +99,17 @@ public class RootLogicImpl implements IRootLogic {
 				List<IConfigurationElement> cfgList = new ArrayList<IConfigurationElement>(Arrays.asList(cfgs));
 				Collections.reverse(cfgList);
 				for (IConfigurationElement cfg : cfgList) {
+					String tabId = cfg.getAttribute("id");
 					String tabName = cfg.getAttribute("label");
 					// Check user access
 					if (!getContext().getAccessManager().hasAccessToTab(getContext().getConnectedCollaborator(), tabName)) {
 						return;
 					}
 					try {
-						Class<AbstractLogicImpl<?>> tabLogicClass = Activator.getDefault().<AbstractLogicImpl<?>>loadClass(cfg.getContributor().getName(), cfg.getAttribute("class"));
-						AbstractLogicImpl<?> tabLogic = getContext().newExtensionInstance(tabLogicClass, AbstractLogicImpl.class, tabFolderLogic);
+						Class<AbstractTabLogicImpl<?>> tabLogicClass = Activator.getDefault().<AbstractTabLogicImpl<?>>loadClass(cfg.getContributor().getName(), cfg.getAttribute("class"));
+						AbstractTabLogicImpl<?> tabLogic = getContext().newExtensionInstance(tabLogicClass, AbstractLogicImpl.class, tabFolderLogic);
 						tabFolderLogic.addTab(tabName, tabLogic);
+						addButtons(tabLogic, tabId);
 					} catch (ClassNotFoundException e) {
 						throw new IllegalStateException(e);
 					}
@@ -113,6 +119,40 @@ public class RootLogicImpl implements IRootLogic {
 
 		});
 	}
+	
+	private void addButtons(AbstractTabLogicImpl<?> tabLogic, String tabId) throws InvalidRegistryObjectException, ClassNotFoundException {
+		// Create actions
+		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.button");
+		for (IConfigurationElement cfg : cfgs) {
+			String targetTabId = cfg.getAttribute("target");
+			if (tabId.equals(targetTabId)) {
+				String iconId = cfg.getAttribute("iconId");
+				String label = cfg.getAttribute("label");
+				// Standard button case
+				if ("button".equals(cfg.getName())) {
+					String kbDesc = cfg.getAttribute("shortcutKey");
+					KeyBinding kb = new KeyBinding(kbDesc);
+					Class<IButtonLogic> buttonLogicClass = Activator.getDefault().<IButtonLogic>loadClass(cfg.getContributor().getName(), cfg.getAttribute("logic"));
+					IButtonLogic buttonLogic = getContext().newExtensionInstance(buttonLogicClass, AbstractLogicImpl.class, tabLogic);
+					IButtonLogic.View buttonView = buttonLogic.getView();
+					buttonView.setIcon(iconId);
+					buttonView.setDescription(label + " <em>"
+							+ kbDesc + "</em>");
+					tabLogic.getView().addButton(label, kb.getKey(), kb.isCtrl(), kb.isShift(), kb.isAlt(), buttonView);
+				}
+				// Download button case
+				else {
+					Class<IDownloadButtonLogic> buttonLogicClass = Activator.getDefault().<IDownloadButtonLogic>loadClass(cfg.getContributor().getName(), cfg.getAttribute("logic"));
+					IDownloadButtonLogic buttonLogic = getContext().newExtensionInstance(buttonLogicClass, AbstractLogicImpl.class, tabLogic);
+					IDownloadButtonLogic.View buttonView = buttonLogic.getView();
+					buttonView.setIcon(iconId);
+					buttonView.setDescription(label);
+					tabLogic.getView().addDownloadButton(buttonView);
+				}
+			}
+		}
+	}
+	
 	
 	@Override
 	public ILogic<?> getParent() {
