@@ -30,12 +30,21 @@ public class DownloadButtonView extends Button implements View {
 	@Override
 	public void registerLogic(final IDownloadButtonLogic logic) {
 		this.logic = logic;
-		FileDownloader downloader = new FileDownloader(new StreamResource(new StreamResource.StreamSource() {
+		StreamResource streamResource = new StreamResource(new StreamResource.StreamSource() {
 			@Override
 			public InputStream getStream() {
 				return new ByteArrayInputStream(logic.getContent());
 			}
-		}, logic.getFileName()));
+		}, logic.getFileName()) {
+			/**
+			 * Override getFileName in order not to get a static name (the one that is given in the constructor).
+			 */
+			@Override
+			public String getFilename() {
+				return logic.getFileName();
+			}
+		};
+		FileDownloader downloader = new FileDownloader(streamResource);
 		downloader.extend(this);
 	}
 
