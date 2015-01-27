@@ -3,9 +3,9 @@ drop table if exists DURATION;
 drop table if exists TASK;
 drop table if exists COLLABORATOR;
 
---------------------------------------------------------------
+-- ------------------------------------------------------------
 -- Collaborateurs
---------------------------------------------------------------
+-- ------------------------------------------------------------
 create table COLLABORATOR (
 	CLB_ID         integer( 3) not null auto_increment,
 	CLB_LOGIN      varchar(20) unique not null,
@@ -16,9 +16,9 @@ create table COLLABORATOR (
     constraint CLB_PK primary key (CLB_ID) 
 ) engine=innodb;
 
---------------------------------------------------------------
+-- ------------------------------------------------------------
 -- Taches
---------------------------------------------------------------
+-- ------------------------------------------------------------
 create table TASK (
 	TSK_ID           integer(   4) not null auto_increment,
 	TSK_PATH         varchar( 255) not null,
@@ -39,18 +39,18 @@ create table TASK (
     	unique (TSK_PATH, TSK_CODE) 
 ) engine=innodb;
 
---------------------------------------------------------------
+-- ------------------------------------------------------------
 -- Dur�es
---------------------------------------------------------------
+-- ------------------------------------------------------------
 create table DURATION (
 	DUR_ID         integer(3) not null,
 	DUR_IS_ACTIVE  integer(1) not null,
     constraint DUR_PK primary key (DUR_ID)
 ) engine=innodb;
 
---------------------------------------------------------------
+-- ------------------------------------------------------------
 -- Taches
---------------------------------------------------------------
+-- ------------------------------------------------------------
 create table CONTRIBUTION (
 	CTB_YEAR          integer(4) not null,
 	CTB_MONTH         integer(2) not null,
