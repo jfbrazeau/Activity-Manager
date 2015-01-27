@@ -18,9 +18,9 @@ import org.activitymgr.ui.web.logic.impl.AbstractSafeTableCellProviderCallback;
 import org.activitymgr.ui.web.logic.impl.CollaboratorsCellLogicFatory;
 import org.activitymgr.ui.web.logic.impl.LogicContext;
 
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 class CollaboratorsListTableCellProvider extends AbstractSafeTableCellProviderCallback<Long> {
 
@@ -31,9 +31,9 @@ class CollaboratorsListTableCellProvider extends AbstractSafeTableCellProviderCa
 	private Map<Long, Collaborator> collaboratorsMap = new HashMap<Long, Collaborator>();
 	private boolean readOnly;
 	
-	private Cache<Long, Cache<String, ILogic<?>>> cellLogics = CacheBuilder.newBuilder().build(new CacheLoader<Long, Cache<String, ILogic<?>>>() {
+	private LoadingCache<Long, LoadingCache<String, ILogic<?>>> cellLogics = CacheBuilder.newBuilder().build(new CacheLoader<Long, LoadingCache<String, ILogic<?>>>() {
 		@Override
-		public Cache<String, ILogic<?>> load(final Long collaboratorId) throws Exception {
+		public LoadingCache<String, ILogic<?>> load(final Long collaboratorId) throws Exception {
 			return CacheBuilder.newBuilder().build(new CacheLoader<String, ILogic<?>>() {
 				@Override
 				public ILogic<?> load(String propertyId) throws Exception {

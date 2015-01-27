@@ -10,7 +10,7 @@ Require-Bundle: org.eclipse.osgi,
  org.eclipse.equinox.registry,
  org.apache.commons.dbcp;bundle-version="1.4.0",
  org.activitymgr.core.util;bundle-version="1.0.0",
- com.google.guava;bundle-version="[10.0.1,11.0.0)"
+ com.google.guava
 Export-Package: org.activitymgr.ui.web.logic,
  org.activitymgr.ui.web.logic.impl,
  org.activitymgr.ui.web.logic.impl.event
