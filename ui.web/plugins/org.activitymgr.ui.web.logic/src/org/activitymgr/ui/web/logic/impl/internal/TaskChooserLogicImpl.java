@@ -16,6 +16,7 @@ import org.activitymgr.core.model.ModelException;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
+import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTableCellProviderCallback;
 import org.activitymgr.ui.web.logic.impl.LabelLogicImpl;
@@ -156,7 +157,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 	public void onOkButtonClicked(long taskId) {
 		try {
 			if (getModelMgr().isLeaf(taskId)) {
-				((ContributionsTabLogicImpl) getParent()).addTask(taskId);
+				((AbstractContributionTabLogicImpl) getParent()).addTasks(taskId);
 			}
 			else {
 				Task parent = getModelMgr().getTask(taskId);
@@ -168,7 +169,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				}
 				newTask.setCode('$' + code);
 				getModelMgr().createTask(parent, newTask);
-				((ContributionsTabLogicImpl) getParent()).addTask(newTask.getId());
+				((AbstractContributionTabLogicImpl) getParent()).addTasks(newTask.getId());
 			}
 		} catch (ModelException e) {
 			handleError(e);

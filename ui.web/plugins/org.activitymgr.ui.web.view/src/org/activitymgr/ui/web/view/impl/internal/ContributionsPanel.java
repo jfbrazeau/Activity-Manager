@@ -30,6 +30,10 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 
 	private PopupDateField dateField;
 
+	private Button selectMeButton;
+
+	private Button todayButton;
+
 	private Button previousYearButton;
 
 	private Button previousMonthButton;
@@ -54,11 +58,13 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 
 	@Override
 	protected Component createHeaderComponent() {
-		GridLayout controlsContainer = new GridLayout(8, 1);
+		GridLayout controlsContainer = new GridLayout(12, 1);
 		addComponent(controlsContainer);
-		Label emptyLabel = new Label();
-		emptyLabel.setWidth(250, Unit.PIXELS);
-		controlsContainer.addComponent(emptyLabel);
+		selectMeButton = new Button("Me");
+		controlsContainer.addComponent(selectMeButton);
+
+		appendEmptyLabel(controlsContainer, 200);
+		
 		previousYearButton = new Button("<<< Year");
 		previousYearButton.setDescription("Ctrl+Shift+Alt+Left");
 		controlsContainer.addComponent(previousYearButton);
@@ -68,7 +74,11 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 		previousWeekButton = new Button("< Week");
 		previousWeekButton.setDescription("Ctrl+Left");
 		controlsContainer.addComponent(previousWeekButton);
+
+		appendEmptyLabel(controlsContainer, 20);
 		
+		todayButton = new Button("Today");
+		controlsContainer.addComponent(todayButton);
 		dateField = new PopupDateField() {
 			@Override
 			protected Date handleUnparsableDateString(String dateString)
@@ -90,6 +100,8 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 		dateField.setStyleName("monday-date-field");
 		controlsContainer.addComponent(dateField);
 		
+		appendEmptyLabel(controlsContainer, 20);
+
 		nextWeekButton = new Button("Week >");
 		nextWeekButton.setDescription("Ctrl+Right");
 		controlsContainer.addComponent(nextWeekButton);
@@ -100,6 +112,12 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 		nextYearButton.setDescription("Ctrl+Shift+Alt+Right");
 		controlsContainer.addComponent(nextYearButton);
 		return controlsContainer;
+	}
+
+	private void appendEmptyLabel(GridLayout container, int width) {
+		Label emptyLabel = new Label();
+		emptyLabel.setWidth(width, Unit.PIXELS);
+		container.addComponent(emptyLabel);
 	}
 	
 	@Override
@@ -137,6 +155,8 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 				getLogic().onSelectedCollaboratorChanged((Long) collaboratorsTable.getValue());
 			}
 		});
+		todayButton.addClickListener(this);
+		selectMeButton.addClickListener(this);
 		previousYearButton.addClickListener(this);
 		previousMonthButton.addClickListener(this);
 		previousWeekButton.addClickListener(this);
@@ -243,7 +263,11 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 
 	@Override
 	public void buttonClick(ClickEvent event) {
-		if (event.getSource() == previousYearButton) {
+		if (event.getSource() == selectMeButton) {
+			getLogic().onSelectMe();
+		} else if (event.getSource() == todayButton) {
+			getLogic().onToday();
+		} else if (event.getSource() == previousYearButton) {
 			getLogic().onPreviousYear();
 		} else if (event.getSource() == previousMonthButton) {
 			getLogic().onPreviousMonth();

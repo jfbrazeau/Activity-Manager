@@ -12,7 +12,7 @@ public abstract class AbstractContributionTabLogicImpl extends AbstractTabLogicI
 		super(parent);
 	}
 
-	public abstract void addTask(long taskId);
+	public abstract void addTasks(long... taskIds);
 
 	public abstract Calendar getFirstDayOfWeek();
 	

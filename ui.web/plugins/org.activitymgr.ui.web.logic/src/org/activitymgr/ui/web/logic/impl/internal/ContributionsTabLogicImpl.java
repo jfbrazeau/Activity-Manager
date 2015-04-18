@@ -87,6 +87,16 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 	}
 
 	@Override
+	public void onToday() {
+		onDateChange(new GregorianCalendar());
+	}
+	
+	@Override
+	public void onSelectMe() {
+		getView().selectCollaborator(getContext().getConnectedCollaborator().getId());
+	}
+	
+	@Override
 	public void onDateChange(Calendar value) {
 		try {
 			contributionsProvider.changeFirstDayOfWeek(value);
@@ -109,9 +119,13 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 
 
 	@Override
-	public void addTask(long taskId) {
+	public void addTasks(long... taskIds) {
 		try {
-			contributionsProvider.addEmptyWeekContribution(taskId);
+			for (long taskId : taskIds) {
+				if (!contributionsProvider.getTaskIds().contains(taskId)) {
+					contributionsProvider.addEmptyWeekContribution(taskId);
+				}
+			}
 			getView().reloadContributionTableItems();
 		}
 		catch (ModelException e) {
