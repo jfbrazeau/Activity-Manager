@@ -32,11 +32,7 @@ import com.google.common.cache.LoadingCache;
 class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCallback<Long> {
 	
 	private IModelMgr modelMgr;
-	private Map<Long, TaskContributions> contributionsMap = new HashMap<Long, TaskContributions>() {
-		public void clear() {
-			super.clear();
-		};
-	};
+	private Map<Long, TaskContributions> contributionsMap = new HashMap<Long, TaskContributions>();
 	private List<Long> taskIds = new ArrayList<Long>();
 	private Collection<Long> unmodifiableTaskIds = Collections.unmodifiableCollection(taskIds);
 	private Calendar firstDayOfWeek;
