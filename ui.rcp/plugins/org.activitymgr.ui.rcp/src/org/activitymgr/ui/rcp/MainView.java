@@ -32,6 +32,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import org.activitymgr.core.dto.IDTOFactory;
 import org.activitymgr.core.model.CoreModelModule;
@@ -204,14 +205,20 @@ public class MainView extends ViewPart {
 							// Commit the transaction
 							tx.commit();
 							return result;
+						} catch (SQLException e) {
+							throw new IllegalStateException("Database connection failed", e);
 						} catch (InvocationTargetException t) {
 							// Rollback the transaction in case of failure
-							tx.rollback();
+							if (tx != null) {
+								tx.rollback();
+							}
 							throw t.getCause();
 						} finally {
 							// Release the transaction
 							dbTxs.remove();
-							tx.close();
+							if (tx != null) {
+								tx.close();
+							}
 						}
 					}
 				});
