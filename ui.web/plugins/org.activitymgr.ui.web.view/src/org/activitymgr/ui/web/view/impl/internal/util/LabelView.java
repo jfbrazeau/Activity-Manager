@@ -10,6 +10,7 @@ import com.vaadin.ui.Label;
 public class LabelView extends Label implements View {
 	
 	public LabelView(IResourceCache resourceCache) {
+		setSizeUndefined(); // This disables text wrapping
 	}
 
 	@Override
