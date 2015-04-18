@@ -14,7 +14,7 @@
          id="product"
          point="org.eclipse.core.runtime.products">
       <product
-            application="org.eclipse.ant.ui.antRunner"
+            application="org.activitymgr.ui.web.view.application"
             name="Obeo Activity Manager UI (Web)">
          <property
                name="appName"
