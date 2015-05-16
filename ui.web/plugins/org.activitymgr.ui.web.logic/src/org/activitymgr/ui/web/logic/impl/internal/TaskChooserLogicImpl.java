@@ -13,16 +13,25 @@ import java.util.Map;
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.model.ModelException;
+import org.activitymgr.ui.web.logic.IFeatureAccessManager;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTableCellProviderCallback;
+import org.activitymgr.ui.web.logic.impl.DefaultFeatureAccessManagerImpl;
+import org.activitymgr.ui.web.logic.impl.ITaskCreationPatternHandler;
 import org.activitymgr.ui.web.logic.impl.LabelLogicImpl;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
 
 public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.View> implements ITaskChooserLogic {
 	
+	private static final String NONE_PATTERN_ID = "none";
+	
+	private static final String NONE_PATTERN_LABEL = "None";
+
 	private Collection<Long> alreadySelectedTaskIds;
 
 	public TaskChooserLogicImpl(AbstractLogicImpl<?> parent, Collection<Long> selectedTaskIds, Collaborator contributor, Calendar monday) {
@@ -31,7 +40,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 		this.alreadySelectedTaskIds = selectedTaskIds;
 		// Register the tree content provider
 		TaskTreeContentProvider treeContentProvider = new TaskTreeContentProvider(this, getContext());
-		getView().setTreeContentProviderCallback(getContext().buildTransactionalWrapper(treeContentProvider, ITreeContentProviderCallback.class));
+		getView().setTasksTreeProviderCallback(getContext().buildTransactionalWrapper(treeContentProvider, ITreeContentProviderCallback.class));
 		
 		// Retrieve recent tasks labels
 		Calendar from = (Calendar) monday.clone();
@@ -91,6 +100,39 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 			};
 			getView().setRecentTasksProviderCallback(recentTaskCallback);
 
+			IConfigurationElement[] creationPatternCfgs = getCreationPatternCfgs();
+			final List<String> creationPatternIds = new ArrayList<String>();
+			final Map<String, String> creationPatternsLabels = new HashMap<String, String>();
+			// Add non pattern
+			creationPatternIds.add(NONE_PATTERN_ID);
+			creationPatternsLabels.put(NONE_PATTERN_ID, NONE_PATTERN_LABEL);
+			for (IConfigurationElement creationPatternCfg : creationPatternCfgs) {
+				String id = creationPatternCfg.getAttribute("id");
+				creationPatternsLabels.put(id, creationPatternCfg.getAttribute("label"));
+				creationPatternIds.add(id);
+			}
+			ITableCellProviderCallback<String> creationPatternsCallback = new AbstractSafeTableCellProviderCallback<String>(this, getContext()) {
+				private final Collection<String> PROPERTY_IDS = Arrays.asList(new String[] { TaskTreeContentProvider.NAME_PROPERTY_ID });
+				@Override
+				protected Collection<String> unsafeGetRootElements() throws Exception {
+					return creationPatternIds;
+				}
+				@Override
+				protected IView<?> unsafeGetCell(
+						String patternId, String propertyId) throws Exception {
+					return new LabelLogicImpl((AbstractLogicImpl<?>) getSource(), creationPatternsLabels.get(patternId)).getView();
+				}
+				@Override
+				protected Collection<String> unsafeGetPropertyIds() {
+					return PROPERTY_IDS;
+				}
+				@Override
+				protected boolean unsafeContains(String patternId) {
+					return creationPatternIds.contains(patternId);
+				}
+			};
+			getView().setCreationPatternProviderCallback(creationPatternsCallback);
+			
 			// Reset button state & status label
 			onSelectionChanged(-1);
 		
@@ -100,6 +142,10 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 			throw new IllegalStateException("Unexpected error while retrieving recent tasks", e);
 		}
 
+	}
+
+	private IConfigurationElement[] getCreationPatternCfgs() {
+		return Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.taskCreationPatternHandler");
 	}
 
 	@Override
@@ -188,9 +234,46 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				}
 				newTask.setCode(code);
 				getModelMgr().createTask(parent, newTask);
-				((AbstractContributionTabLogicImpl) getParent()).addTasks(newTask.getId());
+				
+				// Init task to select list
+				List<Long> selectedTaskIds = new ArrayList<Long>();
+
+ 				// Task creation pattern management
+				String patternId = getView().getSelectedTaskCreationPatternId();
+				if (!NONE_PATTERN_ID.equals(patternId)) {
+					IConfigurationElement[] creationPatternCfgs = getCreationPatternCfgs();
+					ITaskCreationPatternHandler patternHandler = null;
+					for (IConfigurationElement cfg : creationPatternCfgs) {
+						if (patternId.equals(cfg.getAttribute("id"))) {
+							patternHandler = (ITaskCreationPatternHandler) cfg.createExecutableExtension("class");
+							break;
+						}
+					}
+					List<Task> createdTasks = patternHandler.handle(getContext(), newTask);
+					for (Task subTask : createdTasks) {
+						long id = subTask.getId();
+						if (!selectedTaskIds.contains(id)) {
+							selectedTaskIds.add(id);
+						}
+					}
+				}
+				// If no task has been selected, auto select a task
+				if (selectedTaskIds.size() == 0) {
+					Task[] subTasks = getModelMgr().getSubTasks(newTask);
+					selectedTaskIds.add(subTasks.length == 0 ? newTask.getId() : subTasks[0].getId());
+				}
+				// Turn the selection list into an array
+				long[] selectedTaskIdsArray = new long[selectedTaskIds.size()];
+				int i = 0;
+				for (long id : selectedTaskIds) {
+					selectedTaskIdsArray[i++] = id;
+				}
+				// Add task to the contribution tab
+				((AbstractContributionTabLogicImpl) getParent()).addTasks(selectedTaskIdsArray);
 			}
 		} catch (ModelException e) {
+			handleError(e);
+		} catch (CoreException e) {
 			handleError(e);
 		}
 	}

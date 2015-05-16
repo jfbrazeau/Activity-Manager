@@ -18,10 +18,12 @@ public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 
 	public interface View extends IView<ITaskChooserLogic> {
 
-		public void setTreeContentProviderCallback(
+		public void setTasksTreeProviderCallback(
 				ITreeContentProviderCallback<Long> callback);
 
 		public void setRecentTasksProviderCallback(ITableCellProviderCallback<Long> callback);
+
+		public void setCreationPatternProviderCallback(ITableCellProviderCallback<String> callback);
 
 		public void setOkButtonEnabled(boolean enabled);
 
@@ -40,6 +42,8 @@ public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 		public long getSelectedTaskId();
 
 		public void setNewTaskFieldsEnabled(boolean enabled);
+
+		public String getSelectedTaskCreationPatternId();
 	}
 
 }

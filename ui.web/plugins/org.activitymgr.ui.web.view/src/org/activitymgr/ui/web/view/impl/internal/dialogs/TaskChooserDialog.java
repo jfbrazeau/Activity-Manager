@@ -19,6 +19,7 @@ import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.CheckBox;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -40,6 +41,8 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	private CheckBox newSubTaskCheckbox;
 	private TextField newSubTaskCodeField;
 	private TextField newSubTaskNameField;
+	private VerticalLayout newTaskFormPanel;
+	private ComboBox newSubTaskCreationPatternField;
 
 	public TaskChooserDialog(IResourceCache resourceCache) {
         super(resourceCache, "Select a task");
@@ -70,11 +73,12 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
         recentTasksSelect.setImmediate(true);
         recentTasksSelect.setNullSelectionAllowed(false);
         rightContainerPanel.addComponent(recentTasksSelect);
-        VerticalLayout newTaskFormPanel = new VerticalLayout();
+        newTaskFormPanel = new VerticalLayout();
         rightContainerPanel.addComponent(newTaskFormPanel);
         newSubTaskCheckbox = new CheckBox("Create a new task");
         newSubTaskCheckbox.setImmediate(true);
         newTaskFormPanel.addComponent(newSubTaskCheckbox);
+        newTaskFormPanel.addComponent(new Label("Task attributes"));
         HorizontalLayout newTaskLayout = new HorizontalLayout();
         newTaskFormPanel.addComponent(newTaskLayout);
         newSubTaskCodeField = new TextField();
@@ -87,6 +91,13 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
         newSubTaskNameField.setImmediate(true);
         newSubTaskNameField.setInputPrompt("Name (required)");
         newTaskLayout.addComponent(newSubTaskNameField);
+        
+        // Pattern
+		newSubTaskCreationPatternField = new ComboBox("Creation pattern");
+        newSubTaskCreationPatternField.setNullSelectionAllowed(false);
+        newSubTaskCreationPatternField.setImmediate(true);
+        newSubTaskCreationPatternField.setTextInputAllowed(false);
+        newTaskFormPanel.addComponent(newSubTaskCreationPatternField);
 
         // Buttons
         HorizontalLayout hl = new HorizontalLayout();
@@ -159,7 +170,16 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
     }
 
     @Override
-	public void setTreeContentProviderCallback(
+    public void setCreationPatternProviderCallback(
+    		ITableCellProviderCallback<String> callback) {
+    	TableDatasource<String> datasource = new TableDatasource<String>(getResourceCache(), callback);
+    	newSubTaskCreationPatternField.setContainerDataSource(datasource);
+    	newSubTaskCreationPatternField.setItemCaptionPropertyId(callback.getPropertyIds().iterator().next());
+    	newSubTaskCreationPatternField.setValue(datasource.getItemIds().iterator().next());
+    }
+
+    @Override
+	public void setTasksTreeProviderCallback(
 			ITreeContentProviderCallback<Long> treeContentProviderCallback) {
 		TreeTableDatasource<Long> dataSource = new TreeTableDatasource<Long>(getResourceCache(), treeContentProviderCallback);
 		taskTree.setContainerDataSource(dataSource);
@@ -195,13 +215,14 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 
 	@Override
 	public void setNewTaskFormEnabled(boolean enabled) {
-		newSubTaskCheckbox.setEnabled(enabled);
+		newTaskFormPanel.setEnabled(enabled);
 	}
 
 	@Override
 	public void setNewTaskFieldsEnabled(boolean enabled) {
 		newSubTaskCodeField.setEnabled(enabled);
 		newSubTaskNameField.setEnabled(enabled);
+		newSubTaskCreationPatternField.setEnabled(enabled);
 	}
 
 	@Override
@@ -242,6 +263,11 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	@Override
 	public long getSelectedTaskId() {
 		return (Long) taskTree.getValue();
+	}
+
+	@Override
+	public String getSelectedTaskCreationPatternId() {
+		return (String) newSubTaskCreationPatternField.getValue();
 	}
 
 }
