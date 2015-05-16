@@ -129,6 +129,13 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 				logic.onNewTaskNameChanged(event.getText());
 			}
 		});
+        newSubTaskCodeField.setTextChangeEventMode(TextChangeEventMode.EAGER);
+        newSubTaskCodeField.addTextChangeListener(new FieldEvents.TextChangeListener() {
+			@Override
+			public void textChange(TextChangeEvent event) {
+				logic.onNewTaskCodeChanged(event.getText());
+			}
+		});
         
         // Key listener
         addShortcutListener(new ShortcutListener("OK", ShortcutListener.KeyCode.ENTER, new int[] {}) {

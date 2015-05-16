@@ -130,18 +130,19 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 		String newStatus = "";
 		boolean okButtonEnabled = false;
 		boolean newTaskFormEnabled = false;
-		boolean newTaskNameEnabled = false;
+		boolean newTaskFieldsEnabled = false;
 		if (selectedTask != null) {
 			if (alreadySelectedTaskIds.contains(selectedTask.getId())) {
 				newStatus = "This task is already selected";
 			} else if (!getModelMgr().isLeaf(selectedTask.getId())) {
 				newTaskFormEnabled = true;
 				if (getView().isNewTaskChecked()) {
-					newTaskNameEnabled = true;
+					newTaskFieldsEnabled = true;
 					boolean codeInUse = false;
 					if (newTaskCode != null && !"".equals(newTaskCode.trim())) {
 						if (getModelMgr().getTask(selectedTask.getFullPath(), newTaskCode) != null) {
 							newStatus = "This code is already in use";
+							codeInUse = true;
 						}
 					}
 					if (!codeInUse) {
@@ -164,7 +165,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 		getView().setStatus(newStatus);
 		getView().setOkButtonEnabled(okButtonEnabled);
 		getView().setNewTaskFormEnabled(newTaskFormEnabled);
-		getView().setNewTaskFieldsEnabled(newTaskNameEnabled);
+		getView().setNewTaskFieldsEnabled(newTaskFieldsEnabled);
 	}
 
 	@Override
