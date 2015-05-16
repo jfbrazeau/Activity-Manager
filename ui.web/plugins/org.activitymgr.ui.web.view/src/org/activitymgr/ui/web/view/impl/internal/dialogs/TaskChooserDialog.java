@@ -38,6 +38,7 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	private Label statusLabel;
 	private ListSelect recentTasksSelect;
 	private CheckBox newSubTaskCheckbox;
+	private TextField newSubTaskCodeField;
 	private TextField newSubTaskNameField;
 
 	public TaskChooserDialog(IResourceCache resourceCache) {
@@ -74,9 +75,18 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
         newSubTaskCheckbox = new CheckBox("Create a new task");
         newSubTaskCheckbox.setImmediate(true);
         newTaskFormPanel.addComponent(newSubTaskCheckbox);
-        newSubTaskNameField = new TextField("New task name");
+        HorizontalLayout newTaskLayout = new HorizontalLayout();
+        newTaskFormPanel.addComponent(newTaskLayout);
+        newSubTaskCodeField = new TextField();
+        newSubTaskCodeField.setWidth("60px");
+        newSubTaskCodeField.setImmediate(true);
+        newSubTaskCodeField.setInputPrompt("Code");
+        newTaskLayout.addComponent(newSubTaskCodeField);
+        newSubTaskNameField = new TextField();
+        newSubTaskNameField.setWidth("150px");
         newSubTaskNameField.setImmediate(true);
-        newTaskFormPanel.addComponent(newSubTaskNameField);
+        newSubTaskNameField.setInputPrompt("Name (required)");
+        newTaskLayout.addComponent(newSubTaskNameField);
 
         // Buttons
         HorizontalLayout hl = new HorizontalLayout();
@@ -179,11 +189,11 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	@Override
 	public void setNewTaskFormEnabled(boolean enabled) {
 		newSubTaskCheckbox.setEnabled(enabled);
-		newSubTaskNameField.setEnabled(enabled);
 	}
 
 	@Override
-	public void setNewTaskNameEnabled(boolean enabled) {
+	public void setNewTaskFieldsEnabled(boolean enabled) {
+		newSubTaskCodeField.setEnabled(enabled);
 		newSubTaskNameField.setEnabled(enabled);
 	}
 
@@ -218,7 +228,13 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	}
 
 	@Override
+	public String getNewTaskCode() {
+		return newSubTaskCodeField.getValue();
+	}
+
+	@Override
 	public long getSelectedTaskId() {
 		return (Long) taskTree.getValue();
 	}
+
 }

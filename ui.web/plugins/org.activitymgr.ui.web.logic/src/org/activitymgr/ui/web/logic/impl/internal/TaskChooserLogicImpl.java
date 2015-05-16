@@ -104,22 +104,28 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 
 	@Override
 	public void onSelectionChanged(long taskId) {
-		checkDialogRules(taskId, getView().getNewTaskName());
+		checkDialogRules(taskId, getView().getNewTaskName(), getView().getNewTaskCode());
 	}
 
 	@Override
 	public void onNewTaskCheckboxClicked() {
-		Long selectedTaskId = (Long) getView().getSelectedTaskId();
-		checkDialogRules(selectedTaskId, getView().getNewTaskName());
+		checkDialogRules(getView().getSelectedTaskId(), getView()
+				.getNewTaskName(), getView().getNewTaskCode());
 	}
 	
 	@Override
 	public void onNewTaskNameChanged(String newTaskName) {
-		Long selectedTaskId = (Long) getView().getSelectedTaskId();
-		checkDialogRules(selectedTaskId, newTaskName);
+		checkDialogRules(getView().getSelectedTaskId(), newTaskName, getView()
+				.getNewTaskCode());
 	}
 
-	private void checkDialogRules(Long selectedTaskId, String newTaskName) {
+	@Override
+	public void onNewTaskCodeChanged(String newTaskCode) {
+		checkDialogRules(getView().getSelectedTaskId(), getView()
+				.getNewTaskName(), newTaskCode);
+	}
+
+	private void checkDialogRules(Long selectedTaskId, String newTaskName, String newTaskCode) {
 		Task selectedTask = getModelMgr().getTask(selectedTaskId);
 		String newStatus = "";
 		boolean okButtonEnabled = false;
@@ -132,11 +138,19 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				newTaskFormEnabled = true;
 				if (getView().isNewTaskChecked()) {
 					newTaskNameEnabled = true;
-					if (newTaskName == null || "".equals(newTaskName.trim())) {
-						newStatus = "Enter a task name";
+					boolean codeInUse = false;
+					if (newTaskCode != null && !"".equals(newTaskCode.trim())) {
+						if (getModelMgr().getTask(selectedTask.getFullPath(), newTaskCode) != null) {
+							newStatus = "This code is already in use";
+						}
 					}
-					else {
-						okButtonEnabled = true;
+					if (!codeInUse) {
+						if (newTaskName == null || "".equals(newTaskName.trim())) {
+							newStatus = "Enter a task name";
+						}
+						else {
+							okButtonEnabled = true;
+						}
 					}
 				}
 				else {
@@ -150,7 +164,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 		getView().setStatus(newStatus);
 		getView().setOkButtonEnabled(okButtonEnabled);
 		getView().setNewTaskFormEnabled(newTaskFormEnabled);
-		getView().setNewTaskNameEnabled(newTaskNameEnabled);
+		getView().setNewTaskFieldsEnabled(newTaskNameEnabled);
 	}
 
 	@Override
@@ -163,11 +177,15 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				Task parent = getModelMgr().getTask(taskId);
 				Task newTask = getContext().getBeanFactory().newTask();
 				newTask.setName(getView().getNewTaskName());
-				String code = newTask.getName().trim().replaceAll(" ", "").toUpperCase();
-				if (code.length() > 7) {
-					code = code.substring(0, 7);
+				String code = getView().getNewTaskCode().trim();
+				if ("".equals(code)) {
+					code = newTask.getName().trim().replaceAll(" ", "").toUpperCase();
+					if (code.length() > 7) {
+						code = code.substring(0, 7);
+					}
+					code = '$' + code;
 				}
-				newTask.setCode('$' + code);
+				newTask.setCode(code);
 				getModelMgr().createTask(parent, newTask);
 				((AbstractContributionTabLogicImpl) getParent()).addTasks(newTask.getId());
 			}

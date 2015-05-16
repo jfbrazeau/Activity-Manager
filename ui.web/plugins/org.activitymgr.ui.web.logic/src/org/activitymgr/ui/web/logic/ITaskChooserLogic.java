@@ -14,6 +14,8 @@ public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 
 	void onNewTaskNameChanged(String newName);
 
+	void onNewTaskCodeChanged(String newCode);
+
 	public interface View extends IView<ITaskChooserLogic> {
 
 		public void setTreeContentProviderCallback(
@@ -33,9 +35,11 @@ public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 
 		public String getNewTaskName();
 		
+		public String getNewTaskCode();
+		
 		public long getSelectedTaskId();
 
-		public void setNewTaskNameEnabled(boolean enabled);
+		public void setNewTaskFieldsEnabled(boolean enabled);
 	}
 
 }
