@@ -454,7 +454,7 @@ public class ModelMgrImpl implements IModelMgr, IPostInjectionListener {
 				parentTask != null ? parentTask.getFullPath() : "", task.getCode()); //$NON-NLS-1$
 		if (sameCodeTask != null && !sameCodeTask.equals(task))
 			throw new ModelException(
-					Strings.getString("ModelMgr.errors.TASK_CODE_ALREADY_IN_USE")); //$NON-NLS-1$
+					Strings.getString("ModelMgr.errors.TASK_CODE_ALREADY_IN_USE") + "(" + task.getCode() + ")"); //$NON-NLS-1$
 
 		// Mise à jour du chemin de la tâche
 		String parentPath = parentTask == null ? "" : parentTask.getFullPath(); //$NON-NLS-1$
