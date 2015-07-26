@@ -38,6 +38,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
@@ -93,7 +94,7 @@ public class SWTHelper {
 	 */
 	public static void exportToWorkBook(Tree tree) throws UITechException {
 		// Demande du nom de fichier
-		FileDialog fd = new FileDialog(tree.getShell());
+		FileDialog fd = new FileDialog(tree.getShell(), SWT.SAVE);
 		fd.setFilterExtensions(new String[] { "*.xls", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
 		String fileName = fd.open();
 		// Si le nom est spécifié
