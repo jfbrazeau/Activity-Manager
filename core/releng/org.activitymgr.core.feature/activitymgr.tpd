@@ -1,0 +1,34 @@
+target "Activity Manager"
+
+location "http://download.eclipse.org/eclipse/updates/4.2" {
+	org.eclipse.platform.feature.group lazy
+	org.eclipse.rcp.feature.group lazy
+	org.eclipse.rcp.source.feature.group lazy
+	org.eclipse.emf.common.feature.group lazy
+	org.eclipse.emf.common.source.feature.group lazy
+	org.eclipse.emf.ecore.feature.group lazy
+	org.eclipse.emf.ecore.source.feature.group lazy
+	org.junit lazy
+	org.junit.source lazy
+	org.junit4 lazy
+	org.eclipse.equinox.executable.feature.group lazy
+}
+
+location "http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository/" {
+	org.apache.commons.dbcp lazy
+	org.apache.commons.dbcp.source lazy
+	org.apache.commons.pool lazy
+	org.apache.commons.pool.source lazy
+	com.google.inject lazy
+	com.google.inject.source lazy
+	com.google.guava lazy
+	com.google.guava.source lazy
+	org.apache.log4j lazy
+	org.apache.log4j.source lazy
+	org.apache.poi lazy
+	org.apache.poi.source lazy
+}
+
+location "http://jfbrazeau.github.io/Vaadin-OSGi-Container/repository/" {
+	org.vaadin.osgiappcontainer.feature.feature.group lazy
+}
