@@ -31,9 +31,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Calendar;
+import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Contribution;
 import org.activitymgr.core.dto.Duration;
@@ -477,6 +479,21 @@ public interface IModelMgr {
 	 *             base ne sont pas ceux de la tache spécifiée.
 	 */
 	TaskSums getTaskSums(Task task, Calendar fromDate, Calendar toDate)
+			throws ModelException;
+
+	/**
+	 * @param parentTask
+	 *            the parent task
+	 * @param fromDate
+	 *            start of the date interval to consider
+	 * @param toDate
+	 *            end of the date interval to consider
+	 * @return the sub tasks sums (consummed, ...)
+;	 * @throws ModelException
+	 *             levé dans le cas ou le chemin ou le numéro de la tache en
+	 *             base ne sont pas ceux de la tache spécifiée.
+	 */
+	List<TaskSums> getSubTasksSums(Task parentTask, Calendar fromDate, Calendar toDate)
 			throws ModelException;
 
 	/**

@@ -57,11 +57,12 @@ import org.activitymgr.core.dto.IDTOFactory;
 import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.dto.misc.IntervalContributions;
 import org.activitymgr.core.dto.misc.TaskContributions;
+import org.activitymgr.core.dto.misc.TaskContributionsSums;
 import org.activitymgr.core.dto.misc.TaskSearchFilter;
 import org.activitymgr.core.dto.misc.TaskSums;
+import org.activitymgr.core.model.CoreModelModule.IPostInjectionListener;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
-import org.activitymgr.core.model.CoreModelModule.IPostInjectionListener;
 import org.activitymgr.core.model.impl.XmlHelper.ModelMgrDelegate;
 import org.activitymgr.core.orm.query.AscendantOrderByClause;
 import org.activitymgr.core.orm.query.DescendantOrderByClause;
@@ -592,16 +593,17 @@ public class ModelMgrImpl implements IModelMgr, IPostInjectionListener {
 		XmlHelper.println(out, "<!DOCTYPE model SYSTEM \"activitymgr.dtd\">"); //$NON-NLS-1$
 
 		// Ajout des sommes de controle
-		Task[] rootTasks = getSubTasks(null);
-		if (rootTasks.length > 0) {
+		List<TaskSums> rootTasksSums = getSubTasksSums(null, "", null, null);
+		if (rootTasksSums.size() > 0) {
 			XmlHelper.println(out, "<!-- "); //$NON-NLS-1$
 			XmlHelper
 					.println(
 							out,
 							Strings.getString("ModelMgr.xmlexport.comment.ROOT_TASKS_CHECK_SUMS")); //$NON-NLS-1$
-			for (int i = 0; i < rootTasks.length; i++) {
-				Task rootTask = rootTasks[i];
-				TaskSums sums = contributionDAO.getTaskSums(rootTask, null, null);
+			int i = 0;
+			for (TaskSums sums : rootTasksSums) {
+				i ++;
+				Task rootTask = sums.getTask();
 				XmlHelper
 						.println(
 								out,
@@ -618,7 +620,7 @@ public class ModelMgrImpl implements IModelMgr, IPostInjectionListener {
 				XmlHelper
 						.println(
 								out,
-								Strings.getString("ModelMgr.xmlexport.comment.CONSUMED") + (sums.getConsumedSum() / 100d)); //$NON-NLS-1$
+								Strings.getString("ModelMgr.xmlexport.comment.CONSUMED") + (sums.getContributionsSums().getConsumedSum() / 100d)); //$NON-NLS-1$
 				XmlHelper
 						.println(
 								out,
@@ -626,7 +628,7 @@ public class ModelMgrImpl implements IModelMgr, IPostInjectionListener {
 				XmlHelper
 						.println(
 								out,
-								Strings.getString("ModelMgr.xmlexport.comment.CONTRIBUTIONS_NUMBER") + sums.getContributionsNb()); //$NON-NLS-1$
+								Strings.getString("ModelMgr.xmlexport.comment.CONTRIBUTIONS_NUMBER") + sums.getContributionsSums().getContributionsNb()); //$NON-NLS-1$
 			}
 			XmlHelper.println(out, "  -->"); //$NON-NLS-1$
 		}
@@ -1334,18 +1336,75 @@ public class ModelMgrImpl implements IModelMgr, IPostInjectionListener {
 	public TaskSums getTaskSums(Task task, Calendar fromDate, Calendar toDate)
 			throws ModelException {
 		// Vérification de la tache (le chemin de la tache doit être le bon
-		// pour
-		// que le calcul le soit)
+		// pour que le calcul le soit)
 		if (task != null)
 			checkTaskPath(task);
-
-		// Calcul des sommes
-		TaskSums sums = contributionDAO.getTaskSums(task, fromDate, toDate);
-
+		
 		// Retour du résultat
-		return sums;
+		return getSubTasksSums(task.getId(), null, fromDate, toDate).get(0);
 	}
 
+	
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.model.IModelMgr#getSubTaskSums(org.activitymgr.core.dto.Task, java.util.Calendar, java.util.Calendar)
+	 */
+	@Override
+	public List<TaskSums> getSubTasksSums(Task parentTask, Calendar fromDate,
+			Calendar toDate) throws ModelException {
+		// Vérification de la tache (le chemin de la tache doit être le bon
+		// pour que le calcul le soit)
+		if (parentTask != null)
+			checkTaskPath(parentTask);
+
+		// Compute parent task path
+		String tasksPath = parentTask != null ? parentTask.getFullPath() : "";
+		
+		return getSubTasksSums(null, tasksPath, fromDate, toDate);
+	}
+	
+	private List<TaskSums> getSubTasksSums(Long taskId, String tasksPath, Calendar fromDate,
+			Calendar toDate) {
+		// Compute sums
+		List<TaskSums> tasksSums = taskDAO.getTasksSums(taskId, tasksPath);
+
+		// Add contributions
+		Map<Long, TaskContributionsSums> contributionSums = contributionDAO.getTasksSums(taskId, tasksPath, fromDate, toDate);
+		for (TaskSums taskSums : tasksSums) {
+			long theTaskId = taskSums.getTask().getId();
+			taskSums.setContributionsSums(contributionSums.get(theTaskId));
+		}
+		
+		// If a start date has been specified, initially consumed must be fixed by adding past contributions
+		if (fromDate != null) {
+			Calendar date = (Calendar) fromDate.clone();
+			date.add(Calendar.DATE, -1);
+			Map<Long, TaskContributionsSums> pastContributionsSums = contributionDAO.getTasksSums(taskId, tasksPath, null, date);
+			for (TaskSums taskSums : tasksSums) {
+				long theTaskId = taskSums.getTask().getId();
+				taskSums.setInitiallyConsumedSum(taskSums.getInitiallyConsumedSum() + pastContributionsSums.get(theTaskId).getConsumedSum());
+			}
+		}
+		
+		// If an end date has been specified, estimated time to complete must be fixed by adding future contributions
+		if (toDate != null) {
+			Calendar date = (Calendar) toDate.clone();
+			date.add(Calendar.DATE, +1);
+			Map<Long, TaskContributionsSums> futureContributionsSums = contributionDAO.getTasksSums(taskId, tasksPath, date, null);
+			for (TaskSums taskSums : tasksSums) {
+				long theTaskId = taskSums.getTask().getId();
+				try {
+				taskSums.setTodoSum(taskSums.getTodoSum() + futureContributionsSums.get(theTaskId).getConsumedSum());
+				}
+				catch (NullPointerException e) {
+					throw e;
+				}
+			}
+		}
+		
+		// Return the result
+		return tasksSums;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 

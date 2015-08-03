@@ -1,10 +1,12 @@
 package org.activitymgr.core.dao;
 
 import java.util.Calendar;
+import java.util.Map;
 
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Contribution;
 import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.dto.misc.TaskContributionsSums;
 import org.activitymgr.core.dto.misc.TaskSums;
 
 public interface IContributionDAO extends IDAO<Contribution> {
@@ -58,17 +60,23 @@ public interface IContributionDAO extends IDAO<Contribution> {
 			Calendar fromDate, Calendar toDate) throws DAOException;
 
 	/**
-	 * @param task
-	 *            la tâche pour laquelle on souhaite connaître les totaux.
+	 * The sub tasks sums (consumed, ...) for a given task (when
+	 * <code>taskId</code> is specified) or a set of tasks specified by their
+	 * path.
+	 * 
+	 * @param taskId
+	 *            the task identifier for which we want to know the sums.
+	 * @param tasksPath
+	 *            the tasks path for which we want to know the sums.
 	 * @param fromDate
-	 *            date de départ à prendre en compte pour le calcul.
+	 *            start of the date interval to consider
 	 * @param toDate
-	 *            date de fin à prendre en compte pour le calcul.
-	 * @return les totaux associés à une tache (consommé, etc.).
+	 *            end of the date interval to consider
+	 * @return the sub tasks sums (consumed, ...)
 	 * @throws DAOException
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
-	TaskSums getTaskSums(Task task, Calendar fromDate, Calendar toDate)
+	Map<Long, TaskContributionsSums> getTasksSums(Long taskId, String tasksPath, Calendar fromDate, Calendar toDate)
 			throws DAOException;
 
 }

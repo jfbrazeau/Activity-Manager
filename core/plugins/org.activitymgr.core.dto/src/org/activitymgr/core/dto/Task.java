@@ -247,6 +247,9 @@ public class Task extends SimpleIdentityBean {
 				.append(name).append(",") //$NON-NLS-1$
 				.append(path).append(",") //$NON-NLS-1$
 				.append(number).append(",") //$NON-NLS-1$
+				.append(budget).append(",") //$NON-NLS-1$
+				.append(initiallyConsumed).append(",") //$NON-NLS-1$
+				.append(todo).append(",") //$NON-NLS-1$
 				.append(getFullPath()).append(")") //$NON-NLS-1$
 				.toString();
 	}

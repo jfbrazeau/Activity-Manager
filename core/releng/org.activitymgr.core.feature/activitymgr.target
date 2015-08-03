@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde?>
 <!-- generated with https://github.com/mbarbero/fr.obeo.releng.targetplatform -->
-<target name="Activity Manager" sequenceNumber="1438025368">
+<target name="Activity Manager" sequenceNumber="1438758855">
   <locations>
     <location includeMode="slicer" includeAllPlatforms="false" includeSource="false" includeConfigurePhase="false" type="InstallableUnit">
       <unit id="org.eclipse.platform.feature.group" version="0.0.0"/>
@@ -11,10 +11,9 @@
       <unit id="org.eclipse.emf.common.source.feature.group" version="0.0.0"/>
       <unit id="org.eclipse.emf.ecore.feature.group" version="0.0.0"/>
       <unit id="org.eclipse.emf.ecore.source.feature.group" version="0.0.0"/>
-      <unit id="org.junit" version="0.0.0"/>
+      <unit id="org.junit" version="4.10.0.v4_10_0_v20120426-0900"/>
       <unit id="org.junit.source" version="0.0.0"/>
-      <unit id="org.junit4" version="0.0.0"/>
-      <unit id="org.eclipse.equinox.executable.feature.group" version="0.0.0"/>
+      <unit id="org.hamcrest.core" version="0.0.0"/>
       <repository location="http://download.eclipse.org/eclipse/updates/4.2"/>
     </location>
     <location includeMode="slicer" includeAllPlatforms="false" includeSource="false" includeConfigurePhase="false" type="InstallableUnit">

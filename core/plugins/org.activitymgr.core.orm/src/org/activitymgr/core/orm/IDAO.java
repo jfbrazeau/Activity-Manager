@@ -39,7 +39,7 @@ public interface IDAO<TYPE> {
 	public long count(Connection con, String[] whereClauseAttributeNames,
 			Object[] whereClauseAttributeValues) throws SQLException;
 
-	public String getColumnNamesRequestFragment(boolean includePK);
+	public String getColumnNamesRequestFragment(String tableAliasToUse, boolean includePK);
 
 	public TYPE read(ResultSet rs, int fromIndex);
 

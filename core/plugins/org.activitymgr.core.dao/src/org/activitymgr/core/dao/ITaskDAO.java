@@ -1,10 +1,12 @@
 package org.activitymgr.core.dao;
 
 import java.util.Calendar;
+import java.util.List;
 
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.dto.misc.TaskSearchFilter;
+import org.activitymgr.core.dto.misc.TaskSums;
 
 public interface ITaskDAO extends IDAO<Task> {
 
@@ -55,5 +57,21 @@ public interface ITaskDAO extends IDAO<Task> {
 	 *             levé en cas d'incident technique d'accès à la base.
 	 */
 	byte newTaskNumber(String path) throws DAOException;
+
+	/**
+ 	 * Compute the task sums for a given task (when
+	 * <code>taskId</code> is specified) or a set of tasks specified by their
+	 * path.
+	 * 
+	 * @param taskId
+	 *            the task identifier for which we want to know the sums.
+	 * @param tasksPath
+	 *            the tasks path for which we want to know the sums.
+	 * @return the sub tasks sums (budget, initially consumed, ...)
+	 * @throws DAOException
+	 *             thrown if a technical error occurs.
+	 */
+	List<TaskSums> getTasksSums(Long taskId, String tasksPath)
+			throws DAOException;
 
 }

@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import org.activitymgr.core.dao.AbstractORMDAOImpl;
 import org.activitymgr.core.dao.DAOException;
@@ -12,15 +13,20 @@ import org.activitymgr.core.dao.ITaskDAO;
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.dto.misc.TaskSearchFilter;
+import org.activitymgr.core.dto.misc.TaskSums;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
 import org.apache.log4j.Logger;
 
+/**
+ * @author jbrazeau
+ *
+ */
 public class TaskDAOImpl extends AbstractORMDAOImpl<Task> implements ITaskDAO {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(TaskDAOImpl.class);
-
+	
 	/* (non-Javadoc)
 	 * @see org.activitymgr.core.IDbMgr#subTasksCount(long)
 	 */
@@ -168,8 +174,8 @@ public class TaskDAOImpl extends AbstractORMDAOImpl<Task> implements ITaskDAO {
 			// Préparation de la requête
 			StringBuffer request = new StringBuffer();
 			request.append("select distinct ctb_task, tsk_path, tsk_number from CONTRIBUTION, TASK where ctb_task=tsk_id");
-			pStmt = buildIntervalRequest(request, contributor, null, fromDate,
-					toDate, false, "tsk_path, tsk_number");
+			pStmt = buildIntervalRequest(
+					request, contributor, null, fromDate, toDate, false, "tsk_path, tsk_number");
 
 			// Exécution de la requête
 			rs = pStmt.executeQuery();
@@ -233,6 +239,83 @@ public class TaskDAOImpl extends AbstractORMDAOImpl<Task> implements ITaskDAO {
 					"DbMgr.errors.TASK_NUMBER_COMPUTATION_FAILURE", path), e); //$NON-NLS-1$ //$NON-NLS-2$
 		} finally {
 			lastAttemptToClose(pStmt);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.dao.ITaskDAO#getTasksSums(java.lang.Long, java.lang.String)
+	 */
+	@Override
+	public List<TaskSums> getTasksSums(Long taskId, String tasksPath) throws DAOException {
+		if (taskId != null && tasksPath != null) {
+			throw new IllegalStateException("Both task Id and task path cannot be specified");
+		}
+		PreparedStatement pStmt = null;
+		ResultSet rs = null;
+		try {
+			List<TaskSums> result = new ArrayList<TaskSums>();
+
+			/**
+			 * Budget, initialy consummed, etc sums computation (all what is independant
+			 * from contributions)
+			 */
+			StringBuffer request = new StringBuffer()
+					.append("select ")
+					.append("sum(leaftask.tsk_budget), sum(leaftask.tsk_initial_cons), sum(leaftask.tsk_todo), count(leaftask.tsk_id), ")
+					.append(getColumnNamesRequestFragment("maintask"))
+					.append(" from TASK maintask, TASK leaftask ")
+					.append("where ");
+			// Task id case
+			if (taskId != null) {
+				request.append("maintask.tsk_id=?");
+			}
+			// Task path case
+			else {
+				request.append("maintask.tsk_path=?");
+			}
+			if (taskId != null || tasksPath != null) {
+				request.append(" and ");
+			}
+			request.append("(maintask.tsk_id=leaftask.tsk_id or leaftask.tsk_path like concat(maintask.tsk_path, maintask.tsk_number, '%'))")
+				.append(" group by maintask.tsk_id ")
+				.append(" order by maintask.tsk_number");
+			pStmt = tx().prepareStatement(request.toString());
+			int paramIdx = 1;
+			if (taskId != null) {
+				pStmt.setLong(paramIdx++, taskId);
+			}
+			if (tasksPath != null) {
+				pStmt.setString(paramIdx++, tasksPath);
+			}
+			rs = pStmt.executeQuery();
+			
+			while (rs.next()) {
+				TaskSums sums = new TaskSums();
+				sums.setBudgetSum(rs.getLong(1));
+				sums.setInitiallyConsumedSum(rs.getLong(2));
+				sums.setTodoSum(rs.getLong(3));
+				sums.setLeaf(rs.getLong(4) == 1);
+				Task task = read(rs, 5);
+				sums.setTask(task);
+				result.add(sums);
+			}
+			// Close the statement
+			pStmt.close();
+			pStmt = null;
+			
+			// Return the result
+			return result;
+		} catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DAOException(
+					Strings.getString(
+							"DbMgr.errors.TASK_SUMS_COMPUTATION_FAILURE", taskId != null ? taskId : tasksPath), e); //$NON-NLS-1$ //$NON-NLS-2$
+		} finally {
+			try {
+				if (pStmt != null)
+					pStmt.close();
+			} catch (Throwable ignored) {
+			}
 		}
 	}
 

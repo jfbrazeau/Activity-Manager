@@ -35,6 +35,7 @@ import java.util.Map;
 
 import org.activitymgr.core.dto.Contribution;
 import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.dto.misc.TaskContributionsSums;
 import org.activitymgr.core.dto.misc.TaskSums;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
@@ -181,9 +182,6 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	/** Composant parent */
 	private Composite parent;
 
-	/** Table contenant les sommes associées aux taches */
-	private Map<Task, TaskSums> tasksSums = new HashMap<Task, TaskSums>();
-
 	/** Popup permettant de choisir une tache */
 	private TaskChooserTreeWithHistoryDialog taskChooserDialog;
 
@@ -192,9 +190,6 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 
 	/** Panneau de recherche de tache */
 	private TaskFinderPanel taskFinderPanel;
-
-	/** Couleur de fond utilisée pour les zones non modifiables */
-	private Color disabledBGColor;
 
 	/** Couleur de police de caractère utilisée pour les zones non modifiables */
 	private Color disabledFGColor;
@@ -224,7 +219,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 * @param parentComposite
 	 *            composant parent.
 	 */
-	public TasksUI(Composite parentComposite, IModelMgr modelMgr) {
+	public TasksUI(Composite parentComposite, final IModelMgr modelMgr) {
 		this.modelMgr = modelMgr;
 
 		// Création du composite parent
@@ -236,9 +231,29 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		GridData gridData = new GridData(SWT.FILL, SWT.NONE, true, false);
 		taskFinderPanel.setLayoutData(gridData);
 		taskFinderPanel.addTaskListener(new ITaskSelectionListener() {
-			public void taskSelected(Task selectedTask) {
-				treeViewer.setSelection(new StructuredSelection(selectedTask));
-				treeViewer.getTree().setFocus();
+			public void taskSelected(final Task selectedTask) {
+				SafeRunner safeRunner = new SafeRunner() {
+					@Override
+					protected Object runUnsafe() throws Exception {
+						TaskSums selectedElement = null;
+						for (Object element : treeViewer.getExpandedElements()) {
+							TaskSums sums = (TaskSums) element;
+							if (sums.getTask().equals(selectedTask)) {
+								selectedElement = sums;
+								break;
+							}
+						}
+						if (selectedElement == null) {
+							selectedElement = modelMgr.getTaskSums(selectedTask, null, null);
+						}
+						return selectedElement;
+					}
+				};
+				TaskSums selectedElement = (TaskSums) safeRunner.run(parent.getShell());
+				if (selectedElement != null) {
+					treeViewer.setSelection(new StructuredSelection(selectedElement));
+					treeViewer.getTree().setFocus();
+				}
 			}
 		});
 
@@ -259,10 +274,8 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		treeViewer.setLabelProvider(this);
 
 		// Création des polices de caractère
-		disabledBGColor = tree.getDisplay().getSystemColor(
-				SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW);
 		disabledFGColor = tree.getDisplay().getSystemColor(
-				SWT.COLOR_WIDGET_DARK_SHADOW);
+				SWT.COLOR_TITLE_INACTIVE_FOREGROUND);
 
 		// Configuration des colonnes
 		treeColsMgr = new TableOrTreeColumnsMgr();
@@ -383,13 +396,14 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		KeyListener keyListener = new KeyAdapter() {
 			public void keyReleased(KeyEvent e) {
 				Widget simulatedWidget = null;
-				if ((e.keyCode == SWT.ARROW_UP) && (e.stateMask == SWT.CTRL))
-					simulatedWidget = moveUpItem;
-				else if ((e.keyCode == SWT.ARROW_DOWN)
-						&& (e.stateMask == SWT.CTRL))
-					simulatedWidget = moveDownItem;
-				else if ((e.keyCode == 'c') && (e.stateMask == SWT.CTRL))
-					simulatedWidget = copyItem;
+				if (e.stateMask == SWT.CTRL /* || e.stateMask == SWT.COMMAND */) {
+					if (e.keyCode == SWT.ARROW_UP)
+						simulatedWidget = moveUpItem;
+					else if (e.keyCode == SWT.ARROW_DOWN)
+						simulatedWidget = moveDownItem;
+					else if (e.keyCode == 'c')
+						simulatedWidget = copyItem;
+				}
 				if (simulatedWidget != null) {
 					Event event = new Event();
 					event.widget = simulatedWidget;
@@ -426,32 +440,6 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		return getChildren(null);
 	}
 
-	/**
-	 * Retourne les sommes associées à la tache spécifiée.
-	 * 
-	 * @param task
-	 *            la tache pour laquelle on désire connaître les cumuls.
-	 * @return les sommes associées à la tache.
-	 * @throws ModelException
-	 *             levé en cas de détection d'incohérence au niveau du modèle.
-	 */
-	private TaskSums getTasksSums(Task task) throws ModelException {
-		// 1° lecture dans le cache
-		TaskSums taskSums = (TaskSums) tasksSums.get(task);
-		if (taskSums == null) {
-			synchronized (tasksSums) {
-				// 2° lecture dans le cache (synchronisé)
-				taskSums = (TaskSums) tasksSums.get(task);
-				if (taskSums == null) {
-					taskSums = modelMgr.getTaskSums(task, null, null);
-					// Dépot dans le cache
-					tasksSums.put(task, taskSums);
-				}
-			}
-		}
-		return taskSums;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -460,11 +448,10 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 */
 	public boolean canModify(Object element, String property) {
 		log.debug("ICellModifier.canModify(" + element + ", " + property + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		final Task task = (Task) element;
+		final TaskSums taskSums = (TaskSums) element;
 		final int propertyIdx = treeColsMgr.getColumnIndex(property);
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				boolean hasChilds = (modelMgr.getSubTasksCount(task.getId()) > 0);
 				boolean canModify = false;
 				switch (propertyIdx) {
 				case (NAME_COLUMN_IDX):
@@ -474,7 +461,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				case (INITIAL_FUND_COLUMN_IDX):
 				case (INITIALLY_CONSUMED_COLUMN_IDX):
 				case (TODO_COLUMN_IDX):
-					canModify = !hasChilds;
+					canModify = taskSums.isLeaf();
 					break;
 				case (CONSUMED_COLUMN_IDX):
 				case (DELTA_COLUMN_IDX):
@@ -502,46 +489,40 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 */
 	public Object getValue(Object element, String property) {
 		log.debug("ICellModifier.getValue(" + element + ", " + property + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		final Task task = (Task) element;
+		final TaskSums taskSums = (TaskSums) element;
 		final int propertyIdx = treeColsMgr.getColumnIndex(property);
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				TaskSums taskSums = getTasksSums(task);
-				boolean hasChilds = (modelMgr.getSubTasksCount(task.getId()) > 0);
 				String value = null;
 				switch (propertyIdx) {
 				case (NAME_COLUMN_IDX):
-					value = task.getName();
+					value = taskSums.getTask().getName();
 					break;
 				case (CODE_COLUMN_IDX):
-					value = task.getCode();
+					value = taskSums.getTask().getCode();
 					break;
 				case (INITIAL_FUND_COLUMN_IDX):
-					value = StringHelper.hundredthToEntry(!hasChilds ? task
-							.getBudget() : taskSums.getBudgetSum());
+					value = StringHelper.hundredthToEntry(taskSums.getBudgetSum());
 					break;
 				case (INITIALLY_CONSUMED_COLUMN_IDX):
-					value = StringHelper.hundredthToEntry(!hasChilds ? task
-							.getInitiallyConsumed() : taskSums
-							.getInitiallyConsumedSum());
+					value = StringHelper.hundredthToEntry(taskSums.getInitiallyConsumedSum());
 					break;
 				case (CONSUMED_COLUMN_IDX):
 					value = StringHelper.hundredthToEntry(taskSums
-							.getConsumedSum()
+							.getContributionsSums().getConsumedSum()
 							+ taskSums.getInitiallyConsumedSum());
 					break;
 				case (TODO_COLUMN_IDX):
-					value = StringHelper.hundredthToEntry(!hasChilds ? task
-							.getTodo() : taskSums.getTodoSum());
+					value = StringHelper.hundredthToEntry(taskSums.getTodoSum());
 					break;
 				case (DELTA_COLUMN_IDX):
 					long delta = taskSums.getBudgetSum()
 							- taskSums.getInitiallyConsumedSum()
-							- taskSums.getConsumedSum() - taskSums.getTodoSum();
+							- taskSums.getContributionsSums().getConsumedSum() - taskSums.getTodoSum();
 					value = StringHelper.hundredthToEntry(delta);
 					break;
 				case (COMMENT_COLUMN_IDX):
-					value = task.getComment() != null ? task.getComment() : ""; //$NON-NLS-1$
+					value = taskSums.getTask().getComment() != null ? taskSums.getTask().getComment() : ""; //$NON-NLS-1$
 					break;
 				default:
 					throw new UITechException(
@@ -564,7 +545,8 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	public void modify(Object element, String property, final Object value) {
 		log.debug("ICellModifier.modify(" + element + ", " + property + ", " + value + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		final TreeItem item = (TreeItem) element;
-		final Task task = (Task) item.getData();
+		final TaskSums taskSums = (TaskSums) item.getData();
+		final Task task = taskSums.getTask();
 		final int columnIdx = treeColsMgr.getColumnIndex(property);
 		final IBaseLabelProvider labelProvider = this;
 		SafeRunner safeRunner = new SafeRunner() {
@@ -581,18 +563,21 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 					long newInitialFund = StringHelper
 							.entryToHundredth((String) value);
 					task.setBudget(newInitialFund);
+					taskSums.setBudgetSum(newInitialFund);
 					parentsMustBeRefreshed = true;
 					break;
 				case (INITIALLY_CONSUMED_COLUMN_IDX):
 					long newInitiallyConsumed = StringHelper
 							.entryToHundredth((String) value);
 					task.setInitiallyConsumed(newInitiallyConsumed);
+					taskSums.setInitiallyConsumedSum(newInitiallyConsumed);
 					parentsMustBeRefreshed = true;
 					break;
 				case (TODO_COLUMN_IDX):
 					long newTodo = StringHelper
 							.entryToHundredth((String) value);
 					task.setTodo(newTodo);
+					taskSums.setTodoSum(newTodo);
 					parentsMustBeRefreshed = true;
 					break;
 				case (COMMENT_COLUMN_IDX):
@@ -617,11 +602,10 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				// Mise à jour des labels
 				if (parentsMustBeRefreshed) {
 					// Mise à jour des sommes des taches parentes
-					updateBranchItemsSums(item);
+					updateParentSums(item);
 				} else {
 					// Notification de la mise à jour uniquement pour la tache
-					notifyLabelProviderListener(new LabelProviderChangedEvent(
-							labelProvider, new Object[] { task }));
+					notifyLabelProviderListener(taskSums);
 				}
 				// Notification de la mise à jour de la tache pour les listeners
 				notifyTaskUpdated(task);
@@ -632,6 +616,11 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		safeRunner.run(parent.getShell());
 	}
 
+	protected void notifyLabelProviderListener(TaskSums... sums) {
+		super.notifyLabelProviderListener(new LabelProviderChangedEvent(
+				this, sums));
+	}
+	
 	/**
 	 * Met à jour les sommes associés aux taches de la branche associée à l'item
 	 * spécifié.
@@ -641,21 +630,21 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 * @throws ModelException
 	 *             levée en cas d'invalidité associée au modèle.
 	 */
-	private void updateBranchItemsSums(TreeItem item) throws ModelException {
-		List<Task> list = new ArrayList<Task>();
+	private void updateParentSums(TreeItem item) throws ModelException {
+		List<TaskSums> list = new ArrayList<TaskSums>();
 		// Nettoyage du cache
 		TreeItem cursor = item;
 		while (cursor != null) {
-			Task taskCursor = (Task) cursor.getData();
-			log.debug("Update task " + taskCursor.getName()); //$NON-NLS-1$
-			tasksSums.remove(taskCursor);
-			list.add(0, taskCursor);
+			TaskSums taskCursor = (TaskSums) cursor.getData();
+			TaskSums newTaskSums = modelMgr.getTaskSums(taskCursor.getTask(), null, null);
+			cursor.setData(newTaskSums);
+			log.debug("Update task " + newTaskSums.getTask().getName()); //$NON-NLS-1$
+			list.add(0, newTaskSums);
 			cursor = cursor.getParentItem();
 		}
 		// Notification de la mise à jour (ce qui recharge automatiquement
 		// le cache des sommes de taches)
-		notifyLabelProviderListener(new LabelProviderChangedEvent(this,
-				list.toArray()));
+		notifyLabelProviderListener((TaskSums[]) list.toArray(new TaskSums[list.size()]));
 	}
 
 	/*
@@ -667,8 +656,8 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 */
 	public boolean hasChildren(Object element) {
 		log.debug("ITreeContentProvider.getChildren(" + element + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-		Task task = (Task) element;
-		return modelMgr.getSubTasksCount(task.getId()) > 0;
+		TaskSums sums = (TaskSums) element;
+		return !sums.isLeaf();
 	}
 
 	/*
@@ -680,11 +669,11 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 */
 	public Object[] getChildren(Object parentElement) {
 		log.debug("ITreeContentProvider.getChildren(" + parentElement + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-		final Task parentTask = (Task) parentElement;
+		final TaskSums parentTaskSums = (TaskSums) parentElement;
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				Task[] subTasks = modelMgr.getSubTasks(parentTask);
-				return subTasks;
+				List<TaskSums> subTasks = modelMgr.getSubTasksSums(parentTaskSums != null ? parentTaskSums.getTask() : null, null, null);
+				return subTasks.toArray();
 			}
 		};
 		Object[] result = (Object[]) safeRunner.run(parent.getShell(),
@@ -701,11 +690,11 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 */
 	public Object getParent(Object element) {
 		log.debug("ITreeContentProvider.getParent(" + element + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-		final Task task = (Task) element;
+		final TaskSums sums = (TaskSums) element;
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				Task parentTask = modelMgr.getParentTask(task);
-				return parentTask == null ? treeViewer.getInput() : parentTask;
+				Task parentTask = modelMgr.getParentTask(sums.getTask());
+				return parentTask == null ? treeViewer.getInput() : modelMgr.getTaskSums(parentTask, null, null);
 			}
 		};
 		// Exécution du traitement
@@ -722,8 +711,10 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 */
 	public String getColumnText(Object element, int columnIndex) {
 		log.debug("ITableLabelProvider.getColumnText(" + element + ", " + columnIndex + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		return (String) getValue(element,
+		String value = (String) getValue(element,
 				treeColsMgr.getColumnCode(columnIndex));
+		log.debug("  =>" + value + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+		return value;
 	}
 
 	/*
@@ -734,8 +725,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 * .Object, int)
 	 */
 	public Color getBackground(Object element, int columnIndex) {
-		return canModify(element, treeColsMgr.getColumnCode(columnIndex)) ? treeViewer
-				.getTree().getBackground() : disabledBGColor;
+		return null;
 	}
 
 	/*
@@ -746,8 +736,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	 * .Object, int)
 	 */
 	public Color getForeground(Object element, int columnIndex) {
-		return canModify(element, treeColsMgr.getColumnCode(columnIndex)) ? treeViewer
-				.getTree().getForeground() : disabledFGColor;
+		return canModify(element, treeColsMgr.getColumnCode(columnIndex)) ? null : disabledFGColor;
 	}
 
 	/*
@@ -768,23 +757,26 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 					// Récupération du noeud parent
 					TreeItem parentItem = selection.length > 0 ? selection[0]
 							.getParentItem() : null;
-					Task parentTask = parentItem == null ? null
-							: (Task) parentItem.getData();
+					TaskSums parentSums = parentItem == null ? null
+							: (TaskSums) parentItem.getData();
 					// Création de la tache
-					Task newTask = newTask(parentTask);
+					Task newTask = newTask(parentSums);
 					// Notification des listeners
 					notifyTaskAdded(newTask);
 				}
 				// Cas d'une création de sous tache
 				else if (newSubtaskItem.equals(source)) {
-					Task selectedTask = (Task) selection[0].getData();
-					Task newTask = newTask(selectedTask);
+					TaskSums selected = (TaskSums) selection[0].getData();
+					Task newTask = newTask(selected);
+					// Then remember that the parent task is not a leaf task
+					selected.setLeaf(false);
 					// Notification des listeners
 					notifyTaskAdded(newTask);
 				}
 				// Cas d'une demande de déplacement vers le haut
 				else if (moveUpItem.equals(source)) {
-					Task selectedTask = (Task) selection[0].getData();
+					TaskSums selected = (TaskSums) selection[0].getData();
+					Task selectedTask = selected.getTask();
 					String oldTaskFullpath = selectedTask.getFullPath();
 					modelMgr.moveUpTask(selectedTask);
 					// Mise à jour de l'IHM
@@ -795,7 +787,8 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				}
 				// Cas d'une demande de déplacement vers le haut
 				else if (moveDownItem.equals(source)) {
-					Task selectedTask = (Task) selection[0].getData();
+					TaskSums selected = (TaskSums) selection[0].getData();
+					Task selectedTask = selected.getTask();
 					String oldTaskFullpath = selectedTask.getFullPath();
 					modelMgr.moveDownTask(selectedTask);
 					// Mise à jour de l'IHM
@@ -808,7 +801,8 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				// tache
 				else if (moveBeforeAnotherTaskItem.equals(source)
 						|| moveAfterAnotherTaskItem.equals(source)) {
-					Task selectedTask = (Task) selection[0].getData();
+					TaskSums selected = (TaskSums) selection[0].getData();
+					Task selectedTask = selected.getTask();
 					final Task finalSelectedTask = selectedTask;
 					// Création du valideur
 					taskChooserDialog.setValidator(new ITaskChooserValidator() {
@@ -857,11 +851,12 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				}
 				// Cas d'une demande de déplacement vers une autre tache
 				else if (moveToAnotherTaskItem.equals(source)) {
-					Task taskToMove = (Task) selection[0].getData();
+					TaskSums selected = (TaskSums) selection[0].getData();
+					Task taskToMove = selected.getTask();
 					// Récupération du noeud parent
 					TreeItem parentItem = selection[0].getParentItem();
-					final Task srcParentTask = (parentItem != null) ? (Task) parentItem
-							.getData() : null;
+					final Task srcParentTask = (parentItem != null) ? ((TaskSums) parentItem
+							.getData()).getTask() : null;
 					// Création du valideur
 					taskChooserDialog.setValidator(new ITaskChooserValidator() {
 						public void validateChoosenTask(Task selectedTask)
@@ -898,8 +893,8 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				}
 				// Cas d'une demande de déplacement vers la racine
 				else if (moveToRootItem.equals(source)) {
-					TreeItem selectedItem = selection[0];
-					Task taskToMove = (Task) selectedItem.getData();
+					TaskSums selected = (TaskSums) selection[0].getData();
+					Task taskToMove = selected.getTask();
 					String oldTaskFullpath = taskToMove.getFullPath();
 					// Déplacement
 					modelMgr.moveTask(taskToMove, null);
@@ -932,8 +927,8 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 					if (selection != null && selection.length > 0) {
 						TreeItem selectedItem = selection[0];
 						Clipboard clipboard = new Clipboard(parent.getDisplay());
-						Task task = (Task) selectedItem.getData();
-						String taskCodePath = modelMgr.getTaskCodePath(task);
+						TaskSums selected = (TaskSums) selectedItem.getData();
+						String taskCodePath = modelMgr.getTaskCodePath(selected.getTask());
 						clipboard.setContents(new String[] { taskCodePath },
 								new Transfer[] { TextTransfer.getInstance() });
 						clipboard.dispose();
@@ -943,18 +938,18 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				else if (removeItem.equals(source)) {
 					TreeItem selectedItem = selection[0];
 					TreeItem parentItem = selectedItem.getParentItem();
-					Task selectedTask = (Task) selectedItem.getData();
-					Task parentTask = (parentItem != null) ? (Task) parentItem
-							.getData() : null;
+					TaskSums selected = (TaskSums) selectedItem.getData();
+					Task selectedTask = selected.getTask();
+					Task parentTask = (parentItem != null) ? ((TaskSums) parentItem
+							.getData()).getTask() : null;
 					// Suppression
 					modelMgr.removeTask(selectedTask);
 					// Suppression dans l'arbre
-					treeViewer.remove(selectedTask);
-					// Mise à jour des sommes des taches parentes
-					updateBranchItemsSums(parentItem);
+					treeViewer.remove(selected);
+					updateParentSums(parentItem);
 					// Mise à jour des taches soeurs
 					if (parentTask != null)
-						treeViewer.refresh(parentTask);
+						treeViewer.refresh(parentItem.getData());
 					else
 						treeViewer.refresh();
 					// Notification des listeners
@@ -974,8 +969,8 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				}
 				// Cas d'une demande de liste des contributions
 				else if (listTaskContributionsItem.equals(source)) {
-					TreeItem selectedItem = selection[0];
-					Task selectedTask = (Task) selectedItem.getData();
+					TaskSums selected = (TaskSums) selection[0].getData();
+					Task selectedTask = selected.getTask();
 					contribsViewerDialog.setFilter(selectedTask, null);
 					// Ouverture du dialogue
 					contribsViewerDialog.open();
@@ -985,11 +980,11 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 					// Récupération du noeud parent
 					TreeItem selectedItem = selection[0];
 					TreeItem parentItem = selectedItem.getParentItem();
-					Task parentTask = (parentItem != null) ? (Task) parentItem
+					TaskSums parentTaskSums = (parentItem != null) ? (TaskSums) parentItem
 							.getData() : null;
 					// Mise à jour
-					if (parentTask != null)
-						treeViewer.refresh(parentTask);
+					if (parentTaskSums != null)
+						treeViewer.refresh(parentTaskSums);
 					else
 						treeViewer.refresh();
 				}
@@ -1019,20 +1014,25 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	/**
 	 * Ajoute une tache.
 	 * 
-	 * @param parentTask
-	 *            la tache parent ou null pour une tache racine.
+	 * @param parentSums
+	 *            les totaux de la tache parente ou null pour une tache racine.
 	 * @throws ModelException
 	 *             levé en cas de violation du modèle de données.
 	 * @return la tache créée.
 	 */
-	private Task newTask(Task parentTask) throws ModelException {
+	private Task newTask(TaskSums parentSums) throws ModelException {
+		Task parentTask = parentSums != null ? parentSums.getTask() : null;
 		log.debug("newTask(" + parentTask + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		// Création de la nouvelle tache
 		Task newTask = modelMgr.createNewTask(parentTask);
 		// Ajout dans l'arbre et création en base
-		treeViewer.add(parentTask == null ? treeViewer.getInput() : parentTask,
-				newTask);
-		treeViewer.setSelection(new StructuredSelection(newTask), true);
+		TaskSums newSums = new TaskSums();
+		newSums.setLeaf(true);
+		newSums.setTask(newTask);
+		newSums.setContributionsSums(new TaskContributionsSums());
+		treeViewer.add(parentSums == null ? treeViewer.getInput() : parentSums,
+				newSums);
+		treeViewer.setSelection(new StructuredSelection(newSums), true);
 		return newTask;
 	}
 

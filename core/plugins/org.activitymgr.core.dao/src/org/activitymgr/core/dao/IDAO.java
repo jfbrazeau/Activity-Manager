@@ -34,7 +34,7 @@ public interface IDAO<TYPE> {
 	public long count(String[] whereClauseAttributeNames,
 			Object[] whereClauseAttributeValues) throws DAOException;
 
-	public String getColumnNamesRequestFragment();
+	public String getColumnNamesRequestFragment(String tableAliasToUse);
 	
 	public TYPE read(ResultSet rs, int fromIndex);
 

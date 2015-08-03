@@ -2,6 +2,7 @@ package org.activitymgr.core;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Contribution;
@@ -301,12 +302,48 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 	
+	public void testSubTasksSum() throws ModelException {
+		// Création des taches de test
+		createSampleTasks();
+		
+		// Check non leaf tasks
+		List<TaskSums> subTasksSums = getModelMgr().getSubTasksSums(task1, null, null);
+		assertEquals(1, subTasksSums.size());
+		TaskSums sums11 = subTasksSums.get(0);
+		assertNotNull(sums11.getTask());
+		assertEquals(task11.getFullPath(), sums11.getTask().getFullPath());
+		assertNotNull(sums11.getContributionsSums());
+		assertFalse(sums11.isLeaf());
+		
+		// Check leaf tasks
+		subTasksSums = getModelMgr().getSubTasksSums(task11, null, null);
+		assertEquals(2, subTasksSums.size());
+		TaskSums sums111 = subTasksSums.get(0);
+		assertNotNull(sums111.getTask());
+		assertEquals(task111.getFullPath(), sums111.getTask().getFullPath());
+		assertNotNull(sums111.getContributionsSums());
+		assertTrue(sums111.isLeaf());
+		TaskSums sums112 = subTasksSums.get(1);
+		assertNotNull(sums112.getTask());
+		assertEquals(task112.getFullPath(), sums112.getTask().getFullPath());
+		assertNotNull(sums112.getContributionsSums());
+		assertTrue(sums112.isLeaf());
+
+		// Suppression des taches de test
+		removeSampleTasks();
+	}
+
 	public void testTasksSum() throws ModelException {
 		// Création des taches de test
 		createSampleTasks();
 
+		// Check leaf task
+		TaskSums leafTaskSums = getModelMgr().getTaskSums(task111, null, null);
+		assertTrue(leafTaskSums.isLeaf());
+		
 		// Récupération des sommes (sans critère de date)
 		TaskSums taskSums = getModelMgr().getTaskSums(rootTask, null, null);
+		assertFalse(taskSums.isLeaf());
 		assertEquals(
 				task111.getBudget()
 					+ task112.getBudget()
@@ -322,10 +359,9 @@ public class TaskTest extends AbstractModelTestCase {
 					+ task112.getTodo()
 					+ task2.getTodo(),
 				taskSums.getTodoSum());
-		
 		assertEquals(
 				0,
-				taskSums.getContributionsNb());
+				taskSums.getContributionsSums().getContributionsNb());
 
 		// Préparation de dates
 		GregorianCalendar today = new GregorianCalendar();
@@ -354,21 +390,21 @@ public class TaskTest extends AbstractModelTestCase {
 		
 		// Calcul du consommé sur une période allant d'aujour'hui à aujourd'hui
 		taskSums = getModelMgr().getTaskSums(rootTask, today, today);
-		assertEquals(100, taskSums.getConsumedSum());
-		assertEquals(1, taskSums.getContributionsNb());
+		assertEquals(100, taskSums.getContributionsSums().getConsumedSum());
+		assertEquals(1, taskSums.getContributionsSums().getContributionsNb());
 		
 		// Calcul du consommé & RAF sur une période allant d'hier à aujourd'hui
 		taskSums = getModelMgr().getTaskSums(rootTask, yesterday, today);
-		assertEquals(200, taskSums.getConsumedSum());
-		assertEquals(2, taskSums.getContributionsNb());
+		assertEquals(200, taskSums.getContributionsSums().getConsumedSum());
+		assertEquals(2, taskSums.getContributionsSums().getContributionsNb());
 		assertEquals(task111.getTodo() 
 				+ task112.getTodo() 
 				+ task2.getTodo(), taskSums.getTodoSum());
 		
 		// Calcul du consommé & RAF sur une période allant jusqu'à hier
 		taskSums = getModelMgr().getTaskSums(rootTask, null, yesterday);
-		assertEquals(100, taskSums.getConsumedSum());
-		assertEquals(1, taskSums.getContributionsNb());
+		assertEquals(100, taskSums.getContributionsSums().getConsumedSum());
+		assertEquals(1, taskSums.getContributionsSums().getContributionsNb());
 		assertEquals(task111.getTodo() 
 				+ task112.getTodo() 
 				+ task2.getTodo() 
@@ -376,8 +412,8 @@ public class TaskTest extends AbstractModelTestCase {
 		
 		// Calcul du consommé & RAF sur une période débutant demain
 		taskSums = getModelMgr().getTaskSums(rootTask, tomorrow, null);
-		assertEquals(0, taskSums.getConsumedSum());
-		assertEquals(0, taskSums.getContributionsNb());
+		assertEquals(0, taskSums.getContributionsSums().getConsumedSum());
+		assertEquals(0, taskSums.getContributionsSums().getContributionsNb());
 		assertEquals(task111.getTodo() 
 				+ task112.getTodo() 
 				+ task2.getTodo(), taskSums.getTodoSum());

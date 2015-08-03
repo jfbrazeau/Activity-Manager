@@ -27,10 +27,15 @@
  */
 package org.activitymgr.core.dto.misc;
 
+import org.activitymgr.core.dto.Task;
+
 /**
  * Sommes associées à une tache et ses sous-taches.
  */
 public class TaskSums {
+	
+	/** The task */
+	private Task task;
 
 	/** Somme des budgets */
 	private long budgetSum;
@@ -40,13 +45,28 @@ public class TaskSums {
 
 	/** Somme des reste à faire */
 	private long todoSum;
+	
+	/** Tells wether this task is a leaf task */
+	private boolean isLeaf;
 
-	/** Somme des consommés */
-	private long consumedSum;
+	/** Task contributions sums */
+	private TaskContributionsSums contributionsSums;
 
-	/** Nombre de contributions */
-	private long contributionsNb;
-
+	/**
+	 * @return the task.
+	 */
+	public Task getTask() {
+		return task;
+	}
+	
+	/**
+	 * Sets the task.
+	 * @param task the new task.
+	 */
+	public void setTask(Task task) {
+		this.task = task;
+	}
+	
 	/**
 	 * @return la somme des bugets.
 	 */
@@ -99,39 +119,47 @@ public class TaskSums {
 	}
 
 	/**
-	 * @return la somme des consommés.
+	 * @return the contributions sums.
 	 */
-	public long getConsumedSum() {
-		return consumedSum;
+	public TaskContributionsSums getContributionsSums() {
+		return contributionsSums;
+	}
+	
+	/**
+	 * @param contributionsSums the new contributions sums.
+	 */
+	public void setContributionsSums(TaskContributionsSums contributionsSums) {
+		this.contributionsSums = contributionsSums;
 	}
 
 	/**
-	 * Définit la somme des consommés.
-	 * 
-	 * @param consumed
-	 *            la nouvelle somme.
+	 * @param isLeaf <code>true</code> if this task is a leaf task.
 	 */
-	public void setConsumedSum(long consumed) {
-		this.consumedSum = consumed;
+	public void setLeaf(boolean isLeaf) {
+		this.isLeaf = isLeaf;
 	}
-
+	
 	/**
-	 * Retourne le nombre de contributions.
-	 * 
-	 * @return le nombre de contributions.
+	 * @return <code>true</code> if this task is a leaf task.
 	 */
-	public long getContributionsNb() {
-		return contributionsNb;
+	public boolean isLeaf() {
+		return isLeaf;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		boolean equals = false;
+		if (obj instanceof TaskSums) {
+			equals = getTask().equals(((TaskSums) obj).getTask());
+		}
+		return equals;
 	}
 
-	/**
-	 * Définit le nombre de contributions.
-	 * 
-	 * @param contributionsNb
-	 *            le nombre de contributions.
-	 */
-	public void setContributionsNb(long contributionsNb) {
-		this.contributionsNb = contributionsNb;
+	@Override
+	public String toString() {
+		return getTask().toString();
 	}
-
 }

@@ -5,14 +5,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.activitymgr.core.dao.AbstractORMDAOImpl;
 import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.dao.IContributionDAO;
+import org.activitymgr.core.dao.IntervalRequestHelper;
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Contribution;
 import org.activitymgr.core.dto.Task;
-import org.activitymgr.core.dto.misc.TaskSums;
+import org.activitymgr.core.dto.misc.TaskContributionsSums;
 import org.activitymgr.core.util.Strings;
 import org.apache.log4j.Logger;
 
@@ -39,7 +42,7 @@ public class ContributionDAOImpl extends AbstractORMDAOImpl<Contribution> implem
 			// Build the request
 			pStmt = buildContributionsRequest(task, contributor, fromDate,
 					toDate,
-					getColumnNamesRequestFragment());
+					getColumnNamesRequestFragment(null));
 
 			// Exécution de la requête
 			rs = pStmt.executeQuery();
@@ -144,104 +147,72 @@ public class ContributionDAOImpl extends AbstractORMDAOImpl<Contribution> implem
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IDbMgr#getTaskSums(org.activitymgr.core.beans.Task,
-	 * java.util.Calendar, java.util.Calendar)
-	 */
-	@Override
-	public TaskSums getTaskSums(Task task, Calendar fromDate, Calendar toDate)
+	public Map<Long, TaskContributionsSums> getTasksSums(Long taskId, String tasksPath, Calendar fromDate, Calendar toDate)
 			throws DAOException {
+		// At least one argument must be specified
+		if (taskId != null && tasksPath != null) {
+			throw new IllegalStateException("Both task Id and task path cannot be specified");
+		}
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			// Préparation du résultat
-			TaskSums taskSums = new TaskSums();
-
-			/**
-			 * Calcul de la partie indépendante des contributions (budget /
-			 * consommation initiale / reste à faire
-			 */
-			pStmt = tx()
-					.prepareStatement(
-							"select sum(tsk_budget), sum(tsk_initial_cons), sum(tsk_todo) from TASK where concat(tsk_path, tsk_number)=? or (tsk_path like ?)"); //$NON-NLS-1$
-			String path = (task == null ? "" : task.getFullPath());
-			pStmt.setString(1, path);
-			pStmt.setString(2, path
-					+ "%");
-			rs = pStmt.executeQuery();
-			if (!rs.next())
-				throw new DAOException(
-						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
-			taskSums.setBudgetSum(rs.getLong(1));
-			taskSums.setInitiallyConsumedSum(rs.getLong(2));
-			taskSums.setTodoSum(rs.getLong(3));
-			pStmt.close();
-			pStmt = null;
-
-			/**
-			 * Calcul du consommé
-			 */
-
-			// Build the request
-			pStmt = buildContributionsRequest(task, null, fromDate, toDate,
-					"sum(ctb_duration), count(ctb_duration)");
-
-			// Exécution de la requête
-			rs = pStmt.executeQuery();
-
-			// Extraction du résultat
-			if (!rs.next())
-				throw new DAOException(
-						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
-			taskSums.setConsumedSum(rs.getLong(1));
-			taskSums.setContributionsNb(rs.getLong(2));
-
-			// Fermeture du ResultSet
-			pStmt.close();
-			pStmt = null;
-
-			/**
-			 * Si un critère de date de fin a été spécifié, il faut corriger le
-			 * RAF calculé plus haut sinon on ne tient pas compte des
-			 * consommations au dela de cette date. En effet RAF à une date
-			 * donnée = RAF identifié au niveau de la tache + consommations
-			 * futures déja enregistrées dans le système
-			 */
-			if (toDate != null) {
-				// Build the request
-				Calendar date = (Calendar) toDate.clone();
-				date.add(Calendar.DATE, 1);
-				pStmt = buildContributionsRequest(task, null, date, null,
-						"sum(ctb_duration)");
-
-				// Exécution de la requête
-				rs = pStmt.executeQuery();
-
-				// Extraction du résultat
-				if (!rs.next())
-					throw new DAOException(
-							Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
-				taskSums.setTodoSum(taskSums.getTodoSum() + rs.getLong(1));
-
-				// Fermeture du ResultSet
-				pStmt.close();
-				pStmt = null;
+			Map<Long, TaskContributionsSums> result = new HashMap<Long, TaskContributionsSums>();
+			IntervalRequestHelper interval = new IntervalRequestHelper(fromDate, toDate);
+			
+			// Prepare the request
+			StringBuffer request = new StringBuffer();
+			request.append("select pt.tsk_id, sum(ctb_duration), count(ctb_duration) ");
+			request.append("from TASK pt left join (");
+			{
+				request.append("TASK lt left join CONTRIBUTION on (ctb_task=lt.tsk_id");
+				if (interval.hasIntervalCriteria()) {
+					request.append(" and ");
+					interval.appendIntervalCriteria(request);
+				}
+				request.append(")");
 			}
+			request.append(") on (pt.tsk_id=lt.tsk_id or lt.tsk_path like concat(pt.tsk_path, pt.tsk_number, '%'))");
+			request.append(" where ");
+			if (taskId != null) {
+				request.append("pt.tsk_id=?");
+			} else {
+				request.append("pt.tsk_path=?");
+			}
+			request.append(" group by pt.tsk_id");
+			request.append(" order by pt.tsk_number");
 
-			/**
-			 * Retour du résultat
-			 */
+			// Bind parameters			
+			pStmt = tx().prepareStatement(request.toString()); //$NON-NLS-1$
+			int paramIdx = 1;
+			if (interval.hasIntervalCriteria()) {
+				paramIdx = interval.bindParameters(paramIdx, pStmt);
+			}
+			if (taskId != null) {
+				pStmt.setLong(paramIdx++, taskId);
+			} else  {
+				pStmt.setString(paramIdx++, tasksPath);
+			}
+			rs = pStmt.executeQuery();
 
-			// Retour du résultat
-			return taskSums;
+			// Retrieve the result
+			while (rs.next()) {
+				TaskContributionsSums sums = new TaskContributionsSums();
+				sums.setTaskId(rs.getLong(1));
+				sums.setConsumedSum(rs.getLong(2));
+				sums.setContributionsNb(rs.getLong(3));
+				result.put(sums.getTaskId(), sums);
+			}
+			// Close the statement
+			pStmt.close();
+			pStmt = null;
+			
+			// Return the result
+			return result;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
 			throw new DAOException(
 					Strings.getString(
-							"DbMgr.errors.TASK_SUMS_COMPUTATION_FAILURE", new Long(task.getId())), e); //$NON-NLS-1$ //$NON-NLS-2$
+							"DbMgr.errors.TASK_SUMS_COMPUTATION_FAILURE", taskId != null ? taskId : tasksPath), e); //$NON-NLS-1$ //$NON-NLS-2$
 		} finally {
 			try {
 				if (pStmt != null)
@@ -250,7 +221,6 @@ public class ContributionDAOImpl extends AbstractORMDAOImpl<Contribution> implem
 			}
 		}
 	}
-
 	/**
 	 * Builds a request that selects contributions using a given task,
 	 * contributor and date interval.

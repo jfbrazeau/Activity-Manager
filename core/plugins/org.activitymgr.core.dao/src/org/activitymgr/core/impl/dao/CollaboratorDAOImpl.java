@@ -32,7 +32,7 @@ public class CollaboratorDAOImpl extends AbstractORMDAOImpl<Collaborator> implem
 			// Préparation de la requête
 			StringBuffer request = new StringBuffer();
 			request.append("select distinct (ctb_contributor), ");
-			request.append(getColumnNamesRequestFragment());
+			request.append(getColumnNamesRequestFragment(null));
 			request.append(" from CONTRIBUTION, COLLABORATOR");
 			if (task != null) {
 				request.append(", TASK");
