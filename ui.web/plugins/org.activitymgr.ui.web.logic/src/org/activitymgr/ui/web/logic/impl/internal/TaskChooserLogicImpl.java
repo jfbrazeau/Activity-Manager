@@ -101,38 +101,40 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 			getView().setRecentTasksProviderCallback(recentTaskCallback);
 
 			IConfigurationElement[] creationPatternCfgs = getCreationPatternCfgs();
-			final List<String> creationPatternIds = new ArrayList<String>();
-			final Map<String, String> creationPatternsLabels = new HashMap<String, String>();
-			// Add non pattern
-			creationPatternIds.add(NONE_PATTERN_ID);
-			creationPatternsLabels.put(NONE_PATTERN_ID, NONE_PATTERN_LABEL);
-			for (IConfigurationElement creationPatternCfg : creationPatternCfgs) {
-				String id = creationPatternCfg.getAttribute("id");
-				creationPatternsLabels.put(id, creationPatternCfg.getAttribute("label"));
-				creationPatternIds.add(id);
+			if (creationPatternCfgs.length > 0) {
+				final List<String> creationPatternIds = new ArrayList<String>();
+				final Map<String, String> creationPatternsLabels = new HashMap<String, String>();
+				// Add non pattern
+				creationPatternIds.add(NONE_PATTERN_ID);
+				creationPatternsLabels.put(NONE_PATTERN_ID, NONE_PATTERN_LABEL);
+				for (IConfigurationElement creationPatternCfg : creationPatternCfgs) {
+					String id = creationPatternCfg.getAttribute("id");
+					creationPatternsLabels.put(id, creationPatternCfg.getAttribute("label"));
+					creationPatternIds.add(id);
+				}
+				ITableCellProviderCallback<String> creationPatternsCallback = new AbstractSafeTableCellProviderCallback<String>(this, getContext()) {
+					private final Collection<String> PROPERTY_IDS = Arrays.asList(new String[] { TaskTreeContentProvider.NAME_PROPERTY_ID });
+					@Override
+					protected Collection<String> unsafeGetRootElements() throws Exception {
+						return creationPatternIds;
+					}
+					@Override
+					protected IView<?> unsafeGetCell(
+							String patternId, String propertyId) throws Exception {
+						return new LabelLogicImpl((AbstractLogicImpl<?>) getSource(), creationPatternsLabels.get(patternId)).getView();
+					}
+					@Override
+					protected Collection<String> unsafeGetPropertyIds() {
+						return PROPERTY_IDS;
+					}
+					@Override
+					protected boolean unsafeContains(String patternId) {
+						return creationPatternIds.contains(patternId);
+					}
+				};
+				getView().setCreationPatternProviderCallback(creationPatternsCallback);
 			}
-			ITableCellProviderCallback<String> creationPatternsCallback = new AbstractSafeTableCellProviderCallback<String>(this, getContext()) {
-				private final Collection<String> PROPERTY_IDS = Arrays.asList(new String[] { TaskTreeContentProvider.NAME_PROPERTY_ID });
-				@Override
-				protected Collection<String> unsafeGetRootElements() throws Exception {
-					return creationPatternIds;
-				}
-				@Override
-				protected IView<?> unsafeGetCell(
-						String patternId, String propertyId) throws Exception {
-					return new LabelLogicImpl((AbstractLogicImpl<?>) getSource(), creationPatternsLabels.get(patternId)).getView();
-				}
-				@Override
-				protected Collection<String> unsafeGetPropertyIds() {
-					return PROPERTY_IDS;
-				}
-				@Override
-				protected boolean unsafeContains(String patternId) {
-					return creationPatternIds.contains(patternId);
-				}
-			};
-			getView().setCreationPatternProviderCallback(creationPatternsCallback);
-			
+
 			// Reset button state & status label
 			onSelectionChanged(-1);
 		
@@ -240,7 +242,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 
  				// Task creation pattern management
 				String patternId = getView().getSelectedTaskCreationPatternId();
-				if (!NONE_PATTERN_ID.equals(patternId)) {
+				if (patternId != null && !NONE_PATTERN_ID.equals(patternId)) {
 					IConfigurationElement[] creationPatternCfgs = getCreationPatternCfgs();
 					ITaskCreationPatternHandler patternHandler = null;
 					for (IConfigurationElement cfg : creationPatternCfgs) {

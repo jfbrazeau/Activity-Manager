@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.dto.misc.TaskSums;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.ILogic;
@@ -64,30 +65,30 @@ class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<
 	@Override
 	protected IView<?> unsafeGetCell(Long taskId, String propertyId)
 			throws Exception {
-		final Task task = modelMgr.getTask(taskId);
+		final TaskSums task = modelMgr.getTaskSums(taskId, null, null);
 		if (NAME_PROPERTY_ID.equals(propertyId)) {
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), task.getName()).getView();
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), task.getTask().getName()).getView();
 		}
 		else if (CODE_PROPERTY_ID.equals(propertyId)) {
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), task.getCode()).getView();
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), task.getTask().getCode()).getView();
 		}
 		else if (BUDGET_PROPERTY_ID.equals(propertyId)) {
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(task.getBudget())).getView();
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(task.getBudgetSum())).getView();
 		}
 		else if (INITIAL_PROPERTY_ID.equals(propertyId)) {
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(task.getInitiallyConsumed())).getView();
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(task.getInitiallyConsumedSum())).getView();
 		}
 		else if (COSUMMED_PROPERTY_ID.equals(propertyId)) {
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(1234)).getView();
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(task.getContributionsSums().getConsumedSum())).getView();
 		}
 		else if (ETC_PROPERTY_ID.equals(propertyId)) {
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(task.getTodo())).getView();
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(task.getTodoSum())).getView();
 		}
 		else if (DELTA_PROPERTY_ID.equals(propertyId)) {
 			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(4321)).getView();
 		}
 		else if (COMMENT_PROPERTY_ID.equals(propertyId)) {
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), task.getComment()).getView();
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), task.getTask().getComment()).getView();
 		}
 		else {
 			throw new IllegalArgumentException(propertyId);

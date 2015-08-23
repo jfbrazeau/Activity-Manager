@@ -9,6 +9,7 @@
    <extension-point id="org.activitymgr.ui.web.logic.viewbinding" name="Activity Manager UI View Binding" schema="schema/org.activitymgr.ui.web.logic.viewbinding.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.contributionsCellLogicFactory" name="Activity Manager Contributions Cell Logic Factory" schema="schema/org.activitymgr.ui.web.logic.contributionsCellLogicFactory.exsd"/>
    <extension-point id="org.activitymgr.ui.web.logic.collaboratorsCellLogicFactory" name="Activity Manager Collaborators Cell Logic Factory" schema="schema/org.activitymgr.ui.web.logic.collaboratorsCellLogicFactory.exsd"/>
+   <extension-point id="org.activitymgr.ui.web.logic.taskCreationPatternHandler" name="Task Creation Pattern Handler" schema="schema/org.activitymgr.ui.web.logic.taskCreationPatternHandler.exsd"/>
    <extension
          point="org.activitymgr.ui.web.logic.button">
       <button

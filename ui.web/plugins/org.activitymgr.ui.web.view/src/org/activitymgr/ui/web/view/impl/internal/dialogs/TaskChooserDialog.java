@@ -97,6 +97,7 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
         newSubTaskCreationPatternField.setNullSelectionAllowed(false);
         newSubTaskCreationPatternField.setImmediate(true);
         newSubTaskCreationPatternField.setTextInputAllowed(false);
+        newSubTaskCreationPatternField.setVisible(false); // Hidden by default
         newTaskFormPanel.addComponent(newSubTaskCreationPatternField);
 
         // Buttons
@@ -172,6 +173,7 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
     @Override
     public void setCreationPatternProviderCallback(
     		ITableCellProviderCallback<String> callback) {
+    	newSubTaskCreationPatternField.setVisible(true);
     	TableDatasource<String> datasource = new TableDatasource<String>(getResourceCache(), callback);
     	newSubTaskCreationPatternField.setContainerDataSource(datasource);
     	newSubTaskCreationPatternField.setItemCaptionPropertyId(callback.getPropertyIds().iterator().next());
