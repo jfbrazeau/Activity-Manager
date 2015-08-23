@@ -1325,23 +1325,13 @@ public class ModelMgrImpl implements IModelMgr, IPostInjectionListener {
 		return tasks;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.activitymgr.core.IModelMgr#getTaskSums(org.activitymgr.core.beans
-	 * .Task, java.util.Calendar, java.util.Calendar)
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.model.IModelMgr#getTaskSums(long, java.util.Calendar, java.util.Calendar)
 	 */
 	@Override
-	public TaskSums getTaskSums(Task task, Calendar fromDate, Calendar toDate)
+	public TaskSums getTaskSums(long taskId, Calendar fromDate, Calendar toDate)
 			throws ModelException {
-		// Vérification de la tache (le chemin de la tache doit être le bon
-		// pour que le calcul le soit)
-		if (task != null)
-			checkTaskPath(task);
-		
-		// Retour du résultat
-		return getSubTasksSums(task.getId(), null, fromDate, toDate).get(0);
+		return getSubTasksSums(taskId, null, fromDate, toDate).get(0);
 	}
 
 	

@@ -467,8 +467,8 @@ public interface IModelMgr {
 	Task[] getTasksByCodePath(String[] codePaths) throws ModelException;
 
 	/**
-	 * @param task
-	 *            la tâche pour laquelle on souhaite connaître les totaux.
+	 * @param taskId
+	 *            l'identifiant de la tâche pour laquelle on souhaite connaître les totaux.
 	 * @param fromDate
 	 *            date de départ à prendre en compte pour le calcul.
 	 * @param toDate
@@ -478,7 +478,7 @@ public interface IModelMgr {
 	 *             levé dans le cas ou le chemin ou le numéro de la tache en
 	 *             base ne sont pas ceux de la tache spécifiée.
 	 */
-	TaskSums getTaskSums(Task task, Calendar fromDate, Calendar toDate)
+	TaskSums getTaskSums(long taskId, Calendar fromDate, Calendar toDate)
 			throws ModelException;
 
 	/**

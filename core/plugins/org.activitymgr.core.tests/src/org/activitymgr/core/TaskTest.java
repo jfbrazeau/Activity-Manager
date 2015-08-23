@@ -338,11 +338,11 @@ public class TaskTest extends AbstractModelTestCase {
 		createSampleTasks();
 
 		// Check leaf task
-		TaskSums leafTaskSums = getModelMgr().getTaskSums(task111, null, null);
+		TaskSums leafTaskSums = getModelMgr().getTaskSums(task111.getId(), null, null);
 		assertTrue(leafTaskSums.isLeaf());
 		
 		// Récupération des sommes (sans critère de date)
-		TaskSums taskSums = getModelMgr().getTaskSums(rootTask, null, null);
+		TaskSums taskSums = getModelMgr().getTaskSums(rootTask.getId(), null, null);
 		assertFalse(taskSums.isLeaf());
 		assertEquals(
 				task111.getBudget()
@@ -389,12 +389,12 @@ public class TaskTest extends AbstractModelTestCase {
 		getModelMgr().createContribution(c2, false);
 		
 		// Calcul du consommé sur une période allant d'aujour'hui à aujourd'hui
-		taskSums = getModelMgr().getTaskSums(rootTask, today, today);
+		taskSums = getModelMgr().getTaskSums(rootTask.getId(), today, today);
 		assertEquals(100, taskSums.getContributionsSums().getConsumedSum());
 		assertEquals(1, taskSums.getContributionsSums().getContributionsNb());
 		
 		// Calcul du consommé & RAF sur une période allant d'hier à aujourd'hui
-		taskSums = getModelMgr().getTaskSums(rootTask, yesterday, today);
+		taskSums = getModelMgr().getTaskSums(rootTask.getId(), yesterday, today);
 		assertEquals(200, taskSums.getContributionsSums().getConsumedSum());
 		assertEquals(2, taskSums.getContributionsSums().getContributionsNb());
 		assertEquals(task111.getTodo() 
@@ -402,7 +402,7 @@ public class TaskTest extends AbstractModelTestCase {
 				+ task2.getTodo(), taskSums.getTodoSum());
 		
 		// Calcul du consommé & RAF sur une période allant jusqu'à hier
-		taskSums = getModelMgr().getTaskSums(rootTask, null, yesterday);
+		taskSums = getModelMgr().getTaskSums(rootTask.getId(), null, yesterday);
 		assertEquals(100, taskSums.getContributionsSums().getConsumedSum());
 		assertEquals(1, taskSums.getContributionsSums().getContributionsNb());
 		assertEquals(task111.getTodo() 
@@ -411,7 +411,7 @@ public class TaskTest extends AbstractModelTestCase {
 				+ c2.getDurationId(), taskSums.getTodoSum());
 		
 		// Calcul du consommé & RAF sur une période débutant demain
-		taskSums = getModelMgr().getTaskSums(rootTask, tomorrow, null);
+		taskSums = getModelMgr().getTaskSums(rootTask.getId(), tomorrow, null);
 		assertEquals(0, taskSums.getContributionsSums().getConsumedSum());
 		assertEquals(0, taskSums.getContributionsSums().getContributionsNb());
 		assertEquals(task111.getTodo() 

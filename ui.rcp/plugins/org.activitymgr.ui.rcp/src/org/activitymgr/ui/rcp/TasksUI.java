@@ -244,7 +244,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 							}
 						}
 						if (selectedElement == null) {
-							selectedElement = modelMgr.getTaskSums(selectedTask, null, null);
+							selectedElement = modelMgr.getTaskSums(selectedTask.getId(), null, null);
 						}
 						return selectedElement;
 					}
@@ -636,7 +636,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		TreeItem cursor = item;
 		while (cursor != null) {
 			TaskSums taskCursor = (TaskSums) cursor.getData();
-			TaskSums newTaskSums = modelMgr.getTaskSums(taskCursor.getTask(), null, null);
+			TaskSums newTaskSums = modelMgr.getTaskSums(taskCursor.getTask().getId(), null, null);
 			cursor.setData(newTaskSums);
 			log.debug("Update task " + newTaskSums.getTask().getName()); //$NON-NLS-1$
 			list.add(0, newTaskSums);
@@ -694,7 +694,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				Task parentTask = modelMgr.getParentTask(sums.getTask());
-				return parentTask == null ? treeViewer.getInput() : modelMgr.getTaskSums(parentTask, null, null);
+				return parentTask == null ? treeViewer.getInput() : modelMgr.getTaskSums(parentTask.getId(), null, null);
 			}
 		};
 		// Exécution du traitement
