@@ -23,15 +23,17 @@ import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTableCellProviderCallback;
 import org.activitymgr.ui.web.logic.impl.ContributionsCellLogicFatory;
-import org.activitymgr.ui.web.logic.impl.LogicContext;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.inject.Inject;
 
 class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCallback<Long> {
 	
+	@Inject
 	private IModelMgr modelMgr;
+	
 	private Map<Long, TaskContributions> contributionsMap = new HashMap<Long, TaskContributions>();
 	private List<Long> taskIds = new ArrayList<Long>();
 	private Collection<Long> unmodifiableTaskIds = Collections.unmodifiableCollection(taskIds);
@@ -39,11 +41,10 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 	private Collaborator contributor;
 	private ContributionsCellLogicFatory cellLogicFactory;
 
-	public ContributionsListTableCellProvider(AbstractContributionTabLogicImpl source, LogicContext context) {
-		super(source, context);
-		this.modelMgr = context.getComponent(IModelMgr.class);
-		this.contributor = context.getConnectedCollaborator();
-		this.cellLogicFactory = context.getSingletonExtension("org.activitymgr.ui.web.logic.contributionsCellLogicFactory", ContributionsCellLogicFatory.class, AbstractContributionTabLogicImpl.class, source);
+	public ContributionsListTableCellProvider(AbstractContributionTabLogicImpl source) {
+		super(source);
+		this.contributor = getContext().getConnectedCollaborator();
+		this.cellLogicFactory = getContext().getSingletonExtension("org.activitymgr.ui.web.logic.contributionsCellLogicFactory", ContributionsCellLogicFatory.class, AbstractContributionTabLogicImpl.class, source);
 	}
 
 	private LoadingCache<Long, LoadingCache<String, ILogic<?>>> cellLogics = CacheBuilder.newBuilder().build(new CacheLoader<Long, LoadingCache<String, ILogic<?>>>() {

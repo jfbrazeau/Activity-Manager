@@ -13,7 +13,8 @@ Require-Bundle: org.eclipse.osgi,
  com.google.guava
 Export-Package: org.activitymgr.ui.web.logic,
  org.activitymgr.ui.web.logic.impl,
- org.activitymgr.ui.web.logic.impl.event
+ org.activitymgr.ui.web.logic.impl.event,
+ org.activitymgr.ui.web.logic.spi
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.activitymgr.ui.web.logic.impl.internal.Activator
 Bundle-ClassPath: .

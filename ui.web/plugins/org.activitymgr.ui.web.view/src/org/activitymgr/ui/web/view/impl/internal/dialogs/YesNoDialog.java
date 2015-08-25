@@ -1,7 +1,6 @@
 package org.activitymgr.ui.web.view.impl.internal.dialogs;
 
 import org.activitymgr.ui.web.logic.IGenericCallback;
-import org.activitymgr.ui.web.view.IResourceCache;
 
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -17,8 +16,8 @@ public class YesNoDialog extends AbstractDialog implements Button.ClickListener 
 	private Button yes = new Button("Yes", this);
 	private Button no = new Button("No", this);
 
-	public YesNoDialog(IResourceCache resourceCache, String caption, String question, IGenericCallback<Boolean> callback) {
-        super(resourceCache, caption);
+	public YesNoDialog(String caption, String question, IGenericCallback<Boolean> callback) {
+        super(caption);
 
         setModal(true);
 

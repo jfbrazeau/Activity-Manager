@@ -9,6 +9,7 @@ import org.activitymgr.ui.web.logic.ITabLogic;
 import org.activitymgr.ui.web.view.impl.internal.util.ButtonView;
 import org.activitymgr.ui.web.view.impl.internal.util.DownloadButtonView;
 
+import com.google.inject.Inject;
 import com.vaadin.event.Action;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.ui.Button;
@@ -19,14 +20,14 @@ import com.vaadin.ui.VerticalLayout;
 @SuppressWarnings("serial")
 public abstract class AbstractTabPanel<LOGIC extends ITabLogic<?>> extends VerticalLayout implements ITabLogic.View<LOGIC>{
 
+	@Inject
 	private IResourceCache resourceCache;
 	private LOGIC logic;
 	private VerticalLayout actionsContainer;
 	private List<ShortcutListener> actions = new ArrayList<ShortcutListener>();
 	private Component bodyComponent;
 
-	public AbstractTabPanel(IResourceCache resourceCache) {
-		this.resourceCache = resourceCache;
+	public AbstractTabPanel() {
 		setSpacing(true);
 		setMargin(true);
 		

@@ -2,7 +2,6 @@ package org.activitymgr.ui.web.view.impl.internal.util;
 
 import org.activitymgr.ui.web.logic.ICheckBoxFieldLogic;
 import org.activitymgr.ui.web.logic.ICheckBoxFieldLogic.View;
-import org.activitymgr.ui.web.view.IResourceCache;
 
 import com.vaadin.data.Property;
 import com.vaadin.ui.CheckBox;
@@ -12,7 +11,7 @@ public class CheckBoxView extends CheckBox implements View {
 
 	private ICheckBoxFieldLogic logic;
 
-	public CheckBoxView(IResourceCache resourceCache) {
+	public CheckBoxView() {
 		addValueChangeListener(new Property.ValueChangeListener() {
 			@Override
 			public void valueChange(Property.ValueChangeEvent event) {

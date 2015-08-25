@@ -9,7 +9,6 @@ import java.util.GregorianCalendar;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.view.AbstractTabPanel;
-import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
 
 import com.vaadin.data.Property;
@@ -51,10 +50,6 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 	private Table collaboratorsTable;
 
 	private ITableCellProviderCallback<Long> contributionsProvider;
-
-	public ContributionsPanel(IResourceCache resourceCache) {
-		super(resourceCache);
-	}
 
 	@Override
 	protected Component createHeaderComponent() {

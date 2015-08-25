@@ -8,8 +8,8 @@ import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 
 public abstract class AbstractSafeTreeTableCellProviderCallback<TYPE> extends AbstractSafeTableCellProviderCallback<TYPE> implements ITreeContentProviderCallback<TYPE> {
 	
-	public AbstractSafeTreeTableCellProviderCallback(ILogic<?> source, LogicContext context) {
-		super(source, context);
+	public AbstractSafeTreeTableCellProviderCallback(ILogic<?> source) {
+		super(source);
 	}
 
 	@Override

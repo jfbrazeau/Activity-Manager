@@ -60,7 +60,6 @@ import org.activitymgr.core.dto.misc.TaskContributions;
 import org.activitymgr.core.dto.misc.TaskContributionsSums;
 import org.activitymgr.core.dto.misc.TaskSearchFilter;
 import org.activitymgr.core.dto.misc.TaskSums;
-import org.activitymgr.core.model.CoreModelModule.IPostInjectionListener;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.model.impl.XmlHelper.ModelMgrDelegate;
@@ -85,7 +84,7 @@ import com.google.inject.Inject;
  * Les services offerts par cette classe garantissent l'intégrité du modèle.
  * </p>
  */
-public class ModelMgrImpl implements IModelMgr, IPostInjectionListener {
+public class ModelMgrImpl implements IModelMgr {
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(ModelMgrImpl.class);
@@ -113,23 +112,6 @@ public class ModelMgrImpl implements IModelMgr, IPostInjectionListener {
 	/** Bean factory */
 	@Inject
 	private IDTOFactory factory;
-
-	/* (non-Javadoc)
-	 * @see org.activitymgr.core.IInjectListener#afterInjection()
-	 */
-	@Override
-	public void afterInjection() {
-		// Initializes the database if required
-		if (!dao.tablesExist()) {
-			// Create default tables
-			dao.createTables();
-			// Create default durations
-			durationDAO.createDuration(25);
-			durationDAO.createDuration(50);
-			durationDAO.createDuration(75);
-			durationDAO.createDuration(100);
-		}
-	}
 
 	/*
 	 * (non-Javadoc)

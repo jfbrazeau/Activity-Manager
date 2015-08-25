@@ -9,6 +9,8 @@ import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.ui.web.logic.ILogic;
 
+import com.google.inject.Inject;
+
 public class CollaboratorsCellLogicFatory {
 
 	public static final String IS_ACTIVE_PROPERTY_NAME_ID = "IS_ACTIVE";
@@ -20,14 +22,17 @@ public class CollaboratorsCellLogicFatory {
 			IS_ACTIVE_PROPERTY_NAME_ID, LOGIN_PROPERTY_ID,
 			FIRST_PROPERTY_NAME_ID, LAST_PROPERTY_NAME_ID });
 
+	@Inject
 	private IModelMgr modelMgr;
-	private AbstractLogicImpl<?> parentLogic;
-	private LogicContext context;
 
-	public CollaboratorsCellLogicFatory(AbstractLogicImpl<?> parentLogic, LogicContext context) {
+	private AbstractLogicImpl<?> parentLogic;
+
+	@Inject
+	private ILogicContext context;
+
+	public CollaboratorsCellLogicFatory(AbstractLogicImpl<?> parentLogic) {
 		this.parentLogic = parentLogic;
-		this.context = context;
-		this.modelMgr = context.getComponent(IModelMgr.class);
+		parentLogic.injectMembers(this);
 	}
 
 	public ILogic<?> createCellLogic(final Collaborator collaborator, String propertyId, boolean readonly) {
@@ -100,7 +105,7 @@ public class CollaboratorsCellLogicFatory {
 		return PROPERTY_IDS;
 	}
 
-	protected LogicContext getContext() {
+	protected ILogicContext getContext() {
 		return context;
 	}
 

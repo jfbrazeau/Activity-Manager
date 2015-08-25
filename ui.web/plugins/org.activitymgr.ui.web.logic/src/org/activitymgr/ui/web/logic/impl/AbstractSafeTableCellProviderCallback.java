@@ -9,8 +9,8 @@ import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 
 public abstract class AbstractSafeTableCellProviderCallback<TYPE> extends AbstractSafeCallback implements ITableCellProviderCallback<TYPE> {
 	
-	public AbstractSafeTableCellProviderCallback(ILogic<?> source, LogicContext context) {
-		super(source, context);
+	public AbstractSafeTableCellProviderCallback(ILogic<?> source) {
+		super(source);
 	}
 
 	@Override

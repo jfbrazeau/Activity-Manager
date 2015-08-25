@@ -1,88 +1,71 @@
 package org.activitymgr.ui.web.logic.impl;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.IRootLogic;
-import org.activitymgr.ui.web.logic.impl.internal.Activator;
+import org.activitymgr.ui.web.logic.ITransactionalWrapperBuilder;
 import org.activitymgr.ui.web.logic.impl.internal.RootLogicImpl;
-import org.eclipse.core.runtime.IConfigurationElement;
+
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 
 
 @SuppressWarnings("rawtypes")
-public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements ILogic<VIEW> {
+public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements ILogic<VIEW>, ITransactionalWrapperBuilder {
 
-	private LogicContext context;
+	@Inject
+	private Injector injector;
+	
+	@Inject
+	private IEventBus eventBus;
+	
+	@Inject
+	private ITransactionalWrapperBuilder twBuilder;
+
+	@Inject
+	private IModelMgr modelMgr;
+	
+	@Inject
+	private ILogicContext context;
+	
 	private ILogic<?> parent;
 
 	private VIEW view;
 
-	protected AbstractLogicImpl(AbstractLogicImpl<?> parent) {
-		this(parent, parent.getContext());
-	}
-
 	@SuppressWarnings("unchecked")
-	protected AbstractLogicImpl(ILogic<?> parent, LogicContext context) {
+	protected AbstractLogicImpl(ILogic<?> parent) {
 		this.parent = parent;
-		this.context = context;
+		
+		// Perform injection
+		parent.injectMembers(this);
+		
 		// Create transactional wrapper
 		Class<? extends ILogic<?>> iLogicInterface = getILogicInterfaces(getClass());
-		ILogic<VIEW> transactionalWrapper = context.buildTransactionalWrapper(this, iLogicInterface);
 		// Create the view and bind the logic to it
-		Class<VIEW> viewClass = null;
-		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.viewbinding");
-		List<IConfigurationElement> cfgList = new ArrayList<IConfigurationElement>(Arrays.asList(cfgs));
-		try {
-			for (IConfigurationElement cfg : cfgList) {
-				if (iLogicInterface.getName().equals(cfg.getAttribute("logic"))) {
-					viewClass = Activator.getDefault().<VIEW>loadClass(cfg.getContributor().getName(), cfg.getAttribute("view"));
-					break;
-				}
+		Class<VIEW> viewInterface = null;
+		for (Class<?> aClass : iLogicInterface.getDeclaredClasses()) {
+			if ("View".equals(aClass.getSimpleName()) && aClass.isInterface()) {
+				viewInterface = (Class<VIEW>) aClass;
+				break;
 			}
-			if (viewClass == null) {
-				throw new IllegalStateException("Unknown view implementation for " + iLogicInterface.getName());
-			}
-			Constructor<VIEW> viewConsructor = viewClass.getDeclaredConstructor(context.getViewDescriptor().getConstructorArgTypes());
-			view = viewConsructor.newInstance(context.getViewDescriptor().getConstructorArgs());
-			view.registerLogic(transactionalWrapper);
 		}
-		catch (NoSuchMethodException e) {
-			throw new IllegalStateException(e);
-		} catch (IllegalArgumentException e) {
-			throw new IllegalStateException(e);
-		} catch (InstantiationException e) {
-			throw new IllegalStateException(e);
-		} catch (IllegalAccessException e) {
-			throw new IllegalStateException(e);
-		} catch (InvocationTargetException e) {
-			throw new IllegalStateException(e);
-		} catch (ClassNotFoundException e) {
-			throw new IllegalStateException(e);
+		if (viewInterface == null) {
+			throw new IllegalStateException(iLogicInterface.getSimpleName() + " does not seem to have a nested View interface");
 		}
+		// Create the view
+		view = injector.getInstance(viewInterface);
+		
+		// Register the logic into the view
+		ILogic<VIEW> transactionalWrapper = twBuilder.buildTransactionalWrapper(this, iLogicInterface);
+		view.registerLogic(transactionalWrapper);
+		
 	}
 
 	public VIEW getView() {
 		return view;
 	}
 
-	public LogicContext getContext() {
-		return context;
-	}
-	
-	protected IEventBus getEventBus() {
-		return context != null ? context.getEventBus() : null;
-	}
-	
-	protected IModelMgr getModelMgr() {
-		return context != null ? context.getComponent(IModelMgr.class) : null;
-	}
-	
 	public ILogic<?> getParent() {
 		return parent;
 	}
@@ -113,6 +96,27 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 			};
 		}
 		return result;
+	}
+
+	public <T> T injectMembers(T instance) {
+		injector.injectMembers(instance);
+		return instance;
+	}
+
+	protected IEventBus getEventBus() {
+		return eventBus;
+	}
+	
+	protected IModelMgr getModelMgr() {
+		return modelMgr;
+	}
+
+	protected ILogicContext getContext() {
+		return context;
+	}
+
+	public <T> T buildTransactionalWrapper(final T wrapped, final Class<?> interfaceToWrapp) {
+		return twBuilder.buildTransactionalWrapper(wrapped, interfaceToWrapp);
 	}
 
 }

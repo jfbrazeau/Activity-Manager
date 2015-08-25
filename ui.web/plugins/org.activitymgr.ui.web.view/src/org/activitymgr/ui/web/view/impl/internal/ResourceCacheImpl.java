@@ -5,9 +5,11 @@ import java.util.Map;
 
 import org.activitymgr.ui.web.view.IResourceCache;
 
+import com.google.inject.Singleton;
 import com.vaadin.server.Resource;
 import com.vaadin.server.ThemeResource;
 
+@Singleton
 public class ResourceCacheImpl implements IResourceCache {
 	
 	public static final String ONE_PIXEL_ICON = "one-pixel.gif";

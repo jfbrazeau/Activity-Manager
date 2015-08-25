@@ -5,42 +5,24 @@ import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
-import org.activitymgr.ui.web.logic.impl.IAuthenticatorExtension;
-import org.activitymgr.ui.web.logic.impl.LogicContext;
+import org.activitymgr.ui.web.logic.impl.ILogicContext;
 import org.activitymgr.ui.web.logic.impl.event.ConnectedCollaboratorEvent;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
+import org.activitymgr.ui.web.logic.spi.IAuthenticatorExtension;
+
+import com.google.inject.Inject;
 
 public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLogic.View> implements IAuthenticationLogic {
 	
 	private static final String NAME_COOKIE = "name";
 
+	@Inject(optional = true)
 	private IAuthenticatorExtension authenticator;
 	
-	public AuthenticationLogicImpl(ILogic<?> parent, LogicContext context) {
-		super(parent, context);
-		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.authenticator");
-
+	public AuthenticationLogicImpl(ILogic<?> parent) {
+		super(parent);
 		// Authenticator retrieval
-		if (cfgs.length == 0) {
-			authenticator = new DefaultAuthenticator(this, getContext().getComponent(IModelMgr.class));
-		}
-		else {
-			if (cfgs.length > 1) {
-				System.err.println(
-						"More than one authenticator is provided.\n" +
-						"Only one authenticator implementation is allowed");
-			}
-			IConfigurationElement cfg = cfgs[0];
-			try {
-				authenticator = (IAuthenticatorExtension) cfg.createExecutableExtension("class");
-			}
-			catch (CoreException e) {
-				// If an error occurs, a null authenticator is instantiated
-				// Nobody will be able to authenticate
-				handleError(e);
-				authenticator = new NullAuthenticator();
-			}
+		if (authenticator == null) {
+			authenticator = injectMembers(new DefaultAuthenticator(this));
 		}
 		// Init defaults
 		String defaultLogin = getRoot().getView().getCookie(NAME_COOKIE);
@@ -59,7 +41,7 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 		// Authentication
 		if (authenticator.authenticate(login, password)) {
 			Collaborator collaborator = getModelMgr().getCollaborator(login);
-			((LogicContext)getContext()).setConnectedCollaborator(collaborator);
+			((ILogicContext)getContext()).setConnectedCollaborator(collaborator);
 			getEventBus().fire(new ConnectedCollaboratorEvent(this, collaborator));
 		}
 		else {
@@ -78,11 +60,12 @@ class DefaultAuthenticator implements IAuthenticatorExtension {
 	
 	@SuppressWarnings("unused")
 	private AuthenticationLogicImpl parent;
+	
+	@Inject
 	private IModelMgr modelMgr;
 
-	protected DefaultAuthenticator(AuthenticationLogicImpl parent, IModelMgr modelMgr) {
+	protected DefaultAuthenticator(AuthenticationLogicImpl parent) {
 		this.parent = parent;
-		this.modelMgr = modelMgr;
 	}
 	
 	@Override
@@ -92,19 +75,3 @@ class DefaultAuthenticator implements IAuthenticatorExtension {
 
 }
 
-/**
- * Authenticator implementation that is used when a problem has occurred at startup.
- * 
- * <p>This implementation doesn't allow anybody to be authenticated.</p>
- * 
- * @author jbrazeau
- */
-class NullAuthenticator implements IAuthenticatorExtension {
-	
-	@Override
-	public boolean authenticate(String login, String password) {
-		System.err.println("An error occured during startup, authentication refused to '" + login + "'");
-		return false;
-	}
-
-}

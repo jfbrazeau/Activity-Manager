@@ -7,6 +7,7 @@ import org.activitymgr.ui.web.logic.IDownloadButtonLogic;
 import org.activitymgr.ui.web.logic.IDownloadButtonLogic.View;
 import org.activitymgr.ui.web.view.IResourceCache;
 
+import com.google.inject.Inject;
 import com.vaadin.server.FileDownloader;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Button;
@@ -16,11 +17,9 @@ public class DownloadButtonView extends Button implements View {
 
 	@SuppressWarnings("unused")
 	private IDownloadButtonLogic logic;
+	
+	@Inject
 	private IResourceCache resourceCache;
-
-	public DownloadButtonView(IResourceCache resourceCache) {
-		this.resourceCache = resourceCache;
-	}
 
 	@Override
 	public void setIcon(String iconId) {

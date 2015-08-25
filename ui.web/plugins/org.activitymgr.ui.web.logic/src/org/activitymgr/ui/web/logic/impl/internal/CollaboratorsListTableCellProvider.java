@@ -16,15 +16,17 @@ import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTableCellProviderCallback;
 import org.activitymgr.ui.web.logic.impl.CollaboratorsCellLogicFatory;
-import org.activitymgr.ui.web.logic.impl.LogicContext;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.inject.Inject;
 
 class CollaboratorsListTableCellProvider extends AbstractSafeTableCellProviderCallback<Long> {
 
+	@Inject
 	private IModelMgr modelMgr;
+	
 	private boolean showInactiveCollaborators;
 	private CollaboratorsCellLogicFatory cellLogicFactory;
 	private List<Long> collaboratorIds = new ArrayList<Long>();
@@ -45,12 +47,11 @@ class CollaboratorsListTableCellProvider extends AbstractSafeTableCellProviderCa
 		}
 	});
 	
-	public CollaboratorsListTableCellProvider(AbstractLogicImpl<?> source, LogicContext context, boolean showInactiveCollaborators, boolean readOnly) {
-		super(source, context);
-		this.modelMgr = context.getComponent(IModelMgr.class);
+	public CollaboratorsListTableCellProvider(AbstractLogicImpl<?> source, boolean showInactiveCollaborators, boolean readOnly) {
+		super(source);
 		this.showInactiveCollaborators = showInactiveCollaborators;
 		this.readOnly = readOnly;
-		this.cellLogicFactory = context.getSingletonExtension("org.activitymgr.ui.web.logic.collaboratorsCellLogicFactory", CollaboratorsCellLogicFatory.class, AbstractLogicImpl.class, source);
+		this.cellLogicFactory = getContext().getSingletonExtension("org.activitymgr.ui.web.logic.collaboratorsCellLogicFactory", CollaboratorsCellLogicFatory.class, AbstractLogicImpl.class, source);
 	}
 
 	@Override

@@ -11,20 +11,21 @@ import java.util.List;
 import java.util.Map;
 
 import org.activitymgr.core.dto.Collaborator;
+import org.activitymgr.core.dto.IDTOFactory;
 import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.model.ModelException;
-import org.activitymgr.ui.web.logic.IFeatureAccessManager;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTableCellProviderCallback;
-import org.activitymgr.ui.web.logic.impl.DefaultFeatureAccessManagerImpl;
 import org.activitymgr.ui.web.logic.impl.ITaskCreationPatternHandler;
 import org.activitymgr.ui.web.logic.impl.LabelLogicImpl;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+
+import com.google.inject.Inject;
 
 public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.View> implements ITaskChooserLogic {
 	
@@ -33,14 +34,17 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 	private static final String NONE_PATTERN_LABEL = "None";
 
 	private Collection<Long> alreadySelectedTaskIds;
+	
+	@Inject
+	private IDTOFactory dtoFactory;
 
 	public TaskChooserLogicImpl(AbstractLogicImpl<?> parent, Collection<Long> selectedTaskIds, Collaborator contributor, Calendar monday) {
 		super(parent);
 		// Remember already selected task ids
 		this.alreadySelectedTaskIds = selectedTaskIds;
 		// Register the tree content provider
-		TaskTreeContentProvider treeContentProvider = new TaskTreeContentProvider(this, getContext());
-		getView().setTasksTreeProviderCallback(getContext().buildTransactionalWrapper(treeContentProvider, ITreeContentProviderCallback.class));
+		TaskTreeContentProvider treeContentProvider = new TaskTreeContentProvider(this);
+		getView().setTasksTreeProviderCallback(buildTransactionalWrapper(treeContentProvider, ITreeContentProviderCallback.class));
 		
 		// Retrieve recent tasks labels
 		Calendar from = (Calendar) monday.clone();
@@ -78,7 +82,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 					return fullPath1.compareTo(fullPath2);
 				}
 			});
-			ITableCellProviderCallback<Long> recentTaskCallback = new AbstractSafeTableCellProviderCallback<Long>(this, getContext()) {
+			ITableCellProviderCallback<Long> recentTaskCallback = new AbstractSafeTableCellProviderCallback<Long>(this) {
 				private final Collection<String> PROPERTY_IDS = Arrays.asList(new String[] { TaskTreeContentProvider.NAME_PROPERTY_ID });
 				@Override
 				protected Collection<Long> unsafeGetRootElements() throws Exception {
@@ -112,7 +116,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 					creationPatternsLabels.put(id, creationPatternCfg.getAttribute("label"));
 					creationPatternIds.add(id);
 				}
-				ITableCellProviderCallback<String> creationPatternsCallback = new AbstractSafeTableCellProviderCallback<String>(this, getContext()) {
+				ITableCellProviderCallback<String> creationPatternsCallback = new AbstractSafeTableCellProviderCallback<String>(this) {
 					private final Collection<String> PROPERTY_IDS = Arrays.asList(new String[] { TaskTreeContentProvider.NAME_PROPERTY_ID });
 					@Override
 					protected Collection<String> unsafeGetRootElements() throws Exception {
@@ -224,7 +228,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 			}
 			else {
 				Task parent = getModelMgr().getTask(taskId);
-				Task newTask = getContext().getBeanFactory().newTask();
+				Task newTask = dtoFactory.newTask();
 				newTask.setName(getView().getNewTaskName());
 				String code = getView().getNewTaskCode().trim();
 				if ("".equals(code)) {

@@ -5,8 +5,8 @@ import org.activitymgr.ui.web.logic.ILogic;
 
 public abstract class AbstractSafeGenericCallback<RESULT> extends AbstractSafeCallback implements IGenericCallback<RESULT> {
 
-	public AbstractSafeGenericCallback(ILogic<?> source, LogicContext context) {
-		super(source, context);
+	public AbstractSafeGenericCallback(ILogic<?> source) {
+		super(source);
 	}
 
 	@Override

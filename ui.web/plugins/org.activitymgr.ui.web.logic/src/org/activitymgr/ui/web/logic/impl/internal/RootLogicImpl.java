@@ -1,76 +1,45 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.ui.web.logic.AbstractEvent;
 import org.activitymgr.ui.web.logic.IButtonLogic;
 import org.activitymgr.ui.web.logic.IDownloadButtonLogic;
+import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.IEventListener;
-import org.activitymgr.ui.web.logic.IFeatureAccessManager;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.IRootLogic;
-import org.activitymgr.ui.web.logic.IViewDescriptor;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractTabLogicImpl;
-import org.activitymgr.ui.web.logic.impl.DefaultFeatureAccessManagerImpl;
-import org.activitymgr.ui.web.logic.impl.LogicContext;
+import org.activitymgr.ui.web.logic.impl.ILogicContext;
 import org.activitymgr.ui.web.logic.impl.event.CallbackExceptionEvent;
 import org.activitymgr.ui.web.logic.impl.event.ConnectedCollaboratorEvent;
-import org.eclipse.core.runtime.CoreException;
+import org.activitymgr.ui.web.logic.impl.event.EventBusImpl;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.InvalidRegistryObjectException;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Injector;
+import com.google.inject.Singleton;
+
 public class RootLogicImpl implements IRootLogic {
 
-	private LogicContext context;
+	private Injector userInjector;
+	
 	private IRootLogic.View view;
 	
-	public RootLogicImpl(IRootLogic.View rootView, IViewDescriptor viewFactory) {
-		// Retrieve the feature access manager if configured
-		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.featureAccessManager");
-
-		// Feature access manager retrieval
-		IFeatureAccessManager accessManager = null;
-		if (cfgs.length == 0) {
-			accessManager = new DefaultFeatureAccessManagerImpl();
-		}
-		else {
-			if (cfgs.length > 1) {
-				System.err.println(
-						"More than one feature access manager is provided.\n" +
-						"Only one implementation is allowed");
+	public RootLogicImpl(IRootLogic.View rootView, Injector mainInjector) {
+		userInjector = mainInjector.createChildInjector(new AbstractModule() {
+			@Override
+			protected void configure() {
+				bind(IEventBus.class).to(EventBusImpl.class).in(Singleton.class);
+				bind(ILogicContext.class).to(LogicContextImpl.class).in(Singleton.class);
+				
 			}
-			IConfigurationElement cfg = cfgs[0];
-			try {
-				accessManager = (IFeatureAccessManager) cfg.createExecutableExtension("class");
-			}
-			catch (CoreException e) {
-				// If an error occurs, a null access manager is instantiated
-				// No feature will be available
-				handleError(getView(), e);
-				accessManager = new NoAccessFeatureAccessManager();
-			}
-		}
-		
-		// Once the registry is registered, ModelMgr implementation 
-		// can be created
-		// TODO externalize connection parameters
-		// Create the datasource
-		String jdbcDriver = "com.mysql.jdbc.Driver";
-		String jdbcUrl = "jdbc:mysql://localhost:3306/taskmgr_db";
-		String jdbcUser = "taskmgr_user";
-		String jdbcPassword = "secret";
-		// Context initialization
-		try {
-			context = new LogicContext(viewFactory, accessManager, jdbcDriver, jdbcUrl, jdbcUser, jdbcPassword);
-		} catch (SQLException e) {
-			throw new IllegalStateException(e);
-		}
+		});
 
 		// View registration
 		this.view = rootView;
@@ -78,21 +47,22 @@ public class RootLogicImpl implements IRootLogic {
 
 		// Model manager retrieval
 		// Create authentication logic
-		getView().setContentView(new AuthenticationLogicImpl(this, getContext()).getView());
+		getView().setContentView(new AuthenticationLogicImpl(this).getView());
 		
 		// Event listeners registration
-		context.getEventBus().register(CallbackExceptionEvent.class, new IEventListener() {
+		IEventBus eventBus = userInjector.getInstance(IEventBus.class);
+		eventBus.register(CallbackExceptionEvent.class, new IEventListener() {
 			@Override
 			public void handle(AbstractEvent event) {
 				// If an error occurs in a view callback, it shows the error to the user
 				handleError(getView(), ((CallbackExceptionEvent) event).getException());
 			}
 		});
-		context.getEventBus().register(ConnectedCollaboratorEvent.class, new IEventListener() {
+		eventBus.register(ConnectedCollaboratorEvent.class, new IEventListener() {
 			@Override
 			public void handle(AbstractEvent event) {
 				// Create the tab container
-				TabFolderLogicImpl tabFolderLogic = new TabFolderLogicImpl(RootLogicImpl.this, getContext());
+				TabFolderLogicImpl tabFolderLogic = new TabFolderLogicImpl(RootLogicImpl.this);
 				getView().setContentView(tabFolderLogic.getView());
 				// Iterate over the provided tabs and create it
 				IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.tabLogic");
@@ -102,16 +72,15 @@ public class RootLogicImpl implements IRootLogic {
 					String tabId = cfg.getAttribute("id");
 					String tabName = cfg.getAttribute("label");
 					// Check user access
-					if (!getContext().getAccessManager().hasAccessToTab(getContext().getConnectedCollaborator(), tabName)) {
-						return;
-					}
-					try {
-						Class<AbstractTabLogicImpl<?>> tabLogicClass = Activator.getDefault().<AbstractTabLogicImpl<?>>loadClass(cfg.getContributor().getName(), cfg.getAttribute("class"));
-						AbstractTabLogicImpl<?> tabLogic = getContext().newExtensionInstance(tabLogicClass, AbstractLogicImpl.class, tabFolderLogic);
-						tabFolderLogic.addTab(tabName, tabLogic);
-						addButtons(tabLogic, tabId);
-					} catch (ClassNotFoundException e) {
-						throw new IllegalStateException(e);
+					if (getContext().getAccessManager().hasAccessToTab(getContext().getConnectedCollaborator(), tabName)) {
+						try {
+							Class<AbstractTabLogicImpl<?>> tabLogicClass = Activator.getDefault().<AbstractTabLogicImpl<?>>loadClass(cfg.getContributor().getName(), cfg.getAttribute("class"));
+							AbstractTabLogicImpl<?> tabLogic = getContext().newExtensionInstance(tabLogicClass, AbstractLogicImpl.class, tabFolderLogic);
+							tabFolderLogic.addTab(tabName, tabLogic);
+							addButtons(tabLogic, tabId);
+						} catch (ClassNotFoundException e) {
+							throw new IllegalStateException(e);
+						}
 					}
 				}
 				
@@ -164,8 +133,8 @@ public class RootLogicImpl implements IRootLogic {
 		return view;
 	}
 	
-	public LogicContext getContext() {
-		return context;
+	public ILogicContext getContext() {
+		return userInjector.getInstance(ILogicContext.class);
 	}
 
 	public static void handleError(IRootLogic.View rootView, Throwable error) {
@@ -185,13 +154,10 @@ public class RootLogicImpl implements IRootLogic {
 		rootView.showErrorNotification(message, details);
 	}
 
-}
-
-class NoAccessFeatureAccessManager implements IFeatureAccessManager {
-
 	@Override
-	public boolean hasAccessToTab(Collaborator collaborator, String tab) {
-		return false;
+	public <T> T injectMembers(T instance) {
+		userInjector.injectMembers(instance);
+		return instance;
 	}
-	
+
 }

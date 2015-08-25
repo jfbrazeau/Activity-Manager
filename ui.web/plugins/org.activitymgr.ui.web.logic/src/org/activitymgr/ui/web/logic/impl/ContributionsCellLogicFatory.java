@@ -10,15 +10,19 @@ import java.util.Map;
 
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Contribution;
+import org.activitymgr.core.dto.IDTOFactory;
 import org.activitymgr.core.dto.misc.IntervalContributions;
 import org.activitymgr.core.dto.misc.TaskContributions;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
+import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.impl.event.ContributionChangeEvent;
+
+import com.google.inject.Inject;
 
 public class ContributionsCellLogicFatory {
 
@@ -65,14 +69,23 @@ public class ContributionsCellLogicFatory {
 		DEFAULT_COLUMN_WIDTHS.put(NAME_COLUMN_ID, 150);
 	}
 
+	@Inject
 	private IModelMgr modelMgr;
-	private AbstractContributionTabLogicImpl parentLogic;
-	private LogicContext context;
+	
+	@Inject
+	private IDTOFactory dtoFactory;
 
-	public ContributionsCellLogicFatory(AbstractContributionTabLogicImpl parentLogic, LogicContext context) {
+	private AbstractContributionTabLogicImpl parentLogic;
+
+	@Inject
+	private ILogicContext context;
+	
+	@Inject
+	private IEventBus eventBus;
+
+	public ContributionsCellLogicFatory(AbstractContributionTabLogicImpl parentLogic) {
 		this.parentLogic = parentLogic;
-		this.context = context;
-		this.modelMgr = context.getComponent(IModelMgr.class);
+		parentLogic.injectMembers(this);
 	}
 
 	public ILogic<?> createCellLogic(final Collaborator contributor, final Calendar firstDayOfWeek, final TaskContributions weekContributions, final String propertyId) {
@@ -105,7 +118,7 @@ public class ContributionsCellLogicFatory {
 		return logic;
 	}
 
-	protected LogicContext getContext() {
+	protected ILogicContext getContext() {
 		return context;
 	}
 
@@ -120,7 +133,7 @@ public class ContributionsCellLogicFatory {
 			if (contribution == null) {
 				if (durationId != 0) {
 					// Let's create the new contribution
-					contribution = getContext().getBeanFactory().newContribution();
+					contribution = dtoFactory.newContribution();
 					contribution.setContributorId(contributor.getId());
 					contribution.setDurationId(durationId);
 					contribution.setTaskId(weekContributions.getTask().getId());
@@ -150,7 +163,7 @@ public class ContributionsCellLogicFatory {
 
 			// FIre a change event
 			long oldDuration = contribution != null ? contribution.getDurationId() : 0;
-			getContext().getEventBus().fire(
+			eventBus.fire(
 					new ContributionChangeEvent(getContributionLogic(),
 							weekContributions.getTask().getId(), propertyId,
 							oldDuration, durationId));

@@ -8,6 +8,8 @@ public interface ILogic<VIEW extends IView<?>> {
 
 	VIEW getView();
 	
+	<T> T injectMembers(T instance);
+
 	interface IView<LOGIC extends ILogic<?>> {
 		
 		void registerLogic(LOGIC logic);

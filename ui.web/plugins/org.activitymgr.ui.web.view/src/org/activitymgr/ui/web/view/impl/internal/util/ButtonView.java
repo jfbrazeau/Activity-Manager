@@ -4,16 +4,18 @@ import org.activitymgr.ui.web.logic.IButtonLogic;
 import org.activitymgr.ui.web.logic.IButtonLogic.View;
 import org.activitymgr.ui.web.view.IResourceCache;
 
+import com.google.inject.Inject;
 import com.vaadin.ui.Button;
 
 @SuppressWarnings("serial")
 public class ButtonView extends Button implements View {
 
 	private IButtonLogic logic;
+	
+	@Inject
 	private IResourceCache resourceCache;
 
-	public ButtonView(IResourceCache resourceCache) {
-		this.resourceCache = resourceCache;
+	public ButtonView() {
 		addClickListener(new Button.ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {

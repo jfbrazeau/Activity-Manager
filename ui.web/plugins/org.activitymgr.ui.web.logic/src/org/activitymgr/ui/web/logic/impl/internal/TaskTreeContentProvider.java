@@ -14,7 +14,8 @@ import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTreeTableCellProviderCallback;
 import org.activitymgr.ui.web.logic.impl.LabelLogicImpl;
-import org.activitymgr.ui.web.logic.impl.LogicContext;
+
+import com.google.inject.Inject;
 
 class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<Long> {
 
@@ -29,11 +30,11 @@ class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<
 	public static final List<String> PROPERTY_IDS = Arrays.asList(new String[] { NAME_PROPERTY_ID, CODE_PROPERTY_ID, BUDGET_PROPERTY_ID, 
 			INITIAL_PROPERTY_ID, COSUMMED_PROPERTY_ID, ETC_PROPERTY_ID, DELTA_PROPERTY_ID, COMMENT_PROPERTY_ID } );
 
+	@Inject
 	private IModelMgr modelMgr;
 
-	public TaskTreeContentProvider(ILogic<?> source, LogicContext context) {
-		super(source, context);
-		this.modelMgr = context.getComponent(IModelMgr.class);
+	public TaskTreeContentProvider(ILogic<?> source) {
+		super(source);
 	}
 
 	@Override

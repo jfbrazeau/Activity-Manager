@@ -88,67 +88,6 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer {
 
 	private void registerExtensionRegistryService(IExtensionRegistry registry) {
 		extensionRegistryService = registry;
-
-		// TODO remove
-//		// Once the registry is registered, ModelMgr implementation 
-//		// can be created
-//		// TODO externalize connection parameters
-//		// Create the datasource
-//		String jdbcDriver = "com.mysql.jdbc.Driver";
-//		String jdbcUrl = "jdbc:mysql://localhost:3306/taskmgr_db";
-//		String jdbcUser = "taskmgr_user";
-//		String jdbcPassword = "secret";
-//		datasource = new BasicDataSource();
-//		datasource.setDriverClassName(jdbcDriver);
-//		datasource.setUrl(jdbcUrl);
-//		datasource.setUsername(jdbcUser);
-//		datasource.setPassword(jdbcPassword);
-//		datasource.setDefaultAutoCommit(false);
-//		
-//		// Create Guice injector
-//		final ThreadLocal<DbTransaction> dbTxs = new ThreadLocal<DbTransaction>();
-//		Injector injector = Guice.createInjector(new CoreModule(),
-//				new AbstractModule() {
-//					@Override
-//					protected void configure() {
-//						bind(DbTransaction.class).toProvider(
-//								new Provider<DbTransaction>() {
-//									@Override
-//									public DbTransaction get() {
-//										return dbTxs.get();
-//									}
-//								});
-//					}
-//				});
-//		// Creates a new model manager wrapper (managing the transaction)
-//		final IModelMgr wrappedModelMgr = injector.getInstance(IModelMgr.class);
-//		modelMgr = (IModelMgr) Proxy.newProxyInstance(
-//				Activator.class.getClassLoader(),
-//				new Class<?>[] { IModelMgr.class }, new InvocationHandler() {
-//					@Override
-//					public Object invoke(Object proxy, Method method,
-//							Object[] args) throws Throwable {
-//						DbTransaction tx = null;
-//						try {
-//							// Open the transaction
-//							tx = new DbTransaction(datasource.getConnection());
-//							dbTxs.set(tx);
-//							// Call the real model manager
-//							Object result = method.invoke(wrappedModelMgr, args);
-//							// Commit the transaction
-//							tx.getConnection().commit();
-//							return result;
-//						} catch (InvocationTargetException t) {
-//							// Rollback the transaction in case of failure
-//							tx.getConnection().rollback();
-//							throw t.getCause();
-//						} finally {
-//							// Release the transaction
-//							dbTxs.remove();
-//							tx.getConnection().close();
-//						}
-//					}
-//				});
 	}
 	
 	@Override

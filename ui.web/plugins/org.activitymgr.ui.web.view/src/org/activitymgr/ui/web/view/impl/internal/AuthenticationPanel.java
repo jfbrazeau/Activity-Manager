@@ -1,7 +1,6 @@
 package org.activitymgr.ui.web.view.impl.internal;
 
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
-import org.activitymgr.ui.web.view.IResourceCache;
 
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.ui.Alignment;
@@ -23,8 +22,8 @@ public class AuthenticationPanel extends GridLayout implements
 	private PasswordField passwordField;
 
 	private TextField userField;
-
-	public AuthenticationPanel(IResourceCache resourceCache) {
+	
+	public AuthenticationPanel() {
 		super(1, 1);
 
 		setSizeFull();

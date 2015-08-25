@@ -21,6 +21,10 @@ location "http://download.eclipse.org/tools/orbit/downloads/drops/R2014052502125
 	org.apache.commons.pool.source lazy
 	com.google.inject lazy
 	com.google.inject.source lazy
+	com.google.inject.assistedinject lazy
+	com.google.inject.assistedinject.source lazy
+	com.google.inject.multibindings lazy
+	com.google.inject.multibindings.source lazy
 	com.google.guava lazy
 	com.google.guava.source lazy
 	org.apache.log4j lazy

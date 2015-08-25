@@ -1,4 +1,4 @@
-package org.activitymgr.ui.web.logic;
+package org.activitymgr.ui.web.logic.spi;
 
 import org.activitymgr.core.dto.Collaborator;
 

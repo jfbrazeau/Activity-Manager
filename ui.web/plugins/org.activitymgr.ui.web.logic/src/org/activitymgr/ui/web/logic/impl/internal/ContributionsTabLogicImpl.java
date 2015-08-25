@@ -23,18 +23,18 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 		super(parent);
 
 		// Contributions provider
-		contributionsProvider = new ContributionsListTableCellProvider(this, getContext());
+		contributionsProvider = new ContributionsListTableCellProvider(this);
 		// Set default day
 		try {
 			contributionsProvider.changeFirstDayOfWeek(new GregorianCalendar());
 		} catch (ModelException e) {
 			throw new IllegalStateException("Unexpected error while retrieving contributions", e);
 		}
-		getView().setContributionsProvider(getContext().buildTransactionalWrapper(contributionsProvider, ITableCellProviderCallback.class));
+		getView().setContributionsProvider(buildTransactionalWrapper(contributionsProvider, ITableCellProviderCallback.class));
 		
 		// Collaborators provider
 		CollaboratorsListTableCellProvider collaboratorsProvider = new CollaboratorsListTableCellProvider(
-				this, getContext(), false, true) {
+				this, false, true) {
 			@Override
 			protected Collection<String> unsafeGetPropertyIds() {
 				return Arrays.asList(new String[] {
@@ -46,7 +46,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 				return 100;
 			}
 		};
-		getView().setCollaboratorsProvider(getContext().buildTransactionalWrapper(collaboratorsProvider, ITableCellProviderCallback.class));
+		getView().setCollaboratorsProvider(buildTransactionalWrapper(collaboratorsProvider, ITableCellProviderCallback.class));
 		getView().selectCollaborator(contributionsProvider.getContributor().getId());
 		
 		// Set the date in the view

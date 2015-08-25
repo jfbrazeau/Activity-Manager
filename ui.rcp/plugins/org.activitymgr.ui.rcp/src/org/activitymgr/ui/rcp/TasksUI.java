@@ -28,10 +28,8 @@
 package org.activitymgr.ui.rcp;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.activitymgr.core.dto.Contribution;
 import org.activitymgr.core.dto.Task;

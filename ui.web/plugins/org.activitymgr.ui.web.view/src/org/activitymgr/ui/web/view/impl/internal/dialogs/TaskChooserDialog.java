@@ -5,7 +5,6 @@ import java.util.Stack;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
-import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
 import org.activitymgr.ui.web.view.impl.internal.util.TreeTableDatasource;
 
@@ -44,8 +43,8 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	private VerticalLayout newTaskFormPanel;
 	private ComboBox newSubTaskCreationPatternField;
 
-	public TaskChooserDialog(IResourceCache resourceCache) {
-        super(resourceCache, "Select a task");
+	public TaskChooserDialog() {
+        super("Select a task");
         setModal(true);
 
         setWidth(520, Unit.PIXELS);

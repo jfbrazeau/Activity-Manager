@@ -13,12 +13,12 @@ import com.google.inject.spi.TypeListener;
 
 public class CoreModelModule extends AbstractModule {
 
-	public static interface IPostInjectionListener {
-		
-		void afterInjection() throws Exception;
-
-	}
-
+//	public static interface IPostInjectionListener {
+//		
+//		void afterInjection() throws Exception;
+//
+//	}
+//
 	@Override
 	protected void configure() {
 		// Bind DAO layer
@@ -29,24 +29,24 @@ public class CoreModelModule extends AbstractModule {
 		bind(IModelMgr.class).to(ModelMgrImpl.class).in(Singleton.class);
 		
 		// Bind post injection listeners
-		bindListener(Matchers.any(), new TypeListener() {
-			@Override
-			public <I> void hear(TypeLiteral<I> type, TypeEncounter<I> encounter) {
-				encounter.register(new InjectionListener<I>() {
-					@Override
-					public void afterInjection(I injectee) {
-						if (injectee instanceof IPostInjectionListener) {
-							try {
-								((IPostInjectionListener) injectee).afterInjection();
-							} catch (Exception e) {
-								throw new IllegalStateException("Post Guice injection exception", e);
-							}
-						}
-					}
-				});
-				
-			}
-		});
+//		bindListener(Matchers.any(), new TypeListener() {
+//			@Override
+//			public <I> void hear(TypeLiteral<I> type, TypeEncounter<I> encounter) {
+//				encounter.register(new InjectionListener<I>() {
+//					@Override
+//					public void afterInjection(I injectee) {
+//						if (injectee instanceof IPostInjectionListener) {
+//							try {
+//								((IPostInjectionListener) injectee).afterInjection();
+//							} catch (Exception e) {
+//								throw new IllegalStateException("Post Guice injection exception", e);
+//							}
+//						}
+//					}
+//				});
+//				
+//			}
+//		});
 	}
 	
 }
