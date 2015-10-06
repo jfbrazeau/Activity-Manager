@@ -39,6 +39,8 @@ public interface IContributionsTabLogic extends ITabLogic<IContributionsTabLogic
 
 		void reloadContributionTableFooter();
 
+		void setColumnTitle(String propertyId, String title);
+
 	}
 
 }

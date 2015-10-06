@@ -311,4 +311,9 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 		super.focus();
 	}
 
+	@Override
+	public void setColumnTitle(String propertyId, String title) {
+		contributionsTable.setColumnHeader(propertyId, title);
+	}
+
 }

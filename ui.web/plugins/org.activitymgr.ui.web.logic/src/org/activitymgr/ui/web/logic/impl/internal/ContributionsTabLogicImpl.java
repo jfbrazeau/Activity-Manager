@@ -1,5 +1,6 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -16,6 +17,7 @@ import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.event.ContributionChangeEvent;
 import org.activitymgr.ui.web.logic.spi.ICollaboratorsCellLogicFactory;
+import org.activitymgr.ui.web.logic.spi.IContributionsCellLogicFactory;
 import org.activitymgr.ui.web.logic.spi.ITabButtonFactory;
 
 import com.google.inject.Inject;
@@ -112,6 +114,19 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 		try {
 			contributionsProvider.changeFirstDayOfWeek(value);
 			getView().setDate(contributionsProvider.getFirstDayOfWeek());
+			Calendar cursor = (Calendar) contributionsProvider.getFirstDayOfWeek().clone();
+			SimpleDateFormat sdf = new SimpleDateFormat("dd");
+			Collection<String> propertyIds = contributionsProvider.getPropertyIds();
+			for (String dayPropertyId : IContributionsCellLogicFactory.DAY_COLUMNS_IDENTIFIERS) {
+				if (propertyIds.contains(dayPropertyId)) {
+					getView().setColumnTitle(
+							dayPropertyId,
+							dayPropertyId.charAt(0)
+									+ sdf.format(cursor.getTime()));
+				}
+				cursor.add(Calendar.DATE, 1);
+			}
+
 			getView().reloadContributionTableItems();
 		} catch (ModelException e) {
 			throw new IllegalStateException(e);
