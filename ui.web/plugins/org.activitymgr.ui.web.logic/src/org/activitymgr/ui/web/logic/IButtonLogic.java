@@ -1,15 +1,13 @@
 package org.activitymgr.ui.web.logic;
 
-public interface IButtonLogic extends ILogic<IButtonLogic.View> {
+public interface IButtonLogic<VIEW extends IButtonLogic.View<?>> extends ILogic<VIEW> {
 	
-	void onClick();
-	
-	public interface View extends ILogic.IView<IButtonLogic> {
+	public interface View<LOGIC extends IButtonLogic<?>> extends IButtonLogic.IView<LOGIC> {
 		
 		void setIcon(String iconId);
 		
 		void setDescription(String caption);
-
+		
 	}
 
 }

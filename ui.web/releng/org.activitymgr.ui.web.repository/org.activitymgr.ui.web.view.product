@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Activity Manager UI (Web)" uid="org.activitymgr.ui.web.view.product" id="org.activitymgr.ui.web.view.product" application="org.activitymgr.ui.web.view.application" useFeatures="true" includeLaunchers="true">
+<product name="Activity Manager UI (Web)" uid="org.activitymgr.ui.web.view.product" id="org.activitymgr.ui.web.view.product" application="org.activitymgr.ui.web.view.application" useFeatures="false" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
 
    <launcherArgs>
-      <programArgs>-console</programArgs>
-      <vmArgs>-Dorg.osgi.service.http.port=8080</vmArgs>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+      <programArgs>-console
+      </programArgs>
+      <vmArgs>-Dorg.osgi.service.http.port=8080
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
    </launcherArgs>
 
    <windowImages/>
@@ -25,11 +28,21 @@
    </vm>
 
    <plugins>
+      <plugin id="com.google.guava"/>
+      <plugin id="com.google.inject"/>
+      <plugin id="com.google.inject.assistedinject" fragment="true"/>
+      <plugin id="com.google.inject.multibindings" fragment="true"/>
+      <plugin id="javax.inject"/>
       <plugin id="javax.servlet"/>
-      <plugin id="org.activitymgr.core"/>
-      <plugin id="org.activitymgr.core.h2fragment" fragment="true"/>
-      <plugin id="org.activitymgr.core.hsqldbfragment" fragment="true"/>
-      <plugin id="org.activitymgr.core.mysqlfragment" fragment="true"/>
+      <plugin id="javax.xml"/>
+      <plugin id="org.activitymgr.core.dao"/>
+      <plugin id="org.activitymgr.core.dao.h2fragment" fragment="true"/>
+      <plugin id="org.activitymgr.core.dao.hsqldbfragment" fragment="true"/>
+      <plugin id="org.activitymgr.core.dao.mysqlfragment" fragment="true"/>
+      <plugin id="org.activitymgr.core.dto"/>
+      <plugin id="org.activitymgr.core.model"/>
+      <plugin id="org.activitymgr.core.orm"/>
+      <plugin id="org.activitymgr.core.util"/>
       <plugin id="org.activitymgr.ui.web.logic"/>
       <plugin id="org.activitymgr.ui.web.view"/>
       <plugin id="org.apache.commons.dbcp"/>
@@ -37,6 +50,7 @@
       <plugin id="org.apache.felix.gogo.runtime"/>
       <plugin id="org.apache.felix.gogo.shell"/>
       <plugin id="org.apache.log4j"/>
+      <plugin id="org.apache.log4j.configuration" fragment="true"/>
       <plugin id="org.eclipse.core.contenttype"/>
       <plugin id="org.eclipse.core.jobs"/>
       <plugin id="org.eclipse.core.runtime"/>
@@ -57,6 +71,7 @@
       <plugin id="org.eclipse.jetty.servlet"/>
       <plugin id="org.eclipse.jetty.util"/>
       <plugin id="org.eclipse.osgi"/>
+      <plugin id="org.eclipse.osgi.compatibility.state" fragment="true"/>
       <plugin id="org.eclipse.osgi.services"/>
       <plugin id="org.vaadin.osgiappcontainer"/>
    </plugins>

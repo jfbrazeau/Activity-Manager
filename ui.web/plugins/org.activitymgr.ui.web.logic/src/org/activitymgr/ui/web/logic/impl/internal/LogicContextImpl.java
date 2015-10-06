@@ -7,35 +7,24 @@ import java.sql.Connection;
 import java.util.Stack;
 
 import org.activitymgr.core.dto.Collaborator;
-import org.activitymgr.ui.web.logic.impl.DefaultFeatureAccessManagerImpl;
-import org.activitymgr.ui.web.logic.impl.ILogicContext;
-import org.activitymgr.ui.web.logic.spi.IFeatureAccessManager;
+import org.activitymgr.ui.web.logic.IEventBus;
+import org.activitymgr.ui.web.logic.ILogicContext;
 import org.eclipse.core.runtime.IConfigurationElement;
 
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 
 // TODO Inject ?
 public class LogicContextImpl implements ILogicContext {
 
 	private Collaborator connectedCollaborator;
 
-	@Inject(optional = true)
-	private IFeatureAccessManager accessManager;
+	@Inject
+	private IEventBus eventBus;
 	
-	public LogicContextImpl() {
-		if (accessManager == null) {
-			accessManager = new DefaultFeatureAccessManagerImpl();
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.activitymgr.ui.web.logic.impl.ILogicContext#getAccessManager()
-	 */
-	@Override
-	public IFeatureAccessManager getAccessManager() {
-		return accessManager;
-	}
-
+	@Inject
+	private Injector injector;
+	
 	/* (non-Javadoc)
 	 * @see org.activitymgr.ui.web.logic.impl.ILogicContext#getConnectedCollaborator()
 	 */
@@ -50,6 +39,11 @@ public class LogicContextImpl implements ILogicContext {
 	@Override
 	public void setConnectedCollaborator(Collaborator connectedCollaborator) {
 		this.connectedCollaborator = connectedCollaborator;
+	}
+	
+	@Override
+	public IEventBus getEventBus() {
+		return eventBus;
 	}
 	
 	/* (non-Javadoc)

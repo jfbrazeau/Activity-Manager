@@ -15,10 +15,10 @@
          point="org.eclipse.core.runtime.products">
       <product
             application="org.activitymgr.ui.web.view.application"
-            name="Obeo Activity Manager UI (Web)">
+            name="Activity Manager UI (Web)">
          <property
                name="appName"
-               value="Obeo Activity Manager UI (Web)">
+               value="Activity Manager UI (Web)">
          </property>
       </product>
    </extension>

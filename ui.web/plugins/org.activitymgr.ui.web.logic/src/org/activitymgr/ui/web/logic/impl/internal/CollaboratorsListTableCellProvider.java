@@ -13,9 +13,10 @@ import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogic.IView;
+import org.activitymgr.ui.web.logic.ILogicContext;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTableCellProviderCallback;
-import org.activitymgr.ui.web.logic.impl.CollaboratorsCellLogicFatory;
+import org.activitymgr.ui.web.logic.spi.ICollaboratorsCellLogicFactory;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -27,8 +28,13 @@ class CollaboratorsListTableCellProvider extends AbstractSafeTableCellProviderCa
 	@Inject
 	private IModelMgr modelMgr;
 	
+	@Inject
+	private ICollaboratorsCellLogicFactory cellLogicFactory;
+
+	@Inject
+	private ILogicContext context;
+
 	private boolean showInactiveCollaborators;
-	private CollaboratorsCellLogicFatory cellLogicFactory;
 	private List<Long> collaboratorIds = new ArrayList<Long>();
 	private Map<Long, Collaborator> collaboratorsMap = new HashMap<Long, Collaborator>();
 	private boolean readOnly;
@@ -40,7 +46,7 @@ class CollaboratorsListTableCellProvider extends AbstractSafeTableCellProviderCa
 				@Override
 				public ILogic<?> load(String propertyId) throws Exception {
 					Collaborator collaborator = collaboratorsMap.get(collaboratorId);
-					return cellLogicFactory.createCellLogic(collaborator, propertyId, readOnly);
+					return cellLogicFactory.createCellLogic((AbstractLogicImpl<?>) getSource(), context, collaborator, propertyId, readOnly);
 				}
 
 			});
@@ -51,7 +57,6 @@ class CollaboratorsListTableCellProvider extends AbstractSafeTableCellProviderCa
 		super(source);
 		this.showInactiveCollaborators = showInactiveCollaborators;
 		this.readOnly = readOnly;
-		this.cellLogicFactory = getContext().getSingletonExtension("org.activitymgr.ui.web.logic.collaboratorsCellLogicFactory", CollaboratorsCellLogicFatory.class, AbstractLogicImpl.class, source);
 	}
 
 	@Override

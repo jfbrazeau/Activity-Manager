@@ -1,11 +1,10 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
 import org.activitymgr.core.dto.Collaborator;
-import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
 import org.activitymgr.ui.web.logic.ILogic;
+import org.activitymgr.ui.web.logic.ILogicContext;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
-import org.activitymgr.ui.web.logic.impl.ILogicContext;
 import org.activitymgr.ui.web.logic.impl.event.ConnectedCollaboratorEvent;
 import org.activitymgr.ui.web.logic.spi.IAuthenticatorExtension;
 
@@ -15,15 +14,11 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 	
 	private static final String NAME_COOKIE = "name";
 
-	@Inject(optional = true)
+	@Inject
 	private IAuthenticatorExtension authenticator;
 	
 	public AuthenticationLogicImpl(ILogic<?> parent) {
 		super(parent);
-		// Authenticator retrieval
-		if (authenticator == null) {
-			authenticator = injectMembers(new DefaultAuthenticator(this));
-		}
 		// Init defaults
 		String defaultLogin = getRoot().getView().getCookie(NAME_COOKIE);
 		getView().setDefaults(defaultLogin, defaultLogin != null);
@@ -52,25 +47,6 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 	@Override
 	protected void handleError(Throwable error) {
 		super.handleError(error);
-	}
-
-}
-
-class DefaultAuthenticator implements IAuthenticatorExtension {
-	
-	@SuppressWarnings("unused")
-	private AuthenticationLogicImpl parent;
-	
-	@Inject
-	private IModelMgr modelMgr;
-
-	protected DefaultAuthenticator(AuthenticationLogicImpl parent) {
-		this.parent = parent;
-	}
-	
-	@Override
-	public boolean authenticate(String login, String password) {
-		return modelMgr.getCollaborator(login) != null;
 	}
 
 }

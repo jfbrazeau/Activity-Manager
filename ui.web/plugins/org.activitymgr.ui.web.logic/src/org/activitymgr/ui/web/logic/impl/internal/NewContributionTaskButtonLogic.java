@@ -1,17 +1,20 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
+import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
-import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
-import org.activitymgr.ui.web.logic.impl.AbstractSafeButtonLogicImpl;
+import org.activitymgr.ui.web.logic.impl.AbstractSafeStandardButtonLogicImpl;
 
-public class NewContributionTaskButtonLogic extends AbstractSafeButtonLogicImpl {
+import com.google.inject.Inject;
 
-	public NewContributionTaskButtonLogic(AbstractLogicImpl<?> parent) {
-		super(parent);
+public class NewContributionTaskButtonLogic extends AbstractSafeStandardButtonLogicImpl {
+
+	@Inject
+	public NewContributionTaskButtonLogic(IContributionsTabLogic parent) {
+		super(parent,"New task", "new", "CTRL+SHIFT+N");
 	}
 
 	@Override
-	public void unsafeOnClick() {
+	protected void unsafeOnClick() {
 		AbstractContributionTabLogicImpl contributionTabLogic = (AbstractContributionTabLogicImpl) getParent();
 		new TaskChooserLogicImpl(contributionTabLogic,
 				contributionTabLogic.getTaskIds(),

@@ -1,41 +1,26 @@
 package org.activitymgr.ui.web.logic.impl;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.ui.web.logic.ILogic;
+import org.activitymgr.ui.web.logic.ILogicContext;
+import org.activitymgr.ui.web.logic.spi.ICollaboratorsCellLogicFactory;
 
 import com.google.inject.Inject;
 
-public class CollaboratorsCellLogicFatory {
-
-	public static final String IS_ACTIVE_PROPERTY_NAME_ID = "IS_ACTIVE";
-	public static final String LOGIN_PROPERTY_ID = "LOGIN";
-	public static final String FIRST_PROPERTY_NAME_ID = "FIRST_NAME";
-	public static final String LAST_PROPERTY_NAME_ID = "LAST_NAME";
-	
-	public static final List<String> PROPERTY_IDS = Arrays.asList(new String[] {
-			IS_ACTIVE_PROPERTY_NAME_ID, LOGIN_PROPERTY_ID,
-			FIRST_PROPERTY_NAME_ID, LAST_PROPERTY_NAME_ID });
+public class CollaboratorsCellLogicFatory implements ICollaboratorsCellLogicFactory {
 
 	@Inject
 	private IModelMgr modelMgr;
 
-	private AbstractLogicImpl<?> parentLogic;
-
-	@Inject
-	private ILogicContext context;
-
-	public CollaboratorsCellLogicFatory(AbstractLogicImpl<?> parentLogic) {
-		this.parentLogic = parentLogic;
-		parentLogic.injectMembers(this);
-	}
-
-	public ILogic<?> createCellLogic(final Collaborator collaborator, String propertyId, boolean readonly) {
+	/* (non-Javadoc)
+	 * @see org.activitymgr.ui.web.logic.impl.ICollaboratorsCellLogicFactory#createCellLogic(org.activitymgr.core.dto.Collaborator, java.lang.String, boolean)
+	 */
+	@Override
+	public ILogic<?> createCellLogic(final AbstractLogicImpl<?> parentLogic, final ILogicContext context, final Collaborator collaborator, String propertyId, boolean readonly) {
 		ILogic<?> logic = null;
 		if (IS_ACTIVE_PROPERTY_NAME_ID.equals(propertyId)) {
 			if (readonly) {
@@ -101,14 +86,18 @@ public class CollaboratorsCellLogicFatory {
 		return logic;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.activitymgr.ui.web.logic.impl.ICollaboratorsCellLogicFactory#getPropertyIds()
+	 */
+	@Override
 	public Collection<String> getPropertyIds() {
 		return PROPERTY_IDS;
 	}
 
-	protected ILogicContext getContext() {
-		return context;
-	}
-
+	/* (non-Javadoc)
+	 * @see org.activitymgr.ui.web.logic.impl.ICollaboratorsCellLogicFactory#getColumnWidth(java.lang.String)
+	 */
+	@Override
 	public Integer getColumnWidth(String propertyId) {
 		if (IS_ACTIVE_PROPERTY_NAME_ID.equals(propertyId)) {
 			return 30;
@@ -125,10 +114,6 @@ public class CollaboratorsCellLogicFatory {
 		else {
 			return null;
 		}
-	}
-
-	protected AbstractLogicImpl<?> getParentLogic() {
-		return parentLogic;
 	}
 
 }

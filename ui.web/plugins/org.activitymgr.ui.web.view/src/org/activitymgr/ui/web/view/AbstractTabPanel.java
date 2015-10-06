@@ -6,7 +6,8 @@ import java.util.List;
 import org.activitymgr.ui.web.logic.IButtonLogic;
 import org.activitymgr.ui.web.logic.IDownloadButtonLogic;
 import org.activitymgr.ui.web.logic.ITabLogic;
-import org.activitymgr.ui.web.view.impl.internal.util.ButtonView;
+import org.activitymgr.ui.web.logic.IButtonLogic.View;
+import org.activitymgr.ui.web.view.impl.internal.util.StandardButtonView;
 import org.activitymgr.ui.web.view.impl.internal.util.DownloadButtonView;
 
 import com.google.inject.Inject;
@@ -95,12 +96,8 @@ public abstract class AbstractTabPanel<LOGIC extends ITabLogic<?>> extends Verti
 		return logic;
 	}
 	
-	@Override
-	public void addButton(String label, char key,
-			boolean ctrl, boolean shift, boolean alt, final IButtonLogic.View buttonView) {
-		// Add button to action container
-		ButtonView button = (ButtonView) buttonView;
-		actionsContainer.addComponent(button);
+	public void registerButtonShortucut(char key,
+			boolean ctrl, boolean shift, boolean alt, final StandardButtonView buttonView) {
 		
 		// Register a menu and a shortcut
 		int[] rawModifiers = new int[3];
@@ -113,8 +110,8 @@ public abstract class AbstractTabPanel<LOGIC extends ITabLogic<?>> extends Verti
 			rawModifiers[i++] = ShortcutListener.ModifierKey.ALT;
 		int[] modifiers = new int[i];
 		System.arraycopy(rawModifiers, 0, modifiers, 0, i);
-		ShortcutListener newAction = new ShortcutListener(button.getDescription(),
-				button.getIcon(), key, modifiers) {
+		ShortcutListener newAction = new ShortcutListener(buttonView.getDescription(),
+				buttonView.getIcon(), key, modifiers) {
 			@Override
 			public void handleAction(Object sender, Object target) {
 				((Button)buttonView).click();
@@ -125,9 +122,11 @@ public abstract class AbstractTabPanel<LOGIC extends ITabLogic<?>> extends Verti
 	}
 	
 	@Override
-	public void addDownloadButton(IDownloadButtonLogic.View buttonView) {
-		// Add button to action container
-		DownloadButtonView button = (DownloadButtonView) buttonView;
+	public void addButton(View<?> buttonView) {
+		addButton((Button) buttonView);
+	}
+	
+	private void addButton(Button button) {
 		actionsContainer.addComponent(button);
 	}
 }

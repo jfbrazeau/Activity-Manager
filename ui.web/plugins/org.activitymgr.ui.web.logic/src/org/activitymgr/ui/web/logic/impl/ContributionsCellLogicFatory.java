@@ -3,7 +3,6 @@ package org.activitymgr.ui.web.logic.impl;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,46 +18,14 @@ import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILogic;
+import org.activitymgr.ui.web.logic.ILogicContext;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.impl.event.ContributionChangeEvent;
+import org.activitymgr.ui.web.logic.spi.IContributionsCellLogicFactory;
 
 import com.google.inject.Inject;
 
-public class ContributionsCellLogicFatory {
-
-	public static final String PATH_COLUMN_ID = "PATH";
-	public static final String NAME_COLUMN_ID = "NAME";
-	public static final String MON_COLUMN_ID = "MON";
-	public static final String TUE_COLUMN_ID = "TUE";
-	public static final String WED_COLUMN_ID = "WED";
-	public static final String THU_COLUMN_ID = "THU";
-	public static final String FRI_COLUMN_ID = "FRI";
-	public static final String SAT_COLUMN_ID = "SAT";
-	public static final String SUN_COLUMN_ID = "SUN";
-	public static final String TOTAL_COLUMN_ID = "TOTAL";
-
-	public static final List<String> DAY_COLUMNS_IDENTIFIERS = Collections
-			.unmodifiableList(Arrays.asList(new String[] {
-					MON_COLUMN_ID,
-					TUE_COLUMN_ID,
-					WED_COLUMN_ID,
-					THU_COLUMN_ID,
-					FRI_COLUMN_ID,
-					SAT_COLUMN_ID,
-					SUN_COLUMN_ID }));
-	
-	public static final List<String> PROPERTY_IDS = Collections
-			.unmodifiableList(Arrays.asList(new String[] {
-					PATH_COLUMN_ID,
-					NAME_COLUMN_ID,
-					MON_COLUMN_ID,
-					TUE_COLUMN_ID,
-					WED_COLUMN_ID,
-					THU_COLUMN_ID,
-					FRI_COLUMN_ID,
-					SAT_COLUMN_ID,
-					SUN_COLUMN_ID,
-					TOTAL_COLUMN_ID}));
+public class ContributionsCellLogicFatory implements IContributionsCellLogicFactory {
 
 	private static final int DAY_COLUMN_WIDTH = 40;
 
@@ -75,20 +42,11 @@ public class ContributionsCellLogicFatory {
 	@Inject
 	private IDTOFactory dtoFactory;
 
-	private AbstractContributionTabLogicImpl parentLogic;
-
-	@Inject
-	private ILogicContext context;
-	
-	@Inject
-	private IEventBus eventBus;
-
-	public ContributionsCellLogicFatory(AbstractContributionTabLogicImpl parentLogic) {
-		this.parentLogic = parentLogic;
-		parentLogic.injectMembers(this);
-	}
-
-	public ILogic<?> createCellLogic(final Collaborator contributor, final Calendar firstDayOfWeek, final TaskContributions weekContributions, final String propertyId) {
+	/* (non-Javadoc)
+	 * @see org.activitymgr.ui.web.logic.impl.IContributionsCellLogicFactory#createCellLogic(org.activitymgr.core.dto.Collaborator, java.util.Calendar, org.activitymgr.core.dto.misc.TaskContributions, java.lang.String)
+	 */
+	@Override
+	public ILogic<?> createCellLogic(final AbstractLogicImpl<?> parentLogic, final ILogicContext context, final Collaborator contributor, final Calendar firstDayOfWeek, final TaskContributions weekContributions, final String propertyId) {
 		ILogic<?> logic = null;
 		if (DAY_COLUMNS_IDENTIFIERS.contains(propertyId)) {
 			final int dayOfWeek = DAY_COLUMNS_IDENTIFIERS.indexOf(propertyId);
@@ -97,7 +55,7 @@ public class ContributionsCellLogicFatory {
 			ITextFieldLogic textFieldLogic = new AbstractSafeTextFieldLogicImpl(parentLogic, duration, false) {
 				@Override
 				protected void unsafeOnValueChanged(String newValue) {
-					onDurationChanged(contributor, firstDayOfWeek, weekContributions, dayOfWeek, newValue, this, propertyId);
+					onDurationChanged(parentLogic, context.getEventBus(), contributor, firstDayOfWeek, weekContributions, dayOfWeek, newValue, this, propertyId);
 				}
 			};
 			textFieldLogic.getView().setNumericFieldStyle();
@@ -118,11 +76,7 @@ public class ContributionsCellLogicFatory {
 		return logic;
 	}
 
-	protected ILogicContext getContext() {
-		return context;
-	}
-
-	private void onDurationChanged(Collaborator contributor, Calendar firstDayOfWeek, TaskContributions weekContributions, int dayOfWeek, String duration, ITextFieldLogic textFieldLogic, String propertyId) {
+	private void onDurationChanged(AbstractLogicImpl<?> parentLogic, IEventBus eventBus, Collaborator contributor, Calendar firstDayOfWeek, TaskContributions weekContributions, int dayOfWeek, String duration, ITextFieldLogic textFieldLogic, String propertyId) {
 		try {
 			long durationId = 0;
 			if (duration != null && !"".equals(duration.trim())) {
@@ -164,7 +118,7 @@ public class ContributionsCellLogicFatory {
 			// FIre a change event
 			long oldDuration = contribution != null ? contribution.getDurationId() : 0;
 			eventBus.fire(
-					new ContributionChangeEvent(getContributionLogic(),
+					new ContributionChangeEvent(parentLogic,
 							weekContributions.getTask().getId(), propertyId,
 							oldDuration, durationId));
 		}
@@ -178,10 +132,18 @@ public class ContributionsCellLogicFatory {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.activitymgr.ui.web.logic.impl.IContributionsCellLogicFactory#getPropertyIds()
+	 */
+	@Override
 	public Collection<String> getPropertyIds() {
 		return PROPERTY_IDS;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.activitymgr.ui.web.logic.impl.IContributionsCellLogicFactory#loadContributions(org.activitymgr.core.dto.Collaborator, java.util.Calendar)
+	 */
+	@Override
 	public List<TaskContributions> loadContributions(Collaborator contributor, Calendar firstDayOfWeek) throws ModelException {
 		// Load week contributions
 		// Recherche des taches déclarées pour cet utilisateur
@@ -207,12 +169,12 @@ public class ContributionsCellLogicFatory {
 		return Arrays.asList(weekContributions);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.activitymgr.ui.web.logic.impl.IContributionsCellLogicFactory#getColumnWidth(java.lang.String)
+	 */
+	@Override
 	public Integer getColumnWidth(String propertyId) {
 		return DEFAULT_COLUMN_WIDTHS.containsKey(propertyId) ? DEFAULT_COLUMN_WIDTHS.get(propertyId) : DAY_COLUMN_WIDTH;
-	}
-
-	protected AbstractContributionTabLogicImpl getContributionLogic() {
-		return parentLogic;
 	}
 
 }

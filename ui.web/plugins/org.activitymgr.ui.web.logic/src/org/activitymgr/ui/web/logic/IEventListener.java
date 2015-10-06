@@ -1,8 +1,8 @@
 package org.activitymgr.ui.web.logic;
 
 
-public interface IEventListener {
+public interface IEventListener<TYPE extends AbstractEvent> {
 	
-	void handle(AbstractEvent event);
+	void handle(TYPE event);
 
 }

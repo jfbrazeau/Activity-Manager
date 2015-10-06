@@ -20,24 +20,25 @@ import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTableCellProviderCallback;
-import org.activitymgr.ui.web.logic.impl.ITaskCreationPatternHandler;
 import org.activitymgr.ui.web.logic.impl.LabelLogicImpl;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
+import org.activitymgr.ui.web.logic.spi.ITaskCreationPatternHandler;
 
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 
 public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.View> implements ITaskChooserLogic {
 	
-	private static final String NONE_PATTERN_ID = "none";
-	
-	private static final String NONE_PATTERN_LABEL = "None";
-
 	private Collection<Long> alreadySelectedTaskIds;
 	
 	@Inject
 	private IDTOFactory dtoFactory;
+	
+	@Inject
+	private Injector injector;
 
+	@Inject
+	private Map<String, ITaskCreationPatternHandler> taskCreationPatternHandlers;
+	
 	public TaskChooserLogicImpl(AbstractLogicImpl<?> parent, Collection<Long> selectedTaskIds, Collaborator contributor, Calendar monday) {
 		super(parent);
 		// Remember already selected task ids
@@ -104,40 +105,28 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 			};
 			getView().setRecentTasksProviderCallback(recentTaskCallback);
 
-			IConfigurationElement[] creationPatternCfgs = getCreationPatternCfgs();
-			if (creationPatternCfgs.length > 0) {
-				final List<String> creationPatternIds = new ArrayList<String>();
-				final Map<String, String> creationPatternsLabels = new HashMap<String, String>();
-				// Add non pattern
-				creationPatternIds.add(NONE_PATTERN_ID);
-				creationPatternsLabels.put(NONE_PATTERN_ID, NONE_PATTERN_LABEL);
-				for (IConfigurationElement creationPatternCfg : creationPatternCfgs) {
-					String id = creationPatternCfg.getAttribute("id");
-					creationPatternsLabels.put(id, creationPatternCfg.getAttribute("label"));
-					creationPatternIds.add(id);
+			// Patterne handler list
+			ITableCellProviderCallback<String> creationPatternsCallback = new AbstractSafeTableCellProviderCallback<String>(this) {
+				private final Collection<String> PROPERTY_IDS = Arrays.asList(new String[] { TaskTreeContentProvider.NAME_PROPERTY_ID });
+				@Override
+				protected Collection<String> unsafeGetRootElements() throws Exception {
+					return taskCreationPatternHandlers.keySet();
 				}
-				ITableCellProviderCallback<String> creationPatternsCallback = new AbstractSafeTableCellProviderCallback<String>(this) {
-					private final Collection<String> PROPERTY_IDS = Arrays.asList(new String[] { TaskTreeContentProvider.NAME_PROPERTY_ID });
-					@Override
-					protected Collection<String> unsafeGetRootElements() throws Exception {
-						return creationPatternIds;
-					}
-					@Override
-					protected IView<?> unsafeGetCell(
-							String patternId, String propertyId) throws Exception {
-						return new LabelLogicImpl((AbstractLogicImpl<?>) getSource(), creationPatternsLabels.get(patternId)).getView();
-					}
-					@Override
-					protected Collection<String> unsafeGetPropertyIds() {
-						return PROPERTY_IDS;
-					}
-					@Override
-					protected boolean unsafeContains(String patternId) {
-						return creationPatternIds.contains(patternId);
-					}
-				};
-				getView().setCreationPatternProviderCallback(creationPatternsCallback);
-			}
+				@Override
+				protected IView<?> unsafeGetCell(
+						String patternId, String propertyId) throws Exception {
+					return new LabelLogicImpl((AbstractLogicImpl<?>) getSource(), taskCreationPatternHandlers.get(patternId).getLabel()).getView();
+				}
+				@Override
+				protected Collection<String> unsafeGetPropertyIds() {
+					return PROPERTY_IDS;
+				}
+				@Override
+				protected boolean unsafeContains(String patternId) {
+					return taskCreationPatternHandlers.containsKey(patternId);
+				}
+			};
+			getView().setCreationPatternProviderCallback(creationPatternsCallback);
 
 			// Reset button state & status label
 			onSelectionChanged(-1);
@@ -148,10 +137,6 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 			throw new IllegalStateException("Unexpected error while retrieving recent tasks", e);
 		}
 
-	}
-
-	private IConfigurationElement[] getCreationPatternCfgs() {
-		return Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.taskCreationPatternHandler");
 	}
 
 	@Override
@@ -246,16 +231,9 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 
  				// Task creation pattern management
 				String patternId = getView().getSelectedTaskCreationPatternId();
-				if (patternId != null && !NONE_PATTERN_ID.equals(patternId)) {
-					IConfigurationElement[] creationPatternCfgs = getCreationPatternCfgs();
-					ITaskCreationPatternHandler patternHandler = null;
-					for (IConfigurationElement cfg : creationPatternCfgs) {
-						if (patternId.equals(cfg.getAttribute("id"))) {
-							patternHandler = (ITaskCreationPatternHandler) cfg.createExecutableExtension("class");
-							break;
-						}
-					}
-					List<Task> createdTasks = patternHandler.handle(getContext(), newTask);
+				if (patternId != null) {
+					ITaskCreationPatternHandler handler = taskCreationPatternHandlers.get(patternId);
+					List<Task> createdTasks = handler.handle(getContext(), newTask);
 					for (Task subTask : createdTasks) {
 						long id = subTask.getId();
 						if (!selectedTaskIds.contains(id)) {
@@ -278,8 +256,6 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				((AbstractContributionTabLogicImpl) getParent()).addTasks(selectedTaskIdsArray);
 			}
 		} catch (ModelException e) {
-			handleError(e);
-		} catch (CoreException e) {
 			handleError(e);
 		}
 	}

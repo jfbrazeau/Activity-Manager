@@ -3,6 +3,7 @@ package org.activitymgr.ui.web.logic.impl;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILogic;
+import org.activitymgr.ui.web.logic.ILogicContext;
 import org.activitymgr.ui.web.logic.IRootLogic;
 import org.activitymgr.ui.web.logic.ITransactionalWrapperBuilder;
 import org.activitymgr.ui.web.logic.impl.internal.RootLogicImpl;

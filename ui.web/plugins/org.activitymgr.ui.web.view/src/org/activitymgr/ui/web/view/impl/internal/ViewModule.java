@@ -7,6 +7,7 @@ import org.activitymgr.ui.web.logic.ICollaboratorsTabLogic;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.IDownloadButtonLogic;
 import org.activitymgr.ui.web.logic.ILabelLogic;
+import org.activitymgr.ui.web.logic.IStandardButtonLogic;
 import org.activitymgr.ui.web.logic.ITabFolderLogic;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITasksTabLogic;
@@ -14,7 +15,7 @@ import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.LogicModule;
 import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.internal.dialogs.TaskChooserDialog;
-import org.activitymgr.ui.web.view.impl.internal.util.ButtonView;
+import org.activitymgr.ui.web.view.impl.internal.util.StandardButtonView;
 import org.activitymgr.ui.web.view.impl.internal.util.CheckBoxView;
 import org.activitymgr.ui.web.view.impl.internal.util.DownloadButtonView;
 import org.activitymgr.ui.web.view.impl.internal.util.LabelView;
@@ -46,7 +47,7 @@ public class ViewModule extends AbstractModule {
 		bind(ITextFieldLogic.View.class).to(TextFieldView.class);
 		bind(ICheckBoxFieldLogic.View.class).to(CheckBoxView.class);
 		bind(ITabFolderLogic.View.class).to(TabFolderViewImpl.class);
-		bind(IButtonLogic.View.class).to(ButtonView.class);
+		bind(IStandardButtonLogic.View.class).to(StandardButtonView.class);
 		bind(IDownloadButtonLogic.View.class).to(DownloadButtonView.class);
 	}
 

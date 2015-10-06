@@ -4,22 +4,30 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
+import java.util.Set;
 
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.ui.web.logic.AbstractEvent;
+import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.IEventListener;
+import org.activitymgr.ui.web.logic.ITabFolderLogic;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
-import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
-import org.activitymgr.ui.web.logic.impl.CollaboratorsCellLogicFatory;
 import org.activitymgr.ui.web.logic.impl.event.ContributionChangeEvent;
+import org.activitymgr.ui.web.logic.spi.ICollaboratorsCellLogicFactory;
+import org.activitymgr.ui.web.logic.spi.ITabButtonFactory;
+
+import com.google.inject.Inject;
 
 public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl implements IEventListener {
 	
+	@Inject(optional = true)
+	private Set<ITabButtonFactory<IContributionsTabLogic>> buttonFactories;
+	
 	private ContributionsListTableCellProvider contributionsProvider;
 
-	public ContributionsTabLogicImpl(AbstractLogicImpl<?> parent) {
+	public ContributionsTabLogicImpl(ITabFolderLogic parent) {
 		super(parent);
 
 		// Contributions provider
@@ -38,8 +46,8 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 			@Override
 			protected Collection<String> unsafeGetPropertyIds() {
 				return Arrays.asList(new String[] {
-						CollaboratorsCellLogicFatory.FIRST_PROPERTY_NAME_ID,
-						CollaboratorsCellLogicFatory.LAST_PROPERTY_NAME_ID });
+						ICollaboratorsCellLogicFactory.FIRST_PROPERTY_NAME_ID,
+						ICollaboratorsCellLogicFactory.LAST_PROPERTY_NAME_ID });
 			}
 			@Override
 			protected Integer unsafeGetColumnWidth(String propertyId) {
@@ -54,6 +62,9 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 		
 		// Register the contribution change event
 		getEventBus().register(ContributionChangeEvent.class, this);
+
+		// Add buttons
+		registerButtons(buttonFactories);
 	}
 
 	@Override
@@ -166,6 +177,11 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 	@Override
 	public Collection<Long> getTaskIds() {
 		return contributionsProvider.getTaskIds();
+	}
+
+	@Override
+	public String getLabel() {
+		return "Contributions";
 	}
 
 }

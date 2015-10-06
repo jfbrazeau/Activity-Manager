@@ -5,10 +5,11 @@ import java.util.Collection;
 
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
+import org.activitymgr.ui.web.logic.ITabFolderLogic;
 
 public abstract class AbstractContributionTabLogicImpl extends AbstractTabLogicImpl<IContributionsTabLogic.View> implements IContributionsTabLogic {
 
-	public AbstractContributionTabLogicImpl(AbstractLogicImpl<?> parent) {
+	public AbstractContributionTabLogicImpl(ITabFolderLogic parent) {
 		super(parent);
 	}
 

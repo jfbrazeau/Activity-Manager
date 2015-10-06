@@ -1,19 +1,17 @@
-package org.activitymgr.ui.web.logic.impl;
+package org.activitymgr.ui.web.logic;
 
 import org.activitymgr.core.dto.Collaborator;
-import org.activitymgr.core.dto.IDTOFactory;
-import org.activitymgr.ui.web.logic.spi.IFeatureAccessManager;
 
 public interface ILogicContext {
 
-	public abstract IFeatureAccessManager getAccessManager();
+	IEventBus getEventBus();
+	
+	Collaborator getConnectedCollaborator();
 
-	public abstract Collaborator getConnectedCollaborator();
-
-	public abstract void setConnectedCollaborator(
+	void setConnectedCollaborator(
 			Collaborator connectedCollaborator);
 
-	public abstract <EXTENSION_TYPE, CONSTRUCTOR_ARG_TYPE> EXTENSION_TYPE getSingletonExtension(
+	<EXTENSION_TYPE, CONSTRUCTOR_ARG_TYPE> EXTENSION_TYPE getSingletonExtension(
 			String extensionPointId, Class<EXTENSION_TYPE> defaultType,
 			Class<CONSTRUCTOR_ARG_TYPE> constructorArgType,
 			CONSTRUCTOR_ARG_TYPE constructorArg);
@@ -35,7 +33,7 @@ public interface ILogicContext {
 	//		return result;
 	//	}
 	//
-	public abstract <EXTENSION_TYPE, CONSTRUCTOR_ARG_TYPE> EXTENSION_TYPE newExtensionInstance(
+	<EXTENSION_TYPE, CONSTRUCTOR_ARG_TYPE> EXTENSION_TYPE newExtensionInstance(
 			Class<EXTENSION_TYPE> type,
 			Class<CONSTRUCTOR_ARG_TYPE> constructorArgType,
 			CONSTRUCTOR_ARG_TYPE constructorArg);

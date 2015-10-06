@@ -19,10 +19,12 @@ import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILogic;
+import org.activitymgr.ui.web.logic.ILogicContext;
 import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
+import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTableCellProviderCallback;
-import org.activitymgr.ui.web.logic.impl.ContributionsCellLogicFatory;
+import org.activitymgr.ui.web.logic.spi.IContributionsCellLogicFactory;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -34,17 +36,21 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 	@Inject
 	private IModelMgr modelMgr;
 	
+	@Inject
+	private IContributionsCellLogicFactory cellLogicFactory;
+
+	@Inject
+	private ILogicContext context;
+
 	private Map<Long, TaskContributions> contributionsMap = new HashMap<Long, TaskContributions>();
 	private List<Long> taskIds = new ArrayList<Long>();
 	private Collection<Long> unmodifiableTaskIds = Collections.unmodifiableCollection(taskIds);
 	private Calendar firstDayOfWeek;
 	private Collaborator contributor;
-	private ContributionsCellLogicFatory cellLogicFactory;
 
 	public ContributionsListTableCellProvider(AbstractContributionTabLogicImpl source) {
 		super(source);
 		this.contributor = getContext().getConnectedCollaborator();
-		this.cellLogicFactory = getContext().getSingletonExtension("org.activitymgr.ui.web.logic.contributionsCellLogicFactory", ContributionsCellLogicFatory.class, AbstractContributionTabLogicImpl.class, source);
 	}
 
 	private LoadingCache<Long, LoadingCache<String, ILogic<?>>> cellLogics = CacheBuilder.newBuilder().build(new CacheLoader<Long, LoadingCache<String, ILogic<?>>>() {
@@ -53,7 +59,7 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 			return CacheBuilder.newBuilder().build(new CacheLoader<String, ILogic<?>>() {
 				@Override
 				public ILogic<?> load(String propertyId) throws Exception {
-					return cellLogicFactory.createCellLogic(contributor, firstDayOfWeek, contributionsMap.get(taskId), propertyId);
+					return cellLogicFactory.createCellLogic((AbstractLogicImpl<?>) getSource(), context, contributor, firstDayOfWeek, contributionsMap.get(taskId), propertyId);
 				}
 			});
 		}
@@ -105,7 +111,7 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 	}
 	
 	protected void updateTaskTotal(long taskId) {
-		ILogic<?> cellLogic = getCellLogic(taskId, ContributionsCellLogicFatory.TOTAL_COLUMN_ID);
+		ILogic<?> cellLogic = getCellLogic(taskId, IContributionsCellLogicFactory.TOTAL_COLUMN_ID);
 		if (cellLogic != null && cellLogic instanceof ILabelLogic) {
 			TaskContributions weekContributions = contributionsMap.get(taskId);
 			long total = 0;
@@ -191,7 +197,7 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 
 	@Override
 	protected String unsafeGetFooter(String propertyId) {
-		int dayIdx = ContributionsCellLogicFatory.DAY_COLUMNS_IDENTIFIERS.indexOf(propertyId);
+		int dayIdx = IContributionsCellLogicFactory.DAY_COLUMNS_IDENTIFIERS.indexOf(propertyId);
 		if (dayIdx >= 0) {
 			long total = 0;
 			for (TaskContributions tc : contributionsMap.values()) {
@@ -202,7 +208,7 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 			}
 			return StringHelper.hundredthToEntry(total);
 		}
-		else if (ContributionsCellLogicFatory.TOTAL_COLUMN_ID.equals(propertyId)) {
+		else if (IContributionsCellLogicFactory.TOTAL_COLUMN_ID.equals(propertyId)) {
 			long total = 0;
 			for (TaskContributions tc : contributionsMap.values()) {
 				for (Contribution contribution : tc.getContributions()) {

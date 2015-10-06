@@ -2,9 +2,9 @@ package org.activitymgr.ui.web.logic;
 
 public interface IEventBus {
 
-	public abstract void register(Class<? extends AbstractEvent> eventType,
-			IEventListener listener);
+	public <EVENT extends AbstractEvent> void register(Class<EVENT> eventType,
+			IEventListener<EVENT> listener);
 
-	public abstract void fire(AbstractEvent event);
+	public void fire(AbstractEvent event);
 
 }

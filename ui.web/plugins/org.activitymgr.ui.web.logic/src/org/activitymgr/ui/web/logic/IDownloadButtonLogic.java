@@ -1,16 +1,12 @@
 package org.activitymgr.ui.web.logic;
 
-public interface IDownloadButtonLogic extends ILogic<IDownloadButtonLogic.View> {
+public interface IDownloadButtonLogic extends IButtonLogic<IDownloadButtonLogic.View> {
 	
 	byte[] getContent();
 
 	String getFileName();
 
-	public interface View extends ILogic.IView<IDownloadButtonLogic> {
-
-		void setIcon(String iconId);
-		
-		void setDescription(String caption);
+	public interface View extends IButtonLogic.View<IDownloadButtonLogic> {
 
 	}
 

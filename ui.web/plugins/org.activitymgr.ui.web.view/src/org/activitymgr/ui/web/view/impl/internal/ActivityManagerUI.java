@@ -16,6 +16,8 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.util.Modules;
 import com.vaadin.annotations.Theme;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
@@ -36,7 +38,6 @@ public class ActivityManagerUI extends UI implements IRootLogic.View {
 	
 	static {
 		List<AbstractModule> modules = new ArrayList<AbstractModule>();
-		modules.add(new ViewModule());
 		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.additionalModules");
 		for (IConfigurationElement cfg : cfgs) {
 			try {
@@ -45,8 +46,10 @@ public class ActivityManagerUI extends UI implements IRootLogic.View {
 				throw new IllegalStateException(e);
 			}
 		}
+		// Activity Manager module can be overriden
+		Module module = Modules.override(new ViewModule()).with(modules);
 		// Injector creation
-		INJECTOR = Guice.createInjector(modules);
+		INJECTOR = Guice.createInjector(module);
 	}
 
 	@Override
