@@ -1,17 +1,23 @@
 target "Activity Manager"
 
-location "http://download.eclipse.org/eclipse/updates/4.2" {
+location "http://download.eclipse.org/eclipse/updates/4.5" {
 	org.eclipse.platform.feature.group lazy
+	org.eclipse.platform.source.feature.group lazy
+	org.eclipse.equinox.executable.feature.group lazy
 	org.eclipse.rcp.feature.group lazy
 	org.eclipse.rcp.source.feature.group lazy
 	org.eclipse.emf.common.feature.group lazy
 	org.eclipse.emf.common.source.feature.group lazy
 	org.eclipse.emf.ecore.feature.group lazy
 	org.eclipse.emf.ecore.source.feature.group lazy
-//	org.junit [3.8.2.v3_8_2_v20100427-1100,3.8.2.v3_8_2_v20100427-1100]
-	org.junit [4.10.0.v4_10_0_v20120426-0900,4.10.0.v4_10_0_v20120426-0900]
+	org.junit lazy
 	org.junit.source lazy
+	org.hamcrest lazy
 	org.hamcrest.core lazy
+	org.hamcrest.library lazy
+	org.hamcrest.integration lazy
+	org.hamcrest.text lazy
+	org.apache.commons.codec lazy
 }
 
 location "http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository/" {
@@ -33,6 +39,6 @@ location "http://download.eclipse.org/tools/orbit/downloads/drops/R2014052502125
 	org.apache.poi.source lazy
 }
 
-location "http://jfbrazeau.github.io/Vaadin-OSGi-Container/repository/" {
+/** location "http://jfbrazeau.github.io/Vaadin-OSGi-Container/repository/" {
 	org.vaadin.osgiappcontainer.feature.feature.group lazy
-}
+} */

@@ -5,11 +5,23 @@ Bundle-SymbolicName: org.activitymgr.ui.web.view;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jean-Francois Brazeau
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.vaadin.osgiappcontainer;visibility:=reexport,
- org.activitymgr.ui.web.logic;visibility:=reexport,
+Require-Bundle: org.activitymgr.ui.web.logic;visibility:=reexport,
  org.eclipse.equinox.app,
  org.eclipse.core.runtime,
- com.google.inject;bundle-version="3.0.0"
+ com.google.inject;bundle-version="3.0.0",
+ org.eclipse.equinox.http.registry;bundle-version="1.1.300",
+ org.eclipse.osgi.services;bundle-version="3.5.0",
+ javax.servlet;bundle-version="3.1.0"
 Bundle-ActivationPolicy: lazy
-Bundle-Activator: org.activitymgr.ui.web.view.impl.internal.Activator
-Export-Package: org.activitymgr.ui.web.view
+Bundle-Activator: org.activitymgr.ui.web.view.impl.internal.vaadin.Activator
+Bundle-ClassPath: lib/json-0.0.20080701.jar,
+ lib/jsoup-1.6.3.jar,
+ lib/vaadin-client-compiled-7.3.5.jar,
+ lib/vaadin-client-compiler-7.3.5.jar,
+ lib/vaadin-push-7.3.5.jar,
+ lib/vaadin-server-7.3.5.jar,
+ lib/vaadin-shared-7.3.5.jar,
+ lib/vaadin-themes-7.3.5.jar,
+ .
+Export-Package: com.vaadin.ui,
+ org.activitymgr.ui.web.view

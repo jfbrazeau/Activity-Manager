@@ -15,18 +15,11 @@
          point="org.eclipse.core.runtime.products">
       <product
             application="org.activitymgr.ui.web.view.application"
-            name="Activity Manager UI (Web)">
+            name="Obeo Activity Manager UI (Web)">
          <property
                name="appName"
-               value="Activity Manager UI (Web)">
+               value="Obeo Activity Manager UI (Web)">
          </property>
       </product>
-   </extension>
-   <extension
-         point="org.vaadin.application">
-      <vaadin-ui
-            productionMode="true"
-            ui="org.activitymgr.ui.web.view.impl.internal.ActivityManagerUI">
-      </vaadin-ui>
    </extension>
 </plugin>
