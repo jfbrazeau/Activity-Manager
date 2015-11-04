@@ -23,5 +23,9 @@ Bundle-ClassPath: lib/json-0.0.20080701.jar,
  lib/vaadin-shared-7.3.5.jar,
  lib/vaadin-themes-7.3.5.jar,
  .
-Export-Package: com.vaadin.ui,
- org.activitymgr.ui.web.view
+Export-Package: com.vaadin.data,
+ com.vaadin.event,
+ com.vaadin.server,
+ com.vaadin.ui,
+ org.activitymgr.ui.web.view,
+ org.activitymgr.ui.web.view.impl.dialogs
