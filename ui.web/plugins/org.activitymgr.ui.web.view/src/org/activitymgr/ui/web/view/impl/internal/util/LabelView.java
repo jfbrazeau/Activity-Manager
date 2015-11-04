@@ -22,4 +22,9 @@ public class LabelView extends Label implements View {
 		setValue(s);
 	}
 
+	@Override
+	public void setAlign(Align align) {
+		setStyleName("align-" + align.toString().toLowerCase());
+	}
+
 }

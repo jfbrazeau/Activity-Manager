@@ -51,7 +51,9 @@ public abstract class AbstractTabPanel<LOGIC extends ITabLogic<?>> extends Verti
 
 		// Body
 		bodyComponent = createBodyComponent();
-		hl.addComponent(bodyComponent);
+		if (bodyComponent != null) {
+			hl.addComponent(bodyComponent);
+		}
 
 		// Add actions panel
 		actionsContainer = new VerticalLayout();

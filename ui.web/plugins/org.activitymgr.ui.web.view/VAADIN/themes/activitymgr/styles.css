@@ -43,3 +43,11 @@
 .blue {
     background: blue;
 }
+
+.align-left {
+}
+
+.align-right {
+	float: right;
+}
+

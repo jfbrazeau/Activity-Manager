@@ -9,7 +9,6 @@ import java.util.Set;
 
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.model.ModelException;
-import org.activitymgr.ui.web.logic.AbstractEvent;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.ITabFolderLogic;
@@ -22,7 +21,7 @@ import org.activitymgr.ui.web.logic.spi.ITabButtonFactory;
 
 import com.google.inject.Inject;
 
-public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl implements IEventListener {
+public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl implements IEventListener<ContributionChangeEvent> {
 	
 	@Inject(optional = true)
 	private Set<ITabButtonFactory<IContributionsTabLogic>> buttonFactories;
@@ -176,10 +175,9 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 	}
 
 	@Override
-	public void handle(AbstractEvent event) {
-		ContributionChangeEvent ccEvent = (ContributionChangeEvent) event;
-		System.out.println("handle(" + ccEvent.getPropertyId() + ", " + ccEvent.getOldDuration() + ", " + ccEvent.getNewDuration() + ")");
-		contributionsProvider.updateTaskTotal(ccEvent.getTaskId());
+	public void handle(ContributionChangeEvent event) {
+		System.out.println("handle(" + event.getPropertyId() + ", " + event.getOldDuration() + ", " + event.getNewDuration() + ")");
+		contributionsProvider.updateTaskTotal(event.getTaskId());
 		getView().reloadContributionTableFooter();
 	}
 
