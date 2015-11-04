@@ -9,7 +9,7 @@ import org.activitymgr.ui.web.logic.ActivityManagerLogic;
 import org.activitymgr.ui.web.logic.IGenericCallback;
 import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.IRootLogic;
-import org.activitymgr.ui.web.view.impl.internal.dialogs.YesNoDialog;
+import org.activitymgr.ui.web.view.impl.dialogs.YesNoDialog;
 import org.activitymgr.ui.web.view.impl.internal.vaadin.Activator;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;

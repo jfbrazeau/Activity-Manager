@@ -1,7 +1,6 @@
 package org.activitymgr.ui.web.view.impl.internal;
 
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
-import org.activitymgr.ui.web.logic.IButtonLogic;
 import org.activitymgr.ui.web.logic.ICheckBoxFieldLogic;
 import org.activitymgr.ui.web.logic.ICollaboratorsTabLogic;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
@@ -14,11 +13,11 @@ import org.activitymgr.ui.web.logic.ITasksTabLogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.LogicModule;
 import org.activitymgr.ui.web.view.IResourceCache;
-import org.activitymgr.ui.web.view.impl.internal.dialogs.TaskChooserDialog;
-import org.activitymgr.ui.web.view.impl.internal.util.StandardButtonView;
+import org.activitymgr.ui.web.view.impl.dialogs.TaskChooserDialog;
 import org.activitymgr.ui.web.view.impl.internal.util.CheckBoxView;
 import org.activitymgr.ui.web.view.impl.internal.util.DownloadButtonView;
 import org.activitymgr.ui.web.view.impl.internal.util.LabelView;
+import org.activitymgr.ui.web.view.impl.internal.util.StandardButtonView;
 import org.activitymgr.ui.web.view.impl.internal.util.TextFieldView;
 
 import com.google.inject.AbstractModule;

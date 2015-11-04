@@ -1,7 +1,5 @@
 package org.activitymgr.ui.web.view.impl.internal;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -9,12 +7,12 @@ import java.util.GregorianCalendar;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.view.AbstractTabPanel;
+import org.activitymgr.ui.web.view.impl.dialogs.PopuDateFieldWithParser;
 import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.util.ContainerOrderedWrapper;
-import com.vaadin.data.util.converter.Converter;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -74,22 +72,7 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 		
 		todayButton = new Button("Today");
 		controlsContainer.addComponent(todayButton);
-		dateField = new PopupDateField() {
-			@Override
-			protected Date handleUnparsableDateString(String dateString)
-		            throws Converter.ConversionException {
-				try {
-					int idx = dateString.indexOf(' ');
-					if (idx > 0) {
-						dateString = dateString.substring(idx);
-					}
-					SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-					return sdf.parse(dateString);
-				} catch (ParseException ignore) {
-					return new Date();
-				}
-		    }
-		};
+		dateField = new PopuDateFieldWithParser();
 		dateField.setImmediate(true);
 		dateField.setDateFormat("E dd/MM/yyyy");
 		dateField.setStyleName("monday-date-field");

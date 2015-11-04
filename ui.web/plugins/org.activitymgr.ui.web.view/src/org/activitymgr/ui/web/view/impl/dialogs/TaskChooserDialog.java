@@ -1,4 +1,4 @@
-package org.activitymgr.ui.web.view.impl.internal.dialogs;
+package org.activitymgr.ui.web.view.impl.dialogs;
 
 import java.util.Stack;
 
