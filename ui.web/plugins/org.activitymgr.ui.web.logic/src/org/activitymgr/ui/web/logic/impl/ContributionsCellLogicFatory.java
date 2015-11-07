@@ -17,6 +17,7 @@ import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.IEventBus;
+import org.activitymgr.ui.web.logic.ILabelLogic.View.Align;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogicContext;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
@@ -68,7 +69,7 @@ public class ContributionsCellLogicFatory implements IContributionsCellLogicFact
 			logic = new LabelLogicImpl(parentLogic, weekContributions.getTask().getName());
 		}
 		else if (TOTAL_COLUMN_ID.equals(propertyId)) {
-			logic = new LabelLogicImpl(parentLogic, "");
+			logic = new LabelLogicImpl(parentLogic, "", Align.RIGHT);
 		}
 		else {
 			throw new IllegalArgumentException(propertyId);
