@@ -121,6 +121,9 @@ public abstract class AbstractModelTestCase extends TestCase implements
 					}
 				});
 
+		// Inject in the test itself
+		injector.injectMembers(this);
+		
 		// Recreate tables
 		if (dropTablesBeforeTest())
 			getModelMgr().createTables();
