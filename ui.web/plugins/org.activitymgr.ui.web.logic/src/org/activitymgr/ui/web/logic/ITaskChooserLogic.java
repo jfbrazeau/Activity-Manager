@@ -27,8 +27,6 @@ public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 
 		public void setOkButtonEnabled(boolean enabled);
 
-		public void setNewTaskFormEnabled(boolean enabled);
-
 		public void setStatus(String status);
 
 		public void selectTask(long taskId);

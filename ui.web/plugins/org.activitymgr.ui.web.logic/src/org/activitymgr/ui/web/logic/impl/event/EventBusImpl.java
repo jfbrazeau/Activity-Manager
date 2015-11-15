@@ -28,6 +28,17 @@ public class EventBusImpl implements IEventBus {
 		eventTypeListeners.add(listener);
 	}
 
+	@Override
+	public void unregister(
+			IEventListener<? extends AbstractEvent> listener) {
+		for (Collection<IEventListener<?>> listeners : this.listeners.values()) {
+			if (listeners.contains(listener)) {
+				listeners.remove(listener);
+			}
+		}
+		
+	}
+
 	/* (non-Javadoc)
 	 * @see org.activitymgr.ui.web.logic.impl.event.IEventBus#fire(org.activitymgr.ui.web.logic.impl.event.Event)
 	 */
@@ -45,5 +56,6 @@ public class EventBusImpl implements IEventBus {
 
 		}
 	}
+
 
 }

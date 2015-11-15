@@ -120,4 +120,8 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 		return twBuilder.buildTransactionalWrapper(wrapped, interfaceToWrapp);
 	}
 
+	@Override
+	public void dispose() {
+	}
+
 }

@@ -2,11 +2,11 @@ package org.activitymgr.ui.web.logic.impl.internal;
 
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
-import org.activitymgr.ui.web.logic.impl.AbstractSafeStandardButtonLogicImpl;
+import org.activitymgr.ui.web.logic.impl.AbstractSafeSelfStandardButtonLogicImpl;
 
 import com.google.inject.Inject;
 
-public class NewContributionTaskButtonLogic extends AbstractSafeStandardButtonLogicImpl {
+public class NewContributionTaskButtonLogic extends AbstractSafeSelfStandardButtonLogicImpl {
 
 	@Inject
 	public NewContributionTaskButtonLogic(IContributionsTabLogic parent) {

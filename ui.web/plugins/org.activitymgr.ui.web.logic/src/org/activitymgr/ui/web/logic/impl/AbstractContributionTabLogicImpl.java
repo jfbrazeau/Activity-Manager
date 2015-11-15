@@ -21,4 +21,5 @@ public abstract class AbstractContributionTabLogicImpl extends AbstractTabLogicI
 	
 	public abstract Collection<Long> getTaskIds();
 
+
 }

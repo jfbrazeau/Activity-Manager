@@ -29,6 +29,8 @@ import org.activitymgr.ui.web.logic.spi.IContributionsCellLogicFactory;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 import com.google.inject.Inject;
 
 class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCallback<Long> {
@@ -53,10 +55,24 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 		this.contributor = getContext().getConnectedCollaborator();
 	}
 
-	private LoadingCache<Long, LoadingCache<String, ILogic<?>>> cellLogics = CacheBuilder.newBuilder().build(new CacheLoader<Long, LoadingCache<String, ILogic<?>>>() {
+	private LoadingCache<Long, LoadingCache<String, ILogic<?>>> cellLogics = CacheBuilder.newBuilder().removalListener(new RemovalListener<Long, LoadingCache<String, ILogic<?>>>() {
+		@Override
+		public void onRemoval(
+				RemovalNotification<Long, LoadingCache<String, ILogic<?>>> notification) {
+			LoadingCache<String, ILogic<?>> nestedCache = notification.getValue();
+			nestedCache.invalidateAll();
+		}
+	}).build(new CacheLoader<Long, LoadingCache<String, ILogic<?>>>() {
 		@Override
 		public LoadingCache<String, ILogic<?>> load(final Long taskId) throws Exception {
-			return CacheBuilder.newBuilder().build(new CacheLoader<String, ILogic<?>>() {
+			return CacheBuilder.newBuilder().removalListener(new RemovalListener<String, ILogic<?>>() {
+				@Override
+				public void onRemoval(
+						RemovalNotification<String, ILogic<?>> notification) {
+					ILogic<?> value = notification.getValue();
+					value.dispose();
+				}
+			}).build(new CacheLoader<String, ILogic<?>>() {
 				@Override
 				public ILogic<?> load(String propertyId) throws Exception {
 					return cellLogicFactory.createCellLogic((AbstractLogicImpl<?>) getSource(), context, contributor, firstDayOfWeek, contributionsMap.get(taskId), propertyId);
@@ -76,7 +92,7 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 	}
 
 	@Override
-	protected Collection<Long> unsafeGetRootElements() throws Exception {
+	protected Collection<Long> unsafeGetRootElements() {
 		return taskIds;
 	}
 
@@ -135,8 +151,18 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 		contributionsMap.put(taskId, weekContribution);
 		// Resort the contributions
 		sortWeekContributions();
+		
+		// Corner case : if the parent task of the given task is present in the current
+		// selection (which is possible if this parent task was a leaf task just before)
+		// the cell logic cache must be invalidated to let the corresponding cell become
+		// read-only 
+		Task parentTask = modelMgr.getParentTask(task);
+		if (taskIds.contains(parentTask.getId())) {
+			cellLogics.invalidate(parentTask.getId());
+		}
 	}
 
+	
 	private void loadContributions() throws ModelException {
 		taskIds.clear();
 		contributionsMap.clear();
@@ -181,8 +207,9 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 
 	private static Calendar moveToFirstDayOfWeek(Calendar date) {
 		Calendar dateCursor = (Calendar) date.clone();
-		while (dateCursor.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY)
+		while (dateCursor.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
 			dateCursor.add(Calendar.DATE, -1);
+		}
 		return dateCursor;
 	}
 
@@ -225,12 +252,12 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 	}
 
 	@Deprecated
-	protected TaskContributions getWeekContributions(long taskId) {
+	private TaskContributions getWeekContributions(long taskId) {
 		return contributionsMap.get(taskId);
 	}
 
 	@Deprecated
-	public ILogic<?> getCellLogic(long taskId, String propertyId) {
+	private ILogic<?> getCellLogic(long taskId, String propertyId) {
 		try {
 			return cellLogics.get(taskId).get(propertyId);
 		} catch (ExecutionException e) {

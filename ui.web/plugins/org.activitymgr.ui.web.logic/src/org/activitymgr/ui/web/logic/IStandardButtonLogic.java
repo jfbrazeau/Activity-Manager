@@ -9,6 +9,8 @@ public interface IStandardButtonLogic extends IButtonLogic<IStandardButtonLogic.
 		void setShortcut(char key,
 				boolean ctrl, boolean shift, boolean alt);
 
+		void setEnabled(boolean b);
+
 	}
 
 }

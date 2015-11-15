@@ -109,4 +109,8 @@ public class RootLogicImpl implements IRootLogic {
 		return instance;
 	}
 
+	@Override
+	public void dispose() {
+		// TODO unregister listeners, dispose event bus
+	}
 }

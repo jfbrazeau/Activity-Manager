@@ -19,6 +19,7 @@ import org.activitymgr.ui.web.logic.impl.CollaboratorsCellLogicFatory;
 import org.activitymgr.ui.web.logic.impl.ContributionsCellLogicFatory;
 import org.activitymgr.ui.web.logic.impl.internal.CollaboratorsTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.internal.ContributionsTabLogicImpl;
+import org.activitymgr.ui.web.logic.impl.internal.DefaultConstraintsValidator;
 import org.activitymgr.ui.web.logic.impl.internal.NewContributionTaskButtonLogic;
 import org.activitymgr.ui.web.logic.impl.internal.TasksTabLogicImpl;
 import org.activitymgr.ui.web.logic.spi.IAuthenticatorExtension;
@@ -33,6 +34,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
@@ -97,7 +99,7 @@ public class LogicModule extends AbstractModule {
 
 		// Bind task creation pattern
 		MapBinder<String, ITaskCreationPatternHandler> tcpBinder = MapBinder.newMapBinder(binder(), String.class, ITaskCreationPatternHandler.class);
-		tcpBinder.addBinding("none").to(NoneTaskCreationPatternHandler.class);
+		tcpBinder.addBinding("0_none").to(NoneTaskCreationPatternHandler.class);
 
 		// Bind contribution tab buttons
 		Multibinder<ITabButtonFactory<IContributionsTabLogic>> ctlBinder = Multibinder.newSetBinder(binder(), new TypeLiteral<ITabButtonFactory<IContributionsTabLogic>>() {});
@@ -107,6 +109,10 @@ public class LogicModule extends AbstractModule {
 				return new NewContributionTaskButtonLogic(parent);
 			}
 		});
+
+		// Bind constraints validator
+		Multibinder<IConstraintsValidator> cvBinder = Multibinder.newSetBinder(binder(), new TypeLiteral<IConstraintsValidator>() {});
+		cvBinder.addBinding().to(DefaultConstraintsValidator.class);
 	}
 
 }

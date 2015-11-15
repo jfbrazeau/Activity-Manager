@@ -58,6 +58,7 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
         leftContainerPanel.setWidth(200, Unit.PIXELS);
         leftContainerPanel.setHeight(350, Unit.PIXELS);
         taskTree = new Tree();
+        taskTree.setNullSelectionAllowed(false);
         leftContainerPanel.setContent(taskTree);
         taskTree.setImmediate(true);
         
@@ -212,11 +213,6 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	@Override
 	public void setOkButtonEnabled(boolean enabled) {
 		ok.setEnabled(enabled);
-	}
-
-	@Override
-	public void setNewTaskFormEnabled(boolean enabled) {
-		newTaskFormPanel.setEnabled(enabled);
 	}
 
 	@Override

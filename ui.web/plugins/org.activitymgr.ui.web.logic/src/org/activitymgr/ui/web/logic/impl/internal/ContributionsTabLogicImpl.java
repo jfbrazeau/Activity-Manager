@@ -15,6 +15,7 @@ import org.activitymgr.ui.web.logic.ITabFolderLogic;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.event.ContributionChangeEvent;
+import org.activitymgr.ui.web.logic.impl.event.ContributionsTabWeekChangedEvent;
 import org.activitymgr.ui.web.logic.spi.ICollaboratorsCellLogicFactory;
 import org.activitymgr.ui.web.logic.spi.IContributionsCellLogicFactory;
 import org.activitymgr.ui.web.logic.spi.ITabButtonFactory;
@@ -80,12 +81,12 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 
 	@Override
 	public void onPreviousWeek() {
-		changeFirstDayOfWeekAndUpdateView(Calendar.WEEK_OF_YEAR, -1);
+		changeFirstDayOfWeekAndUpdateView(Calendar.DATE, -7);
 	}
 
 	@Override
 	public void onNextWeek() {
-		changeFirstDayOfWeekAndUpdateView(Calendar.WEEK_OF_YEAR, 1);
+		changeFirstDayOfWeekAndUpdateView(Calendar.DATE, 7);
 	}
 
 	@Override
@@ -127,6 +128,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 			}
 
 			getView().reloadContributionTableItems();
+			getEventBus().fire(new ContributionsTabWeekChangedEvent(this, getContributor(), getFirstDayOfWeek()));
 		} catch (ModelException e) {
 			throw new IllegalStateException(e);
 		}
@@ -136,6 +138,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 		try {
 			contributionsProvider.changeFirstDayOfWeek(amountType, amount);
 			getView().setDate(contributionsProvider.getFirstDayOfWeek());
+			getEventBus().fire(new ContributionsTabWeekChangedEvent(this, getContributor(), getFirstDayOfWeek()));
 			getView().reloadContributionTableItems();
 		} catch (ModelException e) {
 			throw new IllegalStateException(e);
@@ -168,6 +171,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 		try {
 			contributionsProvider.changeContributor(getModelMgr().getCollaborator(collaboratorId));
 			getView().reloadContributionTableItems();
+			getEventBus().fire(new ContributionsTabWeekChangedEvent(this, getContributor(), getFirstDayOfWeek()));
 		}
 		catch (ModelException e) {
 			handleError(e);
