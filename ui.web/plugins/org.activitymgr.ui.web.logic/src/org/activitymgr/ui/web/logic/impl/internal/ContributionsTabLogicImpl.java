@@ -67,6 +67,9 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 
 		// Add buttons
 		registerButtons(buttonFactories);
+		
+		// Initialization event
+		fireCollabratorOrWeekChangedEvent();
 	}
 
 	@Override
@@ -128,18 +131,22 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 			}
 
 			getView().reloadContributionTableItems();
-			getEventBus().fire(new ContributionsTabWeekChangedEvent(this, getContributor(), getFirstDayOfWeek()));
+			fireCollabratorOrWeekChangedEvent();
 		} catch (ModelException e) {
 			throw new IllegalStateException(e);
 		}
+	}
+
+	private void fireCollabratorOrWeekChangedEvent() {
+		getEventBus().fire(new ContributionsTabWeekChangedEvent(this, getContributor(), getFirstDayOfWeek()));
 	}
 
 	private void changeFirstDayOfWeekAndUpdateView(int amountType, int amount) {
 		try {
 			contributionsProvider.changeFirstDayOfWeek(amountType, amount);
 			getView().setDate(contributionsProvider.getFirstDayOfWeek());
-			getEventBus().fire(new ContributionsTabWeekChangedEvent(this, getContributor(), getFirstDayOfWeek()));
 			getView().reloadContributionTableItems();
+			fireCollabratorOrWeekChangedEvent();
 		} catch (ModelException e) {
 			throw new IllegalStateException(e);
 		}
@@ -171,7 +178,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 		try {
 			contributionsProvider.changeContributor(getModelMgr().getCollaborator(collaboratorId));
 			getView().reloadContributionTableItems();
-			getEventBus().fire(new ContributionsTabWeekChangedEvent(this, getContributor(), getFirstDayOfWeek()));
+			fireCollabratorOrWeekChangedEvent();
 		}
 		catch (ModelException e) {
 			handleError(e);
