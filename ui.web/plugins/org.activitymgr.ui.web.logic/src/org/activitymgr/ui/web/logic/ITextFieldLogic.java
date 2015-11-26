@@ -21,6 +21,8 @@ public interface ITextFieldLogic extends ILogic<ITextFieldLogic.View> {
 		void setNumericFieldStyle();
 
 		void setReadOnly(boolean readOnly);
+		
+		boolean isReadOnly();
 
 		void blur();
 		

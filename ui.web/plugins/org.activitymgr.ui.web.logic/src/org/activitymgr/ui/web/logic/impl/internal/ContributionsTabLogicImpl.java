@@ -13,6 +13,7 @@ import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.ITabFolderLogic;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
+import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.event.ContributionChangeEvent;
 import org.activitymgr.ui.web.logic.impl.event.ContributionsTabWeekChangedEvent;
@@ -156,12 +157,21 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 	@Override
 	public void addTasks(long... taskIds) {
 		try {
-			for (long taskId : taskIds) {
-				if (!contributionsProvider.getTaskIds().contains(taskId)) {
-					contributionsProvider.addEmptyWeekContribution(taskId);
+			if (taskIds.length > 0) {
+				for (long taskId : taskIds) {
+					if (!contributionsProvider.getTaskIds().contains(taskId)) {
+						contributionsProvider.addEmptyWeekContribution(taskId);
+					}
+				}
+				getView().reloadContributionTableItems();
+				for (String propertyId : contributionsProvider.getPropertyIds()) {
+					org.activitymgr.ui.web.logic.ILogic.IView<?> cell = contributionsProvider.getCell(taskIds[0], propertyId);
+					if (cell instanceof ITextFieldLogic.View && !((ITextFieldLogic.View) cell).isReadOnly()) {
+						((ITextFieldLogic.View) cell).focus();
+						break;
+					}
 				}
 			}
-			getView().reloadContributionTableItems();
 		}
 		catch (ModelException e) {
 			handleError(e);
