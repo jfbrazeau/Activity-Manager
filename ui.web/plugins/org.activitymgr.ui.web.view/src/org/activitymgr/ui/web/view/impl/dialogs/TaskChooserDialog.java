@@ -112,7 +112,7 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
         hl.addComponent(ok);
         hl.setExpandRatio(ok, 0);
         hl.addComponent(cancel);
-        hl.setComponentAlignment(cancel, Alignment.MIDDLE_RIGHT);
+        hl.setComponentAlignment(cancel, Alignment.TOP_RIGHT);
         hl.setExpandRatio(cancel, 0);
         
         // Register listeners
@@ -259,7 +259,7 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 
 	@Override
 	public long getSelectedTaskId() {
-		return (Long) taskTree.getValue();
+		return taskTree.getValue() != null ? (Long)taskTree.getValue() : -1;
 	}
 
 	@Override
