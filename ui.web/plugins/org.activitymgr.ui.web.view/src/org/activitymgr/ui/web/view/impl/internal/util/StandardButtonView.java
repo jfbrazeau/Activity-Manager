@@ -12,19 +12,11 @@ import com.vaadin.ui.HasComponents;
 @SuppressWarnings("serial")
 public class StandardButtonView extends Button implements View {
 
+	@SuppressWarnings("unused")
 	private IStandardButtonLogic logic;
 	
 	@Inject
 	private IResourceCache resourceCache;
-
-	public StandardButtonView() {
-		addClickListener(new Button.ClickListener() {
-			@Override
-			public void buttonClick(ClickEvent event) {
-				logic.onClick();
-			}
-		});
-	}
 
 	@Override
 	public void setIcon(String iconId) {
@@ -50,8 +42,15 @@ public class StandardButtonView extends Button implements View {
 	}
 
 	@Override
-	public void registerLogic(IStandardButtonLogic logic) {
+	public void registerLogic(final IStandardButtonLogic logic) {
 		this.logic = logic;
+		setImmediate(true);
+		addClickListener(new Button.ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				logic.onClick();
+			}
+		});
 	}
 
 

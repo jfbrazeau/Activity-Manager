@@ -4,9 +4,9 @@ import java.util.Collection;
 
 import org.activitymgr.ui.web.logic.ILogic.IView;
 
-public interface ITableCellProviderCallback<TYPE> {
+public interface ITableCellProviderCallback<ITEM_ID_TYPE> {
 	
-	IView<?> getCell(TYPE itemId, String propertyId);
+	IView<?> getCell(ITEM_ID_TYPE itemId, String propertyId);
 	
 	Integer getColumnWidth(String propertyId);
 
@@ -14,8 +14,8 @@ public interface ITableCellProviderCallback<TYPE> {
 
 	Collection<String> getPropertyIds();
 
-	Collection<TYPE> getRootElements();
+	Collection<ITEM_ID_TYPE> getRootElements();
 	
-	boolean contains(TYPE element);
+	boolean contains(ITEM_ID_TYPE element);
 
 }

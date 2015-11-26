@@ -6,14 +6,14 @@ import java.util.Collections;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 
-public abstract class AbstractSafeTreeTableCellProviderCallback<TYPE> extends AbstractSafeTableCellProviderCallback<TYPE> implements ITreeContentProviderCallback<TYPE> {
+public abstract class AbstractSafeTreeTableCellProviderCallback<ITEM_ID_TYPE> extends AbstractSafeTableCellProviderCallback<ITEM_ID_TYPE> implements ITreeContentProviderCallback<ITEM_ID_TYPE> {
 	
 	public AbstractSafeTreeTableCellProviderCallback(ILogic<?> source) {
 		super(source);
 	}
 
 	@Override
-	public final Collection<TYPE> getChildren(TYPE element) {
+	public final Collection<ITEM_ID_TYPE> getChildren(ITEM_ID_TYPE element) {
 		try {
 			return unsafeGetChildren(element);
 		}
@@ -23,10 +23,10 @@ public abstract class AbstractSafeTreeTableCellProviderCallback<TYPE> extends Ab
 		}
 	}
 
-	protected abstract Collection<TYPE> unsafeGetChildren(TYPE element) throws Exception;
+	protected abstract Collection<ITEM_ID_TYPE> unsafeGetChildren(ITEM_ID_TYPE element) throws Exception;
 
 	@Override
-	public TYPE getParent(TYPE element) {
+	public ITEM_ID_TYPE getParent(ITEM_ID_TYPE element) {
 		try {
 			return unsafeGetParent(element);
 		}
@@ -36,10 +36,10 @@ public abstract class AbstractSafeTreeTableCellProviderCallback<TYPE> extends Ab
 		}
 	}
 	
-	protected abstract TYPE unsafeGetParent(TYPE element) throws Exception;
+	protected abstract ITEM_ID_TYPE unsafeGetParent(ITEM_ID_TYPE element) throws Exception;
 
 	@Override
-	public final boolean hasChildren(TYPE element) {
+	public final boolean hasChildren(ITEM_ID_TYPE element) {
 		try {
 			return unsafeHasChildren(element);
 		}
@@ -49,10 +49,10 @@ public abstract class AbstractSafeTreeTableCellProviderCallback<TYPE> extends Ab
 		}
 	}
 
-	protected abstract boolean unsafeHasChildren(TYPE element) throws Exception;
+	protected abstract boolean unsafeHasChildren(ITEM_ID_TYPE element) throws Exception;
 
 	@Override
-	public final boolean isRoot(TYPE element) {
+	public final boolean isRoot(ITEM_ID_TYPE element) {
 		try {
 			return unsafeIsRoot(element);
 		}
@@ -62,6 +62,6 @@ public abstract class AbstractSafeTreeTableCellProviderCallback<TYPE> extends Ab
 		}
 	}
 
-	protected abstract boolean unsafeIsRoot(TYPE element);
+	protected abstract boolean unsafeIsRoot(ITEM_ID_TYPE element);
 
 }

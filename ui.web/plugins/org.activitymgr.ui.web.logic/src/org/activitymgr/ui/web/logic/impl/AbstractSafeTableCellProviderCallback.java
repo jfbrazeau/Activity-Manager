@@ -7,14 +7,14 @@ import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 
-public abstract class AbstractSafeTableCellProviderCallback<TYPE> extends AbstractSafeCallback implements ITableCellProviderCallback<TYPE> {
+public abstract class AbstractSafeTableCellProviderCallback<ITEM_ID_TYPE> extends AbstractSafeCallback implements ITableCellProviderCallback<ITEM_ID_TYPE> {
 	
 	public AbstractSafeTableCellProviderCallback(ILogic<?> source) {
 		super(source);
 	}
 
 	@Override
-	public final Collection<TYPE> getRootElements() {
+	public final Collection<ITEM_ID_TYPE> getRootElements() {
 		try {
 			return unsafeGetRootElements();
 		}
@@ -24,10 +24,10 @@ public abstract class AbstractSafeTableCellProviderCallback<TYPE> extends Abstra
 		}
 	}
 
-	protected abstract Collection<TYPE> unsafeGetRootElements() throws Exception;
+	protected abstract Collection<ITEM_ID_TYPE> unsafeGetRootElements() throws Exception;
 	
 	@Override
-	public final boolean contains(TYPE element) {
+	public final boolean contains(ITEM_ID_TYPE element) {
 		try {
 			return unsafeContains(element);
 		}
@@ -37,10 +37,10 @@ public abstract class AbstractSafeTableCellProviderCallback<TYPE> extends Abstra
 		}
 	}
 
-	protected abstract boolean unsafeContains(TYPE element) throws Exception;
+	protected abstract boolean unsafeContains(ITEM_ID_TYPE element) throws Exception;
 
 	@Override
-	public final IView<?> getCell(TYPE itemId, String propertyId) {
+	public final IView<?> getCell(ITEM_ID_TYPE itemId, String propertyId) {
 		try {
 			return unsafeGetCell(itemId, propertyId);
 		}
@@ -50,7 +50,7 @@ public abstract class AbstractSafeTableCellProviderCallback<TYPE> extends Abstra
 		}
 	}
 	
-	protected abstract IView<?> unsafeGetCell(TYPE itemId, String propertyId) throws Exception;
+	protected abstract IView<?> unsafeGetCell(ITEM_ID_TYPE itemId, String propertyId) throws Exception;
 
 	@Override
 	public final Collection<String> getPropertyIds() {

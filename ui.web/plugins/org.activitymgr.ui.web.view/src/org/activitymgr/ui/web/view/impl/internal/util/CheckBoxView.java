@@ -9,20 +9,19 @@ import com.vaadin.ui.CheckBox;
 @SuppressWarnings("serial")
 public class CheckBoxView extends CheckBox implements View {
 
+	@SuppressWarnings("unused")
 	private ICheckBoxFieldLogic logic;
 
-	public CheckBoxView() {
+	@Override
+	public void registerLogic(final ICheckBoxFieldLogic logic) {
+		this.logic = logic;
+		setImmediate(true);
 		addValueChangeListener(new Property.ValueChangeListener() {
 			@Override
 			public void valueChange(Property.ValueChangeEvent event) {
 				logic.onValueChanged(getValue());
 			}
 		});
-	}
-
-	@Override
-	public void registerLogic(ICheckBoxFieldLogic logic) {
-		this.logic = logic;
 	}
 
 	@Override

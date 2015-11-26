@@ -29,6 +29,7 @@ public class DownloadButtonView extends Button implements View {
 	@Override
 	public void registerLogic(final IDownloadButtonLogic logic) {
 		this.logic = logic;
+		setImmediate(true);
 		StreamResource streamResource = new StreamResource(new StreamResource.StreamSource() {
 			@Override
 			public InputStream getStream() {

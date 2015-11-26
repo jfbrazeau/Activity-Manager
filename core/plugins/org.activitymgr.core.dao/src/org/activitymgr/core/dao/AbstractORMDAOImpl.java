@@ -7,12 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Task;
-import org.activitymgr.core.orm.IConverter;
 import org.activitymgr.core.orm.IDAO;
 import org.apache.log4j.Logger;
 

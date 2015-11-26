@@ -205,7 +205,7 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 		this.contributionsProvider = contributionsProvider;
 		TableDatasource<Long> dataSource = new TableDatasource<Long>(getResourceCache(), contributionsProvider);
 		contributionsTable.setContainerDataSource(dataSource);
-		int tableWidth = 20;
+		int tableWidth = 10;
 		for (String propertyId : dataSource.getContainerPropertyIds()) {
 			contributionsTable.addGeneratedColumn(propertyId, new Table.ColumnGenerator() {
 				@Override
@@ -268,7 +268,7 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 			final ITableCellProviderCallback<Long> collaboratorsProvider) {
 		TableDatasource<Long> dataSource = new TableDatasource<Long>(getResourceCache(), collaboratorsProvider);
 		collaboratorsTable.setContainerDataSource(dataSource);
-		int tableWidth = 20;
+		int tableWidth = 10;
 		for (String propertyId : dataSource.getContainerPropertyIds()) {
 			collaboratorsTable.addGeneratedColumn(propertyId, new Table.ColumnGenerator() {
 				@Override
