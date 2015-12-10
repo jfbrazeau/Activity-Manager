@@ -1,6 +1,7 @@
 package org.activitymgr.ui.web.logic;
 
 import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.model.ModelException;
 
 public interface IConstraintsValidator {
 	
@@ -46,6 +47,6 @@ public interface IConstraintsValidator {
 	 * @param task the task.
 	 * @return <code>true</code> if the task can accept sub tasks.
 	 */
-	IStatus canCreateSubTaskUnder(Task task);
+	IStatus canCreateSubTaskUnder(Task task) throws ModelException;
 
 }
