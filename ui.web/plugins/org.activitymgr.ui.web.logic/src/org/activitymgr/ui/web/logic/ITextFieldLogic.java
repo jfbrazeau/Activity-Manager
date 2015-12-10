@@ -13,6 +13,8 @@ public interface ITextFieldLogic extends ILogic<ITextFieldLogic.View> {
 	public interface View extends IView<ITextFieldLogic> {
 		
 		void setValue(String value);
+		
+		void setTooltip(String text);
 
 		void selectAll();
 

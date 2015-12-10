@@ -52,4 +52,9 @@ public class TextFieldView extends TextField implements ITextFieldLogic.View {
 		getUI().focus();
 	}
 
+	@Override
+	public void setTooltip(String text) {
+		setDescription(text);
+	}
+
 }
