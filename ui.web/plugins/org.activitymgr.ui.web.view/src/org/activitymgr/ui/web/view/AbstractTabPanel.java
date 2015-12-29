@@ -1,14 +1,15 @@
 package org.activitymgr.ui.web.view;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.activitymgr.ui.web.logic.IButtonLogic;
-import org.activitymgr.ui.web.logic.IDownloadButtonLogic;
-import org.activitymgr.ui.web.logic.ITabLogic;
 import org.activitymgr.ui.web.logic.IButtonLogic.View;
+import org.activitymgr.ui.web.logic.ITabLogic;
 import org.activitymgr.ui.web.view.impl.internal.util.StandardButtonView;
-import org.activitymgr.ui.web.view.impl.internal.util.DownloadButtonView;
 
 import com.google.inject.Inject;
 import com.vaadin.event.Action;
@@ -21,11 +22,45 @@ import com.vaadin.ui.VerticalLayout;
 @SuppressWarnings("serial")
 public abstract class AbstractTabPanel<LOGIC extends ITabLogic<?>> extends VerticalLayout implements ITabLogic.View<LOGIC>{
 
+	public static class ButtonBasedShortcutListener extends ShortcutListener {
+		
+		private StandardButtonView buttonView;
+
+		public ButtonBasedShortcutListener(StandardButtonView buttonView, char key,
+				boolean ctrl, boolean shift, boolean alt) {
+			super(buttonView.getDescription(), buttonView.getIcon(), key, toModifiers(ctrl, shift, alt));
+			this.buttonView = buttonView;
+		}
+		private static int[] toModifiers(boolean ctrl, boolean shift, boolean alt) {
+			// Register a menu and a shortcut
+			int[] rawModifiers = new int[3];
+			int i = 0;
+			if (ctrl)
+				rawModifiers[i++] = ShortcutListener.ModifierKey.CTRL;
+			if (shift)
+				rawModifiers[i++] = ShortcutListener.ModifierKey.SHIFT;
+			if (alt)
+				rawModifiers[i++] = ShortcutListener.ModifierKey.ALT;
+			int[] modifiers = new int[i];
+			System.arraycopy(rawModifiers, 0, modifiers, 0, i);
+			return modifiers;
+		}
+		public boolean isEnabled() {
+			return buttonView.isEnabled();
+		}
+		@Override
+		public void handleAction(Object sender, Object target) {
+			((Button)buttonView).click();
+		}
+	}
+
+	
 	@Inject
 	private IResourceCache resourceCache;
 	private LOGIC logic;
 	private VerticalLayout actionsContainer;
-	private List<ShortcutListener> actions = new ArrayList<ShortcutListener>();
+	private List<ButtonBasedShortcutListener> orderedActions = new ArrayList<ButtonBasedShortcutListener>();
+	private List<ButtonBasedShortcutListener> activeActions = new ArrayList<ButtonBasedShortcutListener>();
 	private Component bodyComponent;
 
 	public AbstractTabPanel() {
@@ -84,7 +119,7 @@ public abstract class AbstractTabPanel<LOGIC extends ITabLogic<?>> extends Verti
 				}
 				@Override
 				public Action[] getActions(Object target, Object sender) {
-					return (Action[]) actions.toArray(new Action[actions.size()]);
+					return (Action[]) activeActions.toArray(new Action[activeActions.size()]);
 				}
 			});
 		}
@@ -98,37 +133,44 @@ public abstract class AbstractTabPanel<LOGIC extends ITabLogic<?>> extends Verti
 		return logic;
 	}
 	
-	public void registerButtonShortucut(char key,
-			boolean ctrl, boolean shift, boolean alt, final StandardButtonView buttonView) {
-		
-		// Register a menu and a shortcut
-		int[] rawModifiers = new int[3];
-		int i = 0;
-		if (ctrl)
-			rawModifiers[i++] = ShortcutListener.ModifierKey.CTRL;
-		if (shift)
-			rawModifiers[i++] = ShortcutListener.ModifierKey.SHIFT;
-		if (alt)
-			rawModifiers[i++] = ShortcutListener.ModifierKey.ALT;
-		int[] modifiers = new int[i];
-		System.arraycopy(rawModifiers, 0, modifiers, 0, i);
-		ShortcutListener newAction = new ShortcutListener(buttonView.getDescription(),
-				buttonView.getIcon(), key, modifiers) {
+	public void enableShortcut(ButtonBasedShortcutListener shortcutListener) {
+		activeActions.add(shortcutListener);
+		// Else, we must preserve the initial order when restoring the action
+		Collections.sort(activeActions, new Comparator<ButtonBasedShortcutListener>() {
 			@Override
-			public void handleAction(Object sender, Object target) {
-				((Button)buttonView).click();
+			public int compare(ButtonBasedShortcutListener o1,
+					ButtonBasedShortcutListener o2) {
+				return new Integer(orderedActions.indexOf(o1)).compareTo(orderedActions.indexOf(o2));
 			}
-		};
-		actions.add(newAction);
-		addShortcutListener(newAction);
+		});
+		addShortcutListener(shortcutListener);
+		forceActionHandlersReload();
+	}
+
+	private void forceActionHandlersReload() {
+		bodyComponent.markAsDirty(); // Forces action handler cache reload
+	}
+	
+	public void disableShortcut(ButtonBasedShortcutListener shortcutListener) {
+		activeActions.remove(shortcutListener);
+		removeShortcutListener(shortcutListener);
+		forceActionHandlersReload();
 	}
 	
 	@Override
 	public void addButton(View<?> buttonView) {
-		addButton((Button) buttonView);
+		Button button = (Button) buttonView;
+		actionsContainer.addComponent(button);
+		if (buttonView instanceof StandardButtonView) {
+			ButtonBasedShortcutListener shortcut = ((StandardButtonView) buttonView).getShortcut();
+			if (shortcut != null) {
+				orderedActions.add(shortcut);
+				if (button.isEnabled()) {
+					enableShortcut(shortcut);
+				}
+			}
+		}
 	}
 	
-	private void addButton(Button button) {
-		actionsContainer.addComponent(button);
-	}
 }
+

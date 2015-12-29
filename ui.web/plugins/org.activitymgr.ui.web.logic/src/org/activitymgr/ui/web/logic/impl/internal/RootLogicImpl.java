@@ -49,7 +49,7 @@ public class RootLogicImpl implements IRootLogic {
 			@Override
 			public void handle(CallbackExceptionEvent event) {
 				// If an error occurs in a view callback, it shows the error to the user
-				handleError(getView(), event.getException());
+				handleError(event.getException());
 			}
 		});
 		eventBus.register(ConnectedCollaboratorEvent.class, new IEventListener<ConnectedCollaboratorEvent>() {
@@ -85,7 +85,7 @@ public class RootLogicImpl implements IRootLogic {
 		return view;
 	}
 	
-	public static void handleError(IRootLogic.View rootView, Throwable error) {
+	public void handleError(Throwable error) {
 		error.printStackTrace();
 		// Building message
 		String message = error.getMessage();
@@ -99,7 +99,7 @@ public class RootLogicImpl implements IRootLogic {
 			details = cause.getClass().getSimpleName() + " : " + cause.getMessage() + "\n";
 		}
 		// FIXME transport the error on the event bus ?
-		rootView.showErrorNotification(message, details);
+		getView().showErrorNotification(message, details);
 	}
 
 

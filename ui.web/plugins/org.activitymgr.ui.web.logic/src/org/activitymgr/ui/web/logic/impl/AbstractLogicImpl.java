@@ -80,7 +80,7 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 	}
 
 	protected void handleError(Throwable error) {
-		RootLogicImpl.handleError(getRoot().getView(), error);
+		((RootLogicImpl) getRoot()).handleError(error);
 	}
 
 	@SuppressWarnings("unchecked")

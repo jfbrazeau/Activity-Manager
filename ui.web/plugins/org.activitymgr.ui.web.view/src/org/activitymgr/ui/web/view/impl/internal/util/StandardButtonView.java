@@ -3,6 +3,7 @@ package org.activitymgr.ui.web.view.impl.internal.util;
 import org.activitymgr.ui.web.logic.IStandardButtonLogic;
 import org.activitymgr.ui.web.logic.IStandardButtonLogic.View;
 import org.activitymgr.ui.web.view.AbstractTabPanel;
+import org.activitymgr.ui.web.view.AbstractTabPanel.ButtonBasedShortcutListener;
 import org.activitymgr.ui.web.view.IResourceCache;
 
 import com.google.inject.Inject;
@@ -17,6 +18,8 @@ public class StandardButtonView extends Button implements View {
 	
 	@Inject
 	private IResourceCache resourceCache;
+	
+	private ButtonBasedShortcutListener shortcut;
 
 	@Override
 	public void setIcon(String iconId) {
@@ -25,20 +28,30 @@ public class StandardButtonView extends Button implements View {
 
 	@Override
 	public void setShortcut(final char key, final boolean ctrl, final boolean shift, final boolean alt) {
-		addAttachListener(new AttachListener() {
-			@Override
-			public void attach(AttachEvent event) {
-				removeAttachListener(this);
-				// Go up in component hierarchy until the tab
-				HasComponents cursor = getParent();
-				while (!(cursor instanceof AbstractTabPanel)) {
-					cursor = cursor.getParent();
-				}
-				// Register the shortcut
-				((AbstractTabPanel<?>)cursor)
-						.registerButtonShortucut(key, ctrl, shift, alt, StandardButtonView.this);
+		shortcut = new ButtonBasedShortcutListener(StandardButtonView.this, key, ctrl, shift, alt);
+	}
+
+	public ButtonBasedShortcutListener getShortcut() {
+		return shortcut;
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		if (enabled != isEnabled()) {
+			// Go up in component hierarchy until the tab
+			HasComponents cursor = getParent();
+			while (!(cursor instanceof AbstractTabPanel)) {
+				cursor = cursor.getParent();
 			}
-		});
+			if (enabled) {
+				((AbstractTabPanel<?>)cursor)
+						.enableShortcut(shortcut);
+			} else {
+				((AbstractTabPanel<?>)cursor)
+						.disableShortcut(shortcut);
+			}
+			super.setEnabled(enabled);
+		}
 	}
 
 	@Override
@@ -52,6 +65,5 @@ public class StandardButtonView extends Button implements View {
 			}
 		});
 	}
-
 
 }
