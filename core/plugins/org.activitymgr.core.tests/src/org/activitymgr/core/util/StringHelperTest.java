@@ -1,5 +1,8 @@
 package org.activitymgr.core.util;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import junit.framework.TestCase;
 
 public class StringHelperTest extends TestCase {
@@ -87,7 +90,7 @@ public class StringHelperTest extends TestCase {
 			StringHelper.entryToHundredth("0.001");
 			fail("3 digits is supposed to be too much");
 		}
-		catch (StringFormatException ignored) { }
+		catch (StringFormatException expected) { }
 	}
 
 	public void test1_234ToHundredth() {
@@ -95,7 +98,27 @@ public class StringHelperTest extends TestCase {
 			StringHelper.entryToHundredth("1.234");
 			fail("3 digits is supposed to be too much");
 		}
-		catch (StringFormatException ignored) { }
+		catch (StringFormatException expected) { }
 	}
-	
+
+	public void testBase32() {
+		Set<String> base32s = new HashSet<String>();
+		for (int value = 0; value < 1024; value++) {
+			String base32 = StringHelper.toBase32(value);
+			assertNotNull(base32);
+			assertEquals(2, base32.length());
+			assertFalse(base32s.contains(base32));
+			base32s.add(base32);
+			int decoded = StringHelper.fromBase32(base32);
+			assertEquals(value, decoded);
+		}
+	}
+	public void testBase32Overflow() {
+		try {
+			StringHelper.toBase32(1024);
+			fail("Illegal argument exception should have been raised");
+		}
+		catch (IllegalArgumentException expected) {
+		}
+	}
 }
