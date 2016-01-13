@@ -26,7 +26,7 @@ public abstract class AbstractSafeTreeTableCellProviderCallback<ITEM_ID_TYPE> ex
 	protected abstract Collection<ITEM_ID_TYPE> unsafeGetChildren(ITEM_ID_TYPE element) throws Exception;
 
 	@Override
-	public ITEM_ID_TYPE getParent(ITEM_ID_TYPE element) {
+	public final ITEM_ID_TYPE getParent(ITEM_ID_TYPE element) {
 		try {
 			return unsafeGetParent(element);
 		}

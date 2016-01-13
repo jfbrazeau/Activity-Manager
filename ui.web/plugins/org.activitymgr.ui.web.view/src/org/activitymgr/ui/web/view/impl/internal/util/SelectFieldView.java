@@ -1,6 +1,7 @@
 package org.activitymgr.ui.web.view.impl.internal.util;
 
-import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
+import java.util.Map;
+
 import org.activitymgr.ui.web.logic.ISelectFieldLogic;
 import org.activitymgr.ui.web.logic.ISelectFieldLogic.View;
 import org.activitymgr.ui.web.view.IResourceCache;
@@ -8,13 +9,15 @@ import org.activitymgr.ui.web.view.IResourceCache;
 import com.google.inject.Inject;
 import com.vaadin.data.Property;
 import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.NativeSelect;
 
 @SuppressWarnings("serial")
-public class SelectFieldView<ITEM_ID_TYPE> extends ComboBox implements View<ITEM_ID_TYPE> {
+public class SelectFieldView<ITEM_ID_TYPE> extends NativeSelect implements View<ITEM_ID_TYPE> {
 
 	@SuppressWarnings("unused")
 	private ISelectFieldLogic<ITEM_ID_TYPE> logic;
 	
+	@SuppressWarnings("unused")
 	@Inject
 	private IResourceCache resourceCache;
 
@@ -22,28 +25,24 @@ public class SelectFieldView<ITEM_ID_TYPE> extends ComboBox implements View<ITEM
 	public void registerLogic(final ISelectFieldLogic<ITEM_ID_TYPE> logic) {
 		this.logic = logic;
 		setImmediate(true);
-		setTextInputAllowed(false);
 		addValueChangeListener(new Property.ValueChangeListener() {
 			@SuppressWarnings("unchecked")
 			@Override
 			public void valueChange(Property.ValueChangeEvent event) {
-				logic.onSelectedItemChanged((ITEM_ID_TYPE) getValue());
+				logic.onValueChanged((ITEM_ID_TYPE) getValue());
 			}
 		});
 	}
+
 	@Override
-	public void setSelectedItem(ITEM_ID_TYPE selectedItemId) {
-		setValue(selectedItemId);
+	public void setItems(Map<ITEM_ID_TYPE, String> items) {
+    	setContainerDataSource(new MapBasedDatasource<ITEM_ID_TYPE>(items));
 	}
 
 	@Override
-	public void setValuesProviderCallback(
-			ITableCellProviderCallback<ITEM_ID_TYPE> callback) {
-    	TableDatasource<ITEM_ID_TYPE> datasource = new TableDatasource<ITEM_ID_TYPE>(resourceCache, callback);
-    	setContainerDataSource(datasource);
-    	String propertyId = callback.getPropertyIds().iterator().next();
-		setItemCaptionPropertyId(propertyId);
-    	setWidth(callback.getColumnWidth(propertyId), Unit.PIXELS);
+	public void setWidth(int width) {
+		super.setWidth(width + "px");
 	}
 
 }
+

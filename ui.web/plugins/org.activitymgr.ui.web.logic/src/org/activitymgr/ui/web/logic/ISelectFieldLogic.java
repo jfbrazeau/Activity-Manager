@@ -1,16 +1,15 @@
 package org.activitymgr.ui.web.logic;
 
-import org.activitymgr.ui.web.logic.ILogic.IView;
+import java.util.Map;
 
-public interface ISelectFieldLogic<ITEM_ID_TYPE> extends ILogic<ISelectFieldLogic.View<ITEM_ID_TYPE>> {
+
+public interface ISelectFieldLogic<ITEM_ID_TYPE> extends IFieldLogic<ITEM_ID_TYPE, ISelectFieldLogic.View<ITEM_ID_TYPE>> {
 	
-	void onSelectedItemChanged(ITEM_ID_TYPE newSelectedItemId);
-	
-	public interface View<ITEM_ID_TYPE> extends IView<ISelectFieldLogic<ITEM_ID_TYPE>> {
+	public interface View<ITEM_ID_TYPE> extends IFieldLogic.View<ITEM_ID_TYPE, ISelectFieldLogic<ITEM_ID_TYPE>> {
 		
-		void setSelectedItem(ITEM_ID_TYPE selectedItemId);
+		void setItems(Map<ITEM_ID_TYPE, String> items);
 
-		public void setValuesProviderCallback(ITableCellProviderCallback<ITEM_ID_TYPE> callback);
+		void setWidth(int width);
 
 	}
 

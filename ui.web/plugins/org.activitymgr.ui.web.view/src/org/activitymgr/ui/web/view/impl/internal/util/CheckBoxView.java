@@ -25,7 +25,7 @@ public class CheckBoxView extends CheckBox implements View {
 	}
 
 	@Override
-	public void setValue(boolean value) {
+	public void setValue(Boolean value) {
 		super.setValue(value);
 	}
 

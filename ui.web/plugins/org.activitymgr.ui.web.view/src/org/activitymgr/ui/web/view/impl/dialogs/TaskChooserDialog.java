@@ -1,10 +1,12 @@
 package org.activitymgr.ui.web.view.impl.dialogs;
 
+import java.util.Map;
 import java.util.Stack;
 
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
+import org.activitymgr.ui.web.view.impl.internal.util.MapBasedDatasource;
 import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
 import org.activitymgr.ui.web.view.impl.internal.util.TreeTableDatasource;
 
@@ -171,13 +173,12 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
     }
 
     @Override
-    public void setCreationPatternProviderCallback(
-    		ITableCellProviderCallback<String> callback) {
+    public void setCreationPatterns(Map<String, String> patterns) {
     	newSubTaskCreationPatternField.setVisible(true);
-    	TableDatasource<String> datasource = new TableDatasource<String>(getResourceCache(), callback);
+    	MapBasedDatasource<String> datasource = new MapBasedDatasource<String>(patterns);
     	newSubTaskCreationPatternField.setContainerDataSource(datasource);
-    	newSubTaskCreationPatternField.setItemCaptionPropertyId(callback.getPropertyIds().iterator().next());
-    	newSubTaskCreationPatternField.setValue(datasource.getItemIds().iterator().next());
+    	newSubTaskCreationPatternField.setItemCaptionPropertyId(MapBasedDatasource.LABEL_PROPERTY_ID);
+    	newSubTaskCreationPatternField.setValue(patterns.keySet().iterator().next());
     }
 
     @Override
@@ -189,10 +190,10 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	}
 	
     @Override
-    public void setRecentTasksProviderCallback(ITableCellProviderCallback<Long> callback) {
-    	TableDatasource<Long> datasource = new TableDatasource<Long>(getResourceCache(), callback);
+    public void setRecentTasks(Map<Long, String> recentTasks) {
+    	MapBasedDatasource<Long> datasource = new MapBasedDatasource<Long>(recentTasks);
     	recentTasksSelect.setContainerDataSource(datasource);
-    	recentTasksSelect.setItemCaptionPropertyId(callback.getPropertyIds().iterator().next());
+    	recentTasksSelect.setItemCaptionPropertyId(MapBasedDatasource.LABEL_PROPERTY_ID);
     }
     
 	@Override

@@ -28,7 +28,7 @@ public class CollaboratorsCellLogicFatory implements ICollaboratorsCellLogicFact
 			} else {
 				logic = new AbstractSafeCheckBoxLogicImpl(parentLogic, collaborator.getIsActive()) {
 					@Override
-					protected void unsafeOnValueChanged(boolean newValue)
+					protected void unsafeOnValueChanged(Boolean newValue)
 							throws ModelException {
 						if (newValue != collaborator.getIsActive()) {
 							collaborator.setIsActive(newValue);

@@ -50,6 +50,8 @@ public interface IContributionsCellLogicFactory {
 			Collaborator contributor, Calendar firstDayOfWeek)
 			throws ModelException;
 
+	public void loadDurations();
+	
 	public abstract Integer getColumnWidth(String propertyId);
 
 }

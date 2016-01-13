@@ -11,7 +11,7 @@ public abstract class AbstractSafeCheckBoxLogicImpl extends AbstractLogicImpl<IC
 	}
 	
 	@Override
-	public final void onValueChanged(boolean newValue) {
+	public final void onValueChanged(Boolean newValue) {
 		try {
 			unsafeOnValueChanged(newValue);
 		}
@@ -21,6 +21,6 @@ public abstract class AbstractSafeCheckBoxLogicImpl extends AbstractLogicImpl<IC
 		}
 	}
 
-	protected abstract void unsafeOnValueChanged(boolean newValue) throws Exception;
+	protected abstract void unsafeOnValueChanged(Boolean newValue) throws Exception;
 
 }

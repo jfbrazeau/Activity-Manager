@@ -1,5 +1,7 @@
 package org.activitymgr.ui.web.logic;
 
+import java.util.Map;
+
 import org.activitymgr.ui.web.logic.ILogic.IView;
 
 public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
@@ -21,9 +23,9 @@ public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 		public void setTasksTreeProviderCallback(
 				ITreeContentProviderCallback<Long> callback);
 
-		public void setRecentTasksProviderCallback(ITableCellProviderCallback<Long> callback);
+		public void setRecentTasks(Map<Long, String> recentTasks);
 
-		public void setCreationPatternProviderCallback(ITableCellProviderCallback<String> callback);
+		public void setCreationPatterns(Map<String, String> patterns);
 
 		public void setOkButtonEnabled(boolean enabled);
 

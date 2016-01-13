@@ -4,11 +4,13 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Contribution;
+import org.activitymgr.core.dto.Duration;
 import org.activitymgr.core.dto.IDTOFactory;
 import org.activitymgr.core.dto.misc.IntervalContributions;
 import org.activitymgr.core.dto.misc.TaskContributions;
@@ -16,10 +18,11 @@ import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
-import org.activitymgr.ui.web.logic.IEventBus;
+import org.activitymgr.ui.web.logic.IFieldLogic;
 import org.activitymgr.ui.web.logic.ILabelLogic.View.Align;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogicContext;
+import org.activitymgr.ui.web.logic.ISelectFieldLogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.impl.event.ContributionChangeEvent;
 import org.activitymgr.ui.web.logic.spi.IContributionsCellLogicFactory;
@@ -28,13 +31,15 @@ import com.google.inject.Inject;
 
 public class ContributionsCellLogicFatory implements IContributionsCellLogicFactory {
 
-	private static final int DAY_COLUMN_WIDTH = 40;
+	private static final int DAY_COLUMN_WIDTH_WITH_SELECT_FIELD = 60;
+	private static final int DAY_COLUMN_WIDTH_WITH_TEXT_FIELD = 40;
 
 	private static final Map<String, Integer> DEFAULT_COLUMN_WIDTHS = new HashMap<String, Integer>();
 
 	static {
-		DEFAULT_COLUMN_WIDTHS.put(PATH_COLUMN_ID, 250);
+		DEFAULT_COLUMN_WIDTHS.put(PATH_COLUMN_ID, 150);
 		DEFAULT_COLUMN_WIDTHS.put(NAME_COLUMN_ID, 150);
+		DEFAULT_COLUMN_WIDTHS.put(TOTAL_COLUMN_ID, 40);
 	}
 
 	@Inject
@@ -42,6 +47,8 @@ public class ContributionsCellLogicFatory implements IContributionsCellLogicFact
 	
 	@Inject
 	private IDTOFactory dtoFactory;
+	
+	private Map<String, String> durationsMap;
 
 	/* (non-Javadoc)
 	 * @see org.activitymgr.ui.web.logic.impl.IContributionsCellLogicFactory#createCellLogic(org.activitymgr.core.dto.Collaborator, java.util.Calendar, org.activitymgr.core.dto.misc.TaskContributions, java.lang.String)
@@ -53,14 +60,27 @@ public class ContributionsCellLogicFatory implements IContributionsCellLogicFact
 			final int dayOfWeek = DAY_COLUMNS_IDENTIFIERS.indexOf(propertyId);
 			Contribution c = weekContributions.getContributions()[dayOfWeek];
 			String duration = (c == null) ? "" : StringHelper.hundredthToEntry(c.getDurationId());
-			ITextFieldLogic textFieldLogic = new AbstractSafeTextFieldLogicImpl(parentLogic, duration, false) {
-				@Override
-				protected void unsafeOnValueChanged(String newValue) {
-					onDurationChanged(parentLogic, context.getEventBus(), contributor, firstDayOfWeek, weekContributions, dayOfWeek, newValue, this, propertyId);
-				}
-			};
-			textFieldLogic.getView().setNumericFieldStyle();
-			logic = textFieldLogic;
+			if (contributionsAsTextfield()) {
+				ITextFieldLogic textFieldLogic = new AbstractSafeTextFieldLogicImpl(parentLogic, duration, false) {
+					@Override
+					protected void unsafeOnValueChanged(String newValue) {
+						onDurationChanged(parentLogic, contributor, firstDayOfWeek, weekContributions, dayOfWeek, newValue, this, propertyId);
+					}
+				};
+				textFieldLogic.getView().setNumericFieldStyle();
+				logic = textFieldLogic;
+			}
+			else {
+				ISelectFieldLogic<String> selectFieldLogic = new AbstractSafeSelectLogicImpl<String>(parentLogic, durationsMap, duration) {
+					@Override
+					protected void unsafeOnSelectedItemChanged(
+							String newValue) throws Exception {
+						onDurationChanged(parentLogic, contributor, firstDayOfWeek, weekContributions, dayOfWeek, newValue, this, propertyId);
+					}
+				};
+				selectFieldLogic.getView().setWidth(DAY_COLUMN_WIDTH_WITH_SELECT_FIELD);
+				logic = selectFieldLogic;
+			}
 		}
 		else if (PATH_COLUMN_ID.equals(propertyId)) {
 			logic = new LabelLogicImpl(parentLogic, weekContributions.getTaskCodePath());
@@ -77,7 +97,7 @@ public class ContributionsCellLogicFatory implements IContributionsCellLogicFact
 		return logic;
 	}
 
-	private void onDurationChanged(AbstractLogicImpl<?> parentLogic, IEventBus eventBus, Collaborator contributor, Calendar firstDayOfWeek, TaskContributions weekContributions, int dayOfWeek, String duration, ITextFieldLogic textFieldLogic, String propertyId) {
+	private void onDurationChanged(AbstractLogicImpl<?> parentLogic, Collaborator contributor, Calendar firstDayOfWeek, TaskContributions weekContributions, int dayOfWeek, String duration, IFieldLogic<String, ? extends ILogic.IView<?>> logic, String propertyId) {
 		try {
 			long durationId = 0;
 			if (duration != null && !"".equals(duration.trim())) {
@@ -114,21 +134,21 @@ public class ContributionsCellLogicFatory implements IContributionsCellLogicFact
 			
 			// Update the view
 			duration = durationId == 0 ? "" : StringHelper.hundredthToEntry(durationId);
-			textFieldLogic.getView().setValue(duration);
+			logic.getView().setValue(duration);
 
 			// FIre a change event
 			long oldDuration = contribution != null ? contribution.getDurationId() : 0;
-			eventBus.fire(
+			parentLogic.getEventBus().fire(
 					new ContributionChangeEvent(parentLogic,
 							weekContributions.getTask().getId(), propertyId,
 							oldDuration, durationId));
 		}
 		catch (ModelException e) {
-			textFieldLogic.getView().focus();
+			logic.getView().focus();
 			throw new IllegalStateException(e.getMessage(), e);
 		}
 		catch (StringFormatException e) {
-			textFieldLogic.getView().focus();
+			logic.getView().focus();
 			throw new IllegalStateException(e.getMessage(), e);
 		}
 	}
@@ -171,11 +191,37 @@ public class ContributionsCellLogicFatory implements IContributionsCellLogicFact
 	}
 
 	/* (non-Javadoc)
+	 * @see org.activitymgr.ui.web.logic.spi.IContributionsCellLogicFactory#loadDurations()
+	 */
+	public void loadDurations() {
+		durationsMap = null;
+		if (!contributionsAsTextfield()) {
+			durationsMap = new LinkedHashMap<String, String>();
+			Duration[] durations = modelMgr.getDurations();
+			for (Duration duration : durations) {
+				String str = StringHelper.hundredthToEntry(duration.getId());
+				// We index the duration by itself
+				durationsMap.put(str, str);
+			}
+		}
+	}
+
+	protected boolean contributionsAsTextfield() {
+		return false;
+	}
+
+	/* (non-Javadoc)
 	 * @see org.activitymgr.ui.web.logic.impl.IContributionsCellLogicFactory#getColumnWidth(java.lang.String)
 	 */
 	@Override
 	public Integer getColumnWidth(String propertyId) {
-		return DEFAULT_COLUMN_WIDTHS.containsKey(propertyId) ? DEFAULT_COLUMN_WIDTHS.get(propertyId) : DAY_COLUMN_WIDTH;
+		if (DEFAULT_COLUMN_WIDTHS.containsKey(propertyId)) {
+			return DEFAULT_COLUMN_WIDTHS.get(propertyId);
+		} else if (contributionsAsTextfield()) {
+			 return DAY_COLUMN_WIDTH_WITH_TEXT_FIELD;
+		} else {
+			 return DAY_COLUMN_WIDTH_WITH_SELECT_FIELD;
+		}
 	}
 
 }

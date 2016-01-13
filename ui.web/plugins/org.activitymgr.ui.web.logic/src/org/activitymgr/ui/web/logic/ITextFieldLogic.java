@@ -1,33 +1,26 @@
 package org.activitymgr.ui.web.logic;
 
-import org.activitymgr.ui.web.logic.ILogic.IView;
 
-public interface ITextFieldLogic extends ILogic<ITextFieldLogic.View> {
-	
-	void onValueChanged(String newValue);
+public interface ITextFieldLogic extends IFieldLogic<String, ITextFieldLogic.View> {
 	
 	void onClick();
 
 	void onEnterKeyPressed();
 	
-	public interface View extends IView<ITextFieldLogic> {
+	public interface View extends IFieldLogic.View<String, ITextFieldLogic> {
 		
-		void setValue(String value);
+		void blur();
 		
 		void setTooltip(String text);
 
 		void selectAll();
 
-		void focus();
-		
 		void setNumericFieldStyle();
 
 		void setReadOnly(boolean readOnly);
 		
 		boolean isReadOnly();
 
-		void blur();
-		
 	}
 
 }

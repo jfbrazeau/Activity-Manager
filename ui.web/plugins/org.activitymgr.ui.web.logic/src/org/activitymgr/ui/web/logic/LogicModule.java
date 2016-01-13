@@ -169,7 +169,6 @@ class TransactionManager implements ITransactionalWrapperBuilder, Provider<Conne
 		datasource.setUsername(jdbcUser);
 		datasource.setPassword(jdbcPassword);
 		datasource.setDefaultAutoCommit(false);
-		
 	}
 
 	@Override

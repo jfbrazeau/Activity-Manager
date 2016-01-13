@@ -169,6 +169,7 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 		cellLogics.invalidateAll();
 
 		if (contributor != null) {
+			cellLogicFactory.loadDurations();
 			List<TaskContributions> weekContributions = cellLogicFactory.loadContributions(contributor, firstDayOfWeek);
 			for (TaskContributions tc : weekContributions) {
 				long taskId = tc.getTask().getId();

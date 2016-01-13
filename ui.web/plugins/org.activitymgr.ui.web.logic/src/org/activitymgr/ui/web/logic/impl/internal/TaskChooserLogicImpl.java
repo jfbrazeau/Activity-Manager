@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,52 +86,20 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 					return fullPath1.compareTo(fullPath2);
 				}
 			});
-			ITableCellProviderCallback<Long> recentTaskCallback = new AbstractSafeTableCellProviderCallback<Long>(this) {
-				private final Collection<String> PROPERTY_IDS = Arrays.asList(new String[] { TaskTreeContentProvider.NAME_PROPERTY_ID });
-				@Override
-				protected Collection<Long> unsafeGetRootElements() throws Exception {
-					return recentTasksIds;
-				}
-				@Override
-				protected IView<?> unsafeGetCell(
-						Long taskId, String propertyId) throws Exception {
-					return new LabelLogicImpl((AbstractLogicImpl<?>) getSource(), "[" + tasksCodePathMap.get(taskId) + "] " + recentTasksMap.get(taskId).getName()).getView();
-				}
-				@Override
-				protected Collection<String> unsafeGetPropertyIds() {
-					return PROPERTY_IDS;
-				}
-				@Override
-				protected boolean unsafeContains(Long taskId) {
-					return recentTasksIds.contains(taskId);
-				}
-			};
-			getView().setRecentTasksProviderCallback(recentTaskCallback);
+			Map<Long, String> recentTasksLabelsMap = new LinkedHashMap<Long, String>();
+			for (Long taskId : recentTasksIds) {
+				recentTasksLabelsMap.put(taskId, "[" + tasksCodePathMap.get(taskId) + "] " + recentTasksMap.get(taskId).getName());
+			}
+			getView().setRecentTasks(recentTasksLabelsMap);
 
-			// Patterne handler list
-			ITableCellProviderCallback<String> creationPatternsCallback = new AbstractSafeTableCellProviderCallback<String>(this) {
-				private final Collection<String> PROPERTY_IDS = Arrays.asList(new String[] { TaskTreeContentProvider.NAME_PROPERTY_ID });
-				@Override
-				protected Collection<String> unsafeGetRootElements() throws Exception {
-					ArrayList<String> list = new ArrayList<String>(taskCreationPatternHandlers.keySet());
-					Collections.sort(list);
-					return list;
-				}
-				@Override
-				protected IView<?> unsafeGetCell(
-						String patternId, String propertyId) throws Exception {
-					return new LabelLogicImpl((AbstractLogicImpl<?>) getSource(), taskCreationPatternHandlers.get(patternId).getLabel()).getView();
-				}
-				@Override
-				protected Collection<String> unsafeGetPropertyIds() {
-					return PROPERTY_IDS;
-				}
-				@Override
-				protected boolean unsafeContains(String patternId) {
-					return taskCreationPatternHandlers.containsKey(patternId);
-				}
-			};
-			getView().setCreationPatternProviderCallback(creationPatternsCallback);
+			// Pattern handler list
+			ArrayList<String> taskCreationPatternIds = new ArrayList<String>(taskCreationPatternHandlers.keySet());
+			Collections.sort(taskCreationPatternIds);
+			Map<String, String> taskCreationPatternHandlersLabelsMap = new HashMap<String, String>();
+			for (String patternId : taskCreationPatternIds) {
+				taskCreationPatternHandlersLabelsMap.put(patternId, taskCreationPatternHandlers.get(patternId).getLabel());
+			}
+			getView().setCreationPatterns(taskCreationPatternHandlersLabelsMap);
 
 			// Reset button state & status label
 			onSelectionChanged(-1);
