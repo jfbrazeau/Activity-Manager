@@ -8,7 +8,6 @@ import org.activitymgr.ui.web.view.IResourceCache;
 
 import com.google.inject.Inject;
 import com.vaadin.data.Property;
-import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.NativeSelect;
 
 @SuppressWarnings("serial")

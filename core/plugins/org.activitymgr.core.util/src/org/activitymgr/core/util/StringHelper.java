@@ -44,6 +44,7 @@ import org.apache.log4j.Logger;
  */
 public class StringHelper {
 
+	/** Max base32 value (1024) */
 	private static final int MAX_BASE32_VALUE = 0x400;
 
 	/** Logger */
