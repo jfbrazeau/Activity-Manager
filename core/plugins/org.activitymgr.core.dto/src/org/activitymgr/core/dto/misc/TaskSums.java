@@ -146,6 +146,11 @@ public class TaskSums {
 		return isLeaf;
 	}
 	
+	@Override
+	public int hashCode() {
+		return String.valueOf(getTask().getId()).hashCode();
+	}
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */

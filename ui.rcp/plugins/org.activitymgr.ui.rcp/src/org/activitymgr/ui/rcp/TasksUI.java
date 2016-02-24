@@ -58,6 +58,7 @@ import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ICellModifier;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProviderChangedEvent;
@@ -66,6 +67,13 @@ import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DragSource;
+import org.eclipse.swt.dnd.DragSourceAdapter;
+import org.eclipse.swt.dnd.DragSourceEvent;
+import org.eclipse.swt.dnd.DropTarget;
+import org.eclipse.swt.dnd.DropTargetAdapter;
+import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.KeyAdapter;
@@ -78,6 +86,8 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -270,7 +280,68 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		treeViewer.setCellModifier(this);
 		treeViewer.setContentProvider(this);
 		treeViewer.setLabelProvider(this);
-
+		
+	    Transfer[] types = new Transfer[] { TextTransfer.getInstance() };
+	    int operations = DND.DROP_MOVE;
+	    final DragSource source = new DragSource(tree, operations);
+	    source.setTransfer(types);		
+	    source.addDragListener(new DragSourceAdapter() {
+			@Override
+			public void dragStart(DragSourceEvent event) {
+				IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+				event.doit =  (selection.size() == 1);
+			}
+			@Override
+			public void dragSetData(DragSourceEvent event) {
+				TaskSums firstElement = (TaskSums) ((IStructuredSelection) treeViewer.getSelection()).getFirstElement();
+				event.data = String.valueOf(firstElement.getTask().getId());
+			}
+		});
+		DropTarget target = new DropTarget(tree, operations);
+		target.setTransfer(types);
+		target.addDropListener(new DropTargetAdapter() {
+			@Override
+			public void drop(final DropTargetEvent event) {
+				new SafeRunner() {
+					@Override
+					protected Object runUnsafe() throws Exception {
+						System.out.println(event.detail);
+						Task taskToMove = modelMgr.getTask(Long.parseLong((String)event.data));
+						Task destTask = ((TaskSums) event.item.getData()).getTask();
+						TreeItem item = (TreeItem)event.item;
+						Point pt = tree.getDisplay().map(null, tree, event.x, event.y);
+						Rectangle bounds = item.getBounds();
+						if (pt.y < bounds.y + bounds.height/3) {
+							doMoveBeforeOrAfter(taskToMove, destTask, true);
+						} else if (pt.y > bounds.y + 2*bounds.height/3) {
+							doMoveBeforeOrAfter(taskToMove, destTask, false);
+						} else {
+							treeViewer.expandToLevel(event.item.getData(), 1);
+							doMoveToAnotherTask(taskToMove, destTask);
+						}
+						return null;
+					}
+				}.run(parent.getShell());
+			}
+			@Override
+			public void dragOver(DropTargetEvent event) {
+				//System.out.println("dragOver(" + event + ")");
+				event.feedback = DND.FEEDBACK_EXPAND | DND.FEEDBACK_SCROLL;
+				if (event.item != null) {
+					TreeItem item = (TreeItem)event.item;
+					Point pt = tree.getDisplay().map(null, tree, event.x, event.y);
+					Rectangle bounds = item.getBounds();
+					if (pt.y < bounds.y + bounds.height/3) {
+						event.feedback |= DND.FEEDBACK_INSERT_BEFORE;
+					} else if (pt.y > bounds.y + 2*bounds.height/3) {
+						event.feedback |= DND.FEEDBACK_INSERT_AFTER;
+					} else {
+						event.feedback |= DND.FEEDBACK_SELECT;
+					}
+				}
+			}
+		});
+		
 		// Création des polices de caractère
 		disabledFGColor = tree.getDisplay().getSystemColor(
 				SWT.COLOR_TITLE_INACTIVE_FOREGROUND);
@@ -813,38 +884,9 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 					});
 					taskChooserDialog.setValue(selectedTask);
 					if (taskChooserDialog.open() == Dialog.OK) {
+						boolean before = moveBeforeAnotherTaskItem.equals(source);
 						Task chosenTask = (Task) taskChooserDialog.getValue();
-						String oldTaskFullpath = selectedTask.getFullPath();
-						boolean needRefresh = false;
-						// Traitement du changement éventuel de parent
-						if (!chosenTask.getPath()
-								.equals(selectedTask.getPath())) {
-							Task destParentTask = modelMgr.getParentTask(chosenTask);
-							// Déplacement
-							modelMgr.moveTask(selectedTask, destParentTask);
-							// Rafraichissement de la tache
-							selectedTask = modelMgr.getTask(selectedTask
-									.getId());
-							needRefresh = true;
-						}
-						// Déplacement de la tache
-						int targetNumber = chosenTask.getNumber();
-						if (moveBeforeAnotherTaskItem.equals(source)
-								&& targetNumber > selectedTask.getNumber())
-							targetNumber--;
-						else if (moveAfterAnotherTaskItem.equals(source)
-								&& targetNumber < selectedTask.getNumber())
-							targetNumber++;
-						if (targetNumber != selectedTask.getNumber()) {
-							modelMgr.moveTaskUpOrDown(selectedTask, targetNumber);
-							needRefresh = true;
-						}
-						if (needRefresh) {
-							// Notification des listeners
-							notifyTaskMoved(oldTaskFullpath, selectedTask);
-							// Mise à jour de l'IHM
-							treeViewer.refresh();
-						}
+						doMoveBeforeOrAfter(selectedTask, chosenTask, before);
 					}
 				}
 				// Cas d'une demande de déplacement vers une autre tache
@@ -871,22 +913,9 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 						}
 					});
 					// Affichage du popup
-					Task newParentTask = null;
 					if (taskChooserDialog.open() == Dialog.OK) {
-						newParentTask = (Task) taskChooserDialog.getValue();
-						log.debug("Selected parent task=" + newParentTask); //$NON-NLS-1$
-						String oldTaskFullpath = taskToMove.getFullPath();
-						modelMgr.moveTask(taskToMove, newParentTask);
-						// Rafraichir l'ancien et le nouveau parent ne suffit
-						// pas
-						// dans le cas ou le parent destination change de numéro
-						// (ex : déplacement d'une tache A vers une tache B avec
-						// A et B initialement soeurs, A étant placé avant B)
-						// treeViewer.refresh(newParentTask);
-						// treeViewer.refresh(srcParentTask);
-						treeViewer.refresh();
-						// Notification des listeners
-						notifyTaskMoved(oldTaskFullpath, taskToMove);
+						Task newParentTask = (Task) taskChooserDialog.getValue();
+						doMoveToAnotherTask(taskToMove, newParentTask);
 					}
 				}
 				// Cas d'une demande de déplacement vers la racine
@@ -993,11 +1022,77 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				}
 				return null;
 			}
+
+
 		};
 		// Exécution
 		safeRunner.run(parent.getShell());
 	}
 
+	/**
+	 * Move to another task.
+	 * @param taskToMove the task to move.
+	 * @param newParentTask the new parent task.
+	 * @throws ModelException thrown if a model error is detected.
+	 */
+	private void doMoveToAnotherTask(Task taskToMove, Task newParentTask)
+			throws ModelException {
+		log.debug("Selected parent task=" + newParentTask); //$NON-NLS-1$
+		modelMgr.moveTask(taskToMove, newParentTask);
+		// Rafraichir l'ancien et le nouveau parent ne suffit
+		// pas
+		// dans le cas ou le parent destination change de numéro
+		// (ex : déplacement d'une tache A vers une tache B avec
+		// A et B initialement soeurs, A étant placé avant B)
+		// treeViewer.refresh(newParentTask);
+		// treeViewer.refresh(srcParentTask);
+		treeViewer.refresh();
+		// Notification des listeners
+		String oldTaskFullpath = taskToMove.getFullPath();
+		notifyTaskMoved(oldTaskFullpath, taskToMove);
+	}
+
+	/**
+	 * Moves a task before or after another task.
+	 * @param taskToMove the task to move.
+	 * @param chosenTask the chosen task.
+	 * @param before <code>true</code> if the task must be moved before the chosen tasks, <code>false</code> if it must be moved after.
+	 * @throws ModelException if a model error occurs.
+	 */
+	private void doMoveBeforeOrAfter(Task taskToMove, Task chosenTask,
+			boolean before) throws ModelException {
+		boolean needRefresh = false;
+		// Traitement du changement éventuel de parent
+		if (!chosenTask.getPath()
+				.equals(taskToMove.getPath())) {
+			Task destParentTask = modelMgr.getParentTask(chosenTask);
+			// Déplacement
+			modelMgr.moveTask(taskToMove, destParentTask);
+			// Rafraichissement de la tache
+			taskToMove = modelMgr.getTask(taskToMove
+					.getId());
+			needRefresh = true;
+		}
+		// Déplacement de la tache
+		int targetNumber = chosenTask.getNumber();
+		if (before
+				&& targetNumber > taskToMove.getNumber())
+			targetNumber--;
+		else if (!before
+				&& targetNumber < taskToMove.getNumber())
+			targetNumber++;
+		if (targetNumber != taskToMove.getNumber()) {
+			modelMgr.moveTaskUpOrDown(taskToMove, targetNumber);
+			needRefresh = true;
+		}
+		if (needRefresh) {
+			// Notification des listeners
+			String oldTaskFullpath = taskToMove.getFullPath();
+			notifyTaskMoved(oldTaskFullpath, taskToMove);
+			// Mise à jour de l'IHM
+			treeViewer.refresh();
+		}
+	}
 	/*
 	 * (non-Javadoc)
 	 * 
