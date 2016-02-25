@@ -75,6 +75,7 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 		dateField = new PopuDateFieldWithParser();
 		dateField.setImmediate(true);
 		dateField.setDateFormat("E dd/MM/yyyy");
+		dateField.setShowISOWeekNumbers(true);
 		dateField.setStyleName("monday-date-field");
 		controlsContainer.addComponent(dateField);
 		
