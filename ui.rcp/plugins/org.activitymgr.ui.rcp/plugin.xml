@@ -32,11 +32,15 @@
       <perspectiveExtension
             targetID="*">
          <view
-               standalone="true"
+               closeable="false"
+               id="org.activitymgr.ui.view"
                minimized="false"
-               relative="org.eclipse.ui.editorss"
+               moveable="false"
                relationship="left"
-               id="org.activitymgr.ui.view">
+               relative="org.eclipse.ui.editorss"
+               showTitle="false"
+               standalone="true"
+               visible="true">
          </view>
       </perspectiveExtension>
    </extension>
