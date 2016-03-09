@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Activity Manager UI (Web)" uid="org.activitymgr.ui.web.view.product" id="org.activitymgr.ui.web.view.product" application="org.activitymgr.ui.web.view.application" useFeatures="false" includeLaunchers="true">
+<product name="Activity Manager UI (Web)" uid="org.activitymgr.ui.web.view.product" id="org.activitymgr.ui.web.view.product" application="org.activitymgr.ui.web.view.application" version="1.0.0.qualifier" useFeatures="false" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
