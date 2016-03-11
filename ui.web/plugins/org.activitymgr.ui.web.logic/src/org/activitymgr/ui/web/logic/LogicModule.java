@@ -1,13 +1,20 @@
 package org.activitymgr.ui.web.logic;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.Savepoint;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.Stack;
 
 import org.activitymgr.core.dto.Collaborator;
@@ -30,6 +37,7 @@ import org.activitymgr.ui.web.logic.spi.ITabButtonFactory;
 import org.activitymgr.ui.web.logic.spi.ITabFactory;
 import org.activitymgr.ui.web.logic.spi.ITaskCreationPatternHandler;
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.log4j.PropertyConfigurator;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
@@ -45,13 +53,27 @@ public class LogicModule extends AbstractModule {
 		// Install core module
 		install(new CoreModelModule());
 		
-		// TODO externalize connection parameters
+		// Load configuration
+		Properties props = new Properties();
+		try {
+			String installArea = new URL(System.getProperty("osgi.install.area")).getFile();
+			if (!attempToLoadConfiguration(props, new File(installArea, "activitymgr.properties"))) {
+				attempToLoadConfiguration(props, new File(System.getProperty("activitymgr.config", System.getProperty("user.home"))));
+			}
+		} catch (MalformedURLException e) {
+			throw new IllegalStateException(e);
+		}
+		
+		// Configure log4j
+		PropertyConfigurator.configure(props);
+		System.out.println(props);
 		// Create the datasource
-		String jdbcDriver = "com.mysql.jdbc.Driver";
-		String jdbcUrl = "jdbc:mysql://localhost:3306/taskmgr_db";
-		String jdbcUser = "taskmgr_user";
-		String jdbcPassword = "secret";
+		String jdbcDriver = props.getProperty("activitymgr.jdbc.driver", "com.mysql.jdbc.Driver");
+		String jdbcUrl = props.getProperty("activitymgr.jdbc.url", "jdbc:mysql://localhost:3306/taskmgr_db");
+		String jdbcUser = props.getProperty("activitymgr.jdbc.user", "taskmgr");
+		String jdbcPassword = props.getProperty("activitymgr.jdbc.password", "taskmgr");
 		TransactionManager txManager = new TransactionManager(jdbcDriver, jdbcUrl, jdbcUser, jdbcPassword);
+
 		// Bind TX provider
 		bind(Connection.class).toProvider(txManager);
 		// and Transactional wrapper builder
@@ -112,6 +134,20 @@ public class LogicModule extends AbstractModule {
 		// Bind constraints validator
 		Multibinder<IConstraintsValidator> cvBinder = Multibinder.newSetBinder(binder(), new TypeLiteral<IConstraintsValidator>() {});
 		cvBinder.addBinding().to(DefaultConstraintsValidator.class);
+	}
+
+	private boolean attempToLoadConfiguration(Properties props, File cfgFile) {
+		System.out.println("Trying to load configuration from " + cfgFile.getAbsolutePath());
+		if (cfgFile.exists()) {
+			try {
+				props.load(new FileInputStream(cfgFile));
+				System.out.println("Configuration loaded");
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			}
+			return true;
+		}
+		return false;
 	}
 
 }
