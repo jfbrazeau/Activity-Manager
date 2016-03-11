@@ -197,7 +197,6 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 
 	@Override
 	public void handle(ContributionChangeEvent event) {
-		System.out.println("handle(" + event.getPropertyId() + ", " + event.getOldDuration() + ", " + event.getNewDuration() + ")");
 		contributionsProvider.updateTaskTotal(event.getTaskId());
 		getView().reloadContributionTableFooter();
 	}
