@@ -3,6 +3,7 @@ package org.activitymgr.ui.web.logic;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -57,7 +58,7 @@ public class LogicModule extends AbstractModule {
 		Properties props = new Properties();
 		try {
 			String installArea = new URL(System.getProperty("osgi.install.area")).getFile();
-			if (!attempToLoadConfiguration(props, new File(installArea, "activitymgr.properties"))) {
+			if (!attempToLoadConfiguration(props, new File(installArea))) {
 				attempToLoadConfiguration(props, new File(System.getProperty("activitymgr.config", System.getProperty("user.home"))));
 			}
 		} catch (MalformedURLException e) {
@@ -136,16 +137,24 @@ public class LogicModule extends AbstractModule {
 		cvBinder.addBinding().to(DefaultConstraintsValidator.class);
 	}
 
-	private boolean attempToLoadConfiguration(Properties props, File cfgFile) {
-		System.out.println("Trying to load configuration from " + cfgFile.getAbsolutePath());
-		if (cfgFile.exists()) {
+	private boolean attempToLoadConfiguration(Properties props, File cfgFolder) {
+		System.out.println("Trying to load configuration from " + cfgFolder.getAbsolutePath());
+		if (cfgFolder.exists() && cfgFolder.isDirectory()) {
 			try {
-				props.load(new FileInputStream(cfgFile));
-				System.out.println("Configuration loaded");
+				File[] propFiles = cfgFolder.listFiles(new FilenameFilter() {
+					@Override
+					public boolean accept(File dir, String name) {
+						return name.endsWith(".properties");
+					}
+				});
+				for (File propFile : propFiles) {
+					System.out.println("Loading " + propFile.getAbsolutePath());
+					props.load(new FileInputStream(propFile));
+				}
 			} catch (IOException e) {
 				throw new IllegalStateException(e);
 			}
-			return true;
+			return !props.isEmpty();
 		}
 		return false;
 	}
