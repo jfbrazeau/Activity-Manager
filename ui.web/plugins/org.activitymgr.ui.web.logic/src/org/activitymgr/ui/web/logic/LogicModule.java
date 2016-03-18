@@ -55,7 +55,7 @@ public class LogicModule extends AbstractModule {
 		install(new CoreModelModule());
 		
 		// Load configuration
-		Properties props = new Properties();
+		final Properties props = new Properties();
 		try {
 			String installArea = new URL(System.getProperty("osgi.install.area")).getFile();
 			if (!attempToLoadConfiguration(props, new File(installArea))) {
@@ -64,6 +64,25 @@ public class LogicModule extends AbstractModule {
 		} catch (MalformedURLException e) {
 			throw new IllegalStateException(e);
 		}
+		
+		// Bind configuration
+		bind(IConfiguration.class).toInstance(new IConfiguration() {
+			
+			@Override
+			public String getStringParameter(String key) {
+				return props.getProperty(key);
+			}
+			
+			@Override
+			public int getIntParameter(String key) {
+				return Integer.parseInt(props.getProperty(key));
+			}
+			
+			@Override
+			public boolean getBooleanParameter(String key) {
+				return Boolean.TRUE.toString().equalsIgnoreCase(props.getProperty(key));
+			}
+		});
 		
 		// Configure log4j
 		PropertyConfigurator.configure(props);
