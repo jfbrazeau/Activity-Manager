@@ -6,7 +6,6 @@ import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogicContext;
 import org.activitymgr.ui.web.logic.IRootLogic;
 import org.activitymgr.ui.web.logic.ITransactionalWrapperBuilder;
-import org.activitymgr.ui.web.logic.impl.internal.RootLogicImpl;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -79,10 +78,6 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 		return (IRootLogic) cursor;
 	}
 
-	protected void handleError(Throwable error) {
-		((RootLogicImpl) getRoot()).handleError(error);
-	}
-
 	@SuppressWarnings("unchecked")
 	private Class<? extends ILogic<?>> getILogicInterfaces(Class<?> c) {
 		Class<? extends ILogic<?>> result = null;
@@ -116,12 +111,25 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 		return context;
 	}
 
+	@Deprecated
 	public <T> T buildTransactionalWrapper(final T wrapped, final Class<?> interfaceToWrapp) {
 		return twBuilder.buildTransactionalWrapper(wrapped, interfaceToWrapp);
 	}
 
 	@Override
 	public void dispose() {
+	}
+
+	protected void doThrow(Throwable t) {
+		if (t instanceof Error) {
+			throw (Error) t;
+		}
+		else if (t instanceof RuntimeException) {
+			throw (RuntimeException) t;
+		}
+		else {
+			throw new IllegalStateException(t);
+		}
 	}
 
 }

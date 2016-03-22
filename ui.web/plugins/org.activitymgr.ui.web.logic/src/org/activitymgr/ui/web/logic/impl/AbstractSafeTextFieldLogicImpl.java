@@ -1,7 +1,6 @@
 package org.activitymgr.ui.web.logic.impl;
 
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
-import org.activitymgr.ui.web.logic.impl.event.CallbackExceptionEvent;
 
 public abstract class AbstractSafeTextFieldLogicImpl extends AbstractLogicImpl<ITextFieldLogic.View> implements ITextFieldLogic {
 
@@ -47,7 +46,7 @@ public abstract class AbstractSafeTextFieldLogicImpl extends AbstractLogicImpl<I
 		catch (Throwable t) {
 			getView().selectAll();
 			getView().focus();
-			getEventBus().fire(new CallbackExceptionEvent(this, t));
+			doThrow(t);
 		}
 	}
 

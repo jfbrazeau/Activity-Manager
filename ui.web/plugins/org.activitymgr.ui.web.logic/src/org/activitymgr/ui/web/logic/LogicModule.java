@@ -2,17 +2,12 @@ package org.activitymgr.ui.web.logic;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
-import java.sql.Savepoint;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -30,6 +25,7 @@ import org.activitymgr.ui.web.logic.impl.internal.ContributionsTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.internal.DefaultConstraintsValidator;
 import org.activitymgr.ui.web.logic.impl.internal.NewContributionTaskButtonLogic;
 import org.activitymgr.ui.web.logic.impl.internal.TasksTabLogicImpl;
+import org.activitymgr.ui.web.logic.impl.internal.ThreadLocalizedDbTransactionProviderImpl;
 import org.activitymgr.ui.web.logic.spi.IAuthenticatorExtension;
 import org.activitymgr.ui.web.logic.spi.ICollaboratorsCellLogicFactory;
 import org.activitymgr.ui.web.logic.spi.IContributionsCellLogicFactory;
@@ -88,16 +84,20 @@ public class LogicModule extends AbstractModule {
 		PropertyConfigurator.configure(props);
 		System.out.println(props);
 		// Create the datasource
-		String jdbcDriver = props.getProperty("activitymgr.jdbc.driver", "com.mysql.jdbc.Driver");
-		String jdbcUrl = props.getProperty("activitymgr.jdbc.url", "jdbc:mysql://localhost:3306/taskmgr_db");
-		String jdbcUser = props.getProperty("activitymgr.jdbc.user", "taskmgr");
-		String jdbcPassword = props.getProperty("activitymgr.jdbc.password", "taskmgr");
-		TransactionManager txManager = new TransactionManager(jdbcDriver, jdbcUrl, jdbcUser, jdbcPassword);
-
-		// Bind TX provider
-		bind(Connection.class).toProvider(txManager);
-		// and Transactional wrapper builder
-		bind(ITransactionalWrapperBuilder.class).toInstance(txManager);
+		BasicDataSource datasource = new BasicDataSource();
+		datasource.setDriverClassName(props.getProperty("activitymgr.jdbc.driver", "com.mysql.jdbc.Driver"));
+		datasource.setUrl(props.getProperty("activitymgr.jdbc.url", "jdbc:mysql://localhost:3306/taskmgr_db"));
+		datasource.setUsername(props.getProperty("activitymgr.jdbc.user", "taskmgr"));
+		datasource.setPassword(props.getProperty("activitymgr.jdbc.password", "taskmgr"));
+		datasource.setDefaultAutoCommit(false);
+		final ThreadLocalizedDbTransactionProviderImpl dbTxProvider = new ThreadLocalizedDbTransactionProviderImpl(datasource);
+		bind(ThreadLocalizedDbTransactionProviderImpl.class).toInstance(dbTxProvider);
+		bind(Connection.class).toProvider(new Provider<Connection>() {
+			@Override
+			public Connection get() {
+				return dbTxProvider.get().getTx();
+			}
+		});
 		
 		// Default SPI implementations
 		bind(IFeatureAccessManager.class).toInstance(new DefaultFeatureAccessManager());
@@ -219,89 +219,4 @@ class NoneTaskCreationPatternHandler implements ITaskCreationPatternHandler {
 	public String getLabel() {
 		return "None";
 	}
-}
-
-class TransactionManager implements ITransactionalWrapperBuilder, Provider<Connection> {
-	
-	private BasicDataSource datasource;
-	private ThreadLocal<DbTransactionContext> transactions = new ThreadLocal<DbTransactionContext>();
-
-	TransactionManager(String jdbcDriver, String jdbcUrl, String jdbcUser, String jdbcPassword) {
-		datasource = new BasicDataSource();
-		datasource.setDriverClassName(jdbcDriver);
-		datasource.setUrl(jdbcUrl);
-		datasource.setUsername(jdbcUser);
-		datasource.setPassword(jdbcPassword);
-		datasource.setDefaultAutoCommit(false);
-	}
-
-	@Override
-	public Connection get() {
-		DbTransactionContext txCtx = transactions.get();
-		return txCtx != null ? txCtx.tx : null;
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T> T buildTransactionalWrapper(final T wrapped, Class<?> interfaceToWrapp) {
-		return (T) Proxy.newProxyInstance(
-				wrapped.getClass().getClassLoader(),
-				// TODO add comments
-				new Class<?>[] { interfaceToWrapp }, new InvocationHandler() {
-					@Override
-					public Object invoke(Object proxy, Method method,
-							Object[] args) throws Throwable {
-						if (method.getDeclaringClass().equals(Object.class)) {
-							return method.invoke(wrapped, args);
-						}
-						else {
-							DbTransactionContext txCtx = transactions.get();
-							Savepoint sp = null;
-							try {
-								// Open the transaction if required and push a savepoint
-								if (txCtx == null) {
-									txCtx = new DbTransactionContext(datasource.getConnection());
-									transactions.set(txCtx);
-								}
-								else {
-									sp = txCtx.tx.setSavepoint();
-								}
-								txCtx.calls.push(method);
-								//log(txCtx, "START");
-								// Call the real model manager
-								Object result = method.invoke(wrapped, args);
-	
-								// Commit the transaction (or put a save point)
-								if (txCtx.calls.size() > 1) {
-									sp = txCtx.tx.setSavepoint();
-								}
-								else {
-									txCtx.tx.commit();
-								}
-								return result;
-							} catch (InvocationTargetException t) {
-								// Rollback the transaction in case of failure
-								if (txCtx.calls.size() > 1) {
-									txCtx.tx.rollback(sp);
-								}
-								else {
-									txCtx.tx.rollback();
-								}
-								throw t.getCause();
-							} finally {
-								//log(txCtx, "END");
-								if (txCtx != null) {
-									txCtx.calls.pop();
-									if (txCtx.calls.size() == 0) {
-										// Release the transaction
-										transactions.remove();
-										txCtx.tx.close();
-									}
-								}
-							}
-						}
-					}
-				});
-	}
-
 }

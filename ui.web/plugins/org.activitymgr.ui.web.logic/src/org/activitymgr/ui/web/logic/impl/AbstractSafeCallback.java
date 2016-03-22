@@ -1,9 +1,7 @@
 package org.activitymgr.ui.web.logic.impl;
 
-import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogicContext;
-import org.activitymgr.ui.web.logic.impl.event.CallbackExceptionEvent;
 
 import com.google.inject.Inject;
 
@@ -14,16 +12,9 @@ public abstract class AbstractSafeCallback {
 	@Inject
 	private ILogicContext context;
 
-	@Inject
-	private IEventBus eventBus;
-
 	public AbstractSafeCallback(ILogic<?> source) {
 		this.source = source;
 		source.injectMembers(this);
-	}
-
-	protected void fireCallbackExceptionEvent(Throwable error) {
-		eventBus.fire(new CallbackExceptionEvent(source, error));
 	}
 
 	protected ILogic<?> getSource() {
@@ -32,6 +23,18 @@ public abstract class AbstractSafeCallback {
 
 	protected ILogicContext getContext() {
 		return context;
+	}
+
+	protected void doThrow(Throwable t) {
+		if (t instanceof Error) {
+			throw (Error) t;
+		}
+		else if (t instanceof RuntimeException) {
+			throw (RuntimeException) t;
+		}
+		else {
+			throw new IllegalStateException(t);
+		}
 	}
 
 }

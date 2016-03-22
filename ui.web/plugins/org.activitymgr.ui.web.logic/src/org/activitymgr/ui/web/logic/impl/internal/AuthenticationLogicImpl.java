@@ -44,10 +44,5 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 		}
 	}
 
-	@Override
-	protected void handleError(Throwable error) {
-		super.handleError(error);
-	}
-
 }
 

@@ -12,6 +12,7 @@ public abstract class AbstractTabLogicImpl<VIEW extends ITabLogic.View<?>> exten
 		super(parent);
 	}
 
+	@SuppressWarnings("unchecked")
 	protected <TABLOGIC extends ITabLogic<VIEW>> void registerButtons(Set<ITabButtonFactory<TABLOGIC>> buttonFactories) {
 		if (buttonFactories != null) {
 			for (ITabButtonFactory<TABLOGIC> buttonFactory : buttonFactories) {

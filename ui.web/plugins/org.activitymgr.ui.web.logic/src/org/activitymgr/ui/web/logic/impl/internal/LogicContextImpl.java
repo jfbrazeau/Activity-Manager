@@ -2,9 +2,6 @@ package org.activitymgr.ui.web.logic.impl.internal;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.util.Stack;
 
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.ui.web.logic.IEventBus;
@@ -123,12 +120,4 @@ public class LogicContextImpl implements ILogicContext {
 		}
 	}
 
-}
-
-class DbTransactionContext {
-	Connection tx;
-	Stack<Method> calls = new Stack<Method>();
-	DbTransactionContext(Connection con) {
-		tx = con;
-	}
 }

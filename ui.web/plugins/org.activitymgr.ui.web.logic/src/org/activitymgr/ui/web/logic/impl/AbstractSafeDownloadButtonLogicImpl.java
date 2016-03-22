@@ -17,8 +17,8 @@ public abstract class AbstractSafeDownloadButtonLogicImpl extends AbstractLogicI
 			return unsafeGetContent();
 		}
 		catch (Throwable t) {
-			handleError(t);
-			return new byte[0];
+			doThrow(t);
+			return null;
 		}
 	}
 	
@@ -30,8 +30,8 @@ public abstract class AbstractSafeDownloadButtonLogicImpl extends AbstractLogicI
 			return unsafeGetFileName();
 		}
 		catch (Throwable t) {
-			handleError(t);
-			return "";
+			doThrow(t);
+			return null;
 		}
 	}
 	

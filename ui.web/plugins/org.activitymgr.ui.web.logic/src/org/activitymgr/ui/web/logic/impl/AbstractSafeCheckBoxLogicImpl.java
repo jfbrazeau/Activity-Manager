@@ -1,7 +1,6 @@
 package org.activitymgr.ui.web.logic.impl;
 
 import org.activitymgr.ui.web.logic.ICheckBoxFieldLogic;
-import org.activitymgr.ui.web.logic.impl.event.CallbackExceptionEvent;
 
 public abstract class AbstractSafeCheckBoxLogicImpl extends AbstractLogicImpl<ICheckBoxFieldLogic.View> implements ICheckBoxFieldLogic {
 
@@ -17,7 +16,7 @@ public abstract class AbstractSafeCheckBoxLogicImpl extends AbstractLogicImpl<IC
 		}
 		catch (Throwable t) {
 			getView().focus();
-			getEventBus().fire(new CallbackExceptionEvent(this, t));
+			doThrow(t);
 		}
 	}
 

@@ -174,7 +174,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 			}
 		}
 		catch (ModelException e) {
-			handleError(e);
+			doThrow(e);
 		}
 	}
 
@@ -191,7 +191,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 			fireCollabratorOrWeekChangedEvent();
 		}
 		catch (ModelException e) {
-			handleError(e);
+			doThrow(e);
 		}
 	}
 

@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ISelectFieldLogic;
-import org.activitymgr.ui.web.logic.impl.event.CallbackExceptionEvent;
 
 public abstract class AbstractSafeSelectLogicImpl<ITEM_ID_TYPE> extends AbstractLogicImpl<ISelectFieldLogic.View<ITEM_ID_TYPE>> implements ISelectFieldLogic<ITEM_ID_TYPE> {
 
@@ -22,7 +21,7 @@ public abstract class AbstractSafeSelectLogicImpl<ITEM_ID_TYPE> extends Abstract
 			unsafeOnSelectedItemChanged(newSelectedItemId);
 		}
 		catch (Throwable t) {
-			getEventBus().fire(new CallbackExceptionEvent(this, t));
+			doThrow(t);
 		}
 	}
 

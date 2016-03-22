@@ -1,7 +1,6 @@
 package org.activitymgr.ui.web.logic.impl;
 
 import java.util.Collection;
-import java.util.Collections;
 
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
@@ -18,8 +17,8 @@ public abstract class AbstractSafeTreeTableCellProviderCallback<ITEM_ID_TYPE> ex
 			return unsafeGetChildren(element);
 		}
 		catch (Throwable t) {
-			fireCallbackExceptionEvent(t);
-			return Collections.emptyList();
+			doThrow(t);
+			return null;
 		}
 	}
 
@@ -31,7 +30,7 @@ public abstract class AbstractSafeTreeTableCellProviderCallback<ITEM_ID_TYPE> ex
 			return unsafeGetParent(element);
 		}
 		catch (Throwable t) {
-			fireCallbackExceptionEvent(t);
+			doThrow(t);
 			return null;
 		}
 	}
@@ -44,7 +43,7 @@ public abstract class AbstractSafeTreeTableCellProviderCallback<ITEM_ID_TYPE> ex
 			return unsafeHasChildren(element);
 		}
 		catch (Throwable t) {
-			fireCallbackExceptionEvent(t);
+			doThrow(t);
 			return false;
 		}
 	}
@@ -57,7 +56,7 @@ public abstract class AbstractSafeTreeTableCellProviderCallback<ITEM_ID_TYPE> ex
 			return unsafeIsRoot(element);
 		}
 		catch (Throwable t) {
-			fireCallbackExceptionEvent(t);
+			doThrow(t);
 			return false;
 		}
 	}

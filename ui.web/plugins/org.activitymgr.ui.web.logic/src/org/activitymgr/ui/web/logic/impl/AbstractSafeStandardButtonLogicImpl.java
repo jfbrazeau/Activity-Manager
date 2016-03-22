@@ -23,7 +23,7 @@ public abstract class AbstractSafeStandardButtonLogicImpl extends AbstractLogicI
 			unsafeOnClick();
 		}
 		catch (Throwable t) {
-			handleError(t);
+			doThrow(t);
 		}
 	}
 

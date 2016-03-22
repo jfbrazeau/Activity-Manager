@@ -1,7 +1,6 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,13 +17,10 @@ import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.ui.web.logic.IConstraintsValidator;
 import org.activitymgr.ui.web.logic.IConstraintsValidator.IStatus;
-import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
-import org.activitymgr.ui.web.logic.impl.AbstractSafeTableCellProviderCallback;
-import org.activitymgr.ui.web.logic.impl.LabelLogicImpl;
 import org.activitymgr.ui.web.logic.spi.ITaskCreationPatternHandler;
 
 import com.google.inject.Inject;
@@ -118,7 +114,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 			checkDialogRules(taskId, getView().getNewTaskName(), getView().getNewTaskCode());
 		}
 		catch (ModelException e) {
-			handleError(e);
+			doThrow(e);
 		}
 	}
 
@@ -129,7 +125,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 					.getNewTaskName(), getView().getNewTaskCode());
 		}
 		catch (ModelException e) {
-			handleError(e);
+			doThrow(e);
 		}
 	}
 	
@@ -140,7 +136,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 					.getNewTaskCode());
 		}
 		catch (ModelException e) {
-			handleError(e);
+			doThrow(e);
 		}
 	}
 
@@ -151,7 +147,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				.getNewTaskName(), newTaskCode);
 		}
 		catch (ModelException e) {
-			handleError(e);
+			doThrow(e);
 		}
 	}
 
@@ -255,7 +251,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				((AbstractContributionTabLogicImpl) getParent()).addTasks(selectedTaskIdsArray);
 			}
 		} catch (ModelException e) {
-			handleError(e);
+			doThrow(e);
 		}
 	}
 

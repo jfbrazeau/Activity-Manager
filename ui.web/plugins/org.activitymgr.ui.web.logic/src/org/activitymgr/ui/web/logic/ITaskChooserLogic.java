@@ -1,7 +1,6 @@
 package org.activitymgr.ui.web.logic;
 
 import java.util.Map;
-
 import org.activitymgr.ui.web.logic.ILogic.IView;
 
 public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {

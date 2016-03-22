@@ -33,7 +33,8 @@ public class DownloadButtonView extends Button implements View {
 		StreamResource streamResource = new StreamResource(new StreamResource.StreamSource() {
 			@Override
 			public InputStream getStream() {
-				return new ByteArrayInputStream(logic.getContent());
+				byte[] content = logic.getContent();
+				return new ByteArrayInputStream(content != null ? content : new byte[0]);
 			}
 		}, logic.getFileName()) {
 			/**
@@ -47,6 +48,5 @@ public class DownloadButtonView extends Button implements View {
 		FileDownloader downloader = new FileDownloader(streamResource);
 		downloader.extend(this);
 	}
-
 
 }

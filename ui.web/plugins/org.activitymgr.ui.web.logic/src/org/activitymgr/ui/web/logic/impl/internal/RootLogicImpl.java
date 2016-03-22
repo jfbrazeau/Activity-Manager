@@ -1,5 +1,6 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
+import java.sql.Connection;
 import java.util.Set;
 
 import org.activitymgr.ui.web.logic.IEventBus;
@@ -8,7 +9,7 @@ import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogicContext;
 import org.activitymgr.ui.web.logic.IRootLogic;
 import org.activitymgr.ui.web.logic.ITabLogic;
-import org.activitymgr.ui.web.logic.impl.event.CallbackExceptionEvent;
+import org.activitymgr.ui.web.logic.ITransactionalWrapperBuilder;
 import org.activitymgr.ui.web.logic.impl.event.ConnectedCollaboratorEvent;
 import org.activitymgr.ui.web.logic.impl.event.EventBusImpl;
 import org.activitymgr.ui.web.logic.spi.IFeatureAccessManager;
@@ -32,6 +33,9 @@ public class RootLogicImpl implements IRootLogic {
 			protected void configure() {
 				bind(IEventBus.class).to(EventBusImpl.class).in(Singleton.class);
 				bind(ILogicContext.class).to(LogicContextImpl.class).in(Singleton.class);
+				// and Transactional wrapper builder
+				bind(ITransactionalWrapperBuilder.class).to(TransactionalManagerImpl.class);
+				bind(IRootLogic.class).toInstance(RootLogicImpl.this);
 			}
 		});
 
@@ -45,13 +49,6 @@ public class RootLogicImpl implements IRootLogic {
 		
 		// Event listeners registration
 		IEventBus eventBus = userInjector.getInstance(IEventBus.class);
-		eventBus.register(CallbackExceptionEvent.class, new IEventListener<CallbackExceptionEvent>() {
-			@Override
-			public void handle(CallbackExceptionEvent event) {
-				// If an error occurs in a view callback, it shows the error to the user
-				handleError(event.getException());
-			}
-		});
 		eventBus.register(ConnectedCollaboratorEvent.class, new IEventListener<ConnectedCollaboratorEvent>() {
 			@Override
 			public void handle(ConnectedCollaboratorEvent event) {
@@ -85,24 +82,6 @@ public class RootLogicImpl implements IRootLogic {
 		return view;
 	}
 	
-	public void handleError(Throwable error) {
-		error.printStackTrace();
-		// Building message
-		String message = error.getMessage();
-		if (message == null || "".equals(message.trim())) {
-			message = error.getClass().getSimpleName();
-		}
-		// Generating details
-		String details = null;
-		Throwable cause = error;
-		while ((cause = cause.getCause()) != null) {
-			details = cause.getClass().getSimpleName() + " : " + cause.getMessage() + "\n";
-		}
-		// FIXME transport the error on the event bus ?
-		getView().showErrorNotification(message, details);
-	}
-
-
 	@Override
 	public <T> T injectMembers(T instance) {
 		userInjector.injectMembers(instance);
