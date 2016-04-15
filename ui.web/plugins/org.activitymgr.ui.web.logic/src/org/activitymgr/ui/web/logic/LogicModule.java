@@ -82,7 +82,6 @@ public class LogicModule extends AbstractModule {
 		
 		// Configure log4j
 		PropertyConfigurator.configure(props);
-		System.out.println(props);
 		// Create the datasource
 		BasicDataSource datasource = new BasicDataSource();
 		datasource.setDriverClassName(props.getProperty("activitymgr.jdbc.driver", "com.mysql.jdbc.Driver"));

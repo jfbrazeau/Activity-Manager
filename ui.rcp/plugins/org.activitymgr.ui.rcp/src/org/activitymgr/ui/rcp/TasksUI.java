@@ -56,7 +56,6 @@ import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableColorProvider;
@@ -305,7 +304,6 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 				new SafeRunner() {
 					@Override
 					protected Object runUnsafe() throws Exception {
-						System.out.println(event.detail);
 						Task taskToMove = modelMgr.getTask(Long.parseLong((String)event.data));
 						Task destTask = ((TaskSums) event.item.getData()).getTask();
 						TreeItem item = (TreeItem)event.item;
@@ -325,7 +323,6 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 			}
 			@Override
 			public void dragOver(DropTargetEvent event) {
-				//System.out.println("dragOver(" + event + ")");
 				event.feedback = DND.FEEDBACK_EXPAND | DND.FEEDBACK_SCROLL;
 				if (event.item != null) {
 					TreeItem item = (TreeItem)event.item;
@@ -617,7 +614,6 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		final TaskSums taskSums = (TaskSums) item.getData();
 		final Task task = taskSums.getTask();
 		final int columnIdx = treeColsMgr.getColumnIndex(property);
-		final IBaseLabelProvider labelProvider = this;
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
 				boolean parentsMustBeRefreshed = false;

@@ -50,7 +50,7 @@ final class TransactionalManagerImpl implements
 								txCtx.getCalls().push(method);
 								//log(txCtx, "START");
 								// Call the real model manager
-								System.out.println(indent(txCtx.getCalls(), wrapped));
+								//System.out.println(indent(txCtx.getCalls(), wrapped));
 								Object result = method.invoke(wrapped, args);
 	
 								// Commit the transaction (or put a save point)
@@ -83,19 +83,13 @@ final class TransactionalManagerImpl implements
 									details = cause.getClass().getSimpleName() + " : " + cause.getMessage() + "\n";
 								}
 								rootLogic.getView().showErrorNotification(message, details);
-//								if (method.getReturnType().equals(void.class)) {
-									return null;
-//								}
-//								else {
-								//	throw exception;
-//								}
+								return null;
 							} finally {
 								//log(txCtx, "END");
 								if (txCtx != null) {
 									txCtx.getCalls().pop();
 									if (txCtx.getCalls().size() == 0) {
 										// Release the transaction
-										System.out.println("** Close connection " + txCtx.getTx());
 										dbTxProvider.release();
 									}
 								}
@@ -105,6 +99,7 @@ final class TransactionalManagerImpl implements
 				});
 	}
 	
+	@SuppressWarnings("unused")
 	private static String indent(Stack<Method> stack, Object owner) {
 		StringWriter w = new StringWriter();
 		for (int i=0; i<stack.size(); i++) {

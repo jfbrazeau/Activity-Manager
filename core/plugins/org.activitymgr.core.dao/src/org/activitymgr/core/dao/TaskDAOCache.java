@@ -103,13 +103,11 @@ public class TaskDAOCache {
 	}
 
 	private void addToCache(Task task) {
-		System.out.println("Add to cache : " + task);
 		taskByPathCache.put(task.getFullPath(), task);
 		taskByIdCache.put(task.getId(), task);
 	}
 
 	private void linkTaskAndPathInCache(String taskCodePath, long taskId) {
-		System.out.println("Link '" + taskCodePath + "' to '" + taskId + "'");
 		taskCodePathByIdCache.put(taskId, taskCodePath);
 		taskIdByCodePathCache.put(taskCodePath, taskId);
 	}

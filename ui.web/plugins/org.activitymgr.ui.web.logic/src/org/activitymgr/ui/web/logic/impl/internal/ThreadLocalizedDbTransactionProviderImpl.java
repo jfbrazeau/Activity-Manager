@@ -22,7 +22,6 @@ public class ThreadLocalizedDbTransactionProviderImpl implements Provider<DbTran
 			throw new IllegalStateException("Previous database context not released for the current thread");
 		}
 		dbTransactionContext = new DbTransactionContext(ds.getConnection());
-		System.out.println("** New connection " + dbTransactionContext.getTx());
 		transactions.set(dbTransactionContext);
 		return dbTransactionContext;
 	}
