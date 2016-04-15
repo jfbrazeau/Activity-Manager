@@ -45,6 +45,7 @@ public class DownloadButtonView extends Button implements View {
 				return logic.getFileName();
 			}
 		};
+		streamResource.setCacheTime(0);
 		FileDownloader downloader = new FileDownloader(streamResource);
 		downloader.extend(this);
 	}
