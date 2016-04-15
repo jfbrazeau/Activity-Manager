@@ -94,8 +94,9 @@ public class SWTHelper {
 	 */
 	public static void exportToWorkBook(Tree tree) throws UITechException {
 		// Demande du nom de fichier
-		FileDialog fd = new FileDialog(tree.getShell(), SWT.SAVE);
-		fd.setFilterExtensions(new String[] { "*.xls", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
+		FileDialog fd = new FileDialog(tree.getShell(), SWT.APPLICATION_MODAL | SWT.SAVE);
+		fd.setFilterExtensions(new String[] { "*.xls", "*.*" }); //$NON-NLS-1$ //$NON-NLS-2$
+		fd.setOverwrite(true);
 		String fileName = fd.open();
 		// Si le nom est spécifié
 		if (fileName != null) {
@@ -231,8 +232,9 @@ public class SWTHelper {
 	 */
 	public static void exportToWorkBook(Table table) throws UITechException {
 		// Demande du nom de fichier
-		FileDialog fd = new FileDialog(table.getShell());
-		fd.setFilterExtensions(new String[] { "*.xls", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
+		FileDialog fd = new FileDialog(table.getShell(), SWT.APPLICATION_MODAL | SWT.SAVE);
+		fd.setFilterExtensions(new String[] { "*.xls", "*.*" }); //$NON-NLS-1$ //$NON-NLS-2$
+		fd.setOverwrite(true);
 		String fileName = fd.open();
 		// Si le nom est spécifié
 		if (fileName != null) {
