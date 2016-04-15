@@ -21,6 +21,8 @@
       startupMessageRect="7,125,375,20"
       startupForegroundColor="000000" />
    <launcher name="activitymgr">
+      <linux icon="product/linux/alt_window_128.xpm"/>
+      <macosx icon="product/macosx/alt_window.icns"/>
       <solaris/>
       <win useIco="false">
          <bmp/>

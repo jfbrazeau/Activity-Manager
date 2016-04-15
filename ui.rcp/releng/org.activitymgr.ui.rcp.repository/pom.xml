@@ -36,7 +36,10 @@
 						<product>
 							<id>org.activitymgr.ui.rcp.product</id>
 							<archiveFileName>activitymgr-rcp-${unqualifiedVersion}.${buildQualifier}</archiveFileName>
-							<rootFolder>activitymgr-rcp</rootFolder>
+							<rootFolder>activitymgr</rootFolder>
+							<rootFolders>
+								<macosx>ActivityManager</macosx>
+							</rootFolders>
 						</product>
 					</products>
 				</configuration>
