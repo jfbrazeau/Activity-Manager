@@ -16,6 +16,7 @@ public class AllTests {
 		suite.addTestSuite(TaskTest.class);
 		suite.addTestSuite(ContributionTest.class);
 		suite.addTestSuite(XmlTest.class);
+		suite.addTestSuite(XlsTest.class);
 		//$JUnit-END$
 		return suite;
 	}

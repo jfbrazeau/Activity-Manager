@@ -35,7 +35,6 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Contribution;
 import org.activitymgr.core.dto.Duration;
@@ -513,6 +512,29 @@ public interface IModelMgr {
 	 */
 	void importFromXML(InputStream in) throws IOException,
 			ParserConfigurationException, SAXException, ModelException;
+	
+	/**
+	 * Imports several tasks under a given parent task.
+	 * 
+	 * <p>Only the first sheet of the workbook is processed.</p>
+	 * <p>The sheet is expected to contain the following columns :</p>
+	 * <ul>
+	 * <li>code (1)</li>
+	 * <li>name (1)</li>
+	 * <li>budget (2)</li>
+	 * <li>initiallyConsumed (2)</li>
+	 * <li>todo (2)</li>
+	 * <li>comment (2)</li>
+	 * </ul>
+	 * 
+	 * <p>(1) : required, (2) : optionnal</p>
+	 * 
+	 * @param parentTaskId the parent task identifier.
+	 * @param xls the stream containing the EXCEL file.
+	 * @throws IOException if an I/O error occurs. 
+	 * @throws ModelException if a model violation occurs.
+	 */
+	void importFromExcel(Long parentTaskId, InputStream xls) throws IOException, ModelException;
 
 	/**
 	 * Déplace la tache d'un cran vers le bas.

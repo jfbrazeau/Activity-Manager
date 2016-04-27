@@ -30,6 +30,7 @@ package org.activitymgr.core.model.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -50,6 +51,7 @@ import org.activitymgr.core.dao.IContributionDAO;
 import org.activitymgr.core.dao.ICoreDAO;
 import org.activitymgr.core.dao.IDurationDAO;
 import org.activitymgr.core.dao.ITaskDAO;
+import org.activitymgr.core.dao.TaskDAOCache;
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Contribution;
 import org.activitymgr.core.dto.Duration;
@@ -62,13 +64,17 @@ import org.activitymgr.core.dto.misc.TaskSearchFilter;
 import org.activitymgr.core.dto.misc.TaskSums;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
+import org.activitymgr.core.model.impl.XlsHelper.IXLSHandler;
+import org.activitymgr.core.model.impl.XlsHelper.XLSCell;
 import org.activitymgr.core.model.impl.XmlHelper.ModelMgrDelegate;
 import org.activitymgr.core.orm.query.AscendantOrderByClause;
 import org.activitymgr.core.orm.query.DescendantOrderByClause;
 import org.activitymgr.core.orm.query.InStatement;
 import org.activitymgr.core.orm.query.LikeStatement;
+import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
+import org.apache.commons.beanutils.BeanUtilsBean2;
 import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -1980,4 +1986,67 @@ public class ModelMgrImpl implements IModelMgr {
 		return (Task[]) result.toArray(new Task[result.size()]);
 	}
 
+	@Override
+	public void importFromExcel(Long parentTaskId, InputStream xls)
+			throws IOException, ModelException {
+		final List<String> numericFieldNames = Arrays.asList(new String[] { "budget", "initiallyConsumed", "todo" });
+		final TaskDAOCache taskCache = new TaskDAOCache(taskDAO);
+		final String parentTaskCodePath = parentTaskId == null ? "" : taskCache.getCodePath(parentTaskId);
+		XlsHelper.visit(xls, new IXLSHandler() {
+			@Override
+			public void handleRow(Map<String, XLSCell> cells) throws ModelException {
+				Task newTask = factory.newTask();
+				
+				if (!cells.containsKey("code")) {
+					throw new ModelException("Sheet must contain a code column");
+				}
+				
+				// Process other rows
+				String theParentTaskCodePath = parentTaskCodePath;
+				for (String columnName : cells.keySet()) {
+					XLSCell xlsCell = cells.get(columnName);
+					if ("path".equals(columnName)) {
+						String relativePath = String.valueOf(xlsCell.getValue());
+						if (!relativePath.startsWith("/")) {
+							relativePath = "/" + relativePath;
+						}
+						theParentTaskCodePath += relativePath;
+					}
+					else {
+						boolean numeric = numericFieldNames.contains(columnName);
+						setAttributeValue(newTask, xlsCell, numeric);
+					}
+				}
+				
+				// Create task
+				Task parentTask = taskCache.getByCodePath(theParentTaskCodePath);
+				if (!"".equals(theParentTaskCodePath) && parentTask == null) {
+					throw new ModelException("Unknown task path '" + theParentTaskCodePath + "'");
+				}
+				createTask(parentTask, newTask);
+			}
+
+			private void setAttributeValue(Task task,
+					XLSCell cell, boolean numeric) throws ModelException {
+				try {
+					Object value = cell.getValue();
+					if (numeric) {
+						value = StringHelper.entryToHundredth(String.valueOf(value));
+					}
+					BeanUtilsBean2.getInstance().setProperty(task, cell.getColumnName(), value);
+				} catch (StringFormatException e) {
+					throw new ModelException(msgPrefix(cell) + " : bad format (" + e.getMessage() + ")");
+				} catch (IllegalAccessException e) {
+					throw new ModelException(msgPrefix(cell) + " : invalid content (" + e.getMessage() + ")");
+				} catch (InvocationTargetException e) {
+					throw new ModelException(msgPrefix(cell) + " : invalid content (" + e.getMessage() + ")");
+				}
+			}
+			
+			private String msgPrefix(XLSCell cell) {
+				return "Row " + cell.getCell().getRowIndex() + ", column " + cell.getColumnName();
+			}
+		});
+	}
+	
 }

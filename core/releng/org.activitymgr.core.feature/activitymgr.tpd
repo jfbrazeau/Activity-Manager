@@ -25,6 +25,10 @@ location "http://download.eclipse.org/tools/orbit/downloads/drops/R2014052502125
 	org.apache.commons.dbcp.source lazy
 	org.apache.commons.pool lazy
 	org.apache.commons.pool.source lazy
+	org.apache.commons.beanutils lazy
+	org.apache.commons.beanutils.source lazy
+	org.apache.commons.collections lazy
+	org.apache.commons.collections.source lazy
 	com.google.inject lazy
 	com.google.inject.source lazy
 	com.google.inject.assistedinject lazy

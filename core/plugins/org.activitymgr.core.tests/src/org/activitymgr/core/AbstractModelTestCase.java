@@ -36,6 +36,9 @@ public abstract class AbstractModelTestCase extends TestCase implements
 
 	private static BasicDataSource datasource;
 	static {
+		// Ensure DbHelper.class is loaded (otherwise, raises an exception in the other thread)
+		@SuppressWarnings("unused")
+		Class<?> c = DbHelper.class;
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {

@@ -8,6 +8,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.activitymgr.core.util;bundle-version="1.0.0",
  org.activitymgr.core.dao;bundle-version="1.0.0",
  org.activitymgr.core.orm;bundle-version="1.0.0",
- org.activitymgr.core.dto;bundle-version="1.0.0";visibility:=reexport
+ org.activitymgr.core.dto;bundle-version="1.0.0";visibility:=reexport,
+ org.apache.poi;bundle-version="3.9.0",
+ org.apache.commons.beanutils;bundle-version="1.8.0"
 Export-Package: org.activitymgr.core.model
 Bundle-ClassPath: .
