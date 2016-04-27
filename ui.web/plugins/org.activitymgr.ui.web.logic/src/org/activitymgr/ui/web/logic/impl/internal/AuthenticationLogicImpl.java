@@ -36,8 +36,13 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 		// Authentication
 		if (authenticator.authenticate(login, password)) {
 			Collaborator collaborator = getModelMgr().getCollaborator(login);
-			((ILogicContext)getContext()).setConnectedCollaborator(collaborator);
-			getEventBus().fire(new ConnectedCollaboratorEvent(this, collaborator));
+			if (collaborator == null) {
+				getRoot().getView().showNotification("User '" + login + "' has been authenticated but does not exist in the database. Please contact your administrator.");
+			}
+			else {
+				((ILogicContext)getContext()).setConnectedCollaborator(collaborator);
+				getEventBus().fire(new ConnectedCollaboratorEvent(this, collaborator));
+			}
 		}
 		else {
 			getRoot().getView().showNotification("Invalid credentials.");
