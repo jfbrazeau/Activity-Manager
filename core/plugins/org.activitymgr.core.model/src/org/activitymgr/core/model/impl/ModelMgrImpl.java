@@ -27,6 +27,7 @@
  */
 package org.activitymgr.core.model.impl;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -64,8 +65,8 @@ import org.activitymgr.core.dto.misc.TaskSearchFilter;
 import org.activitymgr.core.dto.misc.TaskSums;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
-import org.activitymgr.core.model.impl.XlsHelper.IXLSHandler;
-import org.activitymgr.core.model.impl.XlsHelper.XLSCell;
+import org.activitymgr.core.model.impl.XlsImportHelper.IXLSHandler;
+import org.activitymgr.core.model.impl.XlsImportHelper.XLSCell;
 import org.activitymgr.core.model.impl.XmlHelper.ModelMgrDelegate;
 import org.activitymgr.core.orm.query.AscendantOrderByClause;
 import org.activitymgr.core.orm.query.DescendantOrderByClause;
@@ -76,6 +77,15 @@ import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
 import org.apache.commons.beanutils.BeanUtilsBean2;
 import org.apache.log4j.Logger;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -1987,12 +1997,103 @@ public class ModelMgrImpl implements IModelMgr {
 	}
 
 	@Override
+	public byte[] exportToExcel(Long parentTaskId) throws IOException,
+			ModelException {
+		Workbook wbk = new HSSFWorkbook();
+		Sheet sheet = wbk.createSheet();
+		sheet.createFreezePane(0, 1);
+		// Header style
+		CellStyle headerCellStyle = wbk.createCellStyle();
+		headerCellStyle.setFillForegroundColor(HSSFColor.GREY_25_PERCENT.index);
+		headerCellStyle.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
+		headerCellStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+		headerCellStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+		headerCellStyle.setBorderLeft(headerCellStyle.getBorderBottom());
+		headerCellStyle.setBorderRight(headerCellStyle.getBorderBottom());
+		headerCellStyle.setBorderTop(headerCellStyle.getBorderBottom());
+		// Header
+		Row header = sheet.createRow(0);
+		int idx = 0;
+		for (String columnName : new String[] { "path", "code", "name", "budget", "initiallyConsumed", "todo", "comment" }) {
+			Cell cell = header.createCell(idx++);
+			cell.setCellStyle(headerCellStyle);
+			cell.setCellValue(columnName);
+		}
+		// Retrieve tasks
+		Task parentTask = parentTaskId != null ? getTask(parentTaskId) : null;
+		Task[] tasks = null;
+		if (parentTaskId == null) {
+			tasks = taskDAO.selectAll();
+		}
+		else {
+			tasks = taskDAO.select(new String[] { "path" }, new Object[] { new LikeStatement(parentTask.getFullPath() + "%") }, null, -1);
+		}
+		// Sort
+		Arrays.sort(tasks, new Comparator<Task>() {
+			@Override
+			public int compare(Task t1, Task t2) {
+				String path1 = t1.getFullPath();
+				String path2 = t2.getFullPath();
+				int len = Math.min(path1.length(), path2.length());
+				path1 = path1.substring(0, len);
+				path2 = path2.substring(0, len);
+				int c = path1.compareTo(path2);
+				if (c == 0) {
+					return t1.getFullPath().length() > t2.getFullPath().length() ? 1 : -1;
+				}
+				else {
+					return c;
+				}
+			}
+		});
+		
+		// Output
+		CellStyle bodyCellStyle = wbk.createCellStyle();
+		bodyCellStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+		bodyCellStyle.setBorderLeft(bodyCellStyle.getBorderBottom());
+		bodyCellStyle.setBorderRight(bodyCellStyle.getBorderBottom());
+		bodyCellStyle.setBorderTop(bodyCellStyle.getBorderBottom());
+		Map<String, String> pathToTaskCodePathMap = new HashMap<String, String>();
+		for (Task task : tasks) {
+			
+			// Compute task code path
+			String taskPath = task.getPath();
+			String parentTaskCodePath = pathToTaskCodePathMap.get(taskPath);
+			String taskCodePath = (parentTaskCodePath != null ? parentTaskCodePath + '/' : "") + task.getCode();
+			pathToTaskCodePathMap.put(task.getFullPath(), taskCodePath);
+			
+			// Append row
+			Row row = sheet.createRow(sheet.getLastRowNum() + 1);
+			idx = 0;
+			for (Object v : new Object[] { taskCodePath, task.getCode(), task.getName(), task.getBudget(), task.getInitiallyConsumed(), task.getTodo(), task.getComment() }) {
+				Cell cell = row.createCell(idx++);
+				if (v != null) {
+					if (v instanceof String) {
+						cell.setCellValue((String)v);
+					}
+					else {
+						cell.setCellValue(((Long) v)/100d);
+					}
+				}
+				cell.setCellStyle(bodyCellStyle);
+			}
+		}
+		for (int colIdx = 0 ; colIdx <= 6; colIdx++) {
+			sheet.autoSizeColumn(colIdx);
+		}
+		// Save the resource
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		wbk.write(out);
+		return out.toByteArray();
+	}
+	
+	@Override
 	public void importFromExcel(Long parentTaskId, InputStream xls)
 			throws IOException, ModelException {
 		final List<String> numericFieldNames = Arrays.asList(new String[] { "budget", "initiallyConsumed", "todo" });
 		final TaskDAOCache taskCache = new TaskDAOCache(taskDAO);
 		final String parentTaskCodePath = parentTaskId == null ? "" : taskCache.getCodePath(parentTaskId);
-		XlsHelper.visit(xls, new IXLSHandler() {
+		XlsImportHelper.visit(xls, new IXLSHandler() {
 			@Override
 			public void handleRow(Map<String, XLSCell> cells) throws ModelException {
 				Task newTask = factory.newTask();

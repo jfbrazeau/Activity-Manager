@@ -2,14 +2,11 @@ package org.activitymgr.core.model.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.model.XLSModelException;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.BeanUtilsBean2;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -22,7 +19,7 @@ import org.apache.poi.ss.usermodel.Workbook;
  * Excel helper methods.
  * @author jbrazeau
  */
-public class XlsHelper {
+public class XlsImportHelper {
 	
 	public static class XLSCell {
 		private final String columnName;
@@ -80,7 +77,7 @@ public class XlsHelper {
 		}
 		
 		// Process each row
-		Map<String, XLSCell> map = new LinkedHashMap<String, XlsHelper.XLSCell>();
+		Map<String, XLSCell> map = new LinkedHashMap<String, XlsImportHelper.XLSCell>();
 		for (int rowIdx = 1; rowIdx <= sheet.getLastRowNum(); rowIdx++) {
 			map.clear();
 			Row row = sheet.getRow(rowIdx);

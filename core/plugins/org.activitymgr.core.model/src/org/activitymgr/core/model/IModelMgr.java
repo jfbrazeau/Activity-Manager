@@ -519,6 +519,7 @@ public interface IModelMgr {
 	 * <p>Only the first sheet of the workbook is processed.</p>
 	 * <p>The sheet is expected to contain the following columns :</p>
 	 * <ul>
+	 * <li>path (2)</li>
 	 * <li>code (1)</li>
 	 * <li>name (1)</li>
 	 * <li>budget (2)</li>
@@ -529,12 +530,23 @@ public interface IModelMgr {
 	 * 
 	 * <p>(1) : required, (2) : optionnal</p>
 	 * 
+	 * <p>If path is present, it will be used relatively to the given parent task.</p>
+	 * 
 	 * @param parentTaskId the parent task identifier.
 	 * @param xls the stream containing the EXCEL file.
 	 * @throws IOException if an I/O error occurs. 
 	 * @throws ModelException if a model violation occurs.
 	 */
 	void importFromExcel(Long parentTaskId, InputStream xls) throws IOException, ModelException;
+
+	/**
+	 * Exports sub tasks to EXCEL.
+	 * @param parentTaskId the parent task identifier.
+	 * @return the excel workbook.
+	 * @throws IOException if an I/O error occurs. 
+	 * @throws ModelException if a model violation occurs.
+	 */
+	byte[] exportToExcel(Long parentTaskId) throws IOException, ModelException;
 
 	/**
 	 * Déplace la tache d'un cran vers le bas.
