@@ -65,6 +65,7 @@ import org.activitymgr.core.dto.misc.TaskSearchFilter;
 import org.activitymgr.core.dto.misc.TaskSums;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
+import org.activitymgr.core.model.XLSModelException;
 import org.activitymgr.core.model.impl.XlsImportHelper.IXLSHandler;
 import org.activitymgr.core.model.impl.XlsImportHelper.XLSCell;
 import org.activitymgr.core.model.impl.XmlHelper.ModelMgrDelegate;
@@ -77,7 +78,6 @@ import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
 import org.apache.commons.beanutils.BeanUtilsBean2;
 import org.apache.log4j.Logger;
-import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -222,13 +222,13 @@ public class ModelMgrImpl implements IModelMgr {
 									"ModelMgr.errors.TASK_USED_BY_CONTRIBUTIONS", task.getName(), new Long(contribsNb))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				if (task.getBudget() != 0)
 					throw new ModelException(
-							Strings.getString("ModelMgr.errors.NON_NULL_TASK_BUDGET")); //$NON-NLS-1$
+							Strings.getString("ModelMgr.errors.NON_NULL_TASK_BUDGET", task.getName())); //$NON-NLS-1$
 				if (task.getInitiallyConsumed() != 0)
 					throw new ModelException(
-							Strings.getString("ModelMgr.errors.NON_NULL_TASK_INITIALLY_CONSUMMED")); //$NON-NLS-1$
+							Strings.getString("ModelMgr.errors.NON_NULL_TASK_INITIALLY_CONSUMMED", task.getName())); //$NON-NLS-1$
 				if (task.getTodo() != 0)
 					throw new ModelException(
-							Strings.getString("ModelMgr.errors.NON_NULL_TASK_ESTIMATED_TIME_TO_COMPLETE")); //$NON-NLS-1$
+							Strings.getString("ModelMgr.errors.NON_NULL_TASK_ESTIMATED_TIME_TO_COMPLETE", task.getName())); //$NON-NLS-1$
 			}
 		}
 	}
@@ -2096,7 +2096,6 @@ public class ModelMgrImpl implements IModelMgr {
 		XlsImportHelper.visit(xls, new IXLSHandler() {
 			@Override
 			public void handleRow(Map<String, XLSCell> cells) throws ModelException {
-				Task newTask = factory.newTask();
 				
 				if (!cells.containsKey("code")) {
 					throw new ModelException("Sheet must contain a code column");
@@ -2104,14 +2103,21 @@ public class ModelMgrImpl implements IModelMgr {
 				
 				// Process other rows
 				String theParentTaskCodePath = parentTaskCodePath;
+				boolean allColumnsAreNull = true;
+				Task newTask = factory.newTask();
 				for (String columnName : cells.keySet()) {
 					XLSCell xlsCell = cells.get(columnName);
+					Object value = xlsCell.getValue();
+					allColumnsAreNull &= (value == null || "".equals(String.valueOf(value).trim()));
 					if ("path".equals(columnName)) {
-						String relativePath = String.valueOf(xlsCell.getValue());
-						if (!relativePath.startsWith("/")) {
-							relativePath = "/" + relativePath;
+						if (value != null) {
+							allColumnsAreNull = false;
+							String relativePath = String.valueOf(value);
+							if (!relativePath.startsWith("/")) {
+								relativePath = "/" + relativePath;
+							}
+							theParentTaskCodePath += relativePath;
 						}
-						theParentTaskCodePath += relativePath;
 					}
 					else {
 						boolean numeric = numericFieldNames.contains(columnName);
@@ -2124,29 +2130,30 @@ public class ModelMgrImpl implements IModelMgr {
 				if (!"".equals(theParentTaskCodePath) && parentTask == null) {
 					throw new ModelException("Unknown task path '" + theParentTaskCodePath + "'");
 				}
-				createTask(parentTask, newTask);
+				if (!allColumnsAreNull) {
+					createTask(parentTask, newTask);
+				}
 			}
 
 			private void setAttributeValue(Task task,
 					XLSCell cell, boolean numeric) throws ModelException {
 				try {
 					Object value = cell.getValue();
-					if (numeric) {
-						value = StringHelper.entryToHundredth(String.valueOf(value));
+					if (value != null) {
+						if (numeric) {
+							value = StringHelper.entryToHundredth(String.valueOf(value));
+						}
+						BeanUtilsBean2.getInstance().setProperty(task, cell.getColumnName(), value);
 					}
-					BeanUtilsBean2.getInstance().setProperty(task, cell.getColumnName(), value);
 				} catch (StringFormatException e) {
-					throw new ModelException(msgPrefix(cell) + " : bad format (" + e.getMessage() + ")");
+					throw new XLSModelException(cell.getCell(), "bad format (" + e.getMessage() + ")");
 				} catch (IllegalAccessException e) {
-					throw new ModelException(msgPrefix(cell) + " : invalid content (" + e.getMessage() + ")");
+					throw new XLSModelException(cell.getCell(), "invalid content (" + e.getMessage() + ")");
 				} catch (InvocationTargetException e) {
-					throw new ModelException(msgPrefix(cell) + " : invalid content (" + e.getMessage() + ")");
+					throw new XLSModelException(cell.getCell(), "invalid content (" + e.getMessage() + ")");
 				}
 			}
 			
-			private String msgPrefix(XLSCell cell) {
-				return "Row " + cell.getCell().getRowIndex() + ", column " + cell.getColumnName();
-			}
 		});
 	}
 	

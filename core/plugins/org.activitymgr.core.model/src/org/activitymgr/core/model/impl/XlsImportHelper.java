@@ -110,8 +110,18 @@ public class XlsImportHelper {
 					map.put(columnName, new XLSCell(columnName, cell, value));
 				}
 			}
-			// Handle the new Object
-			handler.handleRow(map);
+			try {
+				// Handle the row
+				handler.handleRow(map);
+			}
+			catch (XLSModelException e) {
+				// Simply rethrow
+				throw e;
+			}
+			catch (ModelException e) {
+				// Encapsulate and link to the first cell
+				throw new XLSModelException(row.getCell(0), e);
+			}
 		}
 	}
 

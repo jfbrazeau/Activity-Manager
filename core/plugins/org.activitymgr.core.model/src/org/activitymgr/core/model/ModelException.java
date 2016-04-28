@@ -46,4 +46,14 @@ public class ModelException extends Exception {
 		super(message);
 	}
 
+	/**
+	 * Constructeur par défaut.
+	 * 
+	 * @param message
+	 *            message d'erreur.
+	 */
+	protected ModelException(String message, ModelException cause) {
+		super(message, cause);
+	}
+
 }

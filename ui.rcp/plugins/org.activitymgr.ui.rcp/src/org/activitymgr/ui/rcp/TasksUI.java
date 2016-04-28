@@ -27,6 +27,9 @@
  */
 package org.activitymgr.ui.rcp;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -91,6 +94,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.TabItem;
@@ -184,7 +188,9 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 	private MenuItem collapseItem;
 	private MenuItem listTaskContributionsItem;
 	private MenuItem refreshItem;
-	private MenuItem exportItem;
+	private MenuItem xlsExportItem;
+	private MenuItem xlsImportItem;
+	private MenuItem xlsSnapshotExportItem;
 
 	/** Composant parent */
 	private Composite parent;
@@ -450,9 +456,23 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		refreshItem = new MenuItem(menu, SWT.CASCADE);
 		refreshItem.setText(Strings.getString("TasksUI.menuitems.REFRESH")); //$NON-NLS-1$
 		refreshItem.addSelectionListener(this);
-		exportItem = new MenuItem(menu, SWT.CASCADE);
-		exportItem.setText(Strings.getString("TasksUI.menuitems.EXPORT")); //$NON-NLS-1$
-		exportItem.addSelectionListener(this);
+
+		MenuItem exportItem = new MenuItem(menu, SWT.CASCADE);
+		exportItem.setText(Strings.getString("TasksUI.menuitems.EXPORT_IMPORT")); //$NON-NLS-1$
+		Menu exportMenu = new Menu(exportItem);
+		exportItem.setMenu(exportMenu);
+
+		xlsExportItem = new MenuItem(exportMenu, SWT.CASCADE);
+		xlsExportItem.setText(Strings.getString("TasksUI.menuitems.XLS_EXPORT")); //$NON-NLS-1$
+		xlsExportItem.addSelectionListener(this);
+
+		xlsImportItem = new MenuItem(exportMenu, SWT.CASCADE);
+		xlsImportItem.setText(Strings.getString("TasksUI.menuitems.XLS_IMPORT")); //$NON-NLS-1$
+		xlsImportItem.addSelectionListener(this);
+
+		xlsSnapshotExportItem = new MenuItem(exportMenu, SWT.CASCADE);
+		xlsSnapshotExportItem.setText(Strings.getString("TasksUI.menuitems.XLS_SNAPSHOT_EXPORT")); //$NON-NLS-1$
+		xlsSnapshotExportItem.addSelectionListener(this);
 		tree.setMenu(menu);
 
 		log.debug("UI initialization done"); //$NON-NLS-1$
@@ -1012,7 +1032,62 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 						treeViewer.refresh();
 				}
 				// Cas d'une demande d'export du tableau
-				else if (exportItem.equals(source)) {
+				else if (xlsExportItem.equals(source)) {
+					Long parentTaskId = null;
+					if (selection.length > 0) {
+						TaskSums selected = (TaskSums) selection[0].getData();
+						parentTaskId = selected.getTask().getId();
+					}
+					FileDialog fd = new FileDialog(parent.getShell(), SWT.APPLICATION_MODAL | SWT.SAVE);
+					fd.setFilterExtensions(new String[] { "*.xls", "*.*" }); //$NON-NLS-1$ //$NON-NLS-2$
+					fd.setOverwrite(true);
+					String fileName = fd.open();
+					// Si le nom est spécifié
+					if (fileName != null) {
+						try {
+							// Correction du nom du fichier si besoin
+							if (!fileName.endsWith(".xls")) //$NON-NLS-1$
+								fileName += ".xls"; //$NON-NLS-1$
+							// Sauvegarde du document
+							byte[] excel = modelMgr.exportToExcel(parentTaskId);
+							FileOutputStream out = new FileOutputStream(fileName);
+							out.write(excel);
+							out.close();
+						} catch (IOException e) {
+							log.error("I/O exception", e); //$NON-NLS-1$
+							throw new UITechException(
+									Strings.getString("SWTHelper.errors.IO_EXCEPTION_WHILE_EXPORTING"), e); //$NON-NLS-1$
+						}
+					}
+				}
+				else if (xlsImportItem.equals(source)) {
+					Long parentTaskId = null;
+					TaskSums selected = null;
+					if (selection.length > 0) {
+						selected = (TaskSums) selection[0].getData();
+						parentTaskId = selected.getTask().getId();
+						// Expand the tree
+						treeViewer.expandToLevel(selected, 1);
+					}
+					FileDialog fd = new FileDialog(parent.getShell(), SWT.APPLICATION_MODAL | SWT.OPEN);
+					fd.setFilterExtensions(new String[] { "*.xls", "*.*" }); //$NON-NLS-1$ //$NON-NLS-2$
+					String fileName = fd.open();
+					// Si le nom est spécifié
+					if (fileName != null) {
+						try {
+							FileInputStream in = new FileInputStream(fileName);
+							modelMgr.importFromExcel(parentTaskId, in);
+							in.close();
+							// Refresh the tree
+							treeViewer.refresh(selected);
+						} catch (IOException e) {
+							log.error("I/O exception", e); //$NON-NLS-1$
+							throw new UITechException(
+									Strings.getString("SWTHelper.errors.IO_EXCEPTION_WHILE_EXPORTING"), e); //$NON-NLS-1$
+						}
+					}
+				}
+				else if (xlsSnapshotExportItem.equals(source)) {
 					// Export du tableau
 					SWTHelper.exportToWorkBook(treeViewer.getTree());
 				}
@@ -1152,7 +1227,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 		collapseItem.setEnabled(singleSelection);
 		listTaskContributionsItem.setEnabled(singleSelection);
 		refreshItem.setEnabled(singleSelection);
-		exportItem.setEnabled(true);
+		xlsSnapshotExportItem.setEnabled(true);
 	}
 
 	/*
