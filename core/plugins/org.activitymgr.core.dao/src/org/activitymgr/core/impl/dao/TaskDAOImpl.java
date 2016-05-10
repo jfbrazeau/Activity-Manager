@@ -1,10 +1,12 @@
 package org.activitymgr.core.impl.dao;
 
+import java.io.StringWriter;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 
 import org.activitymgr.core.dao.AbstractORMDAOImpl;
@@ -58,8 +60,89 @@ public class TaskDAOImpl extends AbstractORMDAOImpl<Task> implements ITaskDAO {
 			return result;
 		} catch (SQLException e) {
 			log.info("Incident SQL", e); //$NON-NLS-1$
-			throw new DAOException(
-					Strings.getString("DbMgr.errors.TASK_SELECTION_BY_ID_FAILURE"), e); //$NON-NLS-1$ //$NON-NLS-2$
+			throw new DAOException(e.getMessage(), e);
+		} finally {
+			lastAttemptToClose(pStmt);
+		}
+	}
+
+	@Override
+	public Task[] getSubTasks(String parentTaskPath, String filter) {
+		PreparedStatement pStmt = null;
+		ResultSet rs = null;
+		try {
+			StringWriter buf = new StringWriter();
+			buf.append("select distinct ").append(getColumnNamesRequestFragment("subtask")).append(" from TASK as subtask");
+			buf.append(" inner join TASK filteredTask on (");
+			buf.append("   left(concat(filteredTask.tsk_path, filteredTask.tsk_number), length(subtask.tsk_path) + 2) = concat(subtask.tsk_path, subtask.tsk_number)");
+			buf.append("   or left(concat(subtask.tsk_path, subtask.tsk_number), length(filteredTask.tsk_path) + 2) = concat(filteredTask.tsk_path, filteredTask.tsk_number)");
+			buf.append(" )");
+			buf.append(" where subtask.tsk_path=? and (filteredTask.tsk_name like ? or filteredTask.tsk_code like ?) order by subtask.tsk_number");
+			
+			// Request preparation
+			pStmt = tx().prepareStatement(buf.toString());
+			pStmt.setString(1, parentTaskPath);
+			String sqlFilter = "%" + filter + "%";
+			pStmt.setString(2, sqlFilter);
+			pStmt.setString(3, sqlFilter);
+
+			// Exécution de la requête
+			rs = pStmt.executeQuery();
+
+			// Préparation du résultat
+			Collection<Task> result = new ArrayList<Task>();
+			while (rs.next()) {
+				result.add(read(rs, 1));
+			}
+
+			// Fermeture du ResultSet
+			pStmt.close();
+			pStmt = null;
+
+			// Retour du résultat
+			return (Task[]) result.toArray(new Task[result.size()]);
+		} catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DAOException(e.getMessage(), e);
+		} finally {
+			lastAttemptToClose(pStmt);
+		}
+	}
+
+	@Override
+	public Task getFirstTaskMatching(String filter) {
+		// select  distinct st.TSK_ID, st.TSK_PATH, st.TSK_NUMBER, st.TSK_CODE from task st inner join TASK t on left(concat(t.tsk_path, t.tsk_number), length(concat(st.tsk_path, st.tsk_number))) = concat(st.tsk_path, st.tsk_number) where st.tsk_path='01090304' and t.tsk_name like concat('%', 'CCAP', '%') order by st.tsk_number; 
+		PreparedStatement pStmt = null;
+		ResultSet rs = null;
+		try {
+			StringWriter buf = new StringWriter();
+			buf.append("select ").append(getColumnNamesRequestFragment("t")).append(" from TASK as t");
+			buf.append(" where t.tsk_name like ? or t.tsk_code like ? order by t.tsk_path, t.tsk_number");
+			
+			// Request preparation
+			pStmt = tx().prepareStatement(buf.toString());
+			String sqlFilter = "%" + filter + "%";
+			pStmt.setString(1, sqlFilter);
+			pStmt.setString(2, sqlFilter);
+
+			// Exécution de la requête
+			rs = pStmt.executeQuery();
+
+			// Préparation du résultat
+			Task result = null;
+			if (rs.next()) {
+				result = read(rs, 1);
+			}
+
+			// Fermeture du ResultSet
+			pStmt.close();
+			pStmt = null;
+
+			// Retour du résultat
+			return result;
+		} catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DAOException(e.getMessage(), e);
 		} finally {
 			lastAttemptToClose(pStmt);
 		}

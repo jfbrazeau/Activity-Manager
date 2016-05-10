@@ -109,7 +109,7 @@ public class TaskTest extends AbstractModelTestCase {
 	
 	private void removeRecursively(Task task) throws ModelException {
 		// Récupération des taches filles
-		Task[] subTasks = getModelMgr().getSubTasks(task);
+		Task[] subTasks = getModelMgr().getSubTasks(task.getId());
 		for (int i=subTasks.length-1; i>=0; i--) {
 			Task subTask = subTasks[i];
 			// Suppression des taches filles
@@ -167,27 +167,27 @@ public class TaskTest extends AbstractModelTestCase {
 		createSampleTasks();
 		try {
 			// La tache root a-t-elle 2 filles ?
-			Task[] rootTaskSubTasks = getModelMgr().getSubTasks(rootTask);
+			Task[] rootTaskSubTasks = getModelMgr().getSubTasks(rootTask.getId());
 			assertEquals(2, rootTaskSubTasks.length);
 			
 			// La tache1 a-t-elle 1 fille ?
-			Task[] task1SubTasks = getModelMgr().getSubTasks(task1);
+			Task[] task1SubTasks = getModelMgr().getSubTasks(task1.getId());
 			assertEquals(1, task1SubTasks.length);
 			
 			// La tache11 a-t-elle 2 fille ?
-			Task[] task11SubTasks = getModelMgr().getSubTasks(task11);
+			Task[] task11SubTasks = getModelMgr().getSubTasks(task11.getId());
 			assertEquals(2, task11SubTasks.length);
 	
 			// La tache111 a-t-elle 0 filles ?
-			Task[] task111SubTasks = getModelMgr().getSubTasks(task111);
+			Task[] task111SubTasks = getModelMgr().getSubTasks(task111.getId());
 			assertEquals(0, task111SubTasks.length);
 	
 			// La tache112 a-t-elle 0 filles ?
-			Task[] task112SubTasks = getModelMgr().getSubTasks(task112);
+			Task[] task112SubTasks = getModelMgr().getSubTasks(task112.getId());
 			assertEquals(0, task112SubTasks.length);
 	
 			// La tache2 a-t-elle 0 filles ?
-			Task[] task2SubTasks = getModelMgr().getSubTasks(task2);
+			Task[] task2SubTasks = getModelMgr().getSubTasks(task2.getId());
 			assertEquals(0, task2SubTasks.length);
 		}
 		finally {

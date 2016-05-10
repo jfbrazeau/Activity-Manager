@@ -42,9 +42,9 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 		super(parent);
 		// Remember already selected task ids
 		this.alreadySelectedTaskIds = selectedTaskIds;
-		// Register the tree content provider
-		TaskTreeContentProvider treeContentProvider = new TaskTreeContentProvider(this);
-		getView().setTasksTreeProviderCallback(buildTransactionalWrapper(treeContentProvider, ITreeContentProviderCallback.class));
+		
+		// Set filter
+		onTaskFilterChanged("");
 		
 		// Retrieve recent tasks labels
 		Calendar from = (Calendar) monday.clone();
@@ -98,7 +98,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 			getView().setCreationPatterns(taskCreationPatternHandlersLabelsMap);
 
 			// Reset button state & status label
-			onSelectionChanged(-1);
+			onSelectionChanged(null);
 		
 			// Open the window
 			getRoot().getView().openWindow(getView());
@@ -107,9 +107,23 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 		}
 
 	}
+	
+	@Override
+	public void onTaskFilterChanged(String filter) {
+		filter = filter.trim();
+		// Register the tree content provider
+		TaskTreeContentProvider treeContentProvider = new TaskTreeContentProvider(this, filter);
+		getView().setTasksTreeProviderCallback(buildTransactionalWrapper(treeContentProvider, ITreeContentProviderCallback.class));
+		if (!"".equals(filter)) {
+			Task task = getModelMgr().getFirstTaskMatching(filter);
+			if (task != null) {
+				getView().expandToTask(task.getId());
+			}
+		}
+	}
 
 	@Override
-	public void onSelectionChanged(long taskId) {
+	public void onSelectionChanged(Long taskId) {
 		try {
 			checkDialogRules(taskId, getView().getNewTaskName(), getView().getNewTaskCode());
 		}
@@ -154,7 +168,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 	private void checkDialogRules(Long selectedTaskId, String newTaskName, String newTaskCode) throws ModelException {
 		getView().setStatus("");
 		getView().setOkButtonEnabled(false);
-		Task selectedTask = getModelMgr().getTask(selectedTaskId);
+		Task selectedTask = selectedTaskId != null ? getModelMgr().getTask(selectedTaskId) : null;
 		String newStatus = "";
 		boolean okButtonEnabled = false;
 		boolean newTaskFieldsEnabled = false;
@@ -238,7 +252,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				// If no task has been selected (which may occur if the creation pattern handler doesn't return
 				// anything), auto select a task
 				if (selectedTaskIds.size() == 0) {
-					Task[] subTasks = getModelMgr().getSubTasks(newTask);
+					Task[] subTasks = getModelMgr().getSubTasks(newTask.getId());
 					selectedTaskIds.add(subTasks.length == 0 ? newTask.getId() : subTasks[0].getId());
 				}
 				// Turn the selection list into an array

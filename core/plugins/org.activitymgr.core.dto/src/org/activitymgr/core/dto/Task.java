@@ -28,6 +28,7 @@
 package org.activitymgr.core.dto;
 
 import org.activitymgr.core.dto.converters.TaskNumberConverter;
+import org.activitymgr.core.dto.misc.TaskSums;
 import org.activitymgr.core.orm.annotation.Column;
 import org.activitymgr.core.orm.annotation.ColumnNamePrefix;
 import org.activitymgr.core.orm.annotation.Converter;
@@ -252,6 +253,23 @@ public class Task extends SimpleIdentityBean {
 				.append(todo).append(",") //$NON-NLS-1$
 				.append(getFullPath()).append(")") //$NON-NLS-1$
 				.toString();
+	}
+
+	@Override
+	public int hashCode() {
+		return String.valueOf(getId()).hashCode();
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		boolean equals = false;
+		if (obj instanceof Task) {
+			equals = ((Task) obj).getId() == getId();
+		}
+		return equals;
 	}
 
 }

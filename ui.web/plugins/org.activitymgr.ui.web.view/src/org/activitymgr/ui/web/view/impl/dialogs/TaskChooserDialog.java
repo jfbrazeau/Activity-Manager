@@ -3,11 +3,9 @@ package org.activitymgr.ui.web.view.impl.dialogs;
 import java.util.Map;
 import java.util.Stack;
 
-import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.view.impl.internal.util.MapBasedDatasource;
-import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
 import org.activitymgr.ui.web.view.impl.internal.util.TreeTableDatasource;
 
 import com.vaadin.data.Property;
@@ -15,6 +13,7 @@ import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.event.FieldEvents;
 import com.vaadin.event.FieldEvents.TextChangeEvent;
 import com.vaadin.event.ShortcutListener;
+import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.AbstractTextField.TextChangeEventMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -44,24 +43,34 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	private TextField newSubTaskNameField;
 	private VerticalLayout newTaskFormPanel;
 	private ComboBox newSubTaskCreationPatternField;
+	private TextField filterField;
 
 	public TaskChooserDialog() {
         super("Select a task");
         setModal(true);
 
-        setWidth(520, Unit.PIXELS);
+        setWidth(530, Unit.PIXELS);
 
         GridLayout gl = new GridLayout(2, 2);
         setContent(gl);
         
         // Task tree
-        Panel leftContainerPanel = new Panel();
+        VerticalLayout leftContainerPanel = new VerticalLayout();
+        leftContainerPanel.setMargin(new MarginInfo(true, false, true, true));
         gl.addComponent(leftContainerPanel);
-        leftContainerPanel.setWidth(200, Unit.PIXELS);
-        leftContainerPanel.setHeight(350, Unit.PIXELS);
+        filterField = new TextField();
+        filterField.setImmediate(true);
+        leftContainerPanel.addComponent(filterField);
+        filterField.setWidth(200, Unit.PIXELS);
+        filterField.setInputPrompt("Type a text to filter...");
+       
+        Panel treeContainer = new Panel();
+        leftContainerPanel.addComponent(treeContainer);
+        treeContainer.setWidth(filterField.getWidth(), filterField.getWidthUnits());
+        treeContainer.setHeight(350, Unit.PIXELS);
         taskTree = new Tree();
         taskTree.setNullSelectionAllowed(false);
-        leftContainerPanel.setContent(taskTree);
+        treeContainer.setContent(taskTree);
         taskTree.setImmediate(true);
         
         // Recent tasks
@@ -118,6 +127,12 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
         hl.setExpandRatio(cancel, 0);
         
         // Register listeners
+        filterField.addTextChangeListener(new FieldEvents.TextChangeListener() {
+			@Override
+			public void textChange(TextChangeEvent event) {
+				logic.onTaskFilterChanged(event.getText());
+			}
+		});
         taskTree.addValueChangeListener(new Property.ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
@@ -231,7 +246,11 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 	@Override
 	public void selectTask(long taskId) {
 		taskTree.setValue(taskId);
-		// FIXME maybe useless
+		expandToTask(taskId);
+	}
+
+	@Override
+	public void expandToTask(long taskId) {
 		Object parent = taskId;
 		Stack<Object> parents = new Stack<Object>();
 		while ((parent = taskTree.getParent(parent)) != null) {

@@ -3,12 +3,14 @@ package org.activitymgr.ui.web.view.impl.internal.util;
 import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILabelLogic.View;
 
+import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Label;
 
 @SuppressWarnings("serial")
 public class LabelView extends Label implements View {
 	
 	public LabelView() {
+		super("", ContentMode.HTML);
 		setSizeUndefined(); // This disables text wrapping
 	}
 
@@ -19,6 +21,7 @@ public class LabelView extends Label implements View {
 
 	@Override
 	public void setLabel(String s) {
+		setContentMode(ContentMode.HTML);
 		setValue(s);
 	}
 

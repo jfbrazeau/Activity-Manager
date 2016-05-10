@@ -112,7 +112,7 @@ public class TaskCacheTest extends AbstractModelTestCase {
 	
 	private void removeRecursively(Task task) throws ModelException {
 		// Récupération des taches filles
-		Task[] subTasks = getModelMgr().getSubTasks(task);
+		Task[] subTasks = getModelMgr().getSubTasks(task.getId());
 		for (int i=subTasks.length-1; i>=0; i--) {
 			Task subTask = subTasks[i];
 			// Suppression des taches filles

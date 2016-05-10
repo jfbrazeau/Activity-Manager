@@ -167,7 +167,7 @@ public class TasksChooserTree extends AbstractTableMgr implements
 		final Task parentTask = (Task) parentElement;
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				return modelMgr.getSubTasks(parentTask);
+				return modelMgr.getSubTasks(parentTask != null ? parentTask.getId() : null);
 			}
 		};
 		Object[] result = (Object[]) safeRunner.run(parent.getShell(),

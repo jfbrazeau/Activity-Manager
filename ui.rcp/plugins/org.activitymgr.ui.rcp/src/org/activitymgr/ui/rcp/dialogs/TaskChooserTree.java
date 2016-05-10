@@ -29,18 +29,29 @@ package org.activitymgr.ui.rcp.dialogs;
 
 
 import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.dto.misc.TaskSearchFilter;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.util.AbstractTableMgr;
 import org.activitymgr.ui.rcp.util.SafeRunner;
 import org.activitymgr.ui.rcp.util.TableOrTreeColumnsMgr;
 import org.apache.log4j.Logger;
+import org.eclipse.jface.viewers.BaseLabelProvider;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
 public class TaskChooserTree extends AbstractTableMgr implements
@@ -63,6 +74,8 @@ public class TaskChooserTree extends AbstractTableMgr implements
 	/** Model manager */
 	private IModelMgr modelMgr;
 
+	private Text filterText;
+
 	/**
 	 * Constructeur par défaut.
 	 * 
@@ -73,12 +86,47 @@ public class TaskChooserTree extends AbstractTableMgr implements
 	 * @param modelMgr
 	 *            the model manager.
 	 */
-	public TaskChooserTree(Composite parentComposite, Object layoutData, IModelMgr modelMgr) {
+	public TaskChooserTree(Composite parentComposite, Object layoutData, final IModelMgr modelMgr) {
 		this.modelMgr = modelMgr;
 		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayoutData(layoutData);
 		parent.setLayout(new GridLayout());
+		
+		filterText = new Text(parent, SWT.BORDER);
+		filterText.setMessage(Strings.getString("TaskChooserTree.labels.PLACEHOLDER"));
+		GridData gd = new GridData(SWT.FILL, SWT.NONE, true, false);
+		filterText.setLayoutData(gd);
+		final Display display = filterText.getShell().getDisplay();
+		filterText.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				final String value = filterText.getText();
+				new Thread() {
+					public void run() {
+						try {
+							Thread.sleep(350);
+							// Only refresh if the entry has not changed since 350 ms
+							display.syncExec(new Runnable() {
+								@Override
+								public void run() {
+									if (filterText.getText().equals(value)) {
+										treeViewer.refresh();
+										if (treeViewer.getTree().getItems().length > 0) {
+											Task firstTaskMatching = modelMgr.getFirstTaskMatching(value);
+											treeViewer.reveal(firstTaskMatching);
+										}
+									}
+								}
+							});
+						} catch (InterruptedException e) {
+						}
+						
+					};
+				}.start();
+			}
+		});
+
 
 		// Arbre tableau
 		final Tree tree = new Tree(parent, SWT.FULL_SELECTION | SWT.BORDER
@@ -94,7 +142,7 @@ public class TaskChooserTree extends AbstractTableMgr implements
 		treeViewer = new TreeViewer(tree);
 		treeViewer.setContentProvider(this);
 		treeViewer.setLabelProvider(this);
-
+        
 		// Configuration des colonnes
 		treeColsMgr = new TableOrTreeColumnsMgr();
 		treeColsMgr
@@ -105,7 +153,23 @@ public class TaskChooserTree extends AbstractTableMgr implements
 						"CODE", Strings.getString("TaskChooserTree.columns.TASK_CODE"), 70, SWT.LEFT); //$NON-NLS-1$ //$NON-NLS-2$
 		treeColsMgr.configureTree(treeViewer);
 
-		// Création d'une racine fictive
+		// Configure styled texts
+        TreeViewerColumn nameColumn = new TreeViewerColumn(treeViewer, tree.getColumns()[0]);
+        nameColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new StyledLabelProvider(filterText) {
+        	@Override
+        	protected String getDisplayedProperty(Task task) {
+        		return task.getName();
+        	}
+        }));
+        TreeViewerColumn codeColumn = new TreeViewerColumn(treeViewer, tree.getColumns()[1]);
+        codeColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new StyledLabelProvider(filterText) {
+        	@Override
+        	protected String getDisplayedProperty(Task task) {
+        		return task.getCode();
+        	}
+        }));
+
+        // Création d'une racine fictive
 		treeViewer.setInput(ROOT_NODE);
 	}
 
@@ -170,7 +234,7 @@ public class TaskChooserTree extends AbstractTableMgr implements
 		final Task parentTask = (Task) parentElement;
 		SafeRunner safeRunner = new SafeRunner() {
 			public Object runUnsafe() throws Exception {
-				return modelMgr.getSubTasks(parentTask);
+				return modelMgr.getSubTasks(parentTask != null ? parentTask.getId() : null, filterText.getText());
 			}
 		};
 		Object[] result = (Object[]) safeRunner.run(parent.getShell(),
@@ -232,4 +296,40 @@ public class TaskChooserTree extends AbstractTableMgr implements
 	public TreeViewer getTreeViewer() {
 		return treeViewer;
 	}
+
+}
+
+abstract class StyledLabelProvider extends BaseLabelProvider implements IStyledLabelProvider {
+	
+	private Text filterText;
+
+	StyledLabelProvider(Text filterText) {
+		this.filterText = filterText;
+	}
+	
+	@Override
+	public StyledString getStyledText(Object element) {
+		Task task = (Task) element;
+		String text = getDisplayedProperty(task);
+		String textToLC = text.toLowerCase();
+		StyledString str = new StyledString(text);
+		String filterLC = filterText.getText().toLowerCase();
+		int filterLength = filterLC.length();
+		if (filterLength > 0) {
+		int indexOf = 0;
+			while ((indexOf = textToLC.indexOf(filterLC, indexOf)) >= 0) {
+				str.setStyle(indexOf, filterLength, StyledString.QUALIFIER_STYLER);
+				indexOf += filterLength;
+			}
+		}
+		return str;
+	}
+
+	protected abstract String getDisplayedProperty(Task task);
+	
+	@Override
+	public Image getImage(Object element) {
+		return null;
+	}
+
 }

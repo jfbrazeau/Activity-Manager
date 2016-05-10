@@ -1155,15 +1155,35 @@ public class ModelMgrImpl implements IModelMgr {
 		return parentTask;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.model.IModelMgr#getSubTasks(java.lang.Long, java.lang.String)
+	 */
+	@Override
+	public Task[] getSubTasks(Long parentTaskId, String filter) {
+		Task parentTask = parentTaskId != null ? getTask(parentTaskId)
+				: null;
+		String fullpath = parentTask == null ? "" : parentTask.getFullPath(); //$NON-NLS-1$
+		return taskDAO.getSubTasks(fullpath, filter);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.model.IModelMgr#getFirstTaskMatching(java.lang.String)
+	 */
+	@Override
+	public Task getFirstTaskMatching(String filter) {
+		return taskDAO.getFirstTaskMatching(filter);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see org.activitymgr.core.IModelMgr#getSubtasks(java.lang.Long)
 	 */
-	public Task[] getSubtasks(Long parentTaskId) {
+	public Task[] getSubTasks(Long parentTaskId) {
 		// Récupération des sous tâches
 		Task parentTask = parentTaskId != null ? getTask(parentTaskId)
 				: null;
+
 		return getSubTasks(parentTask);
 	}
 
@@ -1174,7 +1194,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 * org.activitymgr.core.IModelMgr#getSubtasks(org.activitymgr.core.beans
 	 * .Task)
 	 */
-	public Task[] getSubTasks(Task parentTask) {
+	private Task[] getSubTasks(Task parentTask) {
 		// Récupération du chemin à partir de la tache parent
 		String fullpath = parentTask == null ? "" : parentTask.getFullPath(); //$NON-NLS-1$
 		log.debug("Looking for tasks with path='" + fullpath + "'"); //$NON-NLS-1$ //$NON-NLS-2$

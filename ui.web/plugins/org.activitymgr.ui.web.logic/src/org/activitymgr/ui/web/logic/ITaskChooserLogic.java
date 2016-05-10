@@ -1,11 +1,12 @@
 package org.activitymgr.ui.web.logic;
 
 import java.util.Map;
+
 import org.activitymgr.ui.web.logic.ILogic.IView;
 
 public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 	
-	void onSelectionChanged(long taskId);
+	void onSelectionChanged(Long taskId);
 
 	void onOkButtonClicked(long taskId);
 
@@ -16,6 +17,8 @@ public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 	void onNewTaskNameChanged(String newName);
 
 	void onNewTaskCodeChanged(String newCode);
+
+	void onTaskFilterChanged(String value);
 
 	public interface View extends IView<ITaskChooserLogic> {
 
@@ -32,6 +35,8 @@ public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 
 		public void selectTask(long taskId);
 
+		public void expandToTask(long taskId);
+
 		public boolean isNewTaskChecked();
 
 		public String getNewTaskName();
@@ -43,6 +48,7 @@ public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 		public void setNewTaskFieldsEnabled(boolean enabled);
 
 		public String getSelectedTaskCreationPatternId();
+
 	}
 
 }

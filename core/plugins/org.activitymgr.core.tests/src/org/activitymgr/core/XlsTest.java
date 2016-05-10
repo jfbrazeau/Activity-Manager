@@ -2,13 +2,11 @@ package org.activitymgr.core;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.model.ModelException;
-import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -23,7 +21,7 @@ public class XlsTest extends AbstractModelTestCase {
 	private static final String MYTASK = "MYTASK";
 	private static final String MYCODE = "MYCODE";
 	/** Logger */
-	private static Logger log = Logger.getLogger(XlsTest.class);
+	//private static Logger log = Logger.getLogger(XlsTest.class);
 	
 	public void testEmptyWorkbook() throws IOException {
 		Workbook wbk = new HSSFWorkbook();
@@ -134,7 +132,7 @@ public class XlsTest extends AbstractModelTestCase {
 		contentRow.createCell(5).setCellValue(MYETC);
 		getModelMgr().importFromExcel(null, serialize(wbk));
 		
-		Task[] subtasks = getModelMgr().getSubtasks(null);
+		Task[] subtasks = getModelMgr().getSubTasks(null);
 		assertNotNull(subtasks);
 		assertEquals(1, subtasks.length);
 		Task task = subtasks[0];
@@ -189,10 +187,10 @@ public class XlsTest extends AbstractModelTestCase {
 		getModelMgr().importFromExcel(rootTask.getId(), serialize(wbk));
 		getModelMgr().exportToXML(System.out);
 		
-		Task[] subtasks = getModelMgr().getSubTasks(rootTask);
+		Task[] subtasks = getModelMgr().getSubTasks(rootTask.getId());
 		assertNotNull(subtasks);
 		assertEquals(1, subtasks.length);
-		subtasks = getModelMgr().getSubTasks(subtasks[0]);
+		subtasks = getModelMgr().getSubTasks(subtasks[0].getId());
 		assertNotNull(subtasks);
 		assertEquals(1, subtasks.length);
 	}

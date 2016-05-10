@@ -100,7 +100,7 @@ public class XmlTest extends AbstractModelTestCase {
 
 	public void testCreateTasks() throws IOException, ParserConfigurationException, SAXException, ModelException {
 		// Vérification du nombre initial de taches
-		Task[] initialTasks = getModelMgr().getSubTasks((Task) null);
+		Task[] initialTasks = getModelMgr().getSubTasks(null);
 		assertNotNull(initialTasks);
 		assertEquals(0, initialTasks.length);
 
@@ -108,7 +108,7 @@ public class XmlTest extends AbstractModelTestCase {
 		importTestFile();
 		
 		// Vérification du nombre de durées après import
-		Task[] tasks = getModelMgr().getSubTasks((Task) null);
+		Task[] tasks = getModelMgr().getSubTasks(null);
 		assertNotNull(tasks);
 		assertEquals(1, tasks.length);
 
@@ -133,7 +133,7 @@ public class XmlTest extends AbstractModelTestCase {
 		// Suppression des données
 		getModelMgr().removeContribution(contributions[0], false);
 		getModelMgr().removeContribution(contributions[1], false);
-		Task[] tasks = getModelMgr().getSubTasks((Task) null);
+		Task[] tasks = getModelMgr().getSubTasks(null);
 		getModelMgr().removeTask(tasks[1]);
 		getModelMgr().removeTask(tasks[0]);
 		Collaborator[] collaborators = getModelMgr().getCollaborators();
