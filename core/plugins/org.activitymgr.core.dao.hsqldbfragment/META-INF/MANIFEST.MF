@@ -5,4 +5,4 @@ Bundle-SymbolicName: org.activitymgr.core.dao.hsqldbfragment
 Bundle-Version: 1.0.0.qualifier
 Fragment-Host: org.apache.commons.dbcp
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Bundle-ClassPath: hsqldb.jar
+Bundle-ClassPath: hsqldb-2.3.4.jar
