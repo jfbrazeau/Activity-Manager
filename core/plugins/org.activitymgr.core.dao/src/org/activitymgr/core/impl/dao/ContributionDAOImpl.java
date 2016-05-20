@@ -147,6 +147,7 @@ public class ContributionDAOImpl extends AbstractORMDAOImpl<Contribution> implem
 		}
 	}
 
+	@Override
 	public Map<Long, TaskContributionsSums> getTasksSums(Long taskId, String tasksPath, Calendar fromDate, Calendar toDate)
 			throws DAOException {
 		// At least one argument must be specified
@@ -161,7 +162,7 @@ public class ContributionDAOImpl extends AbstractORMDAOImpl<Contribution> implem
 			
 			// Prepare the request
 			StringBuffer request = new StringBuffer();
-			request.append("select pt.tsk_id, sum(ctb_duration), count(ctb_duration) ");
+			request.append("select pt.tsk_id, pt.tsk_number, sum(ctb_duration), count(ctb_duration) ");
 			request.append("from TASK pt left join (");
 			{
 				request.append("TASK lt left join CONTRIBUTION on (ctb_task=lt.tsk_id");
@@ -198,8 +199,8 @@ public class ContributionDAOImpl extends AbstractORMDAOImpl<Contribution> implem
 			while (rs.next()) {
 				TaskContributionsSums sums = new TaskContributionsSums();
 				sums.setTaskId(rs.getLong(1));
-				sums.setConsumedSum(rs.getLong(2));
-				sums.setContributionsNb(rs.getLong(3));
+				sums.setConsumedSum(rs.getLong(3));
+				sums.setContributionsNb(rs.getLong(4));
 				result.put(sums.getTaskId(), sums);
 			}
 			// Close the statement

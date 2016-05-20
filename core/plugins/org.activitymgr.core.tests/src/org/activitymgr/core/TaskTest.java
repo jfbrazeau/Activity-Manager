@@ -140,6 +140,25 @@ public class TaskTest extends AbstractModelTestCase {
 		}
 	}
 	
+	public void testCountSubTasks() throws ModelException {
+		// Création des taches de test
+		createSampleTasks();
+		try {
+			assertEquals(2, getModelMgr().getSubTasksCount(rootTask.getId()));
+			assertEquals(1, getModelMgr().getSubTasksCount(task1.getId()));
+			assertEquals(2, getModelMgr().getSubTasksCount(task11.getId()));
+			assertEquals(0, getModelMgr().getSubTasksCount(task111.getId()));
+			assertEquals(0, getModelMgr().getSubTasksCount(task112.getId()));
+			assertEquals(0, getModelMgr().getSubTasksCount(task2.getId()));
+		}
+		finally {
+			// Suppression des taches de test
+			removeSampleTasks();
+		}
+	}
+
+	
+	
 	public void testGetParent() throws ModelException {
 		// Création des taches de test
 		createSampleTasks();

@@ -40,7 +40,7 @@ public class TaskDAOImpl extends AbstractORMDAOImpl<Task> implements ITaskDAO {
 			// Request preparation
 			pStmt = tx().prepareStatement(
 					"select theTask.tsk_id, count(subTask.tsk_id)"
-				+ " from TASK as theTask left join TASK as subTask on subTask.tsk_path = concat(theTask.tsk_path, theTask.tsk_number) where theTask.tsk_id=?");
+				+ " from TASK as theTask left join TASK as subTask on subTask.tsk_path = concat(theTask.tsk_path, theTask.tsk_number) where theTask.tsk_id=? group by theTask.tsk_id");
 			pStmt.setLong(1, parentTaskId);
 
 			// Exécution de la requête
