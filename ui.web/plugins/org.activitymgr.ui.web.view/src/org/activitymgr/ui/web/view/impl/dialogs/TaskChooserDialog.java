@@ -72,6 +72,7 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
         taskTree.setNullSelectionAllowed(false);
         treeContainer.setContent(taskTree);
         taskTree.setImmediate(true);
+        taskTree.setHtmlContentAllowed(true);
         
         // Recent tasks
         VerticalLayout rightContainerPanel = new VerticalLayout();

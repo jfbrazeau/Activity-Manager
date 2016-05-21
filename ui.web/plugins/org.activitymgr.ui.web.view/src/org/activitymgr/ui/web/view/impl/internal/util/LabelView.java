@@ -21,7 +21,6 @@ public class LabelView extends Label implements View {
 
 	@Override
 	public void setLabel(String s) {
-		setContentMode(ContentMode.HTML);
 		setValue(s);
 	}
 

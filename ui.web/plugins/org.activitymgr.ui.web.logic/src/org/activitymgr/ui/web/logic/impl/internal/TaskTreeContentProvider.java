@@ -95,9 +95,9 @@ class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<
 				int indexOf = 0;
 				while ((indexOf = textToLC.indexOf(filterLC, lastIndexOf)) >= 0) {
 					sw.append(text.substring(lastIndexOf, indexOf));
-					sw.append("*");
+					sw.append("<b><i>");
 					sw.append(text.substring(indexOf, indexOf + filterLength));
-					sw.append("*");
+					sw.append("</i></b>");
 					lastIndexOf = indexOf + filterLength;
 				}
 				int textLength = text.length();
