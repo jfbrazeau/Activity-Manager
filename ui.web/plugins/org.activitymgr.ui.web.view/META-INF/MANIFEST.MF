@@ -14,15 +14,15 @@ Require-Bundle: org.activitymgr.ui.web.logic;visibility:=reexport,
  javax.servlet;bundle-version="3.1.0"
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.activitymgr.ui.web.view.impl.internal.vaadin.Activator
-Bundle-ClassPath: lib/json-0.0.20080701.jar,
- lib/jsoup-1.6.3.jar,
- lib/vaadin-client-compiled-7.3.5.jar,
- lib/vaadin-client-compiler-7.3.5.jar,
- lib/vaadin-push-7.3.5.jar,
- lib/vaadin-server-7.3.5.jar,
- lib/vaadin-shared-7.3.5.jar,
- lib/vaadin-themes-7.3.5.jar,
- .
+Bundle-ClassPath: .,
+ lib/jsoup-1.8.3.jar,
+ lib/vaadin-client-7.6.6.jar,
+ lib/vaadin-client-compiled-7.6.6.jar,
+ lib/vaadin-client-compiler-7.6.6.jar,
+ lib/vaadin-push-7.6.6.jar,
+ lib/vaadin-server-7.6.6.jar,
+ lib/vaadin-shared-7.6.6.jar,
+ lib/vaadin-themes-7.6.6.jar
 Export-Package: com.vaadin.data,
  com.vaadin.event,
  com.vaadin.server,
