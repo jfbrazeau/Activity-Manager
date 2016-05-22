@@ -52,9 +52,9 @@ class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<
 	}
 
 	@Override
-	protected Collection<Long> unsafeGetChildren(Long taskId) {
+	protected List<Long> unsafeGetChildren(Long taskId) {
 		Task[] subtasks = filter != null ? modelMgr.getSubTasks(taskId, filter) : modelMgr.getSubTasks(taskId);
-		Collection<Long> taskIds = new ArrayList<Long>();
+		List<Long> taskIds = new ArrayList<Long>();
 		for (Task task : subtasks) {
 			taskIds.add(task.getId());
 			// Update task cache
@@ -66,7 +66,7 @@ class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<
 	}
 
 	@Override
-	protected Collection<Long> unsafeGetRootElements() {
+	protected List<Long> unsafeGetRootElements() {
 		return unsafeGetChildren(null);
 	}
 

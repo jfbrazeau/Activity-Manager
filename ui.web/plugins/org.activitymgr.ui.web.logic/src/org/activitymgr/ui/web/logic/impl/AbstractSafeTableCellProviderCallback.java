@@ -1,6 +1,7 @@
 package org.activitymgr.ui.web.logic.impl;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogic.IView;
@@ -13,7 +14,7 @@ public abstract class AbstractSafeTableCellProviderCallback<ITEM_ID_TYPE> extend
 	}
 
 	@Override
-	public final Collection<ITEM_ID_TYPE> getRootElements() {
+	public final List<ITEM_ID_TYPE> getRootElements() {
 		try {
 			return unsafeGetRootElements();
 		}
@@ -23,7 +24,7 @@ public abstract class AbstractSafeTableCellProviderCallback<ITEM_ID_TYPE> extend
 		}
 	}
 
-	protected abstract Collection<ITEM_ID_TYPE> unsafeGetRootElements() throws Exception;
+	protected abstract List<ITEM_ID_TYPE> unsafeGetRootElements() throws Exception;
 	
 	@Override
 	public final boolean contains(ITEM_ID_TYPE element) {

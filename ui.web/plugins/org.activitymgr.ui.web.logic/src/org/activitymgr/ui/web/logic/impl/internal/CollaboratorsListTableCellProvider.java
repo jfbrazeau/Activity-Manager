@@ -74,7 +74,7 @@ class CollaboratorsListTableCellProvider extends AbstractSafeTableCellProviderCa
 	}
 
 	@Override
-	protected final synchronized Collection<Long> unsafeGetRootElements() throws Exception {
+	protected final synchronized List<Long> unsafeGetRootElements() throws Exception {
 		if (collaboratorIds.size() == 0) {
 			Collaborator[] collaborators = showInactiveCollaborators ? modelMgr
 					.getCollaborators(Collaborator.FIRST_NAME_FIELD_IDX, true)

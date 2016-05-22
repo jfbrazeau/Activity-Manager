@@ -92,13 +92,13 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 	}
 
 	@Override
-	protected Collection<Long> unsafeGetRootElements() {
+	protected List<Long> unsafeGetRootElements() {
 		return taskIds;
 	}
 
 	@Override
 	protected final boolean unsafeContains(Long taskId) {
-		return true;
+		return taskIds.contains(taskId);
 	}
 
 	protected void changeContributor(Collaborator contributor) throws ModelException {
@@ -250,11 +250,6 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 		else {
 			return null;
 		}
-	}
-
-	@Deprecated
-	private TaskContributions getWeekContributions(long taskId) {
-		return contributionsMap.get(taskId);
 	}
 
 	@Deprecated

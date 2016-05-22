@@ -6,8 +6,6 @@ import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.view.IResourceCache;
 
 import com.vaadin.data.Container;
-import com.vaadin.data.Item;
-import com.vaadin.data.Property;
 
 @SuppressWarnings("serial")
 public class TreeTableDatasource<ITEMID_TYPE> extends
@@ -17,35 +15,6 @@ public class TreeTableDatasource<ITEMID_TYPE> extends
 	public TreeTableDatasource(IResourceCache resourceCache,
 			ITreeContentProviderCallback<ITEMID_TYPE> cellProvider) {
 		super(resourceCache, cellProvider);
-	}
-
-	@Override
-	public Item getItem(final Object itemId) {
-		return new Item() {
-
-			@Override
-			public Property getItemProperty(Object propertyId) {
-				return TreeTableDatasource.this.getContainerProperty(itemId, propertyId);
-			}
-
-			@Override
-			public Collection<?> getItemPropertyIds() {
-				return TreeTableDatasource.this.getContainerPropertyIds();
-			}
-
-			@Override
-			public boolean addItemProperty(Object id, Property property)
-					throws UnsupportedOperationException {
-				throw new UnsupportedOperationException();
-			}
-
-			@Override
-			public boolean removeItemProperty(Object id)
-					throws UnsupportedOperationException {
-				throw new UnsupportedOperationException();
-			}
-			
-		};
 	}
 
 	@SuppressWarnings("unchecked")

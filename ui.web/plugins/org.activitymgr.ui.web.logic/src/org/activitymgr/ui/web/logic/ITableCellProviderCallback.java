@@ -1,6 +1,7 @@
 package org.activitymgr.ui.web.logic;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.activitymgr.ui.web.logic.ILogic.IView;
 
@@ -14,7 +15,7 @@ public interface ITableCellProviderCallback<ITEM_ID_TYPE> {
 
 	Collection<String> getPropertyIds();
 
-	Collection<ITEM_ID_TYPE> getRootElements();
+	List<ITEM_ID_TYPE> getRootElements();
 	
 	boolean contains(ITEM_ID_TYPE element);
 

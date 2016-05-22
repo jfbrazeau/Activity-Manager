@@ -64,17 +64,41 @@ public abstract class AbstractTableDatasource<ITEMID_TYPE, CELLPROVIDER_TYPE ext
 		return (Property<?>) cellProvider.getCell((ITEMID_TYPE) itemId, (String) propertyId);
 	}
 
+	@Override
+	public Item getItem(final Object itemId) {
+		return new Item() {
+
+			@Override
+			public Property getItemProperty(Object propertyId) {
+				return AbstractTableDatasource.this.getContainerProperty(itemId, propertyId);
+			}
+
+			@Override
+			public Collection<?> getItemPropertyIds() {
+				return AbstractTableDatasource.this.getContainerPropertyIds();
+			}
+
+			@Override
+			public boolean addItemProperty(Object id, Property property)
+					throws UnsupportedOperationException {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public boolean removeItemProperty(Object id)
+					throws UnsupportedOperationException {
+				throw new UnsupportedOperationException();
+			}
+			
+		};
+	}
+
 	/*
 	 * Unsupported operations
 	 */
 
 	@Override
 	public final Class<?> getType(Object propertyId) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Item getItem(Object itemId) {
 		throw new UnsupportedOperationException();
 	}
 

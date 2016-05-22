@@ -223,7 +223,6 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 	
 	@Override
 	public void reloadContributionTableItems() {
-		((ContainerOrderedWrapper)contributionsTable.getContainerDataSource()).updateOrderWrapper();
 		contributionsTable.refreshRowCache();
 		reloadContributionTableFooter();
 	}
