@@ -28,17 +28,18 @@ class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<
 	public static final String CODE_PROPERTY_ID = "CODE";
 	public static final String BUDGET_PROPERTY_ID = "BUDGET";
 	public static final String INITIAL_PROPERTY_ID = "INITIAL";
-	public static final String COSUMMED_PROPERTY_ID = "CONSUMMED";
+	public static final String CONSUMMED_PROPERTY_ID = "CONSUMMED";
 	public static final String ETC_PROPERTY_ID = "ETC";
 	public static final String DELTA_PROPERTY_ID = "DELTA";
 	public static final String COMMENT_PROPERTY_ID = "COMMENT";
 	public static final List<String> PROPERTY_IDS = Arrays.asList(new String[] { NAME_PROPERTY_ID, CODE_PROPERTY_ID, BUDGET_PROPERTY_ID, 
-			INITIAL_PROPERTY_ID, COSUMMED_PROPERTY_ID, ETC_PROPERTY_ID, DELTA_PROPERTY_ID, COMMENT_PROPERTY_ID } );
+			INITIAL_PROPERTY_ID, CONSUMMED_PROPERTY_ID, ETC_PROPERTY_ID, DELTA_PROPERTY_ID, COMMENT_PROPERTY_ID } );
 
 	@Inject
 	private IModelMgr modelMgr;
 	private String filter;
-	private Map<Long, Task> tasksCache = new HashMap<Long, Task>();
+	private Map<Long, Long> parentTaskCache = new HashMap<Long, Long>();
+	private Map<Long, List<Long>> taskChildrenCache = new HashMap<Long, List<Long>>();
 	private Map<Long, TaskSums> taskSumsCache = new HashMap<Long, TaskSums>();
 
 	public TaskTreeContentProvider(ILogic<?> source, String filter) {
@@ -46,41 +47,167 @@ class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<
 		if (filter != null) {
 			this.filter = filter.trim();
 			if (this.filter.equals("")) {
-				filter = null;
+				this.filter = null;
 			}
 		}
 	}
 
 	@Override
-	protected List<Long> unsafeGetChildren(Long taskId) {
-		Task[] subtasks = filter != null ? modelMgr.getSubTasks(taskId, filter) : modelMgr.getSubTasks(taskId);
-		List<Long> taskIds = new ArrayList<Long>();
-		for (Task task : subtasks) {
-			taskIds.add(task.getId());
-			// Update task cache
-			tasksCache.put(task.getId(), task);
-			// Invalidate tasks sum cache
-			taskSumsCache.remove(task.getId());
+	protected List<Long> unsafeGetChildren(Long parentTaskId) throws ModelException {
+		System.out.println("unsafeGetChildren(" + parentTaskId + ")");
+		// Clear cache
+		List<Long> subTaskIds = taskChildrenCache.get(parentTaskId);
+		if (subTaskIds != null) {
+			for (Long subTaskId : subTaskIds) {
+				taskSumsCache.remove(subTaskId);
+				parentTaskCache.remove(subTaskId);
+			}
 		}
-		return taskIds;
+		taskChildrenCache.remove(parentTaskId);
+		
+		// Update cache
+		Task parentTask = parentTaskId == null ? null : taskSumsCache.get(parentTaskId).getTask();
+		List<TaskSums> subTasksSums = modelMgr.getSubTasksSums(parentTask, null, null);
+		if (filter != null) {
+			Task[] filteredTasks = modelMgr.getSubTasks(parentTaskId, filter);
+			List<Long> filteredTaskIds = new ArrayList<Long>();
+			for (Task filteredTask : filteredTasks) {
+				filteredTaskIds.add(filteredTask.getId());
+			}
+			List<TaskSums> filteredTaskSums = new ArrayList<TaskSums>();
+			for (TaskSums sums : subTasksSums) {
+				if (filteredTaskIds.contains(sums.getTask().getId())) {
+					filteredTaskSums.add(sums);
+				}
+			}
+			subTasksSums = filteredTaskSums;
+		}
+		
+		subTaskIds = new ArrayList<Long>();
+		for (TaskSums subTaskSums : subTasksSums) {
+			long subTaskId = subTaskSums.getTask().getId();
+			subTaskIds.add(subTaskId);
+			// Update task cache
+			taskSumsCache.put(subTaskId, subTaskSums);
+			parentTaskCache.put(subTaskId, parentTaskId);
+		}
+		// Register children
+		taskChildrenCache.put(parentTaskId, subTaskIds);
+		return subTaskIds;
 	}
 
 	@Override
-	protected List<Long> unsafeGetRootElements() {
+	protected final List<Long> unsafeGetRootElements() throws ModelException {
 		return unsafeGetChildren(null);
 	}
 
 	@Override
-	protected boolean unsafeIsRoot(Long taskId) {
-		Task task = modelMgr.getTask(taskId);
-		return task.getPath().length() == 0;
+	protected final boolean unsafeIsRoot(Long taskId) {
+		return parentTaskCache.get(taskId) == null;
 	}
 
 	@Override
-	protected boolean unsafeContains(Long taskId) {
-		return modelMgr.getTask(taskId) != null;
+	protected final boolean unsafeContains(Long taskId) {
+		return taskSumsCache.containsKey(taskId) || 
+				// The task may not have been yet loaded in cache (if we want to reveal a deep task for example)
+				modelMgr.getTask(taskId) != null;
 	}
 
+	@Override
+	protected Collection<String> unsafeGetPropertyIds() {
+		return PROPERTY_IDS;
+	}
+
+	@Override
+	protected boolean unsafeHasChildren(Long taskId) {
+		if (taskSumsCache.containsKey(taskId)) {
+			return !taskSumsCache.get(taskId).isLeaf();
+		}
+		else {
+			return !modelMgr.isLeaf(taskId);
+		}
+	}
+
+	@Override
+	protected final Long unsafeGetParent(Long taskId) {
+		Long parentTaskId = parentTaskCache.get(taskId);
+		if (parentTaskId != null) {
+			return parentTaskId;
+		}
+		else {
+			// The task may not have been yet loaded in cache (if we want to reveal a deep task for example)
+			Task parentTask = modelMgr.getParentTask(modelMgr.getTask(taskId));
+			return parentTask != null ? parentTask.getId() : null;
+		}
+	}
+
+	@Override
+	protected IView<?> unsafeGetCell(Long taskId, String propertyId)
+			throws Exception {
+		TaskSums taskSums = taskSumsCache.get(taskId);
+		Task task = taskSums.getTask();
+		if (NAME_PROPERTY_ID.equals(propertyId)) {
+			String name = highlightFilter(task.getName());
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), name).getView();
+		}
+		else if (CODE_PROPERTY_ID.equals(propertyId)) {
+			String code = highlightFilter(task.getCode());
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), code).getView();
+		}
+		else if (BUDGET_PROPERTY_ID.equals(propertyId)) {
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getBudgetSum()), Align.RIGHT).getView();
+		}
+		else if (INITIAL_PROPERTY_ID.equals(propertyId)) {
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getInitiallyConsumedSum()), Align.RIGHT).getView();
+		}
+		else if (CONSUMMED_PROPERTY_ID.equals(propertyId)) {
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getContributionsSums().getConsumedSum()), Align.RIGHT).getView();
+		}
+		else if (ETC_PROPERTY_ID.equals(propertyId)) {
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getTodoSum()), Align.RIGHT).getView();
+		}
+		else if (DELTA_PROPERTY_ID.equals(propertyId)) {
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getBudgetSum()-taskSums.getInitiallyConsumedSum()-taskSums.getContributionsSums().getConsumedSum()-taskSums.getTodoSum()), Align.RIGHT).getView();
+		}
+		else if (COMMENT_PROPERTY_ID.equals(propertyId)) {
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), task.getComment(), Align.RIGHT).getView();
+		}
+		else {
+			throw new IllegalArgumentException(propertyId);
+		}
+	}
+
+	@Override
+	protected Integer unsafeGetColumnWidth(String propertyId) {
+		if (NAME_PROPERTY_ID.equals(propertyId)) {
+			return 200;
+		}
+		else if (CODE_PROPERTY_ID.equals(propertyId)) {
+			return 60;
+		}
+		else if (BUDGET_PROPERTY_ID.equals(propertyId)) {
+			return 60;
+		}
+		else if (INITIAL_PROPERTY_ID.equals(propertyId)) {
+			return 60;
+		}
+		else if (CONSUMMED_PROPERTY_ID.equals(propertyId)) {
+			return 60;
+		}
+		else if (ETC_PROPERTY_ID.equals(propertyId)) {
+			return 60;
+		}
+		else if (DELTA_PROPERTY_ID.equals(propertyId)) {
+			return 60;
+		}
+		else if (COMMENT_PROPERTY_ID.equals(propertyId)) {
+			return 300;
+		}
+		else {
+			throw new IllegalArgumentException(propertyId);
+		}
+	}
+	
 	private String highlightFilter(String text) {
 		if (filter == null || filter.length() == 0) {
 			return text;
@@ -109,99 +236,4 @@ class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<
 		}
 	}
 	
-	@Override
-	protected IView<?> unsafeGetCell(Long taskId, String propertyId)
-			throws Exception {
-		final Task task = tasksCache.get(taskId);
-		if (NAME_PROPERTY_ID.equals(propertyId)) {
-			String name = highlightFilter(task.getName());
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), name).getView();
-		}
-		else if (CODE_PROPERTY_ID.equals(propertyId)) {
-			String code = highlightFilter(task.getCode());
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), code).getView();
-		}
-		else if (BUDGET_PROPERTY_ID.equals(propertyId)) {
-			TaskSums taskSums = getTaskSums(taskId);
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getBudgetSum()), Align.RIGHT).getView();
-		}
-		else if (INITIAL_PROPERTY_ID.equals(propertyId)) {
-			TaskSums taskSums = getTaskSums(taskId);
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getInitiallyConsumedSum()), Align.RIGHT).getView();
-		}
-		else if (COSUMMED_PROPERTY_ID.equals(propertyId)) {
-			TaskSums taskSums = getTaskSums(taskId);
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getContributionsSums().getConsumedSum()), Align.RIGHT).getView();
-		}
-		else if (ETC_PROPERTY_ID.equals(propertyId)) {
-			TaskSums taskSums = getTaskSums(taskId);
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getTodoSum()), Align.RIGHT).getView();
-		}
-		else if (DELTA_PROPERTY_ID.equals(propertyId)) {
-			TaskSums taskSums = getTaskSums(taskId);
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getBudgetSum()-taskSums.getInitiallyConsumedSum()-taskSums.getContributionsSums().getConsumedSum()-taskSums.getTodoSum()), Align.RIGHT).getView();
-		}
-		else if (COMMENT_PROPERTY_ID.equals(propertyId)) {
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), task.getComment(), Align.RIGHT).getView();
-		}
-		else {
-			throw new IllegalArgumentException(propertyId);
-		}
-	}
-
-	private TaskSums getTaskSums(long taskId) throws ModelException {
-		TaskSums taskSums = taskSumsCache.get(taskId);
-		if (taskSums == null) {
-			taskSums = modelMgr.getTaskSums(taskId, null, null);
-			taskSumsCache.put(taskId, taskSums);
-		}
-		return taskSums;
-	}
-	
-	@Override
-	protected Collection<String> unsafeGetPropertyIds() {
-		return PROPERTY_IDS;
-	}
-
-	@Override
-	protected boolean unsafeHasChildren(Long taskId) {
-		return !modelMgr.isLeaf(taskId);
-	}
-
-	@Override
-	protected Long unsafeGetParent(Long taskId) {
-		Task parentTask = modelMgr.getParentTask(modelMgr.getTask(taskId));
-		return parentTask != null ? parentTask.getId() : null;
-	}
-
-	@Override
-	protected Integer unsafeGetColumnWidth(String propertyId) {
-		if (NAME_PROPERTY_ID.equals(propertyId)) {
-			return 200;
-		}
-		else if (CODE_PROPERTY_ID.equals(propertyId)) {
-			return 60;
-		}
-		else if (BUDGET_PROPERTY_ID.equals(propertyId)) {
-			return 60;
-		}
-		else if (INITIAL_PROPERTY_ID.equals(propertyId)) {
-			return 60;
-		}
-		else if (COSUMMED_PROPERTY_ID.equals(propertyId)) {
-			return 60;
-		}
-		else if (ETC_PROPERTY_ID.equals(propertyId)) {
-			return 60;
-		}
-		else if (DELTA_PROPERTY_ID.equals(propertyId)) {
-			return 60;
-		}
-		else if (COMMENT_PROPERTY_ID.equals(propertyId)) {
-			return 300;
-		}
-		else {
-			throw new IllegalArgumentException(propertyId);
-		}
-	}
 }
