@@ -3,6 +3,7 @@ package org.activitymgr.ui.web.view.impl.internal;
 import org.activitymgr.ui.web.logic.ICollaboratorsTabLogic;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.view.AbstractTabPanel;
+import org.activitymgr.ui.web.view.impl.internal.util.AlignHelper;
 import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
 import org.activitymgr.ui.web.view.impl.internal.util.TextFieldView;
 
@@ -52,6 +53,7 @@ public class CollaboratorsPanel extends AbstractTabPanel<ICollaboratorsTabLogic>
 			int columnWidth = collaboratorsProvider.getColumnWidth(propertyId);
 			tableWidth += columnWidth + 10;
 			collaboratorsTable.setColumnWidth(propertyId, columnWidth);
+			collaboratorsTable.setColumnAlignment(propertyId, AlignHelper.toVaadinAlign(collaboratorsProvider.getColumnAlign(propertyId)));
 		}
 		collaboratorsTable.setWidth(tableWidth + "px");
 	}

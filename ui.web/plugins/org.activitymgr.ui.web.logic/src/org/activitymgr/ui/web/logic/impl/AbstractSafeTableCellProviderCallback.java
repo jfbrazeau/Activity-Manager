@@ -3,6 +3,7 @@ package org.activitymgr.ui.web.logic.impl;
 import java.util.Collection;
 import java.util.List;
 
+import org.activitymgr.ui.web.logic.Align;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
@@ -80,6 +81,21 @@ public abstract class AbstractSafeTableCellProviderCallback<ITEM_ID_TYPE> extend
 		return null;
 	}
 
+	@Override
+	public final Align getColumnAlign(String propertyId) {
+		try {
+			return unsafeGetColumnAlign(propertyId);
+		}
+		catch (Throwable t) {
+			doThrow(t);
+			return null;
+		}
+	}
+
+	protected Align unsafeGetColumnAlign(String propertyId) {
+		return null;
+	}
+	
 	@Override
 	public final String getFooter(String propertyId) {
 		try {

@@ -13,7 +13,7 @@ import org.activitymgr.core.dto.misc.TaskSums;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.StringHelper;
-import org.activitymgr.ui.web.logic.ILabelLogic.View.Align;
+import org.activitymgr.ui.web.logic.Align;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
@@ -155,22 +155,22 @@ class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<
 			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), code).getView();
 		}
 		else if (BUDGET_PROPERTY_ID.equals(propertyId)) {
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getBudgetSum()), Align.RIGHT).getView();
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getBudgetSum())).getView();
 		}
 		else if (INITIAL_PROPERTY_ID.equals(propertyId)) {
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getInitiallyConsumedSum()), Align.RIGHT).getView();
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getInitiallyConsumedSum())).getView();
 		}
 		else if (CONSUMMED_PROPERTY_ID.equals(propertyId)) {
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getContributionsSums().getConsumedSum()), Align.RIGHT).getView();
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getContributionsSums().getConsumedSum())).getView();
 		}
 		else if (ETC_PROPERTY_ID.equals(propertyId)) {
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getTodoSum()), Align.RIGHT).getView();
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getTodoSum())).getView();
 		}
 		else if (DELTA_PROPERTY_ID.equals(propertyId)) {
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getBudgetSum()-taskSums.getInitiallyConsumedSum()-taskSums.getContributionsSums().getConsumedSum()-taskSums.getTodoSum()), Align.RIGHT).getView();
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), StringHelper.hundredthToEntry(taskSums.getBudgetSum()-taskSums.getInitiallyConsumedSum()-taskSums.getContributionsSums().getConsumedSum()-taskSums.getTodoSum())).getView();
 		}
 		else if (COMMENT_PROPERTY_ID.equals(propertyId)) {
-			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), task.getComment(), Align.RIGHT).getView();
+			return new LabelLogicImpl((AbstractLogicImpl<?>)getSource(), task.getComment()).getView();
 		}
 		else {
 			throw new IllegalArgumentException(propertyId);
@@ -208,6 +208,19 @@ class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<
 		}
 	}
 	
+	@Override
+	protected Align unsafeGetColumnAlign(String propertyId) {
+		if (BUDGET_PROPERTY_ID.equals(propertyId)
+				|| INITIAL_PROPERTY_ID.equals(propertyId)
+				|| CONSUMMED_PROPERTY_ID.equals(propertyId)
+				|| ETC_PROPERTY_ID.equals(propertyId)
+				|| DELTA_PROPERTY_ID.equals(propertyId)) {
+			return Align.RIGHT;
+		} else {
+			return Align.LEFT;
+		}
+	}
+
 	private String highlightFilter(String text) {
 		if (filter == null || filter.length() == 0) {
 			return text;

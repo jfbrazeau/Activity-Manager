@@ -18,8 +18,8 @@ import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
+import org.activitymgr.ui.web.logic.Align;
 import org.activitymgr.ui.web.logic.IFieldLogic;
-import org.activitymgr.ui.web.logic.ILabelLogic.View.Align;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogicContext;
 import org.activitymgr.ui.web.logic.ISelectFieldLogic;
@@ -89,7 +89,7 @@ public class ContributionsCellLogicFatory implements IContributionsCellLogicFact
 			logic = new LabelLogicImpl(parentLogic, weekContributions.getTask().getName());
 		}
 		else if (TOTAL_COLUMN_ID.equals(propertyId)) {
-			logic = new LabelLogicImpl(parentLogic, "", Align.RIGHT);
+			logic = new LabelLogicImpl(parentLogic, "");
 		}
 		else {
 			throw new IllegalArgumentException(propertyId);
@@ -224,4 +224,11 @@ public class ContributionsCellLogicFatory implements IContributionsCellLogicFact
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.activitymgr.ui.web.logic.spi.ICellLogicFactory#getColumnAlign(java.lang.String)
+	 */
+	@Override
+	public Align getColumnAlign(String propertyId) {
+		return null;
+	}
 }

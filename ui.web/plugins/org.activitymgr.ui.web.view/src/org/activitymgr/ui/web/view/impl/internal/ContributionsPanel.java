@@ -8,6 +8,7 @@ import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.view.AbstractTabPanel;
 import org.activitymgr.ui.web.view.impl.dialogs.PopuDateFieldWithParser;
+import org.activitymgr.ui.web.view.impl.internal.util.AlignHelper;
 import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
 
 import com.vaadin.data.Property;
@@ -217,6 +218,7 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 			int columnWidth = contributionsProvider.getColumnWidth(propertyId);
 			tableWidth += columnWidth + 10;
 			contributionsTable.setColumnWidth(propertyId, columnWidth);
+			contributionsTable.setColumnAlignment(propertyId, AlignHelper.toVaadinAlign(contributionsProvider.getColumnAlign(propertyId)));
 		}
 		contributionsTable.setWidth(tableWidth + "px");
 	}
@@ -279,6 +281,7 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 			int columnWidth = collaboratorsProvider.getColumnWidth(propertyId);
 			tableWidth += columnWidth + 10;
 			collaboratorsTable.setColumnWidth(propertyId, columnWidth);
+			collaboratorsTable.setColumnAlignment(propertyId, AlignHelper.toVaadinAlign(collaboratorsProvider.getColumnAlign(propertyId)));
 		}
 		collaboratorsTable.setWidth(tableWidth + "px");
 	}

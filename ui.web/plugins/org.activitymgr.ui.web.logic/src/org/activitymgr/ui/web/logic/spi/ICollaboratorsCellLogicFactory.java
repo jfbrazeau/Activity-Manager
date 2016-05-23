@@ -1,7 +1,6 @@
 package org.activitymgr.ui.web.logic.spi;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import org.activitymgr.core.dto.Collaborator;
@@ -14,7 +13,7 @@ import org.activitymgr.ui.web.logic.impl.CollaboratorsCellLogicFatory;
  * @author jbrazeau
  * @see CollaboratorsCellLogicFatory
  */
-public interface ICollaboratorsCellLogicFactory {
+public interface ICollaboratorsCellLogicFactory extends ICellLogicFactory {
 
 	public static final String IS_ACTIVE_PROPERTY_NAME_ID = "IS_ACTIVE";
 	public static final String LOGIN_PROPERTY_ID = "LOGIN";
@@ -26,9 +25,5 @@ public interface ICollaboratorsCellLogicFactory {
 
 	public abstract ILogic<?> createCellLogic(AbstractLogicImpl<?> parentLogic, ILogicContext context, Collaborator collaborator,
 			String propertyId, boolean readonly);
-
-	public abstract Collection<String> getPropertyIds();
-
-	public abstract Integer getColumnWidth(String propertyId);
 
 }

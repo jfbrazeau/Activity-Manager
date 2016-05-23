@@ -2,7 +2,6 @@ package org.activitymgr.ui.web.logic.spi;
 
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -18,7 +17,7 @@ import org.activitymgr.ui.web.logic.impl.ContributionsCellLogicFatory;
  * @author jbrazeau
  * @see ContributionsCellLogicFatory
  */
-public interface IContributionsCellLogicFactory {
+public interface IContributionsCellLogicFactory extends ICellLogicFactory {
 
 	public static final String PATH_COLUMN_ID = "PATH";
 	public static final String NAME_COLUMN_ID = "NAME";
@@ -44,14 +43,10 @@ public interface IContributionsCellLogicFactory {
 			Calendar firstDayOfWeek, TaskContributions weekContributions,
 			String propertyId);
 
-	public abstract Collection<String> getPropertyIds();
-
 	public abstract List<TaskContributions> loadContributions(
 			Collaborator contributor, Calendar firstDayOfWeek)
 			throws ModelException;
 
 	public void loadDurations();
 	
-	public abstract Integer getColumnWidth(String propertyId);
-
 }

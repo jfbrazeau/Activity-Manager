@@ -5,6 +5,7 @@ import java.util.Collection;
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
+import org.activitymgr.ui.web.logic.Align;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogicContext;
 import org.activitymgr.ui.web.logic.spi.ICollaboratorsCellLogicFactory;
@@ -114,6 +115,14 @@ public class CollaboratorsCellLogicFatory implements ICollaboratorsCellLogicFact
 		else {
 			return null;
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.activitymgr.ui.web.logic.spi.ICellLogicFactory#getColumnAlign(java.lang.String)
+	 */
+	@Override
+	public Align getColumnAlign(String propertyId) {
+		return Align.LEFT;
 	}
 
 }

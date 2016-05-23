@@ -11,6 +11,8 @@ public interface ITableCellProviderCallback<ITEM_ID_TYPE> {
 	
 	Integer getColumnWidth(String propertyId);
 
+	Align getColumnAlign(String propertyId);
+
 	String getFooter(String propertyId);
 
 	Collection<String> getPropertyIds();

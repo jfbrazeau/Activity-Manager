@@ -3,8 +3,11 @@ package org.activitymgr.ui.web.view.impl.internal;
 import org.activitymgr.ui.web.logic.ITasksTabLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.view.AbstractTabPanel;
+import org.activitymgr.ui.web.view.impl.internal.util.AlignHelper;
 import org.activitymgr.ui.web.view.impl.internal.util.TreeTableDatasource;
 
+import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.TreeTable;
@@ -19,6 +22,12 @@ public class TasksPanel extends AbstractTabPanel<ITasksTabLogic> implements ITas
 		taskTree = new TreeTable();
 		addComponent(taskTree);
 		taskTree.setImmediate(true);
+		taskTree.setMultiSelect(true);
+		taskTree.addValueChangeListener(new ValueChangeListener() {
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+			}
+		});
 		return taskTree;
 	}
 	
@@ -38,6 +47,7 @@ public class TasksPanel extends AbstractTabPanel<ITasksTabLogic> implements ITas
 			int columnWidth = tasksProvider.getColumnWidth(propertyId);
 			tableWidth += columnWidth + 10;
 			taskTree.setColumnWidth(propertyId, columnWidth);
+			taskTree.setColumnAlignment(propertyId, AlignHelper.toVaadinAlign(tasksProvider.getColumnAlign(propertyId)));
 		}
 		taskTree.setWidth(tableWidth + "px");
 	}
