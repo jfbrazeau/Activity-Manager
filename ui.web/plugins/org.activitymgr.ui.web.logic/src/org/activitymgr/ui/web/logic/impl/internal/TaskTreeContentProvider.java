@@ -54,7 +54,6 @@ class TaskTreeContentProvider extends AbstractSafeTreeTableCellProviderCallback<
 
 	@Override
 	protected List<Long> unsafeGetChildren(Long parentTaskId) throws ModelException {
-		System.out.println("unsafeGetChildren(" + parentTaskId + ")");
 		// Clear cache
 		List<Long> subTaskIds = taskChildrenCache.get(parentTaskId);
 		if (subTaskIds != null) {
