@@ -1,6 +1,10 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 
 import org.activitymgr.ui.web.logic.IEventBus;
@@ -59,7 +63,14 @@ public class RootLogicImpl implements IRootLogic {
 				// Add tabs
 				IFeatureAccessManager accessMgr = userInjector.getInstance(IFeatureAccessManager.class);
 				Set<ITabFactory> tabFactories = userInjector.getInstance(Key.get(new TypeLiteral<Set<ITabFactory>>() {}));
-				for (ITabFactory tabFactory : tabFactories) {
+				List<ITabFactory> sortedTabFactories = new ArrayList<ITabFactory>(tabFactories);
+				Collections.sort(sortedTabFactories, new Comparator<ITabFactory>() {
+					@Override
+					public int compare(ITabFactory o1, ITabFactory o2) {
+						return new Integer(o1.getTabOrderPriority()).compareTo(o2.getTabOrderPriority());
+					}
+				});
+				for (ITabFactory tabFactory : sortedTabFactories) {
 					if (accessMgr.hasAccessToTab(event.getConnectedCollaborator(), tabFactory.getTabId())) {
 						ITabLogic<?> tabLogic = tabFactory.create(tabFolderLogic);
 						tabFolderLogic.addTab(tabLogic.getLabel(), tabLogic);

@@ -108,6 +108,10 @@ public class LogicModule extends AbstractModule {
 		Multibinder<ITabFactory> tabsBinder = Multibinder.newSetBinder(binder(), ITabFactory.class);
 		tabsBinder.addBinding().toInstance(new ITabFactory() {
 			@Override
+			public int getTabOrderPriority() {
+				return 60;
+			}
+			@Override
 			public String getTabId() {
 				return "collaborators";
 			}
@@ -118,6 +122,10 @@ public class LogicModule extends AbstractModule {
 		});
 		tabsBinder.addBinding().toInstance(new ITabFactory() {
 			@Override
+			public int getTabOrderPriority() {
+				return 40;
+			}
+			@Override
 			public String getTabId() {
 				return "tasks";
 			}
@@ -127,6 +135,10 @@ public class LogicModule extends AbstractModule {
 			}
 		});
 		tabsBinder.addBinding().toInstance(new ITabFactory() {
+			@Override
+			public int getTabOrderPriority() {
+				return 20;
+			}
 			@Override
 			public String getTabId() {
 				return "contributions";
