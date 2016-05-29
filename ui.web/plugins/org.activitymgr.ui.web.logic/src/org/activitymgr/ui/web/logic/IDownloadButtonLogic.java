@@ -8,6 +8,8 @@ public interface IDownloadButtonLogic extends IButtonLogic<IDownloadButtonLogic.
 
 	public interface View extends IButtonLogic.View<IDownloadButtonLogic> {
 
+		void setEnabled(boolean b);
+
 	}
 
 }

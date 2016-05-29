@@ -6,6 +6,7 @@ import org.activitymgr.ui.web.logic.ITabFolderLogic;
 import org.activitymgr.ui.web.logic.ITasksTabLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractTabLogicImpl;
+import org.activitymgr.ui.web.logic.impl.event.TaskSelectedEvent;
 import org.activitymgr.ui.web.logic.spi.ITabButtonFactory;
 
 import com.google.inject.Inject;
@@ -27,5 +28,10 @@ public class TasksTabLogicImpl extends AbstractTabLogicImpl<ITasksTabLogic.View>
 	@Override
 	public String getLabel() {
 		return "Tasks";
+	}
+
+	@Override
+	public void onTaskSelected(Object value) {
+		getEventBus().fire(new TaskSelectedEvent(this, (Long) value));
 	}
 }

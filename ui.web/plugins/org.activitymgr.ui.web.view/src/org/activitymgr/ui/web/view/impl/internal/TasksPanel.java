@@ -22,10 +22,11 @@ public class TasksPanel extends AbstractTabPanel<ITasksTabLogic> implements ITas
 		taskTree = new TreeTable();
 		addComponent(taskTree);
 		taskTree.setImmediate(true);
-		taskTree.setMultiSelect(true);
+		taskTree.setMultiSelect(false);
 		taskTree.addValueChangeListener(new ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
+				getLogic().onTaskSelected(event.getProperty().getValue());
 			}
 		});
 		return taskTree;
