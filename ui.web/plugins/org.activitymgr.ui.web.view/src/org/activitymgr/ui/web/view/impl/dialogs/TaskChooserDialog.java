@@ -10,6 +10,7 @@ import org.activitymgr.ui.web.view.impl.internal.util.TreeTableDatasource;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.util.sqlcontainer.query.generator.filter.FilterTranslator;
 import com.vaadin.event.FieldEvents;
 import com.vaadin.event.FieldEvents.TextChangeEvent;
 import com.vaadin.event.ShortcutListener;
@@ -49,83 +50,26 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
         super("Select a task");
         setModal(true);
 
-        setWidth(530, Unit.PIXELS);
+        setWidth(700, Unit.PIXELS);
+        setHeight(550, Unit.PIXELS);
 
-        GridLayout gl = new GridLayout(2, 2);
-        setContent(gl);
+        // Global layout
+        VerticalLayout contentLayout = new VerticalLayout();
+        contentLayout.setSizeFull();
+        contentLayout.setMargin(new MarginInfo(true, true, true, true));
+        setContent(contentLayout);
         
-        // Task tree
-        VerticalLayout leftContainerPanel = new VerticalLayout();
-        leftContainerPanel.setMargin(new MarginInfo(true, false, true, true));
-        gl.addComponent(leftContainerPanel);
-        filterField = new TextField();
-        filterField.setImmediate(true);
-        leftContainerPanel.addComponent(filterField);
-        filterField.setWidth(200, Unit.PIXELS);
-        filterField.setInputPrompt("Type a text to filter...");
-       
-        Panel treeContainer = new Panel();
-        leftContainerPanel.addComponent(treeContainer);
-        treeContainer.setWidth(filterField.getWidth(), filterField.getWidthUnits());
-        treeContainer.setHeight(350, Unit.PIXELS);
-        taskTree = new Tree();
-        taskTree.setNullSelectionAllowed(false);
-        treeContainer.setContent(taskTree);
-        taskTree.setImmediate(true);
-        taskTree.setHtmlContentAllowed(true);
+        // Main part 
+        HorizontalLayout bodyLayout = createBodyLayout();
+        contentLayout.addComponent(bodyLayout);
         
-        // Recent tasks
-        VerticalLayout rightContainerPanel = new VerticalLayout();
-        rightContainerPanel.setMargin(true);
-        rightContainerPanel.setWidth(300, Unit.PIXELS);
-        rightContainerPanel.setHeight(350, Unit.PIXELS);
-        gl.addComponent(rightContainerPanel);
-        recentTasksSelect = new ListSelect("Recent :");
-        recentTasksSelect.setSizeFull();
-        recentTasksSelect.setImmediate(true);
-        recentTasksSelect.setNullSelectionAllowed(false);
-        rightContainerPanel.addComponent(recentTasksSelect);
-        newTaskFormPanel = new VerticalLayout();
-        rightContainerPanel.addComponent(newTaskFormPanel);
-        newSubTaskCheckbox = new CheckBox("Create a new task");
-        newSubTaskCheckbox.setImmediate(true);
-        newTaskFormPanel.addComponent(newSubTaskCheckbox);
-        newTaskFormPanel.addComponent(new Label("Task attributes"));
-        HorizontalLayout newTaskLayout = new HorizontalLayout();
-        newTaskFormPanel.addComponent(newTaskLayout);
-        newSubTaskCodeField = new TextField();
-        newSubTaskCodeField.setWidth("60px");
-        newSubTaskCodeField.setImmediate(true);
-        newSubTaskCodeField.setInputPrompt("Code");
-        newTaskLayout.addComponent(newSubTaskCodeField);
-        newSubTaskNameField = new TextField();
-        newSubTaskNameField.setWidth("150px");
-        newSubTaskNameField.setImmediate(true);
-        newSubTaskNameField.setInputPrompt("Name (required)");
-        newTaskLayout.addComponent(newSubTaskNameField);
+        // Footer containing status & OK / Cancel buttons
+        HorizontalLayout footerLayout = createFooterLayout();
+        contentLayout.addComponent(footerLayout);
         
-        // Pattern
-		newSubTaskCreationPatternField = new ComboBox("Creation pattern");
-        newSubTaskCreationPatternField.setNullSelectionAllowed(false);
-        newSubTaskCreationPatternField.setImmediate(true);
-        newSubTaskCreationPatternField.setTextInputAllowed(false);
-        newSubTaskCreationPatternField.setVisible(false); // Hidden by default
-        newTaskFormPanel.addComponent(newSubTaskCreationPatternField);
-
-        // Buttons
-        HorizontalLayout hl = new HorizontalLayout();
-        hl.setSizeFull();
-        gl.addComponent(hl, 0, 1, 1, 1);
-        //vl.setComponentAlignment(hl, Alignment.MIDDLE_RIGHT);
-        
-        statusLabel = new Label();
-        hl.addComponent(statusLabel);
-        hl.setExpandRatio(statusLabel, 1);
-        hl.addComponent(ok);
-        hl.setExpandRatio(ok, 0);
-        hl.addComponent(cancel);
-        hl.setComponentAlignment(cancel, Alignment.TOP_RIGHT);
-        hl.setExpandRatio(cancel, 0);
+        // Set expand ratios
+        contentLayout.setExpandRatio(bodyLayout, 95);
+        contentLayout.setExpandRatio(footerLayout, 5);
         
         // Register listeners
         filterField.addTextChangeListener(new FieldEvents.TextChangeListener() {
@@ -183,6 +127,100 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 			}
 		});
     }
+
+	private HorizontalLayout createBodyLayout() {
+		HorizontalLayout bodyLayout = new HorizontalLayout();
+        bodyLayout.setSizeFull();
+
+        // Task tree
+        VerticalLayout leftContainerPanel = new VerticalLayout();
+        leftContainerPanel.setSizeFull();
+        bodyLayout.addComponent(leftContainerPanel);
+        filterField = new TextField();
+        filterField.setWidth("100%");
+        filterField.setImmediate(true);
+        leftContainerPanel.addComponent(filterField);
+        filterField.setInputPrompt("Type a text to filter...");
+       
+        Panel treeContainer = new Panel();
+        treeContainer.setSizeFull();
+        leftContainerPanel.addComponent(treeContainer);
+        leftContainerPanel.setSizeFull();
+        taskTree = new Tree();
+        taskTree.setNullSelectionAllowed(false);
+        treeContainer.setContent(taskTree);
+        taskTree.setImmediate(true);
+        taskTree.setHtmlContentAllowed(true);
+
+        // Set expand ratios for left container
+        leftContainerPanel.setExpandRatio(treeContainer, 93);
+        leftContainerPanel.setExpandRatio(filterField, 7);
+
+        // Recent tasks
+        VerticalLayout rightContainerPanel = new VerticalLayout();
+        rightContainerPanel.setSizeFull();
+        // Left margin
+        rightContainerPanel.setMargin(new MarginInfo(false, false, false, true));
+        bodyLayout.addComponent(rightContainerPanel);
+        recentTasksSelect = new ListSelect("Recent :");
+        recentTasksSelect.setSizeFull();
+        recentTasksSelect.setImmediate(true);
+        recentTasksSelect.setNullSelectionAllowed(false);
+        rightContainerPanel.addComponent(recentTasksSelect);
+        newTaskFormPanel = new VerticalLayout();
+        rightContainerPanel.addComponent(newTaskFormPanel);
+        newSubTaskCheckbox = new CheckBox("Create a new task");
+        newSubTaskCheckbox.setImmediate(true);
+        newTaskFormPanel.addComponent(newSubTaskCheckbox);
+        newTaskFormPanel.addComponent(new Label("Task attributes"));
+        HorizontalLayout newTaskLayout = new HorizontalLayout();
+        newTaskFormPanel.addComponent(newTaskLayout);
+        newSubTaskCodeField = new TextField();
+        newSubTaskCodeField.setWidth("60px");
+        newSubTaskCodeField.setImmediate(true);
+        newSubTaskCodeField.setInputPrompt("Code");
+        newTaskLayout.addComponent(newSubTaskCodeField);
+        newSubTaskNameField = new TextField();
+        newSubTaskNameField.setWidth("150px");
+        newSubTaskNameField.setImmediate(true);
+        newSubTaskNameField.setInputPrompt("Name (required)");
+        newTaskLayout.addComponent(newSubTaskNameField);
+        
+        // Pattern
+		newSubTaskCreationPatternField = new ComboBox("Creation pattern");
+        newSubTaskCreationPatternField.setNullSelectionAllowed(false);
+        newSubTaskCreationPatternField.setImmediate(true);
+        newSubTaskCreationPatternField.setTextInputAllowed(false);
+        newSubTaskCreationPatternField.setVisible(false); // Hidden by default
+        newTaskFormPanel.addComponent(newSubTaskCreationPatternField);
+        
+        // Set expand ratios for right container
+        rightContainerPanel.setExpandRatio(recentTasksSelect, 60);
+        rightContainerPanel.setExpandRatio(newTaskFormPanel, 40);
+
+        // Set expand ratios for body itself
+        bodyLayout.setExpandRatio(leftContainerPanel, 40);
+        bodyLayout.setExpandRatio(rightContainerPanel, 60);
+
+        return bodyLayout;
+	}
+
+	private HorizontalLayout createFooterLayout() {
+		HorizontalLayout footerLayout = new HorizontalLayout();
+		footerLayout.setSizeFull();
+
+        statusLabel = new Label();
+        footerLayout.addComponent(statusLabel);
+        footerLayout.addComponent(ok);
+        footerLayout.addComponent(cancel);
+        footerLayout.setComponentAlignment(cancel, Alignment.TOP_RIGHT);
+
+        // Set expand ratios
+        footerLayout.setExpandRatio(statusLabel, 80);
+        footerLayout.setExpandRatio(ok, 10);
+        footerLayout.setExpandRatio(cancel, 10);
+		return footerLayout;
+	}
 
     public void focus() {
     	taskTree.focus();

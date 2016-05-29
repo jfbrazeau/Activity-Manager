@@ -17,7 +17,7 @@ public class AbstractDialog extends Window {
 		// Register escape key binding
 		setCloseShortcut(ShortcutListener.KeyCode.ESCAPE);
 		// Not resizeable
-		setResizable(false);
+		//setResizable(false);
 		// Trigger a focus as soon as it is possible (the dialog mus be attached
 		// first)
 		addAttachListener(new AttachListener() {
