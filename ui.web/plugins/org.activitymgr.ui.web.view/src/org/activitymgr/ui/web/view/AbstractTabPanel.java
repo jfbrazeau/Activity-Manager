@@ -8,10 +8,13 @@ import java.util.List;
 import org.activitymgr.ui.web.logic.IButtonLogic.View;
 import org.activitymgr.ui.web.logic.ITabLogic;
 import org.activitymgr.ui.web.view.impl.internal.util.StandardButtonView;
+import org.activitymgr.ui.web.view.impl.internal.util.TextFieldView;
 
 import com.google.inject.Inject;
 import com.vaadin.event.Action;
+import com.vaadin.event.LayoutEvents;
 import com.vaadin.event.ShortcutListener;
+import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
@@ -106,6 +109,17 @@ public abstract class AbstractTabPanel<LOGIC extends ITabLogic<?>> extends Verti
 			hl.setExpandRatio(bodyComponent, 95);
 			hl.setExpandRatio(actionsContainer, 5);
 		}
+		
+		// Click listener
+		addLayoutClickListener(new LayoutEvents.LayoutClickListener() {
+			@Override
+			public void layoutClick(LayoutClickEvent event) {
+				if (event.getClickedComponent() instanceof TextFieldView) {
+					TextFieldView txtField = (TextFieldView) event.getClickedComponent();
+					txtField.onClick();
+				}
+			}
+		});
 	}
 	
 	protected Component createHeaderComponent() {

@@ -5,10 +5,7 @@ import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.view.AbstractTabPanel;
 import org.activitymgr.ui.web.view.impl.internal.util.AlignHelper;
 import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
-import org.activitymgr.ui.web.view.impl.internal.util.TextFieldView;
 
-import com.vaadin.event.LayoutEvents;
-import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Table;
 
@@ -25,15 +22,6 @@ public class CollaboratorsPanel extends AbstractTabPanel<ICollaboratorsTabLogic>
 		collaboratorsTable.setSelectable(true);
 		collaboratorsTable.setNullSelectionAllowed(false);
 		collaboratorsTable.setSizeFull();
-		addLayoutClickListener(new LayoutEvents.LayoutClickListener() {
-			@Override
-			public void layoutClick(LayoutClickEvent event) {
-				if (event.getClickedComponent() instanceof TextFieldView) {
-					TextFieldView txtField = (TextFieldView) event.getClickedComponent();
-					txtField.onClick();
-				}
-			}
-		});
 		return collaboratorsTable;
 	}
     @Override
