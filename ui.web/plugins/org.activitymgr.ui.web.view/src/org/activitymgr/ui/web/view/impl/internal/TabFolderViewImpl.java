@@ -17,7 +17,8 @@ public class TabFolderViewImpl extends TabSheet implements ITabFolderLogic.View 
 
 	public TabFolderViewImpl() {
 		setStyleName(Runo.TABSHEET_SMALL);
-		hideTabs(true);
+		setTabsVisible(false);
+		setSizeFull();
 	}
 
 	@Override
@@ -29,7 +30,7 @@ public class TabFolderViewImpl extends TabSheet implements ITabFolderLogic.View 
 	public void addTab(String label, IView<?> view) {
 		addTab((Component) view, label);
 		if (moreThanOneTab) {
-			hideTabs(false);
+			setTabsVisible(true);
 		}
 		moreThanOneTab = true;
 	}

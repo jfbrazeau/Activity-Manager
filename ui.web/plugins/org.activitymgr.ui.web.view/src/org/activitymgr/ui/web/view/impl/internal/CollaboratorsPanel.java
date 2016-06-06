@@ -24,8 +24,7 @@ public class CollaboratorsPanel extends AbstractTabPanel<ICollaboratorsTabLogic>
 		collaboratorsTable.setImmediate(true);
 		collaboratorsTable.setSelectable(true);
 		collaboratorsTable.setNullSelectionAllowed(false);
-		collaboratorsTable.setHeight("500px");
-//		/collaboratorsTable.setSizeFull();
+		collaboratorsTable.setSizeFull();
 		addLayoutClickListener(new LayoutEvents.LayoutClickListener() {
 			@Override
 			public void layoutClick(LayoutClickEvent event) {
@@ -42,7 +41,6 @@ public class CollaboratorsPanel extends AbstractTabPanel<ICollaboratorsTabLogic>
 			final ITableCellProviderCallback<Long> collaboratorsProvider) {
 		TableDatasource<Long> dataSource = new TableDatasource<Long>(getResourceCache(), collaboratorsProvider);
 		collaboratorsTable.setContainerDataSource(dataSource);
-		int tableWidth = 20;
 		for (String propertyId : dataSource.getContainerPropertyIds()) {
 			collaboratorsTable.addGeneratedColumn(propertyId, new Table.ColumnGenerator() {
 				@Override
@@ -51,11 +49,9 @@ public class CollaboratorsPanel extends AbstractTabPanel<ICollaboratorsTabLogic>
 				}
 			});
 			int columnWidth = collaboratorsProvider.getColumnWidth(propertyId);
-			tableWidth += columnWidth + 10;
 			collaboratorsTable.setColumnWidth(propertyId, columnWidth);
 			collaboratorsTable.setColumnAlignment(propertyId, AlignHelper.toVaadinAlign(collaboratorsProvider.getColumnAlign(propertyId)));
 		}
-		collaboratorsTable.setWidth(tableWidth + "px");
 	}
     
 }

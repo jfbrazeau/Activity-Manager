@@ -3,9 +3,7 @@ package org.activitymgr.ui.web.view;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.activitymgr.ui.web.logic.IButtonLogic.View;
 import org.activitymgr.ui.web.logic.ITabLogic;
@@ -66,16 +64,18 @@ public abstract class AbstractTabPanel<LOGIC extends ITabLogic<?>> extends Verti
 	public AbstractTabPanel() {
 		setSpacing(true);
 		setMargin(true);
+		setSizeFull();
 		
 		// Header
-		Component header = createHeaderComponent();
-		if (header != null) {
-			addComponent(header);
+		Component headerComponent = createHeaderComponent();
+		if (headerComponent != null) {
+			addComponent(headerComponent);
 		}
 		
 		// Horizontal layout
 		HorizontalLayout hl = new HorizontalLayout();
 		hl.setSpacing(true);
+		hl.setSizeFull();
 		addComponent(hl);
 		
 		// Header
@@ -86,14 +86,26 @@ public abstract class AbstractTabPanel<LOGIC extends ITabLogic<?>> extends Verti
 
 		// Body
 		bodyComponent = createBodyComponent();
-		if (bodyComponent != null) {
-			hl.addComponent(bodyComponent);
-		}
+		hl.addComponent(bodyComponent);
 
 		// Add actions panel
 		actionsContainer = new VerticalLayout();
 		hl.addComponent(actionsContainer);
-
+		
+		// Set expand ratios
+		if (headerComponent != null) {
+			setExpandRatio(headerComponent, 5);
+			setExpandRatio(hl, 95);
+		}
+		if (leftComponent != null) {
+			hl.setExpandRatio(leftComponent, 20);
+			hl.setExpandRatio(bodyComponent, 75);
+			hl.setExpandRatio(actionsContainer, 5);
+		}
+		else {
+			hl.setExpandRatio(bodyComponent, 95);
+			hl.setExpandRatio(actionsContainer, 5);
+		}
 	}
 	
 	protected Component createHeaderComponent() {

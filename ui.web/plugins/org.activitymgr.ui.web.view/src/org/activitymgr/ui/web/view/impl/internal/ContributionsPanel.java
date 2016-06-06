@@ -13,7 +13,6 @@ import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.util.ContainerOrderedWrapper;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -109,6 +108,7 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 		collaboratorsTable.setSelectable(true);
 		collaboratorsTable.setImmediate(true);
 		collaboratorsTable.setNullSelectionAllowed(false);
+		collaboratorsTable.setSizeFull();
 		return collaboratorsTable;
 	}
 
@@ -119,6 +119,7 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 		 */
 		contributionsTable = new Table();
 		contributionsTable.setFooterVisible(true);
+		contributionsTable.setSizeFull();
 		return contributionsTable;
 	}
 
@@ -207,7 +208,6 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 		this.contributionsProvider = contributionsProvider;
 		TableDatasource<Long> dataSource = new TableDatasource<Long>(getResourceCache(), contributionsProvider);
 		contributionsTable.setContainerDataSource(dataSource);
-		int tableWidth = 10;
 		for (String propertyId : dataSource.getContainerPropertyIds()) {
 			contributionsTable.addGeneratedColumn(propertyId, new Table.ColumnGenerator() {
 				@Override
@@ -216,11 +216,9 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 				}
 			});
 			int columnWidth = contributionsProvider.getColumnWidth(propertyId);
-			tableWidth += columnWidth + 10;
 			contributionsTable.setColumnWidth(propertyId, columnWidth);
 			contributionsTable.setColumnAlignment(propertyId, AlignHelper.toVaadinAlign(contributionsProvider.getColumnAlign(propertyId)));
 		}
-		contributionsTable.setWidth(tableWidth + "px");
 	}
 	
 	@Override

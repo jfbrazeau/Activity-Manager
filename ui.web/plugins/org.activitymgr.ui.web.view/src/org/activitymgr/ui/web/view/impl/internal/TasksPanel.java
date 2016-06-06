@@ -23,6 +23,7 @@ public class TasksPanel extends AbstractTabPanel<ITasksTabLogic> implements ITas
 		addComponent(taskTree);
 		taskTree.setImmediate(true);
 		taskTree.setMultiSelect(false);
+		taskTree.setSizeFull();
 		taskTree.addValueChangeListener(new ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
@@ -37,7 +38,6 @@ public class TasksPanel extends AbstractTabPanel<ITasksTabLogic> implements ITas
 			final ITreeContentProviderCallback<Long> tasksProvider) {
 		TreeTableDatasource<Long> dataSource = new TreeTableDatasource<Long>(getResourceCache(), tasksProvider);
 		taskTree.setContainerDataSource(dataSource);
-		int tableWidth = 20;
 		for (String propertyId : dataSource.getContainerPropertyIds()) {
 			taskTree.addGeneratedColumn(propertyId, new Table.ColumnGenerator() {
 				@Override
@@ -46,11 +46,9 @@ public class TasksPanel extends AbstractTabPanel<ITasksTabLogic> implements ITas
 				}
 			});
 			int columnWidth = tasksProvider.getColumnWidth(propertyId);
-			tableWidth += columnWidth + 10;
 			taskTree.setColumnWidth(propertyId, columnWidth);
 			taskTree.setColumnAlignment(propertyId, AlignHelper.toVaadinAlign(tasksProvider.getColumnAlign(propertyId)));
 		}
-		taskTree.setWidth(tableWidth + "px");
 	}
     
 }
