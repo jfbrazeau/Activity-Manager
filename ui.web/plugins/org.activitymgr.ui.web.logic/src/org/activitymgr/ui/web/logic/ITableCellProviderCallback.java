@@ -20,5 +20,7 @@ public interface ITableCellProviderCallback<ITEM_ID_TYPE> {
 	List<ITEM_ID_TYPE> getRootElements();
 	
 	boolean contains(ITEM_ID_TYPE element);
+	
+	void dispose();
 
 }

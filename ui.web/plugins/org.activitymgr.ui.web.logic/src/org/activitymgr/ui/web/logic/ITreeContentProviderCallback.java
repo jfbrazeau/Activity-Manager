@@ -12,4 +12,6 @@ public interface ITreeContentProviderCallback<ITEM_ID_TYPE> extends ITableCellPr
 
 	boolean isRoot(ITEM_ID_TYPE element);
 
+	void dispose();
+
 }

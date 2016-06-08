@@ -114,9 +114,9 @@ public abstract class AbstractTabPanel<LOGIC extends ITabLogic<?>> extends Verti
 		addLayoutClickListener(new LayoutEvents.LayoutClickListener() {
 			@Override
 			public void layoutClick(LayoutClickEvent event) {
-				if (event.getClickedComponent() instanceof TextFieldView) {
+				if (event.isDoubleClick() && event.getClickedComponent() instanceof TextFieldView) {
 					TextFieldView txtField = (TextFieldView) event.getClickedComponent();
-					txtField.onClick();
+					txtField.onDoubleClick();
 				}
 			}
 		});

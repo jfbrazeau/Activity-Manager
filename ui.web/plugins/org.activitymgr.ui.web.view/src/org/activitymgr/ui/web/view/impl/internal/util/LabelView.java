@@ -24,4 +24,8 @@ public class LabelView extends Label implements View {
 		setValue(s);
 	}
 
+	@Override
+	public String getLabel() {
+		return getValue();
+	}
 }

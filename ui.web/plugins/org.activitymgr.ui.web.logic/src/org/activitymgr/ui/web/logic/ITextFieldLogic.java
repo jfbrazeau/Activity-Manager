@@ -3,7 +3,7 @@ package org.activitymgr.ui.web.logic;
 
 public interface ITextFieldLogic extends IFieldLogic<String, ITextFieldLogic.View> {
 	
-	void onClick();
+	void onDoubleClick();
 
 	void onEnterKeyPressed();
 	

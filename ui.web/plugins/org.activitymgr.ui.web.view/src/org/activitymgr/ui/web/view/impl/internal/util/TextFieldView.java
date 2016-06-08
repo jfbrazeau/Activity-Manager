@@ -39,11 +39,11 @@ public class TextFieldView extends TextField implements ITextFieldLogic.View {
 	@Override
 	public void setValue(String newValue)
 			throws com.vaadin.data.Property.ReadOnlyException {
-		super.setValue(newValue != null ? newValue : "");
+		super.setValue(newValue != null ? newValue : "", false, true);
 	}
 
-	public void onClick() {
-		logic.onClick();
+	public void onDoubleClick() {
+		logic.onDoubleClick();
 	}
 	
 	@Override

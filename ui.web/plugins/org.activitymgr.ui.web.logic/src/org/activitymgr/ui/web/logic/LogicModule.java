@@ -20,6 +20,7 @@ import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.ui.web.logic.impl.CollaboratorsCellLogicFatory;
 import org.activitymgr.ui.web.logic.impl.ContributionsCellLogicFatory;
+import org.activitymgr.ui.web.logic.impl.TasksCellLogicFatory;
 import org.activitymgr.ui.web.logic.impl.internal.CollaboratorsTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.internal.ContributionsTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.internal.DefaultConstraintsValidator;
@@ -33,6 +34,7 @@ import org.activitymgr.ui.web.logic.spi.IFeatureAccessManager;
 import org.activitymgr.ui.web.logic.spi.ITabButtonFactory;
 import org.activitymgr.ui.web.logic.spi.ITabFactory;
 import org.activitymgr.ui.web.logic.spi.ITaskCreationPatternHandler;
+import org.activitymgr.ui.web.logic.spi.ITasksCellLogicFactory;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -103,6 +105,7 @@ public class LogicModule extends AbstractModule {
 		bind(IAuthenticatorExtension.class).toInstance(new DefaultAuthenticatorExtension());
 		bind(ICollaboratorsCellLogicFactory.class).toInstance(new CollaboratorsCellLogicFatory());
 		bind(IContributionsCellLogicFactory.class).toInstance(new ContributionsCellLogicFatory());
+		bind(ITasksCellLogicFactory.class).toInstance(new TasksCellLogicFatory());
 		
 		// Bind tabs
 		Multibinder<ITabFactory> tabsBinder = Multibinder.newSetBinder(binder(), ITabFactory.class);

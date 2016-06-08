@@ -261,4 +261,10 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 		}
 	}
 
+	@Override
+	public void dispose() {
+		contributionsMap.clear();
+		taskIds.clear();;
+	}
+
 }

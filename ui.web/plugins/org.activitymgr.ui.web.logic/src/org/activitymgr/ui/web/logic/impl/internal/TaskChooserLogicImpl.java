@@ -37,6 +37,8 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 	
 	@Inject
 	private Set<IConstraintsValidator> constraintsValidators;
+
+	private TaskTreeCellProvider treeContentProvider;
 	
 	public TaskChooserLogicImpl(AbstractLogicImpl<?> parent, Collection<Long> selectedTaskIds, Collaborator contributor, Calendar monday) {
 		super(parent);
@@ -111,8 +113,11 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 	@Override
 	public void onTaskFilterChanged(String filter) {
 		filter = filter.trim();
+		if (treeContentProvider != null) {
+			treeContentProvider.dispose();
+		}
 		// Register the tree content provider
-		TaskTreeContentProvider treeContentProvider = new TaskTreeContentProvider(this, filter);
+		treeContentProvider = new TaskTreeCellProvider(this, filter, true);
 		getView().setTasksTreeProviderCallback(buildTransactionalWrapper(treeContentProvider, ITreeContentProviderCallback.class));
 		if (!"".equals(filter)) {
 			Task task = getModelMgr().getFirstTaskMatching(filter);
@@ -274,4 +279,9 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 		getView().selectTask(taskId);
 	}
 
+	@Override
+	public void dispose() {
+		this.treeContentProvider.dispose();
+		super.dispose();
+	}
 }

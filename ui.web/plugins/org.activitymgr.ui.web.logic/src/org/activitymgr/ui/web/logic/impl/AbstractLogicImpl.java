@@ -111,7 +111,6 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 		return context;
 	}
 
-	@Deprecated
 	public <T> T buildTransactionalWrapper(final T wrapped, final Class<?> interfaceToWrapp) {
 		return twBuilder.buildTransactionalWrapper(wrapped, interfaceToWrapp);
 	}

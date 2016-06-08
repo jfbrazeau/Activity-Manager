@@ -15,10 +15,11 @@ public class TasksTabLogicImpl extends AbstractTabLogicImpl<ITasksTabLogic.View>
 
 	@Inject(optional = true)
 	private Set<ITabButtonFactory<ITasksTabLogic>> buttonFactories;
+	private TaskTreeCellProvider treeContentCallback;
 	
 	public TasksTabLogicImpl(ITabFolderLogic parent) {
 		super(parent);
-		TaskTreeContentProvider treeContentCallback = new TaskTreeContentProvider(this, null);
+		treeContentCallback = new TaskTreeCellProvider(this, null, false);
 		getView().setTreeContentProviderCallback(buildTransactionalWrapper(treeContentCallback, ITreeContentProviderCallback.class));
 
 		// Add buttons
@@ -33,5 +34,11 @@ public class TasksTabLogicImpl extends AbstractTabLogicImpl<ITasksTabLogic.View>
 	@Override
 	public void onTaskSelected(Object value) {
 		getEventBus().fire(new TaskSelectedEvent(this, (Long) value));
+	}
+
+	@Override
+	public void dispose() {
+		treeContentCallback.dispose();
+		super.dispose();
 	}
 }

@@ -25,7 +25,7 @@ public abstract class AbstractSafeTextFieldLogicImpl extends AbstractLogicImpl<I
 	}
 
 	@Override
-	public void onClick() {
+	public void onDoubleClick() {
 		if (editOnClick) {
 			getView().setReadOnly(false);
 			getView().focus();

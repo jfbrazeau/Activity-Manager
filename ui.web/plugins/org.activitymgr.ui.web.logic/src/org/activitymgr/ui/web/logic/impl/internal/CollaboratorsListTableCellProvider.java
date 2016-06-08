@@ -48,7 +48,6 @@ class CollaboratorsListTableCellProvider extends AbstractSafeTableCellProviderCa
 					Collaborator collaborator = collaboratorsMap.get(collaboratorId);
 					return cellLogicFactory.createCellLogic((AbstractLogicImpl<?>) getSource(), context, collaborator, propertyId, readOnly);
 				}
-
 			});
 		}
 	});
@@ -113,4 +112,9 @@ class CollaboratorsListTableCellProvider extends AbstractSafeTableCellProviderCa
 		return cellLogicFactory.getColumnWidth(propertyId);
 	}
 
+	@Override
+	public void dispose() {
+		collaboratorsMap.clear();
+		cellLogics.invalidateAll();
+	}
 }
