@@ -6,13 +6,13 @@ import org.activitymgr.ui.web.logic.impl.event.ContributionsTabWeekChangedEvent;
 
 import com.google.inject.Inject;
 
-public abstract class AbstractSafeSelfStandardButtonLogicImpl extends
+public abstract class AbstractSafeContributionTabStandardButtonLogicImpl extends
 	AbstractSafeStandardButtonLogicImpl {
 
 	private IEventListener<ContributionsTabWeekChangedEvent> listener;
 	
 	@Inject
-	public AbstractSafeSelfStandardButtonLogicImpl(ITabLogic<?> parent, String label, String iconId, String shortcutKey) {
+	public AbstractSafeContributionTabStandardButtonLogicImpl(ITabLogic<?> parent, String label, String iconId, String shortcutKey) {
 		super(parent, label, iconId, shortcutKey);
 		listener = new IEventListener<ContributionsTabWeekChangedEvent>() {
 			@Override

@@ -54,3 +54,7 @@
 .v-widget {
 	vertical-align: middle;
 }
+
+.v-textfield-warning {
+	background: #fff3e1;
+}

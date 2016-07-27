@@ -20,7 +20,7 @@ public class StandardButtonView extends Button implements View {
 	private IResourceCache resourceCache;
 	
 	private ButtonBasedShortcutListener shortcut;
-
+	
 	@Override
 	public void setIcon(String iconId) {
 		setIcon(resourceCache.getResource(iconId + ".gif"));
@@ -38,17 +38,24 @@ public class StandardButtonView extends Button implements View {
 	@Override
 	public void setEnabled(boolean enabled) {
 		if (enabled != isEnabled()) {
-			// Go up in component hierarchy until the tab
-			HasComponents cursor = getParent();
-			while (!(cursor instanceof AbstractTabPanel)) {
-				cursor = cursor.getParent();
-			}
-			if (enabled) {
-				((AbstractTabPanel<?>)cursor)
+			if (shortcut != null) {
+				// Go up in component hierarchy until the tab
+				HasComponents cursor = getParent();
+				// Parent may be null if component has not yet been attached
+				// In this case, non need to enable/disable the shortcut as
+				// it will be correctly initialized when it will be attached
+				if (cursor != null) {
+					while (!(cursor instanceof AbstractTabPanel)) {
+						cursor = cursor.getParent();
+					}
+					if (enabled) {
+						((AbstractTabPanel<?>)cursor)
 						.enableShortcut(shortcut);
-			} else {
-				((AbstractTabPanel<?>)cursor)
+					} else {
+						((AbstractTabPanel<?>)cursor)
 						.disableShortcut(shortcut);
+					}
+				}
 			}
 			super.setEnabled(enabled);
 		}

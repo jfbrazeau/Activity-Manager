@@ -37,6 +37,11 @@ public class TextFieldView extends TextField implements ITextFieldLogic.View {
 	}
 	
 	@Override
+	public void setWarningStyle() {
+		addStyleName("warning");
+	}
+
+	@Override
 	public void setValue(String newValue)
 			throws com.vaadin.data.Property.ReadOnlyException {
 		super.setValue(newValue != null ? newValue : "", false, true);
@@ -55,6 +60,11 @@ public class TextFieldView extends TextField implements ITextFieldLogic.View {
 	@Override
 	public void setTooltip(String text) {
 		setDescription(text);
+	}
+
+	@Override
+	public void setPlaceholder(String text) {
+		setInputPrompt(text);
 	}
 
 }

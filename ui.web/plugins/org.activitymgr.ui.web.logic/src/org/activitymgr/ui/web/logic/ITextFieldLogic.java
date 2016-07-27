@@ -12,10 +12,14 @@ public interface ITextFieldLogic extends IFieldLogic<String, ITextFieldLogic.Vie
 		void blur();
 		
 		void setTooltip(String text);
+		
+		void setPlaceholder(String text);
 
 		void selectAll();
 
 		void setNumericFieldStyle();
+
+		void setWarningStyle();
 
 		void setReadOnly(boolean readOnly);
 		
