@@ -142,7 +142,7 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 
 	protected void addEmptyWeekContribution(long taskId) throws ModelException {
 		Task task = modelMgr.getTask(taskId);
-		TaskContributions weekContribution = new TaskContributions();
+		TaskContributions weekContribution = cellLogicFactory.newTaskContributions();
 		weekContribution.setContributions(new Contribution[7]);
 		weekContribution.setTask(task);
 		weekContribution.setTaskCodePath(modelMgr.getTaskCodePath(task));

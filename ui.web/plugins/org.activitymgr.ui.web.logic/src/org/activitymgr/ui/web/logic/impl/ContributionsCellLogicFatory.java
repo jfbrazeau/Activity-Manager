@@ -161,6 +161,11 @@ public class ContributionsCellLogicFatory implements IContributionsCellLogicFact
 		return PROPERTY_IDS;
 	}
 
+	@Override
+	public TaskContributions newTaskContributions() {
+		return new TaskContributions();
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.activitymgr.ui.web.logic.impl.IContributionsCellLogicFactory#loadContributions(org.activitymgr.core.dto.Collaborator, java.util.Calendar)
 	 */

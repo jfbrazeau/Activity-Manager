@@ -15,15 +15,15 @@ import org.activitymgr.ui.web.logic.impl.CollaboratorsCellLogicFatory;
  */
 public interface ICollaboratorsCellLogicFactory extends ICellLogicFactory {
 
-	public static final String IS_ACTIVE_PROPERTY_NAME_ID = "IS_ACTIVE";
-	public static final String LOGIN_PROPERTY_ID = "LOGIN";
-	public static final String FIRST_PROPERTY_NAME_ID = "FIRST_NAME";
-	public static final String LAST_PROPERTY_NAME_ID = "LAST_NAME";
-	public static final List<String> PROPERTY_IDS = Arrays.asList(new String[] {
+	String IS_ACTIVE_PROPERTY_NAME_ID = "IS_ACTIVE";
+	String LOGIN_PROPERTY_ID = "LOGIN";
+	String FIRST_PROPERTY_NAME_ID = "FIRST_NAME";
+	String LAST_PROPERTY_NAME_ID = "LAST_NAME";
+	List<String> PROPERTY_IDS = Arrays.asList(new String[] {
 			IS_ACTIVE_PROPERTY_NAME_ID, LOGIN_PROPERTY_ID,
 			FIRST_PROPERTY_NAME_ID, LAST_PROPERTY_NAME_ID });
 
-	public abstract ILogic<?> createCellLogic(AbstractLogicImpl<?> parentLogic, ILogicContext context, Collaborator collaborator,
+	ILogic<?> createCellLogic(AbstractLogicImpl<?> parentLogic, ILogicContext context, Collaborator collaborator,
 			String propertyId, boolean readonly);
 
 }
