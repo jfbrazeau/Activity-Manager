@@ -75,35 +75,6 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer {
 			serviceTrackers.put(cl, st);
 			st.open();
 		}
-		context.registerService(HttpService.class, new HttpService() {
-			
-			@Override
-			public void unregister(String alias) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void registerServlet(String alias, Servlet servlet,
-					Dictionary initparams, HttpContext context)
-					throws ServletException, NamespaceException {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void registerResources(String alias, String name, HttpContext context)
-					throws NamespaceException {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public HttpContext createDefaultHttpContext() {
-				// TODO Auto-generated method stub
-				return null;
-			}
-		}, null);
 	}
 
 	@Override
@@ -167,6 +138,7 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer {
 		}
 		
 		// Register application bundle
+		final long start = System.currentTimeMillis();
 		Exception exception = null;
 		try {
 			httpService.registerServlet(
