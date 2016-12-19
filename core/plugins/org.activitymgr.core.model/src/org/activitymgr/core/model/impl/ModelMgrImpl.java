@@ -35,6 +35,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -2176,5 +2177,13 @@ public class ModelMgrImpl implements IModelMgr {
 			
 		});
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.model.IModelMgr#getContributionYears()
+	 */
+	@Override
+	public Collection<Integer> getContributionYears() {
+		return contributionDAO.getContributionYears();
+	}
+
 }

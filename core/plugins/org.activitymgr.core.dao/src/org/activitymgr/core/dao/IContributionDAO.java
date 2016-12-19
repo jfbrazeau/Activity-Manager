@@ -1,13 +1,13 @@
 package org.activitymgr.core.dao;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Map;
 
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Contribution;
 import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.dto.misc.TaskContributionsSums;
-import org.activitymgr.core.dto.misc.TaskSums;
 
 public interface IContributionDAO extends IDAO<Contribution> {
 
@@ -78,5 +78,12 @@ public interface IContributionDAO extends IDAO<Contribution> {
 	 */
 	Map<Long, TaskContributionsSums> getTasksSums(Long taskId, String tasksPath, Calendar fromDate, Calendar toDate)
 			throws DAOException;
+	
+	/**
+	 * Return the contribution years list.
+	 * 
+	 * @return the contribution years list.
+	 */
+	Collection<Integer> getContributionYears();
 
 }

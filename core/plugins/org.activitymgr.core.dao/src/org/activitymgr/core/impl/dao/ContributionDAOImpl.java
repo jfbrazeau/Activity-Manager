@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -257,4 +258,35 @@ public class ContributionDAOImpl extends AbstractORMDAOImpl<Contribution> implem
 				toDate, true, null);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.dao.IContributionDAO#getContributionYears()
+	 */
+	@Override
+	public Collection<Integer> getContributionYears() {
+		Collection<Integer> years = new ArrayList<Integer>();
+		PreparedStatement pStmt = null;
+		ResultSet rs = null;
+		try {
+			// Build the SQL request
+			pStmt = tx().prepareStatement("select distinct(ctb_year) as year from CONTRIBUTION order by year");
+
+			// Exécution de le requête et extraction du résultat
+			rs = pStmt.executeQuery();
+			while (rs.next()) {
+				years.add(rs.getInt(1));
+			}
+			pStmt.close();
+			pStmt = null;
+
+			// Retour du résultat
+			return years;
+		} catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DAOException(
+					"Erreur lors de la récupération des années de contributions",
+					e);
+		} finally {
+			lastAttemptToClose(pStmt);
+		}
+	}
 }

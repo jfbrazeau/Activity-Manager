@@ -1,7 +1,9 @@
 package org.activitymgr.core;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.TimeZone;
 
 import org.activitymgr.core.model.ModelException;
@@ -145,7 +147,7 @@ public class ContributionTest extends AbstractModelTestCase {
 			getModelMgr().removeContribution(c1, false);
 		if (c2 != null)
 			getModelMgr().removeContribution(c2, false);
-		if (c2 != null)
+		if (c3 != null)
 			getModelMgr().removeContribution(c3, false);
 		removeRecursively(rootTask);
 		getModelMgr().removeCollaborator(col1);
@@ -567,4 +569,48 @@ public class ContributionTest extends AbstractModelTestCase {
 		removeSampleObjects();
 	}
 	
+	public void testGetContributionYears() throws ModelException {
+		Calendar date = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
+		// Création des taches de test
+		createSampleObjects(false);
+		
+		// Empty contributions
+		Collection<Integer> contributionYears = getModelMgr().getContributionYears();
+		assertNotNull(contributionYears);
+		assertEquals(0, contributionYears.size());
+
+		// Create a contribution in 2010
+		c1 = getFactory().newContribution();
+		date.set(Calendar.YEAR, 2010);
+		c1.setDate(date);
+		c1.setContributorId(col1.getId());
+		c1.setDurationId(duration1.getId());
+		c1.setTaskId(task111.getId());
+		getModelMgr().createContribution(c1, false);
+
+		contributionYears = getModelMgr().getContributionYears();
+		assertNotNull(contributionYears);
+		assertEquals(1, contributionYears.size());
+		Iterator<Integer> iterator = contributionYears.iterator();
+		assertEquals(2010, (int)iterator.next());
+
+		// Create a contribution in 2020
+		c2 = getFactory().newContribution();
+		date.set(Calendar.YEAR, 2020);
+		c2.setDate(date);
+		c2.setContributorId(col1.getId());
+		c2.setDurationId(duration1.getId());
+		c2.setTaskId(task111.getId());
+		getModelMgr().createContribution(c2, false);
+
+		contributionYears = getModelMgr().getContributionYears();
+		assertNotNull(contributionYears);
+		assertEquals(2, contributionYears.size());
+		iterator = contributionYears.iterator();
+		assertEquals(2010, (int)iterator.next());
+		assertEquals(2020, (int)iterator.next());
+		
+		// Remove sample objects
+		removeSampleObjects();
+	}
 }

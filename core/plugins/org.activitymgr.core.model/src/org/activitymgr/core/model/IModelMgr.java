@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -774,4 +775,11 @@ public interface IModelMgr {
 	 *             changé.
 	 */
 	Task updateTask(Task task) throws ModelException;
+
+	/**
+	 * Return the contribution years list.
+	 * 
+	 * @return the contribution years list.
+	 */
+	Collection<Integer> getContributionYears();
 }
