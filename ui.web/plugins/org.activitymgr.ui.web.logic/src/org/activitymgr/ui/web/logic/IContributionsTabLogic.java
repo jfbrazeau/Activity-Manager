@@ -4,6 +4,8 @@ import java.util.Calendar;
 
 // TODO clear
 public interface IContributionsTabLogic extends ITabLogic<IContributionsTabLogic.View> {
+	
+	String ID = "contributions";
 
 	void onPreviousYear();
 

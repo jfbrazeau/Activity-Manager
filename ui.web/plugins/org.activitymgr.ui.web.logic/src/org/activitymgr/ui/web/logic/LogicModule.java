@@ -116,7 +116,7 @@ public class LogicModule extends AbstractModule {
 			}
 			@Override
 			public String getTabId() {
-				return "collaborators";
+				return ICollaboratorsTabLogic.ID;
 			}
 			@Override
 			public ITabLogic<?> create(ITabFolderLogic parent) {
@@ -130,7 +130,7 @@ public class LogicModule extends AbstractModule {
 			}
 			@Override
 			public String getTabId() {
-				return "tasks";
+				return ITasksTabLogic.ID;
 			}
 			@Override
 			public ITabLogic<?> create(ITabFolderLogic parent) {
@@ -144,7 +144,7 @@ public class LogicModule extends AbstractModule {
 			}
 			@Override
 			public String getTabId() {
-				return "contributions";
+				return IContributionsTabLogic.ID;
 			}
 			@Override
 			public ITabLogic<?> create(ITabFolderLogic parent) {

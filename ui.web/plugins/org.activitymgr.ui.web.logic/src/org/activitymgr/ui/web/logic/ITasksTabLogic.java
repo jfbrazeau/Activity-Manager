@@ -2,6 +2,8 @@ package org.activitymgr.ui.web.logic;
 
 
 public interface ITasksTabLogic extends ITabLogic<ITasksTabLogic.View> {
+	
+	String ID = "tasks";
 
 	void onTaskSelected(Object value);
 	
