@@ -21,10 +21,6 @@ public interface ITextFieldLogic extends IFieldLogic<String, ITextFieldLogic.Vie
 
 		void setWarningStyle();
 
-		void setReadOnly(boolean readOnly);
-		
-		boolean isReadOnly();
-
 	}
 
 }

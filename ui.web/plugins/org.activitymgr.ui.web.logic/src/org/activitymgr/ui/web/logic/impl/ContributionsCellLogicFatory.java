@@ -26,12 +26,13 @@ import org.activitymgr.ui.web.logic.ISelectFieldLogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.impl.event.ContributionChangeEvent;
 import org.activitymgr.ui.web.logic.spi.IContributionsCellLogicFactory;
+import org.activitymgr.ui.web.logic.spi.IFeatureAccessManager;
 
 import com.google.inject.Inject;
 
 public class ContributionsCellLogicFatory implements IContributionsCellLogicFactory {
 
-	private static final int DAY_COLUMN_WIDTH_WITH_SELECT_FIELD = 60;
+	private static final int DAY_COLUMN_WIDTH_WITH_SELECT_FIELD = 50;
 	private static final int DAY_COLUMN_WIDTH_WITH_TEXT_FIELD = 40;
 
 	private static final Map<String, Integer> DEFAULT_COLUMN_WIDTHS = new HashMap<String, Integer>();
@@ -47,6 +48,9 @@ public class ContributionsCellLogicFatory implements IContributionsCellLogicFact
 	
 	@Inject
 	private IDTOFactory dtoFactory;
+	
+	@Inject
+	private IFeatureAccessManager featureAccessManager;
 	
 	private Map<String, String> durationsMap;
 
@@ -93,6 +97,10 @@ public class ContributionsCellLogicFatory implements IContributionsCellLogicFact
 		}
 		else {
 			throw new IllegalArgumentException(propertyId);
+		}
+		// Update readonly status
+		if (logic instanceof IFieldLogic) {
+			((IFieldLogic<?,?>)logic).getView().setReadOnly(!featureAccessManager.canUpdateContributions(context.getConnectedCollaborator(), contributor));
 		}
 		return logic;
 	}

@@ -10,6 +10,10 @@ public interface IFieldLogic<T, VIEW extends IFieldLogic.View<T, ?>> extends ILo
 		
 		void setValue(T value);
 		
+		void setReadOnly(boolean readOnly);
+		
+		boolean isReadOnly();
+
 	}
 
 }

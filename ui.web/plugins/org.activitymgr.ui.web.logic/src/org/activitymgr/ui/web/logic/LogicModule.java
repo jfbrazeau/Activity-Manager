@@ -207,6 +207,11 @@ class DefaultFeatureAccessManager implements IFeatureAccessManager {
 	public boolean hasAccessToTab(Collaborator collaborator, String tab) {
 		return true;
 	}
+	@Override
+	public boolean canUpdateContributions(Collaborator connected,
+			Collaborator contributor) {
+		return true;
+	}
 }
 
 class DefaultAuthenticatorExtension implements IAuthenticatorExtension {
