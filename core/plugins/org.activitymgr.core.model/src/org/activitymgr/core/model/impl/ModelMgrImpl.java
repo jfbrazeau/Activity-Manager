@@ -2086,7 +2086,14 @@ public class ModelMgrImpl implements IModelMgr {
 			// Append row
 			Row row = sheet.createRow(sheet.getLastRowNum() + 1);
 			idx = 0;
-			for (Object v : new Object[] { taskCodePath, task.getCode(), task.getName(), task.getBudget(), task.getInitiallyConsumed(), task.getTodo(), task.getComment() }) {
+			for (Object v : new Object[] {
+					(parentTaskCodePath != null ? parentTaskCodePath : ""),
+					task.getCode(), 
+					task.getName(), 
+					task.getBudget(),
+					task.getInitiallyConsumed(), 
+					task.getTodo(),
+					task.getComment() }) {
 				Cell cell = row.createCell(idx++);
 				if (v != null) {
 					if (v instanceof String) {
@@ -2134,7 +2141,7 @@ public class ModelMgrImpl implements IModelMgr {
 						if (value != null) {
 							allColumnsAreNull = false;
 							String relativePath = String.valueOf(value);
-							if (!relativePath.startsWith("/")) {
+							if (!relativePath.isEmpty() && !relativePath.startsWith("/")) {
 								relativePath = "/" + relativePath;
 							}
 							theParentTaskCodePath += relativePath;

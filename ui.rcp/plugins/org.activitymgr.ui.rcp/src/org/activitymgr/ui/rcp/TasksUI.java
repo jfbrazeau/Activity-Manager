@@ -1079,7 +1079,7 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 							modelMgr.importFromExcel(parentTaskId, in);
 							in.close();
 							// Refresh the tree
-							treeViewer.refresh(selected);
+							treeViewer.refresh();
 						} catch (IOException e) {
 							log.error("I/O exception", e); //$NON-NLS-1$
 							throw new UITechException(
