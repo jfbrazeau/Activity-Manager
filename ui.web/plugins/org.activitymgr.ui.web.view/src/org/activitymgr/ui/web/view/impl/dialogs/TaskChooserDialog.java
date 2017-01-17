@@ -121,7 +121,7 @@ public class TaskChooserDialog extends AbstractDialog implements Button.ClickLis
 			        }
 		        	logic.onOkButtonClicked((Long) taskTree.getValue());
 				}
-				else {
+				else if (target == taskTree && taskTree.getValue() != null) {
 					taskTree.expandItem(taskTree.getValue());
 				}
 			}
