@@ -6,6 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Jean-Francois Brazeau
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.activitymgr.core.dto,
- org.activitymgr.core.dto.misc
+ org.activitymgr.core.dto.misc,
+ org.activitymgr.core.dto.report
 Require-Bundle: org.activitymgr.core.util;bundle-version="1.0.0",
  org.activitymgr.core.orm;bundle-version="1.0.0"
