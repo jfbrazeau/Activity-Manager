@@ -1,0 +1,139 @@
+# Global parameters
+start=16012017
+intervalType=day
+intervalCount=1
+rootTaskCodePath=
+
+#
+# One day, by collaborator & task, sorted by task, full depth, no root task
+#
+taskDepth=10
+byContributor=true
+orderByContributor=false
++---------------+---------------+----------+-------+
+|Path           |Name           |Contribut…| 170117|
++---------------+---------------+----------+-------+
+|/PR/PA/SPE     |Specification  |jdoe      |   0.25|
+|/PR/PA/SPE     |Specification  |wsmith    |   0.25|
+|/PR/PA/TST     |Test           |jdoe      |   0.25|
+|/PR/PA/DEV/MA  |Module A       |jdoe      |   0.50|
+|/PR/PB/SPE     |Specification  |wsmith    |   0.50|
+|/ABS/ILL       |Illness        |wsmith    |   0.25|
++---------------+---------------+----------+-------+
+|               |               |          |   2.00|
++---------------+---------------+----------+-------+
+
+#
+# One day, by collaborator & task, sorted by contributor, full depth, no root task
+#
+taskDepth=10
+byContributor=true
+orderByContributor=true
++----------+---------------+---------------+-------+
+|Contribut…|Path           |Name           | 170117|
++----------+---------------+---------------+-------+
+|jdoe      |/PR/PA/SPE     |Specification  |   0.25|
+|jdoe      |/PR/PA/TST     |Test           |   0.25|
+|jdoe      |/PR/PA/DEV/MA  |Module A       |   0.50|
+|wsmith    |/PR/PA/SPE     |Specification  |   0.25|
+|wsmith    |/PR/PB/SPE     |Specification  |   0.50|
+|wsmith    |/ABS/ILL       |Illness        |   0.25|
++----------+---------------+---------------+-------+
+|          |               |               |   2.00|
++----------+---------------+---------------+-------+
+
+#
+# One day, by collaborator & task, sorted by task, depth=1, no root task
+#
+taskDepth=1
+byContributor=true
+orderByContributor=false
++---------------+---------------+----------+-------+
+|Path           |Name           |Contribut…| 170117|
++---------------+---------------+----------+-------+
+|/PR            |Projects       |jdoe      |   1.00|
+|/PR            |Projects       |wsmith    |   0.75|
+|/ABS           |Absence        |wsmith    |   0.25|
++---------------+---------------+----------+-------+
+|               |               |          |   2.00|
++---------------+---------------+----------+-------+
+
+#
+# One day, by collaborator & task, sorted by contributor, depth=1, no root task
+#
+taskDepth=1
+byContributor=true
+orderByContributor=true
++----------+---------------+---------------+-------+
+|Contribut…|Path           |Name           | 170117|
++----------+---------------+---------------+-------+
+|jdoe      |/PR            |Projects       |   1.00|
+|wsmith    |/PR            |Projects       |   0.75|
+|wsmith    |/ABS           |Absence        |   0.25|
++----------+---------------+---------------+-------+
+|          |               |               |   2.00|
++----------+---------------+---------------+-------+
+
+#
+# One day, by task but not by collaborator, full depth, no root task
+#
+taskDepth=10
+byContributor=false
+orderByContributor=false
++---------------+---------------+-------+
+|Path           |Name           | 170117|
++---------------+---------------+-------+
+|/PR/PA/SPE     |Specification  |   0.50|
+|/PR/PA/TST     |Test           |   0.25|
+|/PR/PA/DEV/MA  |Module A       |   0.50|
+|/PR/PB/SPE     |Specification  |   0.50|
+|/ABS/ILL       |Illness        |   0.25|
++---------------+---------------+-------+
+|               |               |   2.00|
++---------------+---------------+-------+
+
+#
+# One day, by task but not by collaborator, depth=1, no root task
+#
+taskDepth=1
+byContributor=false
+orderByContributor=false
++---------------+---------------+-------+
+|Path           |Name           | 170117|
++---------------+---------------+-------+
+|/PR            |Projects       |   1.75|
+|/ABS           |Absence        |   0.25|
++---------------+---------------+-------+
+|               |               |   2.00|
++---------------+---------------+-------+
+
+#
+# One day, by collaborator but not by task (=> depth = 0), no root task
+#
+taskDepth=0
+byContributor=true
+orderByContributor=false
++----------+-------+
+|Contribut…| 170117|
++----------+-------+
+|jdoe      |   1.00|
+|wsmith    |   1.00|
++----------+-------+
+|          |   2.00|
++----------+-------+
+
+#
+# One day, not by collaborator nor by task (=> depth=0), no root task
+#
+taskDepth=0
+byContributor=false
+orderByContributor=false
++-------+
+| 170117|
++-------+
+|   2.00|
++-------+
+|   2.00|
++-------+
+
+

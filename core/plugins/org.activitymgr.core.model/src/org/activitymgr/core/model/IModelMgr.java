@@ -43,6 +43,8 @@ import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.dto.misc.IntervalContributions;
 import org.activitymgr.core.dto.misc.TaskSearchFilter;
 import org.activitymgr.core.dto.misc.TaskSums;
+import org.activitymgr.core.dto.report.Report;
+import org.activitymgr.core.dto.report.ReportIntervalType;
 import org.xml.sax.SAXException;
 
 /**
@@ -782,4 +784,6 @@ public interface IModelMgr {
 	 * @return the contribution years list.
 	 */
 	Collection<Integer> getContributionYears();
+
+	Report buildReport(Calendar start, ReportIntervalType intervalType, int intervalCount, Long rootTaskId, int taskDepth, boolean byContributor, boolean orderByContributor);
 }

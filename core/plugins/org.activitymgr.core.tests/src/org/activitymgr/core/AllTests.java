@@ -3,6 +3,8 @@ package org.activitymgr.core;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+import org.activitymgr.core.report.ReportTest;
+import org.activitymgr.core.report.xml.XmlTest;
 import org.activitymgr.core.util.StringHelperTest;
 
 public class AllTests {
@@ -17,6 +19,8 @@ public class AllTests {
 		suite.addTestSuite(ContributionTest.class);
 		suite.addTestSuite(XmlTest.class);
 		suite.addTestSuite(XlsTest.class);
+		suite.addTestSuite(ReportTest.class);
+		suite.addTestSuite(TaskCacheTest.class);
 		//$JUnit-END$
 		return suite;
 	}

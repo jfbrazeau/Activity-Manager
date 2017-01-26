@@ -10,6 +10,7 @@ import org.activitymgr.core.impl.dao.ContributionDAOImpl;
 import org.activitymgr.core.impl.dao.CoreDAOImpl;
 import org.activitymgr.core.impl.dao.DTOFactoryImpl;
 import org.activitymgr.core.impl.dao.DurationDAOImpl;
+import org.activitymgr.core.impl.dao.ReportDAOImpl;
 import org.activitymgr.core.impl.dao.TaskDAOImpl;
 import org.activitymgr.core.orm.DAOFactory;
 import org.activitymgr.core.orm.IDAO;
@@ -86,6 +87,9 @@ public class CoreDAOModule implements Module {
 		// Bind core DAO & ModelManager
 	    binder.bind(IDTOFactory.class).to(DTOFactoryImpl.class).in(Singleton.class);
 	    binder.bind(ICoreDAO.class).to(CoreDAOImpl.class).in(Singleton.class);
+	    
+	    // Other DAOs
+	    binder.bind(IReportDAO.class).to(ReportDAOImpl.class).in(Singleton.class);
 	}
 	
 }
