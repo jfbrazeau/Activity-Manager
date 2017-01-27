@@ -1,4 +1,4 @@
-package org.activitymgr.core.report.xml;
+package org.activitymgr.core.xml;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

@@ -4,8 +4,8 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import org.activitymgr.core.report.ReportTest;
-import org.activitymgr.core.report.xml.XmlTest;
 import org.activitymgr.core.util.StringHelperTest;
+import org.activitymgr.core.xml.XmlTest;
 
 public class AllTests {
 
