@@ -41,9 +41,13 @@ public class ContributionDAOImpl extends AbstractORMDAOImpl<Contribution> implem
 		ResultSet rs = null;
 		try {
 			// Build the request
+			String orderBy = "ctb_year, ctb_month, ctb_day, ctb_contributor";
+			if (task != null) {
+				orderBy += ", tsk_path, tsk_number";
+			}
 			pStmt = buildContributionsRequest(task, contributor, fromDate,
 					toDate,
-					getColumnNamesRequestFragment(null));
+					getColumnNamesRequestFragment(null), orderBy);
 
 			// Exécution de la requête
 			rs = pStmt.executeQuery();
@@ -86,7 +90,7 @@ public class ContributionDAOImpl extends AbstractORMDAOImpl<Contribution> implem
 		try {
 			// Build the SQL request
 			pStmt = buildContributionsRequest(task, contributor, fromDate,
-					toDate, "sum(ctb_duration)");
+					toDate, "sum(ctb_duration)", null);
 
 			// Exécution de le requête et extraction du résultat
 			rs = pStmt.executeQuery();
@@ -125,7 +129,7 @@ public class ContributionDAOImpl extends AbstractORMDAOImpl<Contribution> implem
 		try {
 			// Build the SQL request
 			pStmt = buildContributionsRequest(task, contributor, fromDate,
-					toDate, "count(ctb_duration)");
+					toDate, "count(ctb_duration)", null);
 
 			// Exécution de le requête et extraction du résultat
 			rs = pStmt.executeQuery();
@@ -246,7 +250,7 @@ public class ContributionDAOImpl extends AbstractORMDAOImpl<Contribution> implem
 	 */
 	private PreparedStatement buildContributionsRequest(Task task,
 			Collaborator contributor, Calendar fromDate, Calendar toDate,
-			String fieldsToSelect) throws SQLException {
+			String fieldsToSelect, String orderBy) throws SQLException {
 		// Préparation de la requête
 		StringBuffer request = new StringBuffer("select ")
 				.append(fieldsToSelect);
@@ -255,7 +259,7 @@ public class ContributionDAOImpl extends AbstractORMDAOImpl<Contribution> implem
 			request.append(", TASK");
 		}
 		return buildIntervalRequest(request, contributor, task, fromDate,
-				toDate, true, null);
+				toDate, true, orderBy);
 	}
 
 	/* (non-Javadoc)
