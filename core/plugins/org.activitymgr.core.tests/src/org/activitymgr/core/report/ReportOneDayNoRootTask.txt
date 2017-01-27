@@ -11,7 +11,7 @@ taskDepth=10
 byContributor=true
 orderByContributor=false
 +---------------+---------------+----------+-------+
-|Path           |Name           |Contribut…| 170117|
+|Path           |Name           |Contribut…| 160117|
 +---------------+---------------+----------+-------+
 |/PR/PA/SPE     |Specification  |jdoe      |   0.25|
 |/PR/PA/SPE     |Specification  |wsmith    |   0.25|
@@ -30,7 +30,7 @@ taskDepth=10
 byContributor=true
 orderByContributor=true
 +----------+---------------+---------------+-------+
-|Contribut…|Path           |Name           | 170117|
+|Contribut…|Path           |Name           | 160117|
 +----------+---------------+---------------+-------+
 |jdoe      |/PR/PA/SPE     |Specification  |   0.25|
 |jdoe      |/PR/PA/TST     |Test           |   0.25|
@@ -49,7 +49,7 @@ taskDepth=1
 byContributor=true
 orderByContributor=false
 +---------------+---------------+----------+-------+
-|Path           |Name           |Contribut…| 170117|
+|Path           |Name           |Contribut…| 160117|
 +---------------+---------------+----------+-------+
 |/PR            |Projects       |jdoe      |   1.00|
 |/PR            |Projects       |wsmith    |   0.75|
@@ -65,7 +65,7 @@ taskDepth=1
 byContributor=true
 orderByContributor=true
 +----------+---------------+---------------+-------+
-|Contribut…|Path           |Name           | 170117|
+|Contribut…|Path           |Name           | 160117|
 +----------+---------------+---------------+-------+
 |jdoe      |/PR            |Projects       |   1.00|
 |wsmith    |/PR            |Projects       |   0.75|
@@ -81,7 +81,7 @@ taskDepth=10
 byContributor=false
 orderByContributor=false
 +---------------+---------------+-------+
-|Path           |Name           | 170117|
+|Path           |Name           | 160117|
 +---------------+---------------+-------+
 |/PR/PA/SPE     |Specification  |   0.50|
 |/PR/PA/TST     |Test           |   0.25|
@@ -99,7 +99,7 @@ taskDepth=1
 byContributor=false
 orderByContributor=false
 +---------------+---------------+-------+
-|Path           |Name           | 170117|
+|Path           |Name           | 160117|
 +---------------+---------------+-------+
 |/PR            |Projects       |   1.75|
 |/ABS           |Absence        |   0.25|
@@ -114,7 +114,7 @@ taskDepth=0
 byContributor=true
 orderByContributor=false
 +----------+-------+
-|Contribut…| 170117|
+|Contribut…| 160117|
 +----------+-------+
 |jdoe      |   1.00|
 |wsmith    |   1.00|
@@ -129,7 +129,7 @@ taskDepth=0
 byContributor=false
 orderByContributor=false
 +-------+
-| 170117|
+| 160117|
 +-------+
 |   2.00|
 +-------+

@@ -44,6 +44,7 @@ import org.activitymgr.core.dto.misc.IntervalContributions;
 import org.activitymgr.core.dto.misc.TaskContributions;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
+import org.activitymgr.core.util.DateHelper;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.CollaboratorsUI.ICollaboratorListener;
@@ -524,25 +525,11 @@ public class ContributionsUI extends AbstractTableMgr implements
 				parent.getShell(), modelMgr);
 
 		// Recherche du 1er Lundi précédent la date courante
-		currentMonday = getMondayBefore(new GregorianCalendar());
+		currentMonday = DateHelper.moveToFirstDayOfWeek(new GregorianCalendar());
 		log.debug("Date courante : " + currentMonday); //$NON-NLS-1$
 
 		// Création du presse papier
 		clipboard = new Clipboard(parentComposite.getDisplay());
-	}
-
-	/**
-	 * Retourne le premier lundi précédent la date spécifiée.
-	 * 
-	 * @param date
-	 *            la date.
-	 * @return le premier lundi précédent la date spécifiée.
-	 */
-	private static Calendar getMondayBefore(Calendar date) {
-		Calendar dateCursor = (Calendar) date.clone();
-		while (dateCursor.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY)
-			dateCursor.add(Calendar.DATE, -1);
-		return dateCursor;
 	}
 
 	/*
@@ -1006,13 +993,13 @@ public class ContributionsUI extends AbstractTableMgr implements
 				// Cas d'un changement d'une année en arrière
 				else if (previousYearButton.equals(source)) {
 					currentMonday.add(Calendar.YEAR, -1);
-					currentMonday = getMondayBefore(currentMonday);
+					currentMonday = DateHelper.moveToFirstDayOfWeek(currentMonday);
 					tableViewer.refresh();
 				}
 				// Cas d'un changement d'un mois en arrière
 				else if (previousMonthButton.equals(source)) {
 					currentMonday.add(Calendar.MONTH, -1);
-					currentMonday = getMondayBefore(currentMonday);
+					currentMonday = DateHelper.moveToFirstDayOfWeek(currentMonday);
 					tableViewer.refresh();
 				}
 				// Cas d'un changement de semaine en arrière
@@ -1028,13 +1015,13 @@ public class ContributionsUI extends AbstractTableMgr implements
 				// Cas d'un changement d'un mois en avant
 				else if (nextMonthButton.equals(source)) {
 					currentMonday.add(Calendar.MONTH, 1);
-					currentMonday = getMondayBefore(currentMonday);
+					currentMonday = DateHelper.moveToFirstDayOfWeek(currentMonday);
 					tableViewer.refresh();
 				}
 				// Cas d'un changement d'une année en avant
 				else if (nextYearButton.equals(source)) {
 					currentMonday.add(Calendar.YEAR, 1);
-					currentMonday = getMondayBefore(currentMonday);
+					currentMonday = DateHelper.moveToFirstDayOfWeek(currentMonday);
 					tableViewer.refresh();
 				}
 				return null;

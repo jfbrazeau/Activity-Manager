@@ -1,168 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE model SYSTEM "activitymgr.dtd">
-<!-- 
-  Root tasks check sums :
-  * Root task[1]='/PR' (Projects)
-    - Budgets :           0.0
-    - InitiallyConsumed : 0.0
-    - Consumed :          8.5
-    - ETC :              0.25
-    - Contributions nb :   14
-  * Root task[2]='/ABS' (Absence)
-    - Budgets :           0.0
-    - InitiallyConsumed : 0.0
-    - Consumed :          1.25
-    - ETC :              0.0
-    - Contributions nb :   2
-  -->
 <model>
   <durations>
-    <duration>
-      <value>25</value>
-      <is-active>true</is-active>
-    </duration>
-    <duration>
-      <value>50</value>
-      <is-active>true</is-active>
-    </duration>
-    <duration>
-      <value>75</value>
-      <is-active>true</is-active>
-    </duration>
-    <duration>
-      <value>100</value>
-      <is-active>true</is-active>
-    </duration>
+    <duration><value>25</value><is-active>true</is-active></duration>
+    <duration><value>50</value><is-active>true</is-active></duration>
+    <duration><value>75</value><is-active>true</is-active></duration>
+    <duration><value>100</value><is-active>true</is-active></duration>
   </durations>
   <collaborators>
-    <collaborator>
-      <login>jdoe</login>
-      <first-name>John</first-name>
-      <last-name>Doe</last-name>
-      <is-active>true</is-active>
-    </collaborator>
-    <collaborator>
-      <login>wsmith</login>
-      <first-name>Will</first-name>
-      <last-name>Smith</last-name>
-      <is-active>true</is-active>
-    </collaborator>
+    <collaborator><login>jdoe</login><first-name>John</first-name><last-name>Doe</last-name><is-active>true</is-active></collaborator>
+    <collaborator><login>wsmith</login><first-name>Will</first-name><last-name>Smith</last-name><is-active>true</is-active></collaborator>
   </collaborators>
   <tasks>
-    <task>
-      <path>/PR</path>
-      <name>Projects</name>
-      <budget>0</budget>
-      <initially-consumed>0</initially-consumed>
-      <todo>0</todo>
-    </task>
-    <task>
-      <path>/PR/PA</path>
-      <name>Project A</name>
-      <budget>0</budget>
-      <initially-consumed>0</initially-consumed>
-      <todo>0</todo>
-    </task>
-    <task>
-      <path>/PR/PA/SPE</path>
-      <name>Specification</name>
-      <budget>0</budget>
-      <initially-consumed>0</initially-consumed>
-      <todo>0</todo>
-    </task>
-    <task>
-      <path>/PR/PA/DEV</path>
-      <name>Development</name>
-      <budget>0</budget>
-      <initially-consumed>0</initially-consumed>
-      <todo>0</todo>
-    </task>
-    <task>
-      <path>/PR/PA/DEV/MA</path>
-      <name>Module A</name>
-      <budget>0</budget>
-      <initially-consumed>0</initially-consumed>
-      <todo>0</todo>
-    </task>
-    <task>
-      <path>/PR/PA/DEV/MB</path>
-      <name>Module B</name>
-      <budget>0</budget>
-      <initially-consumed>0</initially-consumed>
-      <todo>0</todo>
-    </task>
-    <task>
-      <path>/PR/PA/TST</path>
-      <name>Test</name>
-      <budget>0</budget>
-      <initially-consumed>0</initially-consumed>
-      <todo>0</todo>
-    </task>
-    <task>
-      <path>/PR/PB</path>
-      <name>Project B</name>
-      <budget>0</budget>
-      <initially-consumed>0</initially-consumed>
-      <todo>0</todo>
-    </task>
-    <task>
-      <path>/PR/PB/SPE</path>
-      <name>Specification</name>
-      <budget>0</budget>
-      <initially-consumed>0</initially-consumed>
-      <todo>25</todo>
-    </task>
-    <task>
-      <path>/PR/PB/DEV</path>
-      <name>Development</name>
-      <budget>0</budget>
-      <initially-consumed>0</initially-consumed>
-      <todo>0</todo>
-    </task>
-    <task>
-      <path>/PR/PB/DEV/MC</path>
-      <name>Module C</name>
-      <budget>0</budget>
-      <initially-consumed>0</initially-consumed>
-      <todo>0</todo>
-    </task>
-    <task>
-      <path>/PR/PB/DEV/MD</path>
-      <name>Module D</name>
-      <budget>0</budget>
-      <initially-consumed>0</initially-consumed>
-      <todo>0</todo>
-    </task>
-    <task>
-      <path>/PR/PB/TST</path>
-      <name>Test</name>
-      <budget>0</budget>
-      <initially-consumed>0</initially-consumed>
-      <todo>0</todo>
-    </task>
-    <task>
-      <path>/ABS</path>
-      <name>Absence</name>
-      <budget>0</budget>
-      <initially-consumed>0</initially-consumed>
-      <todo>0</todo>
-    </task>
-    <task>
-      <path>/ABS/VAC</path>
-      <name>Vacations</name>
-      <budget>0</budget>
-      <initially-consumed>0</initially-consumed>
-      <todo>0</todo>
-    </task>
-    <task>
-      <path>/ABS/ILL</path>
-      <name>Illness</name>
-      <budget>0</budget>
-      <initially-consumed>0</initially-consumed>
-      <todo>0</todo>
-    </task>
+    <task><path>/PR</path><name>Projects</name></task>
+    <task><path>/PR/PA</path><name>Project A</name></task>
+    <task><path>/PR/PA/SPE</path><name>Specification</name></task>
+    <task><path>/PR/PA/DEV</path><name>Development</name></task>
+    <task><path>/PR/PA/DEV/MA</path><name>Module A</name></task>
+    <task><path>/PR/PA/DEV/MB</path><name>Module B</name></task>
+    <task><path>/PR/PA/TST</path><name>Test</name></task>
+    <task><path>/PR/PB</path><name>Project B</name></task>
+    <task><path>/PR/PB/SPE</path><name>Specification</name></task>
+    <task><path>/PR/PB/DEV</path><name>Development</name></task>
+    <task><path>/PR/PB/DEV/MC</path><name>Module C</name></task>
+    <task><path>/PR/PB/DEV/MD</path><name>Module D</name></task>
+    <task><path>/PR/PB/TST</path><name>Test</name></task>
+    <task><path>/ABS</path><name>Absence</name></task>
+    <task><path>/ABS/VAC</path><name>Vacations</name></task>
+    <task><path>/ABS/ILL</path><name>Illness</name></task>
   </tasks>
-  <contributions>
+  <!-- contributions>
     <contribution year="2017" month="1" day="16" duration="25">
       <contributor-ref>jdoe</contributor-ref>
       <task-ref>/PR/PA/SPE</task-ref>
@@ -171,6 +38,31 @@
       <contributor-ref>jdoe</contributor-ref>
       <task-ref>/PR/PA/TST</task-ref>
     </contribution>
+    <contribution year="2017" month="1" day="16" duration="50">
+      <contributor-ref>jdoe</contributor-ref>
+      <task-ref>/PR/PA/DEV/MA</task-ref>
+    </contribution>
+    <contribution year="2017" month="1" day="17" duration="100">
+      <contributor-ref>jdoe</contributor-ref>
+      <task-ref>/PR/PA/DEV/MA</task-ref>
+    </contribution>
+    <contribution year="2017" month="1" day="18" duration="100">
+      <contributor-ref>jdoe</contributor-ref>
+      <task-ref>/PR/PA/DEV/MB</task-ref>
+    </contribution>
+    <contribution year="2017" month="1" day="19" duration="25">
+      <contributor-ref>jdoe</contributor-ref>
+      <task-ref>/PR/PA/DEV/MA</task-ref>
+    </contribution>
+    <contribution year="2017" month="1" day="19" duration="75">
+      <contributor-ref>jdoe</contributor-ref>
+      <task-ref>/PR/PA/TST</task-ref>
+    </contribution>
+    <contribution year="2017" month="1" day="20" duration="100">
+      <contributor-ref>jdoe</contributor-ref>
+      <task-ref>/ABS/VAC</task-ref>
+    </contribution>
+
     <contribution year="2017" month="1" day="16" duration="25">
       <contributor-ref>wsmith</contributor-ref>
       <task-ref>/PR/PA/SPE</task-ref>
@@ -183,14 +75,6 @@
       <contributor-ref>wsmith</contributor-ref>
       <task-ref>/PR/PB/SPE</task-ref>
     </contribution>
-    <contribution year="2017" month="1" day="19" duration="25">
-      <contributor-ref>jdoe</contributor-ref>
-      <task-ref>/PR/PA/DEV/MA</task-ref>
-    </contribution>
-    <contribution year="2017" month="1" day="16" duration="50">
-      <contributor-ref>jdoe</contributor-ref>
-      <task-ref>/PR/PA/DEV/MA</task-ref>
-    </contribution>
     <contribution year="2017" month="1" day="16" duration="50">
       <contributor-ref>wsmith</contributor-ref>
       <task-ref>/PR/PB/SPE</task-ref>
@@ -199,33 +83,17 @@
       <contributor-ref>wsmith</contributor-ref>
       <task-ref>/PR/PB/DEV/MC</task-ref>
     </contribution>
-    <contribution year="2017" month="1" day="19" duration="75">
-      <contributor-ref>jdoe</contributor-ref>
-      <task-ref>/PR/PA/TST</task-ref>
-    </contribution>
-    <contribution year="2017" month="1" day="17" duration="100">
-      <contributor-ref>jdoe</contributor-ref>
-      <task-ref>/PR/PA/DEV/MA</task-ref>
-    </contribution>
     <contribution year="2017" month="1" day="17" duration="100">
       <contributor-ref>wsmith</contributor-ref>
       <task-ref>/PR/PB/DEV/MC</task-ref>
-    </contribution>
-    <contribution year="2017" month="1" day="18" duration="100">
-      <contributor-ref>jdoe</contributor-ref>
-      <task-ref>/PR/PA/DEV/MB</task-ref>
     </contribution>
     <contribution year="2017" month="1" day="19" duration="100">
       <contributor-ref>wsmith</contributor-ref>
       <task-ref>/PR/PB/TST</task-ref>
     </contribution>
     <contribution year="2017" month="1" day="20" duration="100">
-      <contributor-ref>jdoe</contributor-ref>
-      <task-ref>/ABS/VAC</task-ref>
-    </contribution>
-    <contribution year="2017" month="1" day="20" duration="100">
       <contributor-ref>wsmith</contributor-ref>
       <task-ref>/PR/PB/TST</task-ref>
     </contribution>
-  </contributions>
+  </contributions -->
 </model>

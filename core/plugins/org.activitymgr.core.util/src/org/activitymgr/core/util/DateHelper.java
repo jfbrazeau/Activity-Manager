@@ -59,4 +59,19 @@ public class DateHelper {
 		}
 	}
 
+	/**
+	 * Retourne le premier lundi précédent la date spécifiée.
+	 * 
+	 * @param date
+	 *            la date.
+	 * @return le premier lundi précédent la date spécifiée.
+	 */
+	public static Calendar moveToFirstDayOfWeek(Calendar date) {
+		Calendar dateCursor = (Calendar) date.clone();
+		while (dateCursor.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
+			dateCursor.add(Calendar.DATE, -1);
+		}
+		return dateCursor;
+	}
+
 }

@@ -1,0 +1,153 @@
+# Global parameters
+start=16012017
+intervalType=week
+intervalCount=1
+rootTaskCodePath=
+
+#
+# One week, by collaborator & task, sorted by task, full depth, no root task
+#
+taskDepth=10
+byContributor=true
+orderByContributor=false
++---------------+---------------+----------+-------+
+|Path           |Name           |Contribut…|  S3-17|
++---------------+---------------+----------+-------+
+|/PR/PA/SPE     |Specification  |jdoe      |   0.25|
+|/PR/PA/SPE     |Specification  |wsmith    |   0.25|
+|/PR/PA/TST     |Test           |jdoe      |   1.00|
+|/PR/PA/DEV/MA  |Module A       |jdoe      |   1.75|
+|/PR/PA/DEV/MB  |Module B       |jdoe      |   1.00|
+|/PR/PB/SPE     |Specification  |wsmith    |   0.75|
+|/PR/PB/TST     |Test           |wsmith    |   2.25|
+|/PR/PB/DEV/MC  |Module C       |wsmith    |   1.50|
+|/ABS/VAC       |Vacations      |jdoe      |   1.00|
+|/ABS/ILL       |Illness        |wsmith    |   0.25|
++---------------+---------------+----------+-------+
+|               |               |          |  10.00|
++---------------+---------------+----------+-------+
+
+#
+# One week, by collaborator & task, sorted by contributor, full depth, no root task
+#
+taskDepth=10
+byContributor=true
+orderByContributor=true
++----------+---------------+---------------+-------+
+|Contribut…|Path           |Name           |  S3-17|
++----------+---------------+---------------+-------+
+|jdoe      |/PR/PA/SPE     |Specification  |   0.25|
+|jdoe      |/PR/PA/TST     |Test           |   1.00|
+|jdoe      |/PR/PA/DEV/MA  |Module A       |   1.75|
+|jdoe      |/PR/PA/DEV/MB  |Module B       |   1.00|
+|jdoe      |/ABS/VAC       |Vacations      |   1.00|
+|wsmith    |/PR/PA/SPE     |Specification  |   0.25|
+|wsmith    |/PR/PB/SPE     |Specification  |   0.75|
+|wsmith    |/PR/PB/TST     |Test           |   2.25|
+|wsmith    |/PR/PB/DEV/MC  |Module C       |   1.50|
+|wsmith    |/ABS/ILL       |Illness        |   0.25|
++----------+---------------+---------------+-------+
+|          |               |               |  10.00|
++----------+---------------+---------------+-------+
+
+#
+# One week, by collaborator & task, sorted by task, depth=1, no root task
+#
+taskDepth=1
+byContributor=true
+orderByContributor=false
++---------------+---------------+----------+-------+
+|Path           |Name           |Contribut…|  S3-17|
++---------------+---------------+----------+-------+
+|/PR            |Projects       |jdoe      |   4.00|
+|/PR            |Projects       |wsmith    |   4.75|
+|/ABS           |Absence        |jdoe      |   1.00|
+|/ABS           |Absence        |wsmith    |   0.25|
++---------------+---------------+----------+-------+
+|               |               |          |  10.00|
++---------------+---------------+----------+-------+
+
+#
+# One week, by collaborator & task, sorted by contributor, depth=1, no root task
+#
+taskDepth=1
+byContributor=true
+orderByContributor=true
++----------+---------------+---------------+-------+
+|Contribut…|Path           |Name           |  S3-17|
++----------+---------------+---------------+-------+
+|jdoe      |/PR            |Projects       |   4.00|
+|jdoe      |/ABS           |Absence        |   1.00|
+|wsmith    |/PR            |Projects       |   4.75|
+|wsmith    |/ABS           |Absence        |   0.25|
++----------+---------------+---------------+-------+
+|          |               |               |  10.00|
++----------+---------------+---------------+-------+
+
+#
+# One week, by task but not by collaborator, full depth, no root task
+#
+taskDepth=10
+byContributor=false
+orderByContributor=false
++---------------+---------------+-------+
+|Path           |Name           |  S3-17|
++---------------+---------------+-------+
+|/PR/PA/SPE     |Specification  |   0.50|
+|/PR/PA/TST     |Test           |   1.00|
+|/PR/PA/DEV/MA  |Module A       |   1.75|
+|/PR/PA/DEV/MB  |Module B       |   1.00|
+|/PR/PB/SPE     |Specification  |   0.75|
+|/PR/PB/TST     |Test           |   2.25|
+|/PR/PB/DEV/MC  |Module C       |   1.50|
+|/ABS/VAC       |Vacations      |   1.00|
+|/ABS/ILL       |Illness        |   0.25|
++---------------+---------------+-------+
+|               |               |  10.00|
++---------------+---------------+-------+
+
+#
+# One week, by task but not by collaborator, depth=1, no root task
+#
+taskDepth=1
+byContributor=false
+orderByContributor=false
++---------------+---------------+-------+
+|Path           |Name           |  S3-17|
++---------------+---------------+-------+
+|/PR            |Projects       |   8.75|
+|/ABS           |Absence        |   1.25|
++---------------+---------------+-------+
+|               |               |  10.00|
++---------------+---------------+-------+
+
+#
+# One week, by collaborator but not by task (=> depth = 0), no root task
+#
+taskDepth=0
+byContributor=true
+orderByContributor=false
++----------+-------+
+|Contribut…|  S3-17|
++----------+-------+
+|jdoe      |   5.00|
+|wsmith    |   5.00|
++----------+-------+
+|          |  10.00|
++----------+-------+
+
+#
+# One week, not by collaborator nor by task (=> depth=0), no root task
+#
+taskDepth=0
+byContributor=false
+orderByContributor=false
++-------+
+|  S3-17|
++-------+
+|  10.00|
++-------+
+|  10.00|
++-------+
+
+

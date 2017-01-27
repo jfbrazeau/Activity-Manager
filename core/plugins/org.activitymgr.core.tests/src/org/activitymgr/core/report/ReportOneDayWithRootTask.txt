@@ -5,13 +5,13 @@ intervalCount=1
 rootTaskCodePath=/PR
 
 #
-# One day, by collaborator & task, sorted by task, full depth, no root task
+# One day, by collaborator & task, sorted by task, full depth, root task = /PR
 #
 taskDepth=10
 byContributor=true
 orderByContributor=false
 +---------------+---------------+----------+-------+
-|Path           |Name           |Contribut…| 170117|
+|Path           |Name           |Contribut…| 160117|
 +---------------+---------------+----------+-------+
 |/PA/SPE        |Specification  |jdoe      |   0.25|
 |/PA/SPE        |Specification  |wsmith    |   0.25|
@@ -23,13 +23,13 @@ orderByContributor=false
 +---------------+---------------+----------+-------+
 
 #
-# One day, by collaborator & task, sorted by contributor, full depth, no root task
+# One day, by collaborator & task, sorted by contributor, full depth, root task = /PR
 #
 taskDepth=10
 byContributor=true
 orderByContributor=true
 +----------+---------------+---------------+-------+
-|Contribut…|Path           |Name           | 170117|
+|Contribut…|Path           |Name           | 160117|
 +----------+---------------+---------------+-------+
 |jdoe      |/PA/SPE        |Specification  |   0.25|
 |jdoe      |/PA/TST        |Test           |   0.25|
@@ -41,13 +41,13 @@ orderByContributor=true
 +----------+---------------+---------------+-------+
 
 #
-# One day, by collaborator & task, sorted by task, depth=1, no root task
+# One day, by collaborator & task, sorted by task, depth=1, root task = /PR
 #
 taskDepth=1
 byContributor=true
 orderByContributor=false
 +---------------+---------------+----------+-------+
-|Path           |Name           |Contribut…| 170117|
+|Path           |Name           |Contribut…| 160117|
 +---------------+---------------+----------+-------+
 |/PA            |Project A      |jdoe      |   1.00|
 |/PA            |Project A      |wsmith    |   0.25|
@@ -57,13 +57,13 @@ orderByContributor=false
 +---------------+---------------+----------+-------+
 
 #
-# One day, by collaborator & task, sorted by contributor, depth=1, no root task
+# One day, by collaborator & task, sorted by contributor, depth=1, root task = /PR
 #
 taskDepth=1
 byContributor=true
 orderByContributor=true
 +----------+---------------+---------------+-------+
-|Contribut…|Path           |Name           | 170117|
+|Contribut…|Path           |Name           | 160117|
 +----------+---------------+---------------+-------+
 |jdoe      |/PA            |Project A      |   1.00|
 |wsmith    |/PA            |Project A      |   0.25|
@@ -73,13 +73,13 @@ orderByContributor=true
 +----------+---------------+---------------+-------+
 
 #
-# One day, by task but not by collaborator, full depth, no root task
+# One day, by task but not by collaborator, full depth, root task = /PR
 #
 taskDepth=10
 byContributor=false
 orderByContributor=false
 +---------------+---------------+-------+
-|Path           |Name           | 170117|
+|Path           |Name           | 160117|
 +---------------+---------------+-------+
 |/PA/SPE        |Specification  |   0.50|
 |/PA/TST        |Test           |   0.25|
@@ -90,13 +90,13 @@ orderByContributor=false
 +---------------+---------------+-------+
 
 #
-# One day, by task but not by collaborator, depth=1, no root task
+# One day, by task but not by collaborator, depth=1, root task = /PR
 #
 taskDepth=1
 byContributor=false
 orderByContributor=false
 +---------------+---------------+-------+
-|Path           |Name           | 170117|
+|Path           |Name           | 160117|
 +---------------+---------------+-------+
 |/PA            |Project A      |   1.25|
 |/PB            |Project B      |   0.50|
@@ -105,13 +105,13 @@ orderByContributor=false
 +---------------+---------------+-------+
 
 #
-# One day, by collaborator but not by task (=> depth = 0), no root task
+# One day, by collaborator but not by task (=> depth = 0), root task = /PR
 #
 taskDepth=0
 byContributor=true
 orderByContributor=false
 +----------+-------+
-|Contribut…| 170117|
+|Contribut…| 160117|
 +----------+-------+
 |jdoe      |   1.00|
 |wsmith    |   0.75|
@@ -120,13 +120,13 @@ orderByContributor=false
 +----------+-------+
 
 #
-# One day, not by collaborator nor by task (=> depth=0), no root task
+# One day, not by collaborator nor by task (=> depth=0), root task = /PR
 #
 taskDepth=0
 byContributor=false
 orderByContributor=false
 +-------+
-| 170117|
+| 160117|
 +-------+
 |   1.75|
 +-------+

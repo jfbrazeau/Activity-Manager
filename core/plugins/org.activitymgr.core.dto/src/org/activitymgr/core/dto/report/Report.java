@@ -37,7 +37,8 @@ public class Report {
 		this.intervalCount = intervalCount;
 		Calendar date = (Calendar) start.clone();
 		for (int i=0; i<intervalCount; i++) {
-			dates.add(date);
+			Calendar d = (Calendar) date.clone();
+			dates.add(d);
 			date.add(intervalType.getIntType(), 1);
 		}
 	}
@@ -169,7 +170,7 @@ public class Report {
 			format = "ddMMyy";
 			break;
 		case WEEK:
-			format = "ERRyy";
+			format = "'S'w-yy";
 			break;
 		case MONTH :
 			format = "MMyy";

@@ -311,17 +311,24 @@ public class TasksUI extends AbstractTableMgr implements IDbStatusListener,
 					@Override
 					protected Object runUnsafe() throws Exception {
 						Task taskToMove = modelMgr.getTask(Long.parseLong((String)event.data));
-						Task destTask = ((TaskSums) event.item.getData()).getTask();
 						TreeItem item = (TreeItem)event.item;
-						Point pt = tree.getDisplay().map(null, tree, event.x, event.y);
-						Rectangle bounds = item.getBounds();
-						if (pt.y < bounds.y + bounds.height/3) {
-							doMoveBeforeOrAfter(taskToMove, destTask, true);
-						} else if (pt.y > bounds.y + 2*bounds.height/3) {
-							doMoveBeforeOrAfter(taskToMove, destTask, false);
-						} else {
-							treeViewer.expandToLevel(event.item.getData(), 1);
-							doMoveToAnotherTask(taskToMove, destTask);
+						if (item == null) {
+							// If we move the task to outside of the tree (at the bottom), simply
+							// move the task under root
+							doMoveToAnotherTask(taskToMove, null);
+						}
+						else {
+							Task destTask = ((TaskSums) item.getData()).getTask();
+							Point pt = tree.getDisplay().map(null, tree, event.x, event.y);
+							Rectangle bounds = item.getBounds();
+							if (pt.y < bounds.y + bounds.height/3) {
+								doMoveBeforeOrAfter(taskToMove, destTask, true);
+							} else if (pt.y > bounds.y + 2*bounds.height/3) {
+								doMoveBeforeOrAfter(taskToMove, destTask, false);
+							} else {
+								treeViewer.expandToLevel(event.item.getData(), 1);
+								doMoveToAnotherTask(taskToMove, destTask);
+							}
 						}
 						return null;
 					}

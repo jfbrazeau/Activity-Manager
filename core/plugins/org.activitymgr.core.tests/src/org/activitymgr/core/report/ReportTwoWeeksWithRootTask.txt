@@ -1,0 +1,145 @@
+# Global parameters
+start=16012017
+intervalType=week
+intervalCount=2
+rootTaskCodePath=/PR
+
+#
+# Two weeks, by collaborator & task, sorted by task, full depth, root task = /PR
+#
+taskDepth=10
+byContributor=true
+orderByContributor=false
++---------------+---------------+----------+-------+-------+
+|Path           |Name           |Contribut…|  S3-17|  S4-17|
++---------------+---------------+----------+-------+-------+
+|/PA/SPE        |Specification  |jdoe      |   0.25|   0.25|
+|/PA/SPE        |Specification  |wsmith    |   0.25|   0.25|
+|/PA/TST        |Test           |jdoe      |   1.00|   1.00|
+|/PA/DEV/MA     |Module A       |jdoe      |   1.75|   1.75|
+|/PA/DEV/MB     |Module B       |jdoe      |   1.00|   1.00|
+|/PB/SPE        |Specification  |wsmith    |   0.75|   0.75|
+|/PB/TST        |Test           |wsmith    |   2.25|   2.25|
+|/PB/DEV/MC     |Module C       |wsmith    |   1.50|   1.50|
++---------------+---------------+----------+-------+-------+
+|               |               |          |   8.75|   8.75|
++---------------+---------------+----------+-------+-------+
+
+#
+# Two weeks, by collaborator & task, sorted by contributor, full depth, root task = /PR
+#
+taskDepth=10
+byContributor=true
+orderByContributor=true
++----------+---------------+---------------+-------+-------+
+|Contribut…|Path           |Name           |  S3-17|  S4-17|
++----------+---------------+---------------+-------+-------+
+|jdoe      |/PA/SPE        |Specification  |   0.25|   0.25|
+|jdoe      |/PA/TST        |Test           |   1.00|   1.00|
+|jdoe      |/PA/DEV/MA     |Module A       |   1.75|   1.75|
+|jdoe      |/PA/DEV/MB     |Module B       |   1.00|   1.00|
+|wsmith    |/PA/SPE        |Specification  |   0.25|   0.25|
+|wsmith    |/PB/SPE        |Specification  |   0.75|   0.75|
+|wsmith    |/PB/TST        |Test           |   2.25|   2.25|
+|wsmith    |/PB/DEV/MC     |Module C       |   1.50|   1.50|
++----------+---------------+---------------+-------+-------+
+|          |               |               |   8.75|   8.75|
++----------+---------------+---------------+-------+-------+
+
+#
+# Two weeks, by collaborator & task, sorted by task, depth=1, root task = /PR
+#
+taskDepth=1
+byContributor=true
+orderByContributor=false
++---------------+---------------+----------+-------+-------+
+|Path           |Name           |Contribut…|  S3-17|  S4-17|
++---------------+---------------+----------+-------+-------+
+|/PA            |Project A      |jdoe      |   4.00|   4.00|
+|/PA            |Project A      |wsmith    |   0.25|   0.25|
+|/PB            |Project B      |wsmith    |   4.50|   4.50|
++---------------+---------------+----------+-------+-------+
+|               |               |          |   8.75|   8.75|
++---------------+---------------+----------+-------+-------+
+
+#
+# Two weeks, by collaborator & task, sorted by contributor, depth=1, root task = /PR
+#
+taskDepth=1
+byContributor=true
+orderByContributor=true
++----------+---------------+---------------+-------+-------+
+|Contribut…|Path           |Name           |  S3-17|  S4-17|
++----------+---------------+---------------+-------+-------+
+|jdoe      |/PA            |Project A      |   4.00|   4.00|
+|wsmith    |/PA            |Project A      |   0.25|   0.25|
+|wsmith    |/PB            |Project B      |   4.50|   4.50|
++----------+---------------+---------------+-------+-------+
+|          |               |               |   8.75|   8.75|
++----------+---------------+---------------+-------+-------+
+
+#
+# Two weeks, by task but not by collaborator, full depth, root task = /PR
+#
+taskDepth=10
+byContributor=false
+orderByContributor=false
++---------------+---------------+-------+-------+
+|Path           |Name           |  S3-17|  S4-17|
++---------------+---------------+-------+-------+
+|/PA/SPE        |Specification  |   0.50|   0.50|
+|/PA/TST        |Test           |   1.00|   1.00|
+|/PA/DEV/MA     |Module A       |   1.75|   1.75|
+|/PA/DEV/MB     |Module B       |   1.00|   1.00|
+|/PB/SPE        |Specification  |   0.75|   0.75|
+|/PB/TST        |Test           |   2.25|   2.25|
+|/PB/DEV/MC     |Module C       |   1.50|   1.50|
++---------------+---------------+-------+-------+
+|               |               |   8.75|   8.75|
++---------------+---------------+-------+-------+
+
+#
+# Two weeks, by task but not by collaborator, depth=1, root task = /PR
+#
+taskDepth=1
+byContributor=false
+orderByContributor=false
++---------------+---------------+-------+-------+
+|Path           |Name           |  S3-17|  S4-17|
++---------------+---------------+-------+-------+
+|/PA            |Project A      |   4.25|   4.25|
+|/PB            |Project B      |   4.50|   4.50|
++---------------+---------------+-------+-------+
+|               |               |   8.75|   8.75|
++---------------+---------------+-------+-------+
+
+#
+# Two weeks, by collaborator but not by task (=> depth = 0), root task = /PR
+#
+taskDepth=0
+byContributor=true
+orderByContributor=false
++----------+-------+-------+
+|Contribut…|  S3-17|  S4-17|
++----------+-------+-------+
+|jdoe      |   4.00|   4.00|
+|wsmith    |   4.75|   4.75|
++----------+-------+-------+
+|          |   8.75|   8.75|
++----------+-------+-------+
+
+#
+# Two weeks, not by collaborator nor by task (=> depth=0), root task = /PR
+#
+taskDepth=0
+byContributor=false
+orderByContributor=false
++-------+-------+
+|  S3-17|  S4-17|
++-------+-------+
+|   8.75|   8.75|
++-------+-------+
+|   8.75|   8.75|
++-------+-------+
+
+

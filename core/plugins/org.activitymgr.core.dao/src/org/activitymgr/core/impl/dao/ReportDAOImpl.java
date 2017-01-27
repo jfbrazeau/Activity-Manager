@@ -81,6 +81,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 		case MONTH:
 			start.set(Calendar.DATE, 1);
 		case WEEK:
+			start = DateHelper.moveToFirstDayOfWeek(start);
 		case DAY:
 		}
 
@@ -94,15 +95,13 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 		int startDate = startYear*10000+startMonth*100+startDay;
 		
 		Calendar end = (Calendar) start.clone();
-		end.add(intervalType.getIntType(), intervalCount - 1);
-		if (!ReportIntervalType.DAY.equals(intervalType)) {
-			end.add(Calendar.DATE, -1);
-		}
+		end.add(intervalType.getIntType(), intervalCount);
+		end.add(Calendar.DATE, -1);
 		int endYear = end.get(Calendar.YEAR);
 		int endMonth = end.get(Calendar.MONTH) + 1;
 		int endDay = end.get(Calendar.DATE);
 		int endDate = endYear*10000+endMonth*100+endDay;
-		//System.out.println("Start : " + startDate + ", end:" + endDate);
+		System.out.println("Start : " + startDate + ", end:" + endDate);
 		
 		/*
 		 * Retrieve involved collaborators
@@ -318,13 +317,15 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 				int intervalIdx = 0;
 				switch (intervalType) {
 				case WEEK:
-					throw new IllegalStateException("Not implemented yet");
 				case DAY:
 					Calendar date = Calendar.getInstance(start.getTimeZone());
 					date.set(Calendar.DATE, day);
 					date.set(Calendar.MONTH, month-1);
 					date.set(Calendar.YEAR, year);
 					intervalIdx = DateHelper.countDaysBetween(start, date);
+					if (intervalType == ReportIntervalType.WEEK) {
+						intervalIdx = intervalIdx/7;
+					}
 					break;
 				case MONTH:
 					intervalIdx = (year-startYear)*12 + month - startMonth;
