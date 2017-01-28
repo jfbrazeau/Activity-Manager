@@ -1,5 +1,5 @@
 language: java
-script : mvn clean verify -P ui.web
+script : mvn clean verify -P ui.web,ui.rcp
 branches:
   only:
     - 1.0.x
