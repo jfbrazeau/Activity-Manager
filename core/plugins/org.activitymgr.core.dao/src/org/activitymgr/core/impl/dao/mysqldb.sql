@@ -20,7 +20,7 @@ create table COLLABORATOR (
 -- Taches
 -- ------------------------------------------------------------
 create table TASK (
-	TSK_ID           integer(   4) not null auto_increment,
+	TSK_ID           integer(   8) not null auto_increment,
 	TSK_PATH         varchar( 255) not null,
 	TSK_NUMBER       varchar(   2) not null,
 	TSK_CODE         varchar(  10) not null,
@@ -56,7 +56,7 @@ create table CONTRIBUTION (
 	CTB_MONTH         integer(2) not null,
 	CTB_DAY           integer(2) not null,
 	CTB_CONTRIBUTOR   integer(3) not null,
-	CTB_TASK          integer(3) not null,
+	CTB_TASK          integer(8) not null,
 	CTB_DURATION      integer(3) not null,
     index CTB_CONTRIBUTOR_IDX (CTB_CONTRIBUTOR),
     index CTB_TASK_IDX (CTB_TASK),
