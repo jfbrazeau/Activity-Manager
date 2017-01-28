@@ -95,6 +95,14 @@ public class ReportTest extends AbstractModelTestCase {
 		doTestReport();
 	}
 	
+	public void testReportOneMonthWithRootTask() throws IOException, ModelException {
+		doTestReport();
+	}
+	
+	public void testReportTwoYearsNoRootTask() throws IOException, ModelException {
+		doTestReport();
+	}
+	
 	private void doTestReport() throws IOException, ModelException {
 		String testName = getName();
 		String fileName = testName.substring(4) + ".txt";

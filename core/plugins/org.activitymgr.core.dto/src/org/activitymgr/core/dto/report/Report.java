@@ -176,7 +176,7 @@ public class Report {
 			format = "MMyy";
 			break;
 		case YEAR :
-			format = "yy";
+			format = "yyyy";
 			break;
 		}
 		SimpleDateFormat sdf = new SimpleDateFormat(format);

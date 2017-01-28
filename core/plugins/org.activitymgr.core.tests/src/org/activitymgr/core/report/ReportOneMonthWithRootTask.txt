@@ -1,0 +1,145 @@
+# Global parameters
+start=16012017
+intervalType=month
+intervalCount=1
+rootTaskCodePath=/PR
+
+#
+# One month, by collaborator & task, sorted by task, full depth, root task = /PR
+#
+taskDepth=10
+byContributor=true
+orderByContributor=false
++---------------+---------------+----------+-------+
+|Path           |Name           |Contribut…|   0117|
++---------------+---------------+----------+-------+
+|/PA/SPE        |Specification  |jdoe      |   1.25|
+|/PA/SPE        |Specification  |wsmith    |   1.25|
+|/PA/TST        |Test           |jdoe      |   4.25|
+|/PA/DEV/MA     |Module A       |jdoe      |   8.50|
+|/PA/DEV/MB     |Module B       |jdoe      |   4.00|
+|/PB/SPE        |Specification  |wsmith    |   3.50|
+|/PB/TST        |Test           |wsmith    |   9.00|
+|/PB/DEV/MC     |Module C       |wsmith    |   7.00|
++---------------+---------------+----------+-------+
+|               |               |          |  38.75|
++---------------+---------------+----------+-------+
+
+#
+# One month, by collaborator & task, sorted by contributor, full depth, root task = /PR
+#
+taskDepth=10
+byContributor=true
+orderByContributor=true
++----------+---------------+---------------+-------+
+|Contribut…|Path           |Name           |   0117|
++----------+---------------+---------------+-------+
+|jdoe      |/PA/SPE        |Specification  |   1.25|
+|jdoe      |/PA/TST        |Test           |   4.25|
+|jdoe      |/PA/DEV/MA     |Module A       |   8.50|
+|jdoe      |/PA/DEV/MB     |Module B       |   4.00|
+|wsmith    |/PA/SPE        |Specification  |   1.25|
+|wsmith    |/PB/SPE        |Specification  |   3.50|
+|wsmith    |/PB/TST        |Test           |   9.00|
+|wsmith    |/PB/DEV/MC     |Module C       |   7.00|
++----------+---------------+---------------+-------+
+|          |               |               |  38.75|
++----------+---------------+---------------+-------+
+
+#
+# One month, by collaborator & task, sorted by task, depth=1, root task = /PR
+#
+taskDepth=1
+byContributor=true
+orderByContributor=false
++---------------+---------------+----------+-------+
+|Path           |Name           |Contribut…|   0117|
++---------------+---------------+----------+-------+
+|/PA            |Project A      |jdoe      |  18.00|
+|/PA            |Project A      |wsmith    |   1.25|
+|/PB            |Project B      |wsmith    |  19.50|
++---------------+---------------+----------+-------+
+|               |               |          |  38.75|
++---------------+---------------+----------+-------+
+
+#
+# One month, by collaborator & task, sorted by contributor, depth=1, root task = /PR
+#
+taskDepth=1
+byContributor=true
+orderByContributor=true
++----------+---------------+---------------+-------+
+|Contribut…|Path           |Name           |   0117|
++----------+---------------+---------------+-------+
+|jdoe      |/PA            |Project A      |  18.00|
+|wsmith    |/PA            |Project A      |   1.25|
+|wsmith    |/PB            |Project B      |  19.50|
++----------+---------------+---------------+-------+
+|          |               |               |  38.75|
++----------+---------------+---------------+-------+
+
+#
+# One month, by task but not by collaborator, full depth, root task = /PR
+#
+taskDepth=10
+byContributor=false
+orderByContributor=false
++---------------+---------------+-------+
+|Path           |Name           |   0117|
++---------------+---------------+-------+
+|/PA/SPE        |Specification  |   2.50|
+|/PA/TST        |Test           |   4.25|
+|/PA/DEV/MA     |Module A       |   8.50|
+|/PA/DEV/MB     |Module B       |   4.00|
+|/PB/SPE        |Specification  |   3.50|
+|/PB/TST        |Test           |   9.00|
+|/PB/DEV/MC     |Module C       |   7.00|
++---------------+---------------+-------+
+|               |               |  38.75|
++---------------+---------------+-------+
+
+#
+# One month, by task but not by collaborator, depth=1, root task = /PR
+#
+taskDepth=1
+byContributor=false
+orderByContributor=false
++---------------+---------------+-------+
+|Path           |Name           |   0117|
++---------------+---------------+-------+
+|/PA            |Project A      |  19.25|
+|/PB            |Project B      |  19.50|
++---------------+---------------+-------+
+|               |               |  38.75|
++---------------+---------------+-------+
+
+#
+# One month, by collaborator but not by task (=> depth = 0), root task = /PR
+#
+taskDepth=0
+byContributor=true
+orderByContributor=false
++----------+-------+
+|Contribut…|   0117|
++----------+-------+
+|jdoe      |  18.00|
+|wsmith    |  20.75|
++----------+-------+
+|          |  38.75|
++----------+-------+
+
+#
+# One month, not by collaborator nor by task (=> depth=0), root task = /PR
+#
+taskDepth=0
+byContributor=false
+orderByContributor=false
++-------+
+|   0117|
++-------+
+|  38.75|
++-------+
+|  38.75|
++-------+
+
+

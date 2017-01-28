@@ -16,6 +16,7 @@ import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.dto.misc.TaskContributions;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
+import org.activitymgr.core.util.DateHelper;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILogic;
@@ -109,14 +110,14 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 	}
 	
 	protected void changeFirstDayOfWeek(Calendar newDay) throws ModelException {
-		firstDayOfWeek = moveToFirstDayOfWeek(newDay);
+		firstDayOfWeek = DateHelper.moveToFirstDayOfWeek(newDay);
 		loadContributions();
 	}
 	
 	protected void changeFirstDayOfWeek(int amountType, int amount) throws ModelException {
 		// Update date
 		firstDayOfWeek.add(amountType, amount);
-		firstDayOfWeek = moveToFirstDayOfWeek(firstDayOfWeek);
+		firstDayOfWeek = DateHelper.moveToFirstDayOfWeek(firstDayOfWeek);
 		loadContributions();
 	}
 	
@@ -204,14 +205,6 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 
 	public Collaborator getContributor() {
 		return contributor;
-	}
-
-	private static Calendar moveToFirstDayOfWeek(Calendar date) {
-		Calendar dateCursor = (Calendar) date.clone();
-		while (dateCursor.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
-			dateCursor.add(Calendar.DATE, -1);
-		}
-		return dateCursor;
 	}
 
 	public Collection<Long> getTaskIds() {

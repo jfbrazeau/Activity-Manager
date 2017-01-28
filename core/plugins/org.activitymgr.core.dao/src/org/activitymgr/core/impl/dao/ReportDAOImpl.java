@@ -78,10 +78,14 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 		switch (intervalType) {
 		case YEAR :
 			start.set(Calendar.MONTH, 0);
+			start.set(Calendar.DATE, 1);
+			break;
 		case MONTH:
 			start.set(Calendar.DATE, 1);
+			break;
 		case WEEK:
 			start = DateHelper.moveToFirstDayOfWeek(start);
+			break;
 		case DAY:
 		}
 
@@ -156,6 +160,11 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 				sw.append("ctb_year, ");
 			}
 			sw.append("sum(ctb_duration)");
+			// Append columns that are used in the order by clause not to let HSQLDB fail
+			if (byActivity) {
+				sw.append(", activity.tsk_path, activity.tsk_number");
+			}
+			
 			sw.append("\nfrom TASK as ctbtask ");
 			sw.append("\n\tleft join CONTRIBUTION on ctbtask.tsk_id = ctb_task ");
 			if (byContributor) {
@@ -164,7 +173,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 			if (byActivity) {
 				sw.append("\n\tleft join TASK as activity on (ctbtask.tsk_id=activity.tsk_id or left(ctbtask.tsk_path, ?) = concat(activity.tsk_path, activity.tsk_number)) ");
 			}
-			
+
 			// WHERE
 			sw.append("\nwhere true ");
 			// Filter 
@@ -199,13 +208,13 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 				sw.append(", ctb_day");
 			}
 			if (taskDepth > 0) {
-				sw.append(", activity.tsk_path, activity.tsk_number");
+				sw.append(", activity.tsk_id");
 			}
 			
 			// ORDER BY
 			sw.append("\norder by ");
 			String activityFragment = "activity.tsk_path, activity.tsk_number, ";
-			String clbFragment = "clb_login, ";
+			String clbFragment = "clb_id, ";
 			if (byContributor) {
 				if (byActivity){
 					if (orderByContributor) {
