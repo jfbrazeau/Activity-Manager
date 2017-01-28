@@ -40,21 +40,11 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 	
 
 	@Override
-	public Report buildReport(Calendar start, ReportIntervalType intervalType, int intervalCount, Long rootTaskId, int taskDepth,
+	public Report buildReport(Calendar start, ReportIntervalType intervalType, int intervalCount, Task rootTask, int taskDepth,
 			boolean byContributor, boolean orderByContributor) {
-		if (taskDepth < 0) {
-			taskDepth = 0;
-		}
-		
-		// 1. Récup arbo taches (pour les parents) avec la profondeur qui va bien
-		// 2. Récup collaborateurs impliqués sur la période
-		// 3. Récup et cumul des contributions pour les taches au moins aussi profonde que la profondeur spécifiée
-		// 4. Récup des contributions pour les taches moins profondes
-		
 		/*
 		 * Retrieve task tree
 		 */
-		Task rootTask = rootTaskId != null ? taskDAO.selectByPK(rootTaskId) : null;
 		String rootPath = rootTask != null ? rootTask.getFullPath() : "";
 		Map<Long, Task> tasksByIdCache = new HashMap<Long, Task>();
 		Map<String, Task> tasksByFullpathCache = new HashMap<String, Task>();
@@ -75,24 +65,6 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 		/*
 		 * Interval computation
 		 */
-		switch (intervalType) {
-		case YEAR :
-			start.set(Calendar.MONTH, 0);
-			start.set(Calendar.DATE, 1);
-			break;
-		case MONTH:
-			start.set(Calendar.DATE, 1);
-			break;
-		case WEEK:
-			start = DateHelper.moveToFirstDayOfWeek(start);
-			break;
-		case DAY:
-		}
-
-		start.set(Calendar.HOUR_OF_DAY, 12);
-		start.set(Calendar.MINUTE, 0);
-		start.set(Calendar.SECOND, 0);
-		start.set(Calendar.MILLISECOND, 0);
 		int startYear = start.get(Calendar.YEAR);
 		int startMonth = start.get(Calendar.MONTH) + 1;
 		int startDay = start.get(Calendar.DATE);
@@ -105,10 +77,9 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 		int endMonth = end.get(Calendar.MONTH) + 1;
 		int endDay = end.get(Calendar.DATE);
 		int endDate = endYear*10000+endMonth*100+endDay;
-		System.out.println("Start : " + startDate + ", end:" + endDate);
 		
 		/*
-		 * Retrieve involved collaborators
+		 * Retrieve contributors
 		 */
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
@@ -177,7 +148,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 			// WHERE
 			sw.append("\nwhere true ");
 			// Filter 
-			if (rootTaskId != null) {
+			if (rootTask != null) {
 				sw.append("and (ctbtask.tsk_id=? or left(ctbtask.tsk_path, ?) = ?) ");
 			}
 			if (byActivity) {
@@ -252,8 +223,8 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 			if (byActivity) {
 				pStmt.setInt(idx++, activityPathLength);
 			}
-			if (rootTaskId != null) {
-				pStmt.setLong(idx++, rootTaskId);
+			if (rootTask != null) {
+				pStmt.setLong(idx++, rootTask.getId());
 				pStmt.setInt(idx++, rootPath.length());
 				pStmt.setString(idx++, rootPath);
 			}

@@ -785,5 +785,39 @@ public interface IModelMgr {
 	 */
 	Collection<Integer> getContributionYears();
 
-	Report buildReport(Calendar start, ReportIntervalType intervalType, int intervalCount, Long rootTaskId, int taskDepth, boolean byContributor, boolean orderByContributor);
+	/**
+	 * Builds a report.
+	 * 
+	 * @param start
+	 *            the start date to consider [Optional]. If omitted, the first
+	 *            contribution in the database will be considered.
+	 * @param intervalType
+	 *            the interval type (days, weeks, months, years) [Required].
+	 * @param intervalCount
+	 *            the interval count to cover [Optional]. If omitted, the last
+	 *            contribution in the database will be considered.
+	 * @param rootTaskId
+	 *            the root task identifier [Optional]. If omitted, the whole
+	 *            database will be considered.
+	 * @param taskDepth
+	 *            the task depth to consider [Required]. If this is equal to 0,
+	 *            no task will appear in the report (all tasks contributions
+	 *            will be cumulated).
+	 * @param byContributor
+	 *            <code>true</code> if the report must decline contributions by
+	 *            contributors.
+	 * @param orderByContributor
+	 *            <code>true</code> if the report must be ordered by
+	 *            contributors and then by tasks or the inverse. If
+	 *            <code>(byContributor == false) || (taskDepth <= 0)</code>, it
+	 *            has no effect.
+	 * @return the report.
+	 * @throws ModelException
+	 *             if start date is not specified and no contribution exist in
+	 *             the database.
+	 */
+	Report buildReport(Calendar start, ReportIntervalType intervalType,
+			Integer intervalCount, Long rootTaskId, int taskDepth,
+			boolean byContributor, boolean orderByContributor)
+			throws ModelException;
 }

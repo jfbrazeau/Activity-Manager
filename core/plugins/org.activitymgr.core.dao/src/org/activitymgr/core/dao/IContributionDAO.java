@@ -86,4 +86,10 @@ public interface IContributionDAO extends IDAO<Contribution> {
 	 */
 	Collection<Integer> getContributionYears();
 
+	/**
+	 * Returns the contributions interval.
+	 * @param taskPath the optional task path to filter the contributions.
+	 * @return the contributions interval.
+	 */
+	Calendar[] getContributionsInterval(String taskPath);
 }

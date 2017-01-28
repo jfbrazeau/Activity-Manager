@@ -2155,8 +2155,77 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.model.IModelMgr#buildReport(java.util.Calendar, org.activitymgr.core.dto.report.ReportIntervalType, int, java.lang.Long, int, boolean, boolean)
 	 */
 	@Override
-	public Report buildReport(Calendar start, ReportIntervalType intervalType, int intervalCount, Long rootTaskId, int taskDepth,
-			boolean byContributor, boolean orderByContributor) {
-		return reportDAO.buildReport(start, intervalType, intervalCount, rootTaskId, taskDepth, byContributor, orderByContributor);
+	public Report buildReport(Calendar start, ReportIntervalType intervalType, Integer intervalCount, Long rootTaskId, int taskDepth,
+			boolean byContributor, boolean orderByContributor) throws ModelException {
+		// task depth rectification if required
+		if (taskDepth < 0) {
+			taskDepth = 0;
+		}
+		
+		// If start date is omitted, compute a date
+		Task rootTask = rootTaskId != null ? taskDAO.selectByPK(rootTaskId) : null;
+		
+		// If no start is given or no interval count is given, the existing database interval
+		// is considered
+		Calendar[] interval = null;
+		if (start == null || intervalCount == null) {
+			interval = contributionDAO.getContributionsInterval(rootTask != null ? rootTask.getFullPath() : null);
+			// If no interval is found and if no start has been given, it not possible to continue
+			if (start == null && interval == null) {
+				throw new ModelException("No contributions found");
+			}
+		}
+
+		// Ensure we have a start
+		if (start == null) {
+			start = interval[0];
+		}
+		prepareCalendarForReport(start, intervalType);
+
+		// Ensure we have an interval count
+		if (intervalCount == null) {
+			Calendar end = interval[1];
+			prepareCalendarForReport(end, intervalType);
+			end.add(intervalType.getIntType(), 1);
+			
+			// Compute the delay
+			switch (intervalType) {
+			case YEAR :
+				intervalCount = end.get(Calendar.YEAR) - start.get(Calendar.YEAR);
+				break;
+			case MONTH:
+				intervalCount = (end.get(Calendar.YEAR) - start.get(Calendar.YEAR)) * 12 + (end.get(Calendar.MONTH) - start.get(Calendar.MONTH));
+				break;
+			case WEEK:
+				intervalCount = DateHelper.countDaysBetween(start, end) / 7;
+				break;
+			case DAY:
+				intervalCount = DateHelper.countDaysBetween(start, end);
+			}
+		}
+		
+		// Compute the report
+		return reportDAO.buildReport(start, intervalType, intervalCount, rootTask, taskDepth, byContributor, orderByContributor);
+	}
+
+	private void prepareCalendarForReport(Calendar start, ReportIntervalType intervalType) {
+		switch (intervalType) {
+		case YEAR :
+			start.set(Calendar.MONTH, 0);
+			start.set(Calendar.DATE, 1);
+			break;
+		case MONTH:
+			start.set(Calendar.DATE, 1);
+			break;
+		case WEEK:
+			start = DateHelper.moveToFirstDayOfWeek(start);
+			break;
+		case DAY:
+		}
+
+		start.set(Calendar.HOUR_OF_DAY, 12);
+		start.set(Calendar.MINUTE, 0);
+		start.set(Calendar.SECOND, 0);
+		start.set(Calendar.MILLISECOND, 0);
 	}
 }

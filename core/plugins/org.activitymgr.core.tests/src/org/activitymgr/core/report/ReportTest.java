@@ -7,8 +7,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -16,6 +18,7 @@ import java.util.Properties;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.activitymgr.core.AbstractModelTestCase;
+import org.activitymgr.core.dao.IContributionDAO;
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Contribution;
 import org.activitymgr.core.dto.Task;
@@ -27,6 +30,7 @@ import org.xml.sax.SAXException;
 
 public class ReportTest extends AbstractModelTestCase {
 	
+	private static final int SAMPLE_DATA_WEEK_COUNT = 10;
 	private static final String START_PROP = "start";
 	private static final String INTERVAL_TYPE_PROP = "intervalType";
 	private static final String INTERVAL_COUNT_PROP = "intervalCount";
@@ -51,12 +55,49 @@ public class ReportTest extends AbstractModelTestCase {
 	private Collaborator jdoe;
 
 	private Collaborator wsmith;
-
+	
+	private Calendar sampleDataStart;
+	
+	private SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
 	
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		loadSampleModel();
+	}
+
+	public void testReportWithoutStartNorContributions() throws IOException {
+		try {
+			IContributionDAO cDAO = getInjector().getInstance(IContributionDAO.class);
+			// Remove all contributions
+			cDAO.delete(null, null);
+			// Launch a report that is expected to fail
+			doBuildReport(
+					null, // no start date 
+					ReportIntervalType.MONTH, // month
+					3, // 3 months
+					null, // No root task
+					0, // No depth 
+					true, // By contributor
+					true // Order by contributor
+					);
+			fail("A model exception should be raised !");
+		}
+		catch (ModelException e) {
+			
+		}
+	}
+	
+	public void testReportWithoutStartNorInterval() throws IOException, ModelException {
+		doTestReport();
+	}
+
+	public void testReportWithoutStart() throws IOException, ModelException {
+		doTestReport();
+	}
+
+	public void testReportWithoutInterval() throws IOException, ModelException {
+		doTestReport();
 	}
 
 	public void testReportOneDayNoRootTask() throws IOException, ModelException {
@@ -115,7 +156,7 @@ public class ReportTest extends AbstractModelTestCase {
 		while (line != null) {
 			// Load properties
 			StringWriter propsSw = new StringWriter();
-			while (!(line = in.readLine()).startsWith("+-")) {
+			while ((line = in.readLine())!=null && !line.startsWith("+-")) {
 				propsSw.append(line);
 				propsSw.append('\n');
 			}
@@ -143,10 +184,11 @@ public class ReportTest extends AbstractModelTestCase {
 				}
 			}
 			
+			String intervalCountProperty = props.getProperty(INTERVAL_COUNT_PROP);
 			Report report = doBuildReport(
 					cal(props.getProperty(START_PROP)), // Start date
 					ReportIntervalType.valueOf(props.getProperty(INTERVAL_TYPE_PROP).toUpperCase()), // interval type
-					Integer.parseInt(props.getProperty(INTERVAL_COUNT_PROP)), // interval count
+					intervalCountProperty != null ? Integer.parseInt(intervalCountProperty) : null, // interval count
 					rootTaskId, // root task
 					Integer.parseInt(props.getProperty(TASK_DEPTH_PROP)), // Task depth
 					Boolean.parseBoolean(props.getProperty(BY_CONTRIBUTOR_PROP)), // By contributor
@@ -160,9 +202,12 @@ public class ReportTest extends AbstractModelTestCase {
 		}
 	}
 	
-	private Report doBuildReport(Calendar start, ReportIntervalType intervalType, int intervalCount, Long rootTaskId, int taskDepth, boolean byContributor, boolean orderByContributor) {
+	private Report doBuildReport(Calendar start, ReportIntervalType intervalType, Integer intervalCount, Long rootTaskId, int taskDepth, boolean byContributor, boolean orderByContributor) throws ModelException {
 		System.out.println("buildReport(");
-		System.out.println("  " + start.get(Calendar.YEAR) + "/" + (start.get(Calendar.MONTH) + 1) + "/" +  start.get(Calendar.DATE) + ", // start");
+		System.out.println("  "
+				+ (start != null ? (start.get(Calendar.YEAR) + "/"
+						+ (start.get(Calendar.MONTH) + 1) + "/" + start
+						.get(Calendar.DATE)) : null) + ", // start");
 		System.out.println("  " + intervalType + ", // intervalType");
 		System.out.println("  " + intervalCount + ", // intervalCount");
 		System.out.println("  " + rootTaskId + ", // rootTaskId");
@@ -173,7 +218,10 @@ public class ReportTest extends AbstractModelTestCase {
 	}
 
 	private Calendar cal(String cal) {
-		if (cal.length() != 8) {
+		if (cal == null) {
+			return null;
+		}
+		else if (cal.length() != 8) {
 			throw new IllegalArgumentException("Invalide date, must match ddMMyyyy");
 		}
 		return cal(Integer.parseInt(cal.substring(4, 8)), Integer.parseInt(cal.substring(2, 4)), Integer.parseInt(cal.substring(0, 2)));
@@ -189,6 +237,13 @@ public class ReportTest extends AbstractModelTestCase {
 
 	private void loadSampleModel() throws FileNotFoundException, IOException,
 			ParserConfigurationException, SAXException, ModelException {
+		// Create sample data start date
+		sampleDataStart = cal(2016, 12, 5);
+		sampleDataStart.set(Calendar.HOUR_OF_DAY, 12);
+		sampleDataStart.set(Calendar.MINUTE, 0);
+		sampleDataStart.set(Calendar.SECOND, 0);
+		sampleDataStart.set(Calendar.MILLISECOND, 0);
+		
 		// Ouverture du fichier de test
 		String filename = "ReportTest.xml";
 		InputStream in = ReportTest.class.getResourceAsStream(filename);
@@ -238,14 +293,10 @@ public class ReportTest extends AbstractModelTestCase {
 		weekDef.add(new ContribDef(4, wsmith, testB, 100));
 		
 		// Repeat this week 10 times
-		for (int week = 0; week<10; week++) {
+		for (int week = 0; week<SAMPLE_DATA_WEEK_COUNT; week++) {
 			for (ContribDef contribDef : weekDef) {
 				Contribution ctb = getFactory().newContribution();
-				Calendar c = Calendar.getInstance();
-				c.set(Calendar.YEAR, 2016);
-				c.set(Calendar.MONTH, 11);
-				c.set(Calendar.DATE, 5);
-				c.set(Calendar.HOUR_OF_DAY, 12);
+				Calendar c = (Calendar) sampleDataStart.clone();
 				c.add(Calendar.DATE, week*7);
 				c.add(Calendar.DATE, contribDef.dayIdx);
 				ctb.setDate(c);

@@ -3,9 +3,13 @@ package org.activitymgr.core.impl.dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -293,4 +297,63 @@ public class ContributionDAOImpl extends AbstractORMDAOImpl<Contribution> implem
 			lastAttemptToClose(pStmt);
 		}
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.dao.IContributionDAO#getContributionsInterval(java.lang.String)
+	 */
+	@Override
+	public Calendar[] getContributionsInterval(String taskPath) {
+		PreparedStatement pStmt = null;
+		ResultSet rs = null;
+		try {
+			boolean filterByTaskPath = taskPath != null && !"".equals(taskPath);
+			// Build the SQL request
+			String request = "select count(*),min(ctb_year*10000+ctb_month*100+ctb_day),max(ctb_year*10000+ctb_month*100+ctb_day) from CONTRIBUTION";
+			if (filterByTaskPath) {
+				request += " join TASK on ctb_task=tsk_id where tsk_path like ? or concat(tsk_path, tsk_number)=?";
+			}
+			System.out.println(request);
+			pStmt = tx().prepareStatement(request);
+			if (filterByTaskPath) {
+				pStmt.setString(1, taskPath + '%');
+				pStmt.setString(2, taskPath);
+			}
+			// Exécution de le requête et extraction du résultat
+			Calendar[] result = null;
+			rs = pStmt.executeQuery();
+			if (rs.next()) {
+				int contributionsCount = rs.getInt(1);
+				// If there is no contribution, simply return null
+				if (contributionsCount > 0) {
+					// Else parse the result
+					result = new Calendar[2];
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+					Date start = sdf.parse(rs.getString(2));
+					result[0] = new GregorianCalendar();
+					result[0].setTime(start);
+					Date end = sdf.parse(rs.getString(3));
+					result[1] = new GregorianCalendar();
+					result[1].setTime(end);
+				}
+			}
+			pStmt.close();
+			pStmt = null;
+
+			// Retour du résultat
+			return result;
+		} catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DAOException(
+					"Erreur lors de la récupération des années de contributions",
+					e);
+		} catch (ParseException e) {
+			log.info("Unexpected parse error", e); //$NON-NLS-1$
+			throw new DAOException(
+					"Unexpected error while parsing a date",
+					e);
+		} finally {
+			lastAttemptToClose(pStmt);
+		}
+	}
+
 }

@@ -71,6 +71,10 @@ public class Report {
 		items.add(item);
 	}
 
+	public Collection<Calendar> getDates() {
+		return dates;
+	}
+
 	private static final int TASK_PATH_PAD = 15;
 	private static final int TASK_NAME_PAD = 15;
 	private static final int COLLABORATOR_PAD = 10;
