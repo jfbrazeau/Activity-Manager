@@ -26,6 +26,7 @@ import org.activitymgr.core.dto.report.Report;
 import org.activitymgr.core.dto.report.ReportIntervalType;
 import org.activitymgr.core.dto.report.ReportItem;
 import org.activitymgr.core.model.ModelException;
+import org.apache.poi.util.HexDump;
 import org.xml.sax.SAXException;
 
 public class ReportTest extends AbstractModelTestCase {
@@ -173,7 +174,11 @@ public class ReportTest extends AbstractModelTestCase {
 					expectedSw.append('\n');
 				}
 			}
+			System.out.println("Expected : ");
 			String expected = expectedSw.toString();
+			System.out.println(expected);
+			System.out.println("Expected in hex : ");
+			System.out.println(HexDump.toHex(expected.getBytes("UTF-8"), 20));
 			
 			Long rootTaskId = null;
 			String rootTaskCodePath = props.getProperty(ROOT_TASK_CODE_PATH_PROP);
@@ -194,10 +199,16 @@ public class ReportTest extends AbstractModelTestCase {
 					Boolean.parseBoolean(props.getProperty(BY_CONTRIBUTOR_PROP)), // By contributor
 					Boolean.parseBoolean(props.getProperty(ORDER_BY_CONTRIBUTOR_PROP)) // Order by contributor
 					);
+			System.out.println("Computed : ");
 			System.out.println(report.toString());
 			assertNotNull(report);
 			List<ReportItem> items = report.getItems();
 			assertNotNull(items);
+			
+			System.out.println("Computed in hex : ");
+			System.out.println(HexDump.toHex(report.toString().getBytes("UTF-8"), 20));
+			System.out.println("---");
+			
 			assertEquals(expected, report.toString());
 		}
 	}
