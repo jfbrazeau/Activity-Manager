@@ -24,6 +24,7 @@
 		<module>plugins/org.activitymgr.core.model</module>
 		<module>plugins/org.activitymgr.core.orm</module>
 		<module>plugins/org.activitymgr.core.util</module>
+		<module>plugins/org.activitymgr.core.tests</module>
 	</modules>
 
 </project>
