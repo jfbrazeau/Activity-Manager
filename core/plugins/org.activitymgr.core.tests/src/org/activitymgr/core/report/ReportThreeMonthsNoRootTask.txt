@@ -11,7 +11,7 @@ taskDepth=10
 byContributor=true
 orderByContributor=false
 +---------------+---------------+----------+-------+-------+-------+
-|Path           |Name           |Contribut…|   0117|   0217|   0317|
+|Path           |Name           |Contribut.|   0117|   0217|   0317|
 +---------------+---------------+----------+-------+-------+-------+
 |/PR/PA/SPE     |Specification  |jdoe      |   1.25|   0.25|   0.00|
 |/PR/PA/SPE     |Specification  |wsmith    |   1.25|   0.25|   0.00|
@@ -34,7 +34,7 @@ taskDepth=10
 byContributor=true
 orderByContributor=true
 +----------+---------------+---------------+-------+-------+-------+
-|Contribut…|Path           |Name           |   0117|   0217|   0317|
+|Contribut.|Path           |Name           |   0117|   0217|   0317|
 +----------+---------------+---------------+-------+-------+-------+
 |jdoe      |/PR/PA/SPE     |Specification  |   1.25|   0.25|   0.00|
 |jdoe      |/PR/PA/TST     |Test           |   4.25|   1.75|   0.00|
@@ -57,7 +57,7 @@ taskDepth=1
 byContributor=true
 orderByContributor=false
 +---------------+---------------+----------+-------+-------+-------+
-|Path           |Name           |Contribut…|   0117|   0217|   0317|
+|Path           |Name           |Contribut.|   0117|   0217|   0317|
 +---------------+---------------+----------+-------+-------+-------+
 |/PR            |Projects       |jdoe      |  18.00|   6.00|   0.00|
 |/PR            |Projects       |wsmith    |  20.75|   7.75|   0.00|
@@ -74,7 +74,7 @@ taskDepth=1
 byContributor=true
 orderByContributor=true
 +----------+---------------+---------------+-------+-------+-------+
-|Contribut…|Path           |Name           |   0117|   0217|   0317|
+|Contribut.|Path           |Name           |   0117|   0217|   0317|
 +----------+---------------+---------------+-------+-------+-------+
 |jdoe      |/PR            |Projects       |  18.00|   6.00|   0.00|
 |jdoe      |/ABS           |Absence        |   4.00|   2.00|   0.00|
@@ -128,7 +128,7 @@ taskDepth=0
 byContributor=true
 orderByContributor=false
 +----------+-------+-------+-------+
-|Contribut…|   0117|   0217|   0317|
+|Contribut.|   0117|   0217|   0317|
 +----------+-------+-------+-------+
 |jdoe      |  22.00|   8.00|   0.00|
 |wsmith    |  22.00|   8.00|   0.00|

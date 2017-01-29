@@ -11,7 +11,7 @@ taskDepth=10
 byContributor=true
 orderByContributor=false
 +---------------+---------------+----------+-------+
-|Path           |Name           |Contribut…| 160117|
+|Path           |Name           |Contribut.| 160117|
 +---------------+---------------+----------+-------+
 |/PA/SPE        |Specification  |jdoe      |   0.25|
 |/PA/SPE        |Specification  |wsmith    |   0.25|
@@ -29,7 +29,7 @@ taskDepth=10
 byContributor=true
 orderByContributor=true
 +----------+---------------+---------------+-------+
-|Contribut…|Path           |Name           | 160117|
+|Contribut.|Path           |Name           | 160117|
 +----------+---------------+---------------+-------+
 |jdoe      |/PA/SPE        |Specification  |   0.25|
 |jdoe      |/PA/TST        |Test           |   0.25|
@@ -47,7 +47,7 @@ taskDepth=1
 byContributor=true
 orderByContributor=false
 +---------------+---------------+----------+-------+
-|Path           |Name           |Contribut…| 160117|
+|Path           |Name           |Contribut.| 160117|
 +---------------+---------------+----------+-------+
 |/PA            |Project A      |jdoe      |   1.00|
 |/PA            |Project A      |wsmith    |   0.25|
@@ -63,7 +63,7 @@ taskDepth=1
 byContributor=true
 orderByContributor=true
 +----------+---------------+---------------+-------+
-|Contribut…|Path           |Name           | 160117|
+|Contribut.|Path           |Name           | 160117|
 +----------+---------------+---------------+-------+
 |jdoe      |/PA            |Project A      |   1.00|
 |wsmith    |/PA            |Project A      |   0.25|
@@ -111,7 +111,7 @@ taskDepth=0
 byContributor=true
 orderByContributor=false
 +----------+-------+
-|Contribut…| 160117|
+|Contribut.| 160117|
 +----------+-------+
 |jdoe      |   1.00|
 |wsmith    |   0.75|

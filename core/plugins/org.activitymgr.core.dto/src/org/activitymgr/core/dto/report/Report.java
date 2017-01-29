@@ -227,7 +227,7 @@ public class Report {
 		}
 		else {
 			sw.append(s.substring(0,  padCount - 1));
-			sw.append("…");
+			sw.append(".");
 		}
 		startRow(sw);
 	}

@@ -11,7 +11,7 @@ taskDepth=10
 byContributor=true
 orderByContributor=false
 +---------------+---------------+----------+-------+-------+
-|Path           |Name           |Contribut…| 160117| 170117|
+|Path           |Name           |Contribut.| 160117| 170117|
 +---------------+---------------+----------+-------+-------+
 |/PR/PA/SPE     |Specification  |jdoe      |   0.25|   0.00|
 |/PR/PA/SPE     |Specification  |wsmith    |   0.25|   0.00|
@@ -31,7 +31,7 @@ taskDepth=10
 byContributor=true
 orderByContributor=true
 +----------+---------------+---------------+-------+-------+
-|Contribut…|Path           |Name           | 160117| 170117|
+|Contribut.|Path           |Name           | 160117| 170117|
 +----------+---------------+---------------+-------+-------+
 |jdoe      |/PR/PA/SPE     |Specification  |   0.25|   0.00|
 |jdoe      |/PR/PA/TST     |Test           |   0.25|   0.00|
@@ -51,7 +51,7 @@ taskDepth=1
 byContributor=true
 orderByContributor=false
 +---------------+---------------+----------+-------+-------+
-|Path           |Name           |Contribut…| 160117| 170117|
+|Path           |Name           |Contribut.| 160117| 170117|
 +---------------+---------------+----------+-------+-------+
 |/PR            |Projects       |jdoe      |   1.00|   1.00|
 |/PR            |Projects       |wsmith    |   0.75|   1.00|
@@ -67,7 +67,7 @@ taskDepth=1
 byContributor=true
 orderByContributor=true
 +----------+---------------+---------------+-------+-------+
-|Contribut…|Path           |Name           | 160117| 170117|
+|Contribut.|Path           |Name           | 160117| 170117|
 +----------+---------------+---------------+-------+-------+
 |jdoe      |/PR            |Projects       |   1.00|   1.00|
 |wsmith    |/PR            |Projects       |   0.75|   1.00|
@@ -117,7 +117,7 @@ taskDepth=0
 byContributor=true
 orderByContributor=false
 +----------+-------+-------+
-|Contribut…| 160117| 170117|
+|Contribut.| 160117| 170117|
 +----------+-------+-------+
 |jdoe      |   1.00|   1.00|
 |wsmith    |   1.00|   1.00|

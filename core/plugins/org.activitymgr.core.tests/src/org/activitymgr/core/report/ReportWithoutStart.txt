@@ -7,7 +7,7 @@ taskDepth=10
 byContributor=true
 orderByContributor=false
 +---------------+---------------+----------+-------+-------+-------+
-|Path           |Name           |Contribut…|   2016|   2017|   2018|
+|Path           |Name           |Contribut.|   2016|   2017|   2018|
 +---------------+---------------+----------+-------+-------+-------+
 |/PR/PA/SPE     |Specification  |jdoe      |   1.00|   1.50|   0.00|
 |/PR/PA/SPE     |Specification  |wsmith    |   1.00|   1.50|   0.00|
@@ -32,7 +32,7 @@ taskDepth=10
 byContributor=true
 orderByContributor=false
 +---------------+---------------+----------+-------+-------+-------+
-|Path           |Name           |Contribut…|   1216|   0117|   0217|
+|Path           |Name           |Contribut.|   1216|   0117|   0217|
 +---------------+---------------+----------+-------+-------+-------+
 |/PR/PA/SPE     |Specification  |jdoe      |   1.00|   1.25|   0.25|
 |/PR/PA/SPE     |Specification  |wsmith    |   1.00|   1.25|   0.25|
@@ -57,7 +57,7 @@ taskDepth=10
 byContributor=true
 orderByContributor=false
 +---------------+---------------+----------+-------+-------+-------+
-|Path           |Name           |Contribut…| S50-16| S51-16| S52-16|
+|Path           |Name           |Contribut.| S50-16| S51-16| S52-16|
 +---------------+---------------+----------+-------+-------+-------+
 |/PR/PA/SPE     |Specification  |jdoe      |   0.25|   0.25|   0.25|
 |/PR/PA/SPE     |Specification  |wsmith    |   0.25|   0.25|   0.25|
@@ -82,7 +82,7 @@ taskDepth=10
 byContributor=true
 orderByContributor=false
 +---------------+---------------+----------+-------+-------+-------+
-|Path           |Name           |Contribut…| 051216| 061216| 071216|
+|Path           |Name           |Contribut.| 051216| 061216| 071216|
 +---------------+---------------+----------+-------+-------+-------+
 |/PR/PA/SPE     |Specification  |jdoe      |   0.25|   0.00|   0.00|
 |/PR/PA/SPE     |Specification  |wsmith    |   0.25|   0.00|   0.00|
