@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -149,7 +150,7 @@ public class ReportTest extends AbstractModelTestCase {
 		String testName = getName();
 		String fileName = testName.substring(4) + ".txt";
 		System.out.println(fileName);
-		BufferedReader in = new BufferedReader(new InputStreamReader(ReportTest.class.getResourceAsStream(fileName)));
+		BufferedReader in = new BufferedReader(new InputStreamReader(ReportTest.class.getResourceAsStream(fileName), Charset.forName("UTF-8")));
 		String line = "";
 
 		Properties props = new Properties();
