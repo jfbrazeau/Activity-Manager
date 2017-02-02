@@ -139,7 +139,7 @@ public abstract class AbstractORMDAOImpl<TYPE> extends AbstractDAOImpl implement
 	}
 
 	@Override
-	public String getColumnNamesRequestFragment(String tableAliasToUse) {
+	public final String getColumnNamesRequestFragment(String tableAliasToUse) {
 		String columnNamesRequestFragment = columnNamesRequestFragmentByTableAlias.get(tableAliasToUse);
 		if (columnNamesRequestFragment == null) {
 			columnNamesRequestFragment = wrapped.getColumnNamesRequestFragment(tableAliasToUse, true);
