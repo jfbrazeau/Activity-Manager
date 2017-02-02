@@ -31,7 +31,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -67,6 +69,7 @@ import org.activitymgr.core.dto.misc.TaskSearchFilter;
 import org.activitymgr.core.dto.misc.TaskSums;
 import org.activitymgr.core.dto.report.Report;
 import org.activitymgr.core.dto.report.ReportIntervalType;
+import org.activitymgr.core.dto.report.ReportItem;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.model.XLSModelException;
@@ -81,9 +84,11 @@ import org.activitymgr.core.util.DateHelper;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
+import org.activitymgr.core.util.WorkbookBuilder;
 import org.apache.commons.beanutils.BeanUtilsBean2;
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Cell;
@@ -2208,6 +2213,97 @@ public class ModelMgrImpl implements IModelMgr {
 		return reportDAO.buildReport(start, intervalType, intervalCount, rootTask, taskDepth, byContributor, orderByContributor);
 	}
 
+	@Override
+	public Workbook buildReport(Calendar start,
+			ReportIntervalType intervalType, Integer intervalCount,
+			Long rootTaskId, int taskDepth, boolean byContributor,
+			boolean orderByContributor, Collection<String> taskXlsColumns,
+			Collection<String> collaboratorXlsColumns) throws ModelException {
+		// Check attributes to include
+		if (taskDepth > 0 && taskXlsColumns.size() == 0) {
+			throw new ModelException(Strings.getString("ModelMgr.errors.BAD_REPORT_PARAMS_EMPTY_TASK_ATTRIBUTES"));
+		}
+		else if (byContributor && collaboratorXlsColumns.size() == 0) {
+			throw new ModelException(Strings.getString("ModelMgr.errors.BAD_REPORT_PARAMS_EMPTY_COLLABORATOR_ATTRIBUTES"));
+		}
+		
+		// Build raw report
+		Report report = buildReport(start, intervalType, intervalCount, rootTaskId, taskDepth, byContributor, orderByContributor);
+
+		// Convert report to XLS
+		String rootTaskPath = null;
+		if (rootTaskId != null) {
+			Task rootTask = taskDAO.selectByPK(rootTaskId);
+			rootTaskPath = getTaskCodePath(rootTask);
+		}
+		boolean byTask = (taskDepth > 0);
+		SimpleDateFormat xlsSdf = new SimpleDateFormat("MM/yy");
+		WorkbookBuilder wb = new WorkbookBuilder();
+		Workbook workbook = wb.getWorkbook();
+		Sheet sheet = workbook.createSheet("Report");
+		Row headerRow = sheet.createRow(sheet.getLastRowNum());
+		int colIdx = 0;
+		if (rootTaskPath != null) {
+			wb.asHeaderCellStyl(headerRow.createCell(colIdx++)).setCellValue("Root path");
+		}
+		if (byTask) {
+			wb.asHeaderCellStyl(headerRow.createCell(colIdx++)).setCellValue("Path");
+			wb.asHeaderCellStyl(headerRow.createCell(colIdx++)).setCellValue("Task");
+		}
+		if (byContributor) {
+			wb.asHeaderCellStyl(headerRow.createCell(colIdx++)).setCellValue("Login");
+		}
+		
+		Collection<Calendar> dates = report.getDates();
+		for (Calendar date : dates) {
+			String week = xlsSdf.format(date.getTime());
+			wb.asHeaderCellStyl(headerRow.createCell(colIdx)).setCellValue(week);
+			sheet.setColumnWidth(colIdx, 1900);
+			colIdx++;
+		}
+		
+		for (ReportItem item : report.getItems()) {
+			Row row = sheet.createRow(sheet.getLastRowNum()+1);
+			colIdx = 0;
+			if (rootTaskPath != null) {
+				wb.asBodyCellStyl(row.createCell(colIdx++)).setCellValue(rootTaskPath);
+			}
+			if (byTask) {
+				StringWriter sw = new StringWriter();
+				for (Task cursor : item.getTasks()) {
+					sw.append('/').append(cursor.getCode());
+				}
+				wb.asBodyCellStyl(row.createCell(colIdx++)).setCellValue(sw.toString());
+				wb.asBodyCellStyl(row.createCell(colIdx++)).setCellValue(item.getContributedTask().getName());
+			}
+			if (byContributor) {
+				wb.asBodyCellStyl(row.createCell(colIdx++)).setCellValue(((Collaborator)item.getContributor()).getLogin());
+			}
+			for (int i=0; i<dates.size(); i++) {
+				wb.asBodyCellStyl(row.createCell(colIdx++)).setCellValue(item.getContributionSum(i)/100d);
+			}
+		}
+		
+
+		
+		// Autosize code & name columns
+		colIdx = 0;
+		if (rootTaskPath != null) {
+			sheet.autoSizeColumn(colIdx++); // Root path
+		}
+		if (byTask) {
+			sheet.autoSizeColumn(colIdx++); // Path
+			sheet.autoSizeColumn(colIdx++); // Task 
+		}
+		if (byContributor) {
+			sheet.autoSizeColumn(colIdx++); // Contributor
+		}
+		
+		// Freeze
+		sheet.createFreezePane(colIdx, 1);
+		return workbook;
+	}
+	
 	private void prepareCalendarForReport(Calendar start, ReportIntervalType intervalType) {
 		switch (intervalType) {
 		case YEAR :

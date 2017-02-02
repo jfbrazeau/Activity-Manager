@@ -66,6 +66,7 @@ public class MainView extends ViewPart {
 	private static TabItem collaboratorsTab;
 	private static TabItem tasksTab;
 	private static TabItem contributionsTab;
+	private static TabItem reportsTab;
 	private static TabItem aboutTab;
 
 	/** Contenu des onglets */
@@ -73,6 +74,7 @@ public class MainView extends ViewPart {
 	private static DurationsUI durationsUI;
 	private static CollaboratorsUI collaboratorsUI;
 	private static TasksUI tasksUI;
+	private static ReportsUI reportsUI;
 	private static ContributionsUI contributionsUI;
 
 	/** Model manager */
@@ -86,7 +88,7 @@ public class MainView extends ViewPart {
 	 * it.
 	 */
 	public void createPartControl(Composite parent) {
-		// Création du groupe d'onglets
+		// Tab folder creation
 		final TabFolder tabFolder = new TabFolder(parent, SWT.TOP);
 		tabFolder
 				.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -94,40 +96,45 @@ public class MainView extends ViewPart {
 		// TODO move the core module & model manager initialization 
 		initialize();
 		
-		// Création de l'onglet de paramétrage de l'accès à la base de
-		// données
+		// Database access configuration tab
 		databaseTab = new TabItem(tabFolder, SWT.NONE);
 		databaseTab.setText(Strings.getString("Main.tabs.DATABASE")); //$NON-NLS-1$
 		databaseUI = new DatabaseUI(databaseTab, modelMgr, factory);
 
-		// Création de l'onglet de gestion des durées
+		// Durations tab creation
 		durationsTab = new TabItem(tabFolder, SWT.NONE);
 		durationsTab.setText(Strings.getString("Main.tabs.DURATIONS")); //$NON-NLS-1$
 		durationsUI = new DurationsUI(durationsTab, modelMgr, factory);
 
-		// Création de l'onglet de gestion des collaborateurs
+		// Collaborators tab creation
 		collaboratorsTab = new TabItem(tabFolder, SWT.NONE);
 		collaboratorsTab.setText(Strings
 				.getString("Main.tabs.COLLABORATORS")); //$NON-NLS-1$
 		collaboratorsUI = new CollaboratorsUI(collaboratorsTab, modelMgr);
 
-		// Création de l'onglet de gestion des taches
+		// Tasks tab creation
 		tasksTab = new TabItem(tabFolder, SWT.NONE);
 		tasksTab.setText(Strings.getString("Main.tabs.TASKS")); //$NON-NLS-1$
 		tasksUI = new TasksUI(tasksTab, modelMgr);
 
-		// Création de l'onglet de gestion des contributions
+		// Contributions tab creation
 		contributionsTab = new TabItem(tabFolder, SWT.NONE);
 		contributionsTab.setText(Strings
 				.getString("Main.tabs.CONTRIBUTIONS")); //$NON-NLS-1$
 		contributionsUI = new ContributionsUI(contributionsTab, modelMgr, factory);
 
-		// Création de l'onglet contenant les informations générales
+		// Report tab creation
+		reportsTab = new TabItem(tabFolder, SWT.NONE);
+		reportsTab.setText(Strings
+				.getString("Main.tabs.REPORTS")); //$NON-NLS-1$
+		reportsUI = new ReportsUI(reportsTab, modelMgr, factory);
+
+		// General informations tab creation
 		aboutTab = new TabItem(tabFolder, SWT.NONE);
 		aboutTab.setText(Strings.getString("Main.tabs.ABOUT")); //$NON-NLS-1$
 		new AboutUI(aboutTab);
 
-		// Enregistrement des listeners
+		// Listeners registering
 		databaseUI.addDbStatusListener(durationsUI);
 		databaseUI.addDbStatusListener(collaboratorsUI);
 		databaseUI.addDbStatusListener(tasksUI);
@@ -137,7 +144,7 @@ public class MainView extends ViewPart {
 		tasksUI.addTaskListener(contributionsUI);
 		contributionsUI.addContributionListener(tasksUI);
 
-		// Barre de statut
+		// Status bar
 		final IStatusLineManager statusBar = getViewSite().getActionBars().getStatusLineManager();
 		final Shell shell = parent.getShell();
 		IDbStatusListener dbStatusListener = new IDbStatusListener() {
@@ -163,7 +170,7 @@ public class MainView extends ViewPart {
 		};
 		databaseUI.addDbStatusListener(dbStatusListener);
 		dbStatusListener.databaseClosed();
-		// Initialisation des attributs de connexion par défaut
+		// Default connection parameters initialization
 		databaseUI.initUI();
 	}
 

@@ -45,6 +45,7 @@ import org.activitymgr.core.dto.misc.TaskSearchFilter;
 import org.activitymgr.core.dto.misc.TaskSums;
 import org.activitymgr.core.dto.report.Report;
 import org.activitymgr.core.dto.report.ReportIntervalType;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.xml.sax.SAXException;
 
 /**
@@ -820,4 +821,46 @@ public interface IModelMgr {
 			Integer intervalCount, Long rootTaskId, int taskDepth,
 			boolean byContributor, boolean orderByContributor)
 			throws ModelException;
+	
+	/**
+	 * Builds a report and converts it in Excel format.
+	 * 
+	 * @param start
+	 *            the start date to consider [Optional]. If omitted, the first
+	 *            contribution in the database will be considered.
+	 * @param intervalType
+	 *            the interval type (days, weeks, months, years) [Required].
+	 * @param intervalCount
+	 *            the interval count to cover [Optional]. If omitted, the last
+	 *            contribution in the database will be considered.
+	 * @param rootTaskId
+	 *            the root task identifier [Optional]. If omitted, the whole
+	 *            database will be considered.
+	 * @param taskDepth
+	 *            the task depth to consider [Required]. If this is equal to 0,
+	 *            no task will appear in the report (all tasks contributions
+	 *            will be cumulated).
+	 * @param byContributor
+	 *            <code>true</code> if the report must decline contributions by
+	 *            contributors.
+	 * @param orderByContributor
+	 *            <code>true</code> if the report must be ordered by
+	 *            contributors and then by tasks or the inverse. If
+	 *            <code>(byContributor == false) || (taskDepth <= 0)</code>, it
+	 *            has no effect.
+	 * @param taskXlsColumns
+	 *            the task attributes to include as EXCEL columns.
+	 * @param collaboratorXlsColumns
+	 *            the collaborator attributes to include as EXCEL columns.
+	 * @return the report.
+	 * @throws ModelException
+	 *             if start date is not specified and no contribution exist in
+	 *             the database.
+	 */
+	Workbook buildReport(Calendar start, ReportIntervalType intervalType,
+			Integer intervalCount, Long rootTaskId, int taskDepth,
+			boolean byContributor, boolean orderByContributor,
+			Collection<String> taskXlsColumns,
+			Collection<String> collaboratorXlsColumns) throws ModelException;
+
 }

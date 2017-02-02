@@ -31,6 +31,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.activitymgr.core.util.Strings;
+import org.activitymgr.core.util.WorkbookBuilder;
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -38,6 +39,10 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.FileDialog;
@@ -105,7 +110,7 @@ public class SWTHelper {
 				if (!fileName.endsWith(".xls")) //$NON-NLS-1$
 					fileName += ".xls"; //$NON-NLS-1$
 				// Sauvegarde du document
-				HSSFWorkbook wb = toWorkBook(tree);
+				Workbook wb = toWorkBook(tree);
 				FileOutputStream out = new FileOutputStream(fileName);
 				wb.write(out);
 				out.close();
@@ -124,43 +129,28 @@ public class SWTHelper {
 	 *            l'arbre à convertir.
 	 * @return le classeur EXCEL.
 	 */
-	public static HSSFWorkbook toWorkBook(Tree tree) {
+	public static Workbook toWorkBook(Tree tree) {
 		// Création du fichier EXCEL et du feuillet
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet = wb.createSheet(Strings
+		WorkbookBuilder wb = new WorkbookBuilder();
+		Workbook workbook = wb.getWorkbook();
+		Sheet sheet = workbook.createSheet(Strings
 				.getString("SWTHelper.excelsheet.TAB_NAME")); //$NON-NLS-1$
 		sheet.createFreezePane(0, 1, 0, 1);
 		sheet.setColumnWidth(0, 10000);
-		// Création du style de l'entête
-		HSSFCellStyle headerCellStyle = wb.createCellStyle();
-		headerCellStyle.setFillForegroundColor(HSSFColor.GREY_25_PERCENT.index);
-		headerCellStyle.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
-		headerCellStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
-		headerCellStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
-		headerCellStyle.setBorderLeft(headerCellStyle.getBorderBottom());
-		headerCellStyle.setBorderRight(headerCellStyle.getBorderBottom());
-		headerCellStyle.setBorderTop(headerCellStyle.getBorderBottom());
 		// Création de l'entête
-		HSSFRow row = sheet.createRow(0);
+		Row row = sheet.createRow(0);
 		TreeColumn[] columns = tree.getColumns();
 		for (int i = 0; i < columns.length; i++) {
 			TreeColumn column = columns[i];
 			sheet.setColumnWidth(i, (column.getWidth() * 50));
-			HSSFCell cell = row.createCell(i);
-			cell.setCellValue(column.getText());
-			cell.setCellStyle(headerCellStyle);
+			Cell cell = row.createCell(i);
+			wb.asHeaderCellStyl(cell).setCellValue(column.getText());
 		}
-		// Création du style des cellules
-		HSSFCellStyle bodyCellStyle = wb.createCellStyle();
-		bodyCellStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
-		bodyCellStyle.setBorderLeft(bodyCellStyle.getBorderBottom());
-		bodyCellStyle.setBorderRight(bodyCellStyle.getBorderBottom());
-		bodyCellStyle.setBorderTop(bodyCellStyle.getBorderBottom());
 		// Exportation des lignes du tableau
 		TreeItem[] items = tree.getItems();
-		appendToWorkbook("", sheet, bodyCellStyle, items, columns.length); //$NON-NLS-1$
+		appendToWorkbook("", wb, sheet, items, columns.length); //$NON-NLS-1$
 		// Retour du résultat
-		return wb;
+		return workbook;
 	}
 
 	/**
@@ -170,34 +160,33 @@ public class SWTHelper {
 	 * @param indent
 	 *            l'indentiation à appliquer (plus la profondeur dans l'arbre
 	 *            est élevée, plus l'indentation est longue).
+	 * @param wb
+	 *            the workbook builder.
 	 * @param sheet
 	 *            le feuillet EXCEL.
-	 * @param cellStyle
-	 *            le style de la cellule.
 	 * @param treeItems
 	 *            les élements.
 	 * @param columnsNb
 	 *            le nombre de colonnes à exporter dans le feuillet.
 	 */
-	private static void appendToWorkbook(String indent, HSSFSheet sheet,
-			HSSFCellStyle cellStyle, TreeItem[] treeItems, int columnsNb) {
+	private static void appendToWorkbook(String indent, WorkbookBuilder wb, Sheet sheet,
+			TreeItem[] treeItems, int columnsNb) {
 		log.debug("sheet.getLastRowNum() : " + sheet.getLastRowNum()); //$NON-NLS-1$
 		int startRowNum = sheet.getLastRowNum() + 1;
 		for (int i = 0; i < treeItems.length; i++) {
 			TreeItem treeItem = treeItems[i];
 			log.debug(" +-> TreeItem : " + i + ", expanded=" + treeItem.getExpanded() + ", data='" + treeItem.getData() + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			if (treeItem.getData() != null) {
-				HSSFRow row = sheet
+				Row row = sheet
 						.createRow(sheet.getLastRowNum() + 1);
 				String rowName = treeItem.getText(0);
 				log.debug("  +-> Row : '" + rowName + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-				HSSFCell cell = row.createCell(0);
-				cell.setCellValue(indent + rowName);
-				cell.setCellStyle(cellStyle);
+				Cell cell = row.createCell(0);
+				wb.asBodyCellStyl(cell).setCellValue(indent + rowName);
 				for (int j = 1; j < columnsNb; j++) {
 					log.debug("  +-> Cell : " + j + ", '" + treeItem.getText(j) + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					cell = row.createCell(j);
-					cell.setCellStyle(cellStyle);
+					wb.asBodyCellStyl(cell);
 					String cellValue = treeItem.getText(j);
 					try {
 						cell.setCellValue(Integer.parseInt(cellValue));
@@ -211,7 +200,7 @@ public class SWTHelper {
 				}
 				if (treeItem.getExpanded())
 					appendToWorkbook(
-							indent + "    ", sheet, cellStyle, treeItem.getItems(), columnsNb); //$NON-NLS-1$
+							indent + "    ", wb, sheet, treeItem.getItems(), columnsNb); //$NON-NLS-1$
 			}
 		}
 		int endRowNum = sheet.getLastRowNum();
@@ -243,7 +232,7 @@ public class SWTHelper {
 				if (!fileName.endsWith(".xls")) //$NON-NLS-1$
 					fileName += ".xls"; //$NON-NLS-1$
 				// Sauvegarde du document
-				HSSFWorkbook wb = toWorkBook(table);
+				Workbook wb = toWorkBook(table);
 				FileOutputStream out = new FileOutputStream(fileName);
 				wb.write(out);
 				out.close();
@@ -262,42 +251,27 @@ public class SWTHelper {
 	 *            le tableau à convertir.
 	 * @return le classeur EXCEL.
 	 */
-	public static HSSFWorkbook toWorkBook(Table table) {
+	public static Workbook toWorkBook(Table table) {
 		// Création du fichier EXCEL et du feuillet
-		HSSFWorkbook wb = new HSSFWorkbook();
-		HSSFSheet sheet = wb.createSheet(Strings
+		WorkbookBuilder wb = new WorkbookBuilder();
+		Workbook workbook = wb.getWorkbook();
+		Sheet sheet = workbook.createSheet(Strings
 				.getString("SWTHelper.excelsheet.TAB_NAME")); //$NON-NLS-1$
 		sheet.createFreezePane(0, 1, 0, 1);
-		// Création du style de l'entête
-		HSSFCellStyle headerCellStyle = wb.createCellStyle();
-		headerCellStyle.setFillForegroundColor(HSSFColor.GREY_25_PERCENT.index);
-		headerCellStyle.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
-		headerCellStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
-		headerCellStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
-		headerCellStyle.setBorderLeft(headerCellStyle.getBorderBottom());
-		headerCellStyle.setBorderRight(headerCellStyle.getBorderBottom());
-		headerCellStyle.setBorderTop(headerCellStyle.getBorderBottom());
 		// Création de l'entête
-		HSSFRow row = sheet.createRow(0);
+		Row row = sheet.createRow(0);
 		TableColumn[] columns = table.getColumns();
 		for (int i = 0; i < columns.length; i++) {
 			TableColumn column = columns[i];
 			sheet.setColumnWidth(i, column.getWidth() * 50);
-			HSSFCell cell = row.createCell(i);
-			cell.setCellValue(column.getText());
-			cell.setCellStyle(headerCellStyle);
+			Cell cell = row.createCell(i);
+			wb.asHeaderCellStyl(cell).setCellValue(column.getText());
 		}
-		// Création du style des cellules
-		HSSFCellStyle bodyCellStyle = wb.createCellStyle();
-		bodyCellStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
-		bodyCellStyle.setBorderLeft(bodyCellStyle.getBorderBottom());
-		bodyCellStyle.setBorderRight(bodyCellStyle.getBorderBottom());
-		bodyCellStyle.setBorderTop(bodyCellStyle.getBorderBottom());
 		// Exportation des lignes du tableau
 		TableItem[] items = table.getItems();
-		appendToWorkbook(sheet, bodyCellStyle, items, columns.length);
+		appendToWorkbook(wb, sheet, items, columns.length);
 		// Retour du résultat
-		return wb;
+		return workbook;
 	}
 
 	/**
@@ -312,25 +286,24 @@ public class SWTHelper {
 	 * @param columnsNb
 	 *            le nombre de colonnes à exporter dans le feuillet.
 	 */
-	private static void appendToWorkbook(HSSFSheet sheet,
-			HSSFCellStyle cellStyle, TableItem[] tableItems, int columnsNb) {
+	private static void appendToWorkbook(WorkbookBuilder wb, Sheet sheet,
+			TableItem[] tableItems, int columnsNb) {
 		log.debug("sheet.getLastRowNum() : " + sheet.getLastRowNum()); //$NON-NLS-1$
 		int startRowNum = sheet.getLastRowNum() + 1;
 		for (int i = 0; i < tableItems.length; i++) {
 			TableItem tableItem = tableItems[i];
 			log.debug(" +-> TreeItem : " + i + ", data='" + tableItem.getData() + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			if (tableItem.getData() != null) {
-				HSSFRow row = sheet
+				Row row = sheet
 						.createRow(sheet.getLastRowNum() + 1);
 				String rowName = tableItem.getText(0);
 				log.debug("  +-> Row : '" + rowName + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-				HSSFCell cell = row.createCell(0);
-				cell.setCellValue(rowName);
-				cell.setCellStyle(cellStyle);
+				Cell cell = row.createCell(0);
+				wb.asBodyCellStyl(cell).setCellValue(rowName);
 				for (int j = 1; j < columnsNb; j++) {
 					log.debug("  +-> Cell : " + j + ", '" + tableItem.getText(j) + "'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					cell = row.createCell(j);
-					cell.setCellStyle(cellStyle);
+					wb.asBodyCellStyl(cell);
 					String cellValue = tableItem.getText(j);
 					try {
 						cell.setCellValue(Integer.parseInt(cellValue));
