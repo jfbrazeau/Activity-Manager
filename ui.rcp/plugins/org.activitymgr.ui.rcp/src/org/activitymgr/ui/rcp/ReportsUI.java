@@ -31,10 +31,14 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.activitymgr.core.dto.IDTOFactory;
@@ -43,12 +47,16 @@ import org.activitymgr.core.dto.report.ReportIntervalType;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.DateHelper;
+import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.dialogs.ErrorDialog;
 import org.activitymgr.ui.rcp.dialogs.TaskChooserTreeWithHistoryDialog;
-import org.activitymgr.ui.rcp.dialogs.TasksChooserDialog;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -61,34 +69,76 @@ import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 
 public class ReportsUI {
 
-	private static final String BUDGET_ATTRIBUTE = "budget";
+	private static final class ColumnElementsComparator implements
+			Comparator<String> {
 
-	private static final String NAME_ATTRIBUTE = "name";
+		private Button orderByTasksButton;
+		private java.util.List<String> itemOrder;
 
-	private static final String CODE_ATTRIBUTE = "code";
+		public ColumnElementsComparator(Button orderByTasksButton,
+				java.util.List<String> itemOrder) {
+			this.orderByTasksButton = orderByTasksButton;
+			this.itemOrder = itemOrder;
+		}
 
-	private static final String PATH_ATTRIBUTE = "path";
+		@Override
+		public int compare(String id1, String id2) {
+			int idx = id1.indexOf('.');
+			String obj1 = id1.substring(0, idx);
 
-	private static final String IS_ACTIVE_ATTRIBUTE = "is active";
+			idx = id2.indexOf('.');
+			String obj2 = id2.substring(0, idx);
 
-	private static final String LAST_NAME_ATTRIBUTE = "last name";
+			// Object part is more significant
+			int compare = obj1.compareTo(obj2);
+			// If not significant, field name becomes significant
+			if (compare == 0) {
+				return new Integer(itemOrder.indexOf(id1)).compareTo(itemOrder
+						.indexOf(id2));
+			} else if (orderByTasksButton.getSelection()) {
+				return -compare;
+			} else {
+				return compare;
+			}
+		}
 
-	private static final String FIRST_NAME_ATTRIBUTE = "first name";
+	}
 
-	private static final String LOGIN_ATTRIBUTE = "login";
+	private static final String PATH_ATTRIBUTE = "task.path";
+
+	private static final String CODE_ATTRIBUTE = "task.code";
+
+	private static final String NAME_ATTRIBUTE = "task.name";
+
+	private static final String COMMENT_ATTRIBUTE = "task.comment";
+
+	private static final String BUDGET_ATTRIBUTE = "task.budget";
+
+	private static final String INITIALLY_CONSUMED_ATTRIBUTE = "task.initiallyConsumed";
+
+	private static final String ETC_ATTRIBUTE = "task.etc";
+
+	private static final String IS_ACTIVE_ATTRIBUTE = "collaborator.isActive";
+
+	private static final String LAST_NAME_ATTRIBUTE = "collaborator.lastName";
+
+	private static final String FIRST_NAME_ATTRIBUTE = "collaborator.firstName";
+
+	private static final String LOGIN_ATTRIBUTE = "collaborator.login";
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(ReportsUI.class);
 
 	/** Model manager */
 	private IModelMgr modelMgr;
-	
+
 	/** Composant parent */
 	private Composite parent;
 
@@ -113,9 +163,7 @@ public class ReportsUI {
 
 	private DateTime endDateTime;
 
-	private Map<String, Button> collaboratorFieldButtonsMap;
-
-	private Map<String, Button> taskFieldButtonsMap;
+	private Map<String, Button> attributesCheckboxesMap = new LinkedHashMap<String, Button>();
 
 	private Button includeTasksButton;
 
@@ -134,7 +182,21 @@ public class ReportsUI {
 	private Button filterByTaskSelectButton;
 
 	private TaskChooserTreeWithHistoryDialog taskChooserDialog;
-	
+
+	private Button automaticColumnsOrderButton;
+
+	private Button customColumnsOrderButton;
+
+	private Button upButton;
+
+	private Button downButton;
+
+	private ListViewer columnsOrderViewer;
+
+	private java.util.List<String> columnsOrderElements;
+
+	private ColumnElementsComparator columnElementsComparator;
+
 	/**
 	 * Default constructor intended to be used from within a tab.
 	 * 
@@ -142,7 +204,8 @@ public class ReportsUI {
 	 *            item parent.
 	 * @param modelMgr
 	 *            the model manager instance.
-	 *            @param factory the {@link IDTOFactory DTO factory}.
+	 * @param factory
+	 *            the {@link IDTOFactory DTO factory}.
 	 */
 	public ReportsUI(TabItem tabItem, IModelMgr modelMgr, IDTOFactory factory) {
 		this(tabItem.getParent(), modelMgr, factory);
@@ -159,25 +222,27 @@ public class ReportsUI {
 	 * @param factory
 	 *            bean factory.
 	 */
-	public ReportsUI(Composite parentComposite, final IModelMgr modelMgr, IDTOFactory factory) {
+	public ReportsUI(Composite parentComposite, final IModelMgr modelMgr,
+			IDTOFactory factory) {
 		this.modelMgr = modelMgr;
 		this.factory = factory;
 
 		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
 		parent.setLayout(new GridLayout(1, false));
-		
+
 		// Report configuration form creation
 		Composite cfgParent = new Composite(parent, SWT.NONE);
-		cfgParent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		cfgParent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 		cfgParent.setLayout(new GridLayout(1, false));
-		
+
 		// Interval grop
 		Group intervalGroup = new Group(cfgParent, SWT.SHADOW_OUT);
 		intervalGroup.setLayout(new GridLayout(2, false));
-		intervalGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		intervalGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
+				false));
 		intervalGroup.setText("Interval configuration");
-		
+
 		new Label(intervalGroup, SWT.NONE).setText("Interval unit :");
 		Composite intervalTypeGroup = new Composite(intervalGroup, SWT.NONE);
 		intervalTypeGroup.setLayout(new RowLayout());
@@ -191,20 +256,28 @@ public class ReportsUI {
 		yearButton.setText("Year");
 
 		new Label(intervalGroup, SWT.NONE).setText("Interval bounds mode :");
-		Composite intervalBoundsTypeGroup = new Composite(intervalGroup, SWT.NONE);
+		Composite intervalBoundsTypeGroup = new Composite(intervalGroup,
+				SWT.NONE);
 		intervalBoundsTypeGroup.setLayout(new RowLayout());
-		automaticIntervalBoundsTypeRadio = new Button(intervalBoundsTypeGroup, SWT.RADIO);
+		automaticIntervalBoundsTypeRadio = new Button(intervalBoundsTypeGroup,
+				SWT.RADIO);
 		automaticIntervalBoundsTypeRadio.setText("Automatic");
-		lowerBoundIntervalBoundsTypeRadio = new Button(intervalBoundsTypeGroup, SWT.RADIO);
+		lowerBoundIntervalBoundsTypeRadio = new Button(intervalBoundsTypeGroup,
+				SWT.RADIO);
 		lowerBoundIntervalBoundsTypeRadio.setText("Lower bound");
-		bothBoundsIntervalBoundsTypeRadio = new Button(intervalBoundsTypeGroup, SWT.RADIO);
+		bothBoundsIntervalBoundsTypeRadio = new Button(intervalBoundsTypeGroup,
+				SWT.RADIO);
 		bothBoundsIntervalBoundsTypeRadio.setText("Both bounds");
 
 		new Label(intervalGroup, SWT.NONE).setText("Interval bounds :");
 		Composite intervalDatesGroup = new Composite(intervalGroup, SWT.NONE);
-		intervalDatesGroup.setLayout(new GridLayout(4, false));
-		startDateTime = new DateTime(intervalDatesGroup, SWT.DATE | SWT.CALENDAR | SWT.DROP_DOWN);
-		endDateTime = new DateTime(intervalDatesGroup, SWT.DATE | SWT.CALENDAR | SWT.DROP_DOWN);
+		intervalDatesGroup.setLayout(new GridLayout(3, false));
+		startDateTime = new DateTime(intervalDatesGroup, SWT.DATE
+				| SWT.CALENDAR | SWT.DROP_DOWN);
+		endDateTime = new DateTime(intervalDatesGroup, SWT.DATE | SWT.CALENDAR
+				| SWT.DROP_DOWN);
+		new Label(intervalDatesGroup, SWT.NONE)
+				.setText("(ignored if automatic mode is selected)");
 
 		// Task group
 		Group taskGroup = new Group(cfgParent, SWT.SHADOW_OUT);
@@ -212,78 +285,155 @@ public class ReportsUI {
 		taskGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		taskGroup.setText("Task management");
 		filterByTaskCheckbox = new Button(taskGroup, SWT.CHECK);
-		filterByTaskCheckbox.setText("Limit task scope to root path :");
+		filterByTaskCheckbox.setText("Limit task scope to :");
 		filterByTaskText = new Text(taskGroup, SWT.NONE);
 		filterByTaskText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		filterByTaskSelectButton = new Button(taskGroup, SWT.NONE);
 		filterByTaskSelectButton.setText("...");
-		
+
 		includeTasksButton = new Button(taskGroup, SWT.CHECK);
-		includeTasksButton.setText("Include tasks until depth :");
-		taskDepthSpinner = new Spinner(taskGroup, SWT.NONE);
+		GridData includeTasksButtonGridData = new GridData();
+		includeTasksButtonGridData.horizontalSpan = 3;
+		includeTasksButton.setLayoutData(includeTasksButtonGridData);
+		includeTasksButton.setText("Decline resultset by task");
+
+		new Label(taskGroup, SWT.NONE).setText("Task tree depth :");
 		GridData taskDepthSpinnerGridData = new GridData();
 		taskDepthSpinnerGridData.horizontalSpan = 2;
-		taskDepthSpinner.setLayoutData(taskDepthSpinnerGridData);
+		Composite taskDepthSpinnerComposite = new Composite(taskGroup, SWT.NONE);
+		taskDepthSpinnerComposite.setLayoutData(taskDepthSpinnerGridData);
+		taskDepthSpinnerComposite.setLayout(new GridLayout(2, false));
+		taskDepthSpinner = new Spinner(taskDepthSpinnerComposite, SWT.NONE);
 		taskDepthSpinner.setMinimum(1);
+		new Label(taskDepthSpinnerComposite, SWT.NONE)
+				.setText("(contributions of deeper depth will be aggregated)");
 
 		new Label(taskGroup, SWT.NONE).setText("Columns to include :");
-		Composite taskColumnsGroup = new Composite(taskGroup, SWT.SHADOW_OUT);
-		RowLayout taskColumnsGroupLayout = new RowLayout();
-		taskColumnsGroupLayout.marginLeft = 0;
-		taskColumnsGroup.setLayout(taskColumnsGroupLayout);
-		GridData taskColumnsGroupGridData = new GridData(SWT.FILL, SWT.FILL, true, false);
-		taskColumnsGroupGridData.horizontalSpan = 2;
-		taskColumnsGroup.setLayoutData(taskColumnsGroupGridData);
-		taskColumnsGroup.setLayout(new GridLayout(4, false));
-		taskFieldButtonsMap = buildCheckboxes(taskColumnsGroup, PATH_ATTRIBUTE, CODE_ATTRIBUTE, NAME_ATTRIBUTE, BUDGET_ATTRIBUTE);
-		
+		buildCheckboxes(taskGroup, 2, PATH_ATTRIBUTE, CODE_ATTRIBUTE,
+				NAME_ATTRIBUTE, COMMENT_ATTRIBUTE);
+		new Label(taskGroup, SWT.NONE).setText("");
+		buildCheckboxes(taskGroup, 2, BUDGET_ATTRIBUTE,
+				INITIALLY_CONSUMED_ATTRIBUTE, ETC_ATTRIBUTE);
+
 		// Collaborator group
 		Group collaboratorGroup = new Group(cfgParent, SWT.SHADOW_OUT);
 		collaboratorGroup.setLayout(new GridLayout(2, false));
-		collaboratorGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		collaboratorGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
+				false));
 		collaboratorGroup.setText("Collaborator management");
 		includeCollaboratorsButton = new Button(collaboratorGroup, SWT.CHECK);
-		includeCollaboratorsButton.setText("Include collaborators");
-		new Label(collaboratorGroup, SWT.NONE); // Fake label just to use the grid layout cell
+		GridData includeCollaboratorsButtonGridData = new GridData();
+		includeCollaboratorsButtonGridData.horizontalSpan = 2;
+		includeCollaboratorsButton.setText("Decline resultset by contributor");
+		includeCollaboratorsButton
+				.setLayoutData(includeCollaboratorsButtonGridData);
 
 		new Label(collaboratorGroup, SWT.NONE).setText("Columns to include : ");
-		Composite collaboratorColumnsGroup = new Composite(collaboratorGroup, SWT.SHADOW_OUT);
-		collaboratorColumnsGroup.setLayout(new GridLayout(4, false));
-		collaboratorFieldButtonsMap = buildCheckboxes(collaboratorColumnsGroup, LOGIN_ATTRIBUTE, FIRST_NAME_ATTRIBUTE, LAST_NAME_ATTRIBUTE, IS_ACTIVE_ATTRIBUTE);
+		buildCheckboxes(collaboratorGroup, 1, LOGIN_ATTRIBUTE,
+				FIRST_NAME_ATTRIBUTE, LAST_NAME_ATTRIBUTE, IS_ACTIVE_ATTRIBUTE);
+
+		// Order by group
+		Group orderManagementGroup = new Group(cfgParent, SWT.NONE);
+		orderManagementGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL,
+				true, false));
+		orderManagementGroup.setLayout(new GridLayout(2, false));
+		orderManagementGroup.setText("Order management");
+
+		new Label(orderManagementGroup, SWT.NONE)
+				.setText("Order resultset by :");
+		Composite orderByComposite = new Composite(orderManagementGroup,
+				SWT.NONE);
+		orderByComposite.setLayout(new RowLayout());
+		orderByTasksButton = new Button(orderByComposite, SWT.RADIO);
+		orderByTasksButton.setText("Tasks");
+		orderByCollaboratorsButton = new Button(orderByComposite, SWT.RADIO);
+		orderByCollaboratorsButton.setText("Collaborators");
+
+		new Label(orderManagementGroup, SWT.NONE)
+				.setText("Columns order mode :");
+		Composite columnsOrderComposite = new Composite(orderManagementGroup,
+				SWT.NONE);
+		columnsOrderComposite.setLayout(new RowLayout());
+		automaticColumnsOrderButton = new Button(columnsOrderComposite, SWT.RADIO);
+		automaticColumnsOrderButton.setText("Automatic");
+		customColumnsOrderButton = new Button(columnsOrderComposite, SWT.RADIO);
+		customColumnsOrderButton.setText("Manual");
+
+		Label columnsOrderLabel = new Label(orderManagementGroup, SWT.NONE);
+		GridData columnsOrderLabelGridData = new GridData();
+		columnsOrderLabelGridData.verticalAlignment = SWT.TOP;
+		columnsOrderLabel.setLayoutData(columnsOrderLabelGridData);
+		columnsOrderLabel.setText("Columns order :");
+
+		Composite columnsOrderPanel = new Composite(orderManagementGroup,
+				SWT.NONE);
+		columnsOrderPanel.setLayout(new GridLayout(2, false));
+		List columnsOrderList = new List(columnsOrderPanel, SWT.FULL_SELECTION
+				| SWT.BORDER | SWT.HIDE_SELECTION | SWT.V_SCROLL);
+		columnsOrderViewer = new ListViewer(columnsOrderList);
+		columnsOrderViewer.setLabelProvider(new LabelProvider() {
+			@Override
+			public String getText(Object element) {
+				String id = (String) element;
+				String objectType = id.split("\\.")[0];
+				return Strings.getString(ReportsUI.class.getSimpleName() + "."
+						+ id)
+						+ " (" + Strings.getString(objectType) + ")";
+			}
+		});
+		columnsOrderViewer.setContentProvider(ArrayContentProvider
+				.getInstance());
+		GridData columnsOrderTableGridData = new GridData();
+		columnsOrderTableGridData.heightHint = 100;
+		columnsOrderTableGridData.widthHint = 200;
+		columnsOrderList.setLayoutData(columnsOrderTableGridData);
+		columnsOrderElements = new ArrayList<String>();
+		columnsOrderViewer.setInput(columnsOrderElements);
+
+		Composite columnsOrderButtonsPanel = new Composite(columnsOrderPanel,
+				SWT.NONE);
+		GridData columnsOrderButtonsPanelGridData = new GridData();
+		columnsOrderButtonsPanelGridData.verticalAlignment = SWT.TOP;
+		columnsOrderButtonsPanel
+				.setLayoutData(columnsOrderButtonsPanelGridData);
+		GridLayout columnsOrderButtonsPanelLayout = new GridLayout(1, false);
+		columnsOrderButtonsPanelLayout.marginTop = 0;
+		columnsOrderButtonsPanelLayout.horizontalSpacing = 0;
+		columnsOrderButtonsPanel.setLayout(columnsOrderButtonsPanelLayout);
+		upButton = new Button(columnsOrderButtonsPanel, SWT.NONE);
+		upButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		upButton.setText("Up");
+		downButton = new Button(columnsOrderButtonsPanel, SWT.NONE);
+		downButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		downButton.setText("Down");
 
 		Composite orderByAndButtonsPanel = new Composite(cfgParent, SWT.NONE);
-		orderByAndButtonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		orderByAndButtonsPanel.setLayoutData(new GridData(
+				GridData.FILL_HORIZONTAL));
 		orderByAndButtonsPanel.setLayout(new GridLayout(2, false));
-		
-		// Order by group
-		Group orderByGroup = new Group(orderByAndButtonsPanel, SWT.NONE);
-		orderByGroup.setLayout(new RowLayout());
-		orderByGroup.setText("Order by");
-		orderByTasksButton = new Button(orderByGroup, SWT.RADIO);
-		orderByTasksButton.setText("tasks");
-		orderByCollaboratorsButton = new Button(orderByGroup, SWT.RADIO);
-		orderByCollaboratorsButton.setText("collaborators");
 
 		// Button
 		Button buildReportButton = new Button(orderByAndButtonsPanel, SWT.NONE);
-		GridData buildReportButtonGridData = new GridData(GridData.FILL_HORIZONTAL);
+		GridData buildReportButtonGridData = new GridData(
+				GridData.FILL_HORIZONTAL);
 		buildReportButtonGridData.horizontalAlignment = SWT.END;
 		buildReportButtonGridData.verticalAlignment = SWT.END;
 		buildReportButton.setLayoutData(buildReportButtonGridData);
 		buildReportButton.setText("Build report");
-		
+
 		// Default values
 		monthButton.setSelection(true);
 		automaticIntervalBoundsTypeRadio.setSelection(true);
 		includeTasksButton.setSelection(true);
 		includeCollaboratorsButton.setSelection(true);
 		orderByTasksButton.setSelection(true);
-		endDateTime.setMonth(endDateTime.getMonth()+1);
-		taskFieldButtonsMap.get(PATH_ATTRIBUTE).setSelection(true);
-		taskFieldButtonsMap.get(CODE_ATTRIBUTE).setSelection(true);
-		taskFieldButtonsMap.get(NAME_ATTRIBUTE).setSelection(true);
-		collaboratorFieldButtonsMap.get(LOGIN_ATTRIBUTE).setSelection(true);
-		
+		endDateTime.setMonth(endDateTime.getMonth() + 1);
+		attributesCheckboxesMap.get(PATH_ATTRIBUTE).setSelection(true);
+		attributesCheckboxesMap.get(CODE_ATTRIBUTE).setSelection(true);
+		attributesCheckboxesMap.get(NAME_ATTRIBUTE).setSelection(true);
+		attributesCheckboxesMap.get(LOGIN_ATTRIBUTE).setSelection(true);
+		automaticColumnsOrderButton.setSelection(true);
+
 		// Register listeners
 		SelectionAdapter buttonListener = new SelectionAdapter() {
 			@Override
@@ -298,11 +448,37 @@ public class ReportsUI {
 		automaticIntervalBoundsTypeRadio.addSelectionListener(buttonListener);
 		lowerBoundIntervalBoundsTypeRadio.addSelectionListener(buttonListener);
 		bothBoundsIntervalBoundsTypeRadio.addSelectionListener(buttonListener);
+		startDateTime.addSelectionListener(buttonListener);
+		endDateTime.addSelectionListener(buttonListener);
 		filterByTaskCheckbox.addSelectionListener(buttonListener);
 		includeTasksButton.addSelectionListener(buttonListener);
 		includeCollaboratorsButton.addSelectionListener(buttonListener);
-		
-		taskChooserDialog = new TaskChooserTreeWithHistoryDialog(filterByTaskSelectButton.getShell(), modelMgr);
+		automaticColumnsOrderButton.addSelectionListener(buttonListener);
+		customColumnsOrderButton.addSelectionListener(buttonListener);
+		orderByTasksButton.addSelectionListener(buttonListener);
+		orderByCollaboratorsButton.addSelectionListener(buttonListener);
+		for (String id : attributesCheckboxesMap.keySet()) {
+			attributesCheckboxesMap.get(id)
+					.addSelectionListener(buttonListener);
+		}
+		columnsOrderList.addSelectionListener(buttonListener);
+		upButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				moveColumnUpOrDown(true);
+			}
+
+		});
+		downButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				moveColumnUpOrDown(false);
+			}
+
+		});
+
+		taskChooserDialog = new TaskChooserTreeWithHistoryDialog(
+				filterByTaskSelectButton.getShell(), modelMgr);
 		filterByTaskSelectButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent ev) {
@@ -318,19 +494,34 @@ public class ReportsUI {
 				}
 			}
 		});
-		
+
 		buildReportButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				buildReport();
 			}
 		});
-		
+
+		// Create column elements comparator
+		columnElementsComparator = new ColumnElementsComparator(
+				orderByTasksButton, new ArrayList<String>(
+						attributesCheckboxesMap.keySet()));
+
 		// Update fields enablement
 		updateFieldsEnablement();
-		
+
 	}
-	
+
+	private void moveColumnUpOrDown(boolean up) {
+		String item = (String) columnsOrderViewer.getStructuredSelection()
+				.getFirstElement();
+		int idx = columnsOrderElements.indexOf(item);
+		columnsOrderElements.remove(item);
+		columnsOrderElements.add(idx + (up ? -1 : 1), item);
+		// columnsOrderViewer.refresh();
+		updateFieldsEnablement();
+	}
+
 	private void buildReport() {
 		Calendar start = null;
 		if (startDateTime.isEnabled()) {
@@ -342,19 +533,23 @@ public class ReportsUI {
 			Calendar end = toCalendar(endDateTime);
 			switch (intervalType) {
 			case YEAR:
-				intervalCount = end.get(Calendar.YEAR) - start.get(Calendar.YEAR);
+				intervalCount = end.get(Calendar.YEAR)
+						- start.get(Calendar.YEAR);
 				break;
 			case MONTH:
-				intervalCount = (end.get(Calendar.YEAR) - start.get(Calendar.YEAR))*12 + (end.get(Calendar.MONTH) - start.get(Calendar.MONTH));
+				intervalCount = (end.get(Calendar.YEAR) - start
+						.get(Calendar.YEAR))
+						* 12
+						+ (end.get(Calendar.MONTH) - start.get(Calendar.MONTH));
 				break;
 			case WEEK:
-				intervalCount = DateHelper.countDaysBetween(start, end)/7;
+				intervalCount = DateHelper.countDaysBetween(start, end) / 7;
 				break;
 			case DAY:
 				intervalCount = DateHelper.countDaysBetween(start, end);
 			}
 		}
-		
+
 		try {
 			Long rootTaskId = null;
 			int taskDepth = 0;
@@ -362,21 +557,22 @@ public class ReportsUI {
 				taskDepth = taskDepthSpinner.getSelection();
 			}
 			if (filterByTaskCheckbox.getSelection()) {
-				Task selectedTask = modelMgr.getTaskByCodePath(filterByTaskText.getText());
+				Task selectedTask = modelMgr.getTaskByCodePath(filterByTaskText
+						.getText());
 				rootTaskId = selectedTask.getId();
 			}
-			// Fix included properties
-			Collection<String> c = new ArrayList<String>();
-			c.add("ee");
-			Workbook report = modelMgr.buildReport(start, intervalType, intervalCount, rootTaskId, taskDepth, includeCollaboratorsButton.getSelection(), orderByCollaboratorsButton.getSelection(), c, c);
+			Workbook report = modelMgr.buildReport(start, intervalType,
+					intervalCount, rootTaskId, taskDepth,
+					includeCollaboratorsButton.getSelection(),
+					orderByCollaboratorsButton.getSelection(),
+					columnsOrderElements);
 			File file = File.createTempFile("am-report-", ".xls");
 			System.out.println(file);
 			FileOutputStream out = new FileOutputStream(file);
 			report.write(out);
 			out.close();
 			Desktop.getDesktop().open(file);
-		}
-		catch (ModelException e) {
+		} catch (ModelException e) {
 			new ErrorDialog(parent.getShell(), e.getMessage(), e);
 		} catch (IOException e) {
 			new ErrorDialog(parent.getShell(), e.getMessage(), e);
@@ -389,79 +585,169 @@ public class ReportsUI {
 		start.set(Calendar.YEAR, dateTime.getYear());
 		start.set(Calendar.MONTH, dateTime.getMonth());
 		start.set(Calendar.DATE, dateTime.getDay());
-		start.set(Calendar.HOUR, 12);
+		start.set(Calendar.HOUR_OF_DAY, 12);
 		start.set(Calendar.MINUTE, 0);
 		start.set(Calendar.SECOND, 0);
 		start.set(Calendar.MILLISECOND, 0);
 		return start;
 	}
-	
-	
+
 	private void updateFieldsEnablement() {
-		System.out.println("inchaneg");
+		System.out.println("updateFieldsEnablement" + System.currentTimeMillis());
 		// Update date fields enablement
 		if (automaticIntervalBoundsTypeRadio.getSelection()) {
 			setEnabled(startDateTime, false);
 			setEnabled(endDateTime, false);
-		}
-		else if (lowerBoundIntervalBoundsTypeRadio.getSelection()) {
+		} else if (lowerBoundIntervalBoundsTypeRadio.getSelection()) {
 			setEnabled(startDateTime, true);
 			setEnabled(endDateTime, false);
-		}
-		else {
+		} else {
 			setEnabled(startDateTime, true);
 			setEnabled(endDateTime, true);
 		}
-		
-		// Update task group fields enablement
-		for (Button b : taskFieldButtonsMap.values()) {
-			b.setEnabled(includeTasksButton.getSelection());
+
+		// Update attributes fields enablement
+		for (String id : attributesCheckboxesMap.keySet()) {
+			Button b = attributesCheckboxesMap.get(id);
+			if (id.startsWith("task.")) {
+				b.setEnabled(includeTasksButton.getSelection());
+			} else {
+				b.setEnabled(includeCollaboratorsButton.getSelection());
+			}
 		}
+		// 2nd filter : if in collaborator mode, several task fields
+		// cannot be used (because it's not possible to agregate them)
+		if (orderByCollaboratorsButton.getSelection()) {
+			attributesCheckboxesMap.get(BUDGET_ATTRIBUTE).setEnabled(false);
+			attributesCheckboxesMap.get(INITIALLY_CONSUMED_ATTRIBUTE)
+					.setEnabled(false);
+			attributesCheckboxesMap.get(ETC_ATTRIBUTE).setEnabled(false);
+		}
+		// Update column order list content
+		for (String id : attributesCheckboxesMap.keySet()) {
+			Button b = attributesCheckboxesMap.get(id);
+			if (!b.isEnabled() || !b.getSelection()) {
+				columnsOrderElements.remove(id);
+			} else if (!columnsOrderElements.contains(id)) {
+				columnsOrderElements.add(id);
+			}
+		}
+
+		// If default order is selected, auto sort
+		if (automaticColumnsOrderButton.getSelection()) {
+			Collections.sort(columnsOrderElements, columnElementsComparator);
+		}
+		// And then refresh the viewer
+		columnsOrderViewer.refresh();
 		taskDepthSpinner.setEnabled(includeTasksButton.getSelection());
 		filterByTaskText.setEnabled(filterByTaskCheckbox.getSelection());
-		filterByTaskSelectButton.setEnabled(filterByTaskCheckbox.getSelection());
-		
-		// Update collaborators group field enablement
-		for (Button b : collaboratorFieldButtonsMap.values()) {
-			b.setEnabled(includeCollaboratorsButton.getSelection());
-		}
-		
+		filterByTaskSelectButton
+				.setEnabled(filterByTaskCheckbox.getSelection());
+
 		// Update order by fields enablement
-		boolean orderByEnabled = (includeCollaboratorsButton.getSelection() && includeTasksButton.getSelection());
+		boolean orderByEnabled = (includeCollaboratorsButton.getSelection() && includeTasksButton
+				.getSelection());
 		orderByTasksButton.setEnabled(orderByEnabled);
 		orderByCollaboratorsButton.setEnabled(orderByEnabled);
+		boolean customMode = customColumnsOrderButton.getSelection();
+		columnsOrderViewer.getList().setEnabled(customMode);
+		IStructuredSelection columnOrderSelection = columnsOrderViewer
+				.getStructuredSelection();
+		boolean upAndDownButtonsEnabled = customMode
+				&& !columnOrderSelection.isEmpty();
+		upButton.setEnabled(upAndDownButtonsEnabled
+				&& columnsOrderViewer.getList().getSelectionIndex() != 0);
+		downButton
+				.setEnabled(upAndDownButtonsEnabled
+						&& columnsOrderViewer.getList().getSelectionIndex() != columnsOrderViewer
+								.getList().getItemCount() - 1);
+		
+		// Update dates
+		ReportIntervalType intervalType = getReportIntervalType();
+		if (!ReportIntervalType.DAY.equals(intervalType)) {
+			Calendar start = toCalendar(startDateTime);
+			Calendar end = toCalendar(endDateTime);
+			switch (intervalType) {
+			case YEAR:
+				// Goto start of year
+				start.set(Calendar.MONTH, 0);
+				start.set(Calendar.DATE, 1);
+				
+				// Goto start of following year
+				end.set(Calendar.MONTH, 0);
+				end.set(Calendar.DATE, 1);
+				end.add(Calendar.YEAR, 1);
+				break;
+			case MONTH:
+				// Goto start of month
+				start.set(Calendar.DATE, 1);
+				
+				// Goto start of following month
+				end.set(Calendar.DATE, 1);
+				end.add(Calendar.MONTH, 1);
+				break;
+			case WEEK:
+				// Goto start of week
+				start = DateHelper.moveToFirstDayOfWeek(start);
+				
+				// Goto start of following month
+				end = DateHelper.moveToFirstDayOfWeek(end);
+				end.add(Calendar.WEEK_OF_YEAR, 1);
+				break;
+			case DAY:
+				// Do nothing
+			}
+			setDateTime(startDateTime, start);
+			end.add(Calendar.DATE, -1);
+			setDateTime(endDateTime, end);
+		}
 
 	}
-	
+
+	private void setDateTime(DateTime dateTime, Calendar cal) {
+		dateTime.setYear(cal.get(Calendar.YEAR));
+		dateTime.setMonth(cal.get(Calendar.MONTH));
+		dateTime.setDay(cal.get(Calendar.DATE));
+	}
+
 	private void setEnabled(DateTime field, boolean enabled) {
 		field.setEnabled(enabled);
 		Display display = field.getShell().getDisplay();
-		field.setBackground(enabled ? parent.getBackground() : display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+		field.setBackground(enabled ? parent.getBackground() : display
+				.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
 	}
-	
+
 	private ReportIntervalType getReportIntervalType() {
 		if (dayButton.getSelection()) {
 			return ReportIntervalType.DAY;
-		}
-		else if (weekButton.getSelection()) {
+		} else if (weekButton.getSelection()) {
 			return ReportIntervalType.WEEK;
-		}
-		else if (monthButton.getSelection()) {
+		} else if (monthButton.getSelection()) {
 			return ReportIntervalType.MONTH;
-		}
-		else {
+		} else {
 			return ReportIntervalType.YEAR;
 		}
 	}
-	
-	private Map<String, Button> buildCheckboxes(Composite composite, String... names) {
-		Map<String, Button> map = new HashMap<String, Button>();
+
+	private void buildCheckboxes(Composite parent, int horizontalSpan,
+			String... names) {
+		Composite composite = new Composite(parent, SWT.SHADOW_OUT);
+		RowLayout layout = new RowLayout();
+		layout.marginTop = 0;
+		layout.marginBottom = 0;
+		layout.marginLeft = 0;
+		layout.spacing = 0;
+		composite.setLayout(layout);
+		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+		gridData.horizontalSpan = horizontalSpan;
+		composite.setLayoutData(gridData);
+		composite.setLayout(new GridLayout(names.length, false));
 		for (String name : names) {
 			Button button = new Button(composite, SWT.CHECK);
-			map.put(name, button);
-			button.setText(name);
+			attributesCheckboxesMap.put(name, button);
+			button.setText(Strings.getString(ReportsUI.class.getSimpleName()
+					+ "." + name));
 		}
-		return map;
 	}
-	
+
 }

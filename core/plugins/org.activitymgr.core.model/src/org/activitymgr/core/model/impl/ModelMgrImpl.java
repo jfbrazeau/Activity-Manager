@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -85,7 +86,9 @@ import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.core.util.WorkbookBuilder;
+import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.BeanUtilsBean2;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -111,6 +114,10 @@ import com.google.inject.Inject;
  * </p>
  */
 public class ModelMgrImpl implements IModelMgr {
+
+	private static final String COLLABORATOR_PREFIX = "collaborator.";
+
+	private static final String TASK_PREFIX = "task.";
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(ModelMgrImpl.class);
@@ -2217,13 +2224,26 @@ public class ModelMgrImpl implements IModelMgr {
 	public Workbook buildReport(Calendar start,
 			ReportIntervalType intervalType, Integer intervalCount,
 			Long rootTaskId, int taskDepth, boolean byContributor,
-			boolean orderByContributor, Collection<String> taskXlsColumns,
-			Collection<String> collaboratorXlsColumns) throws ModelException {
+			boolean orderByContributor, Collection<String> columnIds) throws ModelException {
+		
+		int taskFields = 0;
+		int collaboratorFields = 0;
+		for (String columnId : columnIds) {
+			if (columnId.startsWith(TASK_PREFIX)) {
+				taskFields++;
+			}
+			else if (columnId.startsWith(COLLABORATOR_PREFIX)) {
+				collaboratorFields++;
+			}
+			else {
+				throw new IllegalArgumentException("Unknown field type '" + columnId + "'");
+			}
+		}
 		// Check attributes to include
-		if (taskDepth > 0 && taskXlsColumns.size() == 0) {
+		if (taskDepth > 0 && taskFields == 0) {
 			throw new ModelException(Strings.getString("ModelMgr.errors.BAD_REPORT_PARAMS_EMPTY_TASK_ATTRIBUTES"));
 		}
-		else if (byContributor && collaboratorXlsColumns.size() == 0) {
+		else if (byContributor && collaboratorFields == 0) {
 			throw new ModelException(Strings.getString("ModelMgr.errors.BAD_REPORT_PARAMS_EMPTY_COLLABORATOR_ATTRIBUTES"));
 		}
 		
@@ -2231,53 +2251,69 @@ public class ModelMgrImpl implements IModelMgr {
 		Report report = buildReport(start, intervalType, intervalCount, rootTaskId, taskDepth, byContributor, orderByContributor);
 
 		// Convert report to XLS
-		String rootTaskPath = null;
-		if (rootTaskId != null) {
-			Task rootTask = taskDAO.selectByPK(rootTaskId);
-			rootTaskPath = getTaskCodePath(rootTask);
+		String dateFormat = null;
+		switch (intervalType) {
+		case YEAR :
+			dateFormat = "yyyy";
+			break;
+		case MONTH :
+			dateFormat = "MM/yy";
+			break;
+		case WEEK :
+			dateFormat = "ww/YY";
+			break;
+		case DAY:
+			dateFormat = "dd/MM";
+			break;
 		}
-		boolean byTask = (taskDepth > 0);
-		SimpleDateFormat xlsSdf = new SimpleDateFormat("MM/yy");
+		SimpleDateFormat xlsSdf = new SimpleDateFormat(dateFormat);
 		WorkbookBuilder wb = new WorkbookBuilder();
 		Workbook workbook = wb.getWorkbook();
 		Sheet sheet = workbook.createSheet("Report");
 		Row headerRow = sheet.createRow(sheet.getLastRowNum());
 		int colIdx = 0;
-		if (rootTaskPath != null) {
-			wb.asHeaderCellStyl(headerRow.createCell(colIdx++)).setCellValue("Root path");
-		}
-		if (byTask) {
-			wb.asHeaderCellStyl(headerRow.createCell(colIdx++)).setCellValue("Path");
-			wb.asHeaderCellStyl(headerRow.createCell(colIdx++)).setCellValue("Task");
-		}
-		if (byContributor) {
-			wb.asHeaderCellStyl(headerRow.createCell(colIdx++)).setCellValue("Login");
+		for (String columnId : columnIds) {
+			int idx = columnId.indexOf('.');
+			String fieldId = columnId.substring(idx + 1);
+			wb.asHeaderCellStyl(headerRow.createCell(colIdx++)).setCellValue(fieldId);
 		}
 		
 		Collection<Calendar> dates = report.getDates();
 		for (Calendar date : dates) {
 			String week = xlsSdf.format(date.getTime());
 			wb.asHeaderCellStyl(headerRow.createCell(colIdx)).setCellValue(week);
-			sheet.setColumnWidth(colIdx, 1900);
 			colIdx++;
 		}
 		
 		for (ReportItem item : report.getItems()) {
+			Task contributedTask = item.getContributedTask();
 			Row row = sheet.createRow(sheet.getLastRowNum()+1);
 			colIdx = 0;
-			if (rootTaskPath != null) {
-				wb.asBodyCellStyl(row.createCell(colIdx++)).setCellValue(rootTaskPath);
-			}
-			if (byTask) {
-				StringWriter sw = new StringWriter();
-				for (Task cursor : item.getTasks()) {
-					sw.append('/').append(cursor.getCode());
+			for (String columnId : columnIds) {
+				Cell cell = wb.asBodyCellStyl(row.createCell(colIdx++));
+				int idx = columnId.indexOf('.');
+				String fieldId = columnId.substring(idx + 1);
+				if (columnId.startsWith(TASK_PREFIX) && "path".equals(fieldId)) {
+					StringWriter sw = new StringWriter();
+					for (Task cursor : item.getTasks()) {
+						sw.append('/').append(cursor.getCode());
+					}
+					cell.setCellValue(sw.toString());
 				}
-				wb.asBodyCellStyl(row.createCell(colIdx++)).setCellValue(sw.toString());
-				wb.asBodyCellStyl(row.createCell(colIdx++)).setCellValue(item.getContributedTask().getName());
-			}
-			if (byContributor) {
-				wb.asBodyCellStyl(row.createCell(colIdx++)).setCellValue(((Collaborator)item.getContributor()).getLogin());
+				else {
+					Object object = columnId.startsWith(TASK_PREFIX) ? contributedTask : item.getContributor();
+					try {
+						Object v = PropertyUtils.getProperty(object, fieldId);
+						if (v instanceof Long) {
+							cell.setCellValue(((Long) v)/100d);
+						}
+						else if (v != null) {
+							cell.setCellValue(String.valueOf(v));
+						}
+					} catch (ReflectiveOperationException e) {
+						throw new IllegalStateException(e);
+					}
+				}
 			}
 			for (int i=0; i<dates.size(); i++) {
 				wb.asBodyCellStyl(row.createCell(colIdx++)).setCellValue(item.getContributionSum(i)/100d);
@@ -2288,19 +2324,16 @@ public class ModelMgrImpl implements IModelMgr {
 		
 		// Autosize code & name columns
 		colIdx = 0;
-		if (rootTaskPath != null) {
-			sheet.autoSizeColumn(colIdx++); // Root path
+		for (@SuppressWarnings("unused") String columnId : columnIds) {
+			sheet.autoSizeColumn(colIdx++);
 		}
-		if (byTask) {
-			sheet.autoSizeColumn(colIdx++); // Path
-			sheet.autoSizeColumn(colIdx++); // Task 
-		}
-		if (byContributor) {
-			sheet.autoSizeColumn(colIdx++); // Contributor
-		}
-		
 		// Freeze
 		sheet.createFreezePane(colIdx, 1);
+		for (@SuppressWarnings("unused") Calendar date : dates) {
+			sheet.setColumnWidth(colIdx, 1900);
+			colIdx++;
+		}
+	
 		return workbook;
 	}
 	

@@ -825,6 +825,81 @@ public interface IModelMgr {
 	/**
 	 * Builds a report and converts it in Excel format.
 	 * 
+	 * <p>
+	 * It is possible to select the columns that will be exported. A column
+	 * identifier is built by concatenating the object name (<code>task</code>
+	 * or <code>collaborator</code>) and the field name. Possible values are the
+	 * following :
+	 * <table border="1" cellspacing="0" cellpadding="0">
+	 * <tr>
+	 * <td><b>Identifier</b></td>
+	 * <td><b>Description</b></td>
+	 * <td><b>Only available in task oriented reports (*)</b></td>
+	 * </tr>
+	 * <tr>
+	 * <td><code>task.path</code></code></td>
+	 * <td>the code based task path.</td>
+	 * <td>&nbsp;</td>
+	 * </tr>
+	 * <tr>
+	 * <td><code>task.code</code></td>
+	 * <td>the task code</td>
+	 * <td>&nbsp;</td>
+	 * </tr>
+	 * <tr>
+	 * <td><code>task.name</code></td>
+	 * <td>the task name</td>
+	 * <td>&nbsp;</td>
+	 * </tr>
+	 * <tr>
+	 * <td><code>task.comment</code></td>
+	 * <td>the comment of the task</td>
+	 * <td>&nbsp;</td>
+	 * </tr>
+	 * <tr>
+	 * <td><code>task.budget</code></td>
+	 * <td>the task budget</td>
+	 * <td>X</td>
+	 * </tr>
+	 * <tr>
+	 * <td><code>task.initiallyConsumed</code></td>
+	 * <td>the initially consumed sum of the task</td>
+	 * <td>X</td>
+	 * </tr>
+	 * <tr>
+	 * <td><code>task.etc</code></td>
+	 * <td>the estimated time to complete of the task</td>
+	 * <td>X</td>
+	 * </tr>
+	 * <tr>
+	 * <td><code>collaborator.login</code></td>
+	 * <td>the collaborator login</td>
+	 * <td>&nbsp;</td>
+	 * </tr>
+	 * <tr>
+	 * <td><code>collaborator.firstName</code></td>
+	 * <td>the collaborator first name</td>
+	 * <td>&nbsp;</td>
+	 * </tr>
+	 * <tr>
+	 * <td><code>collaborator.lastName</code></td>
+	 * <td>the collaborator last name</td>
+	 * <td>&nbsp;</td>
+	 * </tr>
+	 * <tr>
+	 * <td><code>collaborator.isActive</code></td>
+	 * <td>a boolean telling whether the collaborator is active or not</td>
+	 * <td>&nbsp;</td>
+	 * </tr>
+	 * </table>
+	 * </p>
+	 * <p>
+	 * (*) These fields cannnot be aggregated if <code>orderByContributor</code>
+	 * is set to <cdoe>true</code>. A given task may be contributed by several
+	 * contributors. That is the reason why them are allowed only if the report
+	 * is ordered by task.
+	 * </p>
+	 * 
 	 * @param start
 	 *            the start date to consider [Optional]. If omitted, the first
 	 *            contribution in the database will be considered.
@@ -848,10 +923,8 @@ public interface IModelMgr {
 	 *            contributors and then by tasks or the inverse. If
 	 *            <code>(byContributor == false) || (taskDepth <= 0)</code>, it
 	 *            has no effect.
-	 * @param taskXlsColumns
-	 *            the task attributes to include as EXCEL columns.
-	 * @param collaboratorXlsColumns
-	 *            the collaborator attributes to include as EXCEL columns.
+	 * @param columnIds
+	 *            the column identifiers to user.
 	 * @return the report.
 	 * @throws ModelException
 	 *             if start date is not specified and no contribution exist in
@@ -860,7 +933,6 @@ public interface IModelMgr {
 	Workbook buildReport(Calendar start, ReportIntervalType intervalType,
 			Integer intervalCount, Long rootTaskId, int taskDepth,
 			boolean byContributor, boolean orderByContributor,
-			Collection<String> taskXlsColumns,
-			Collection<String> collaboratorXlsColumns) throws ModelException;
+			Collection<String> columnIds) throws ModelException;
 
 }
