@@ -41,7 +41,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 
 	@Override
 	public Report buildReport(Calendar start, ReportIntervalType intervalType, int intervalCount, Task rootTask, int taskDepth,
-			boolean byContributor, boolean orderByContributor) {
+			boolean byContributor, boolean contributorCentered, String[] orderContributorsBy) {
 		/*
 		 * Retrieve task tree
 		 */
@@ -170,10 +170,18 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 			// ORDER BY
 			sw.append("\norder by ");
 			String activityFragment = "activity.tsk_path, activity.tsk_number, ";
+			// By default order collaborators by id
 			String clbFragment = "clb_login, ";
+			// But if possible order by given fields
+			if (orderContributorsBy != null && orderContributorsBy.length > 0) {
+				clbFragment = "";
+				for (String orderContributorsByItem : orderContributorsBy) {
+					clbFragment += collaboratorDAO.getColumnName(orderContributorsByItem) + ", ";
+				}
+			}
 			if (byContributor) {
 				if (byActivity){
-					if (orderByContributor) {
+					if (contributorCentered) {
 						sw.append(clbFragment);
 						sw.append(activityFragment);
 					}
@@ -222,7 +230,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 
 			// Exécution de la requête
 			rs = pStmt.executeQuery();
-			Report report = new Report(start, intervalType, intervalCount, rootTask, taskDepth, byContributor, orderByContributor);
+			Report report = new Report(start, intervalType, intervalCount, rootTask, taskDepth, byContributor, contributorCentered);
 			ReportItem reportItem = null;
 			Map<Long, Collaborator> collaboratorsMap = new HashMap<Long, Collaborator>();
 			while (rs.next()) {
@@ -236,11 +244,9 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 				if (byContributor) {
 					long id = rs.getLong(collaboratorFieldsIndex);
 					contributor = collaboratorsMap.get(id);
-					System.out.println("from map (" + id + ")=" + contributor);
 					if (contributor == null) {
 						contributor = collaboratorDAO.read(rs, collaboratorFieldsIndex);
 						collaboratorsMap.put(id, contributor);
-						System.out.println("put to map (" + id + ")=" + contributor);
 					}
 				}
 				

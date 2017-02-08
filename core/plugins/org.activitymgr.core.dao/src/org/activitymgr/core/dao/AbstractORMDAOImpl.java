@@ -149,6 +149,11 @@ public abstract class AbstractORMDAOImpl<TYPE> extends AbstractDAOImpl implement
 	}
 
 	@Override
+	public String getColumnName(String fieldName) {
+		return wrapped.getColumnName(fieldName);
+	}
+	
+	@Override
 	public TYPE read(ResultSet rs, int fromIndex) {
 		return wrapped.read(rs, fromIndex);
 	}

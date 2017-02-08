@@ -2169,6 +2169,12 @@ public class ModelMgrImpl implements IModelMgr {
 	@Override
 	public Report buildReport(Calendar start, ReportIntervalType intervalType, Integer intervalCount, Long rootTaskId, int taskDepth,
 			boolean byContributor, boolean orderByContributor) throws ModelException {
+		return buildReport(start, intervalType, intervalCount, rootTaskId, taskDepth, byContributor, orderByContributor, (String[]) null);
+	}
+
+	private Report buildReport(Calendar start, ReportIntervalType intervalType, Integer intervalCount, Long rootTaskId, int taskDepth,
+			boolean byContributor, boolean orderByContributor,
+			String[] orderContributorsBy) throws ModelException {
 		// task depth rectification if required
 		if (taskDepth < 0) {
 			taskDepth = 0;
@@ -2217,7 +2223,7 @@ public class ModelMgrImpl implements IModelMgr {
 		}
 		
 		// Compute the report
-		return reportDAO.buildReport(start, intervalType, intervalCount, rootTask, taskDepth, byContributor, orderByContributor);
+		return reportDAO.buildReport(start, intervalType, intervalCount, rootTask, taskDepth, byContributor, orderByContributor, orderContributorsBy);
 	}
 
 	@Override
@@ -2227,13 +2233,13 @@ public class ModelMgrImpl implements IModelMgr {
 			boolean orderByContributor, Collection<String> columnIds) throws ModelException {
 		
 		int taskFields = 0;
-		int collaboratorFields = 0;
+		List<String> collaboratorFields = new ArrayList<String>();
 		for (String columnId : columnIds) {
 			if (columnId.startsWith(TASK_PREFIX)) {
 				taskFields++;
 			}
 			else if (columnId.startsWith(COLLABORATOR_PREFIX)) {
-				collaboratorFields++;
+				collaboratorFields.add(columnId.substring(COLLABORATOR_PREFIX.length()));
 			}
 			else {
 				throw new IllegalArgumentException("Unknown field type '" + columnId + "'");
@@ -2243,12 +2249,20 @@ public class ModelMgrImpl implements IModelMgr {
 		if (taskDepth > 0 && taskFields == 0) {
 			throw new ModelException(Strings.getString("ModelMgr.errors.BAD_REPORT_PARAMS_EMPTY_TASK_ATTRIBUTES"));
 		}
-		else if (byContributor && collaboratorFields == 0) {
+		else if (byContributor && collaboratorFields.isEmpty()) {
 			throw new ModelException(Strings.getString("ModelMgr.errors.BAD_REPORT_PARAMS_EMPTY_COLLABORATOR_ATTRIBUTES"));
 		}
 		
 		// Build raw report
-		Report report = buildReport(start, intervalType, intervalCount, rootTaskId, taskDepth, byContributor, orderByContributor);
+		Report report = buildReport(
+				start,
+				intervalType,
+				intervalCount,
+				rootTaskId,
+				taskDepth,
+				byContributor,
+				orderByContributor,
+				collaboratorFields.toArray(new String[collaboratorFields.size()]));
 
 		// Convert report to XLS
 		String dateFormat = null;

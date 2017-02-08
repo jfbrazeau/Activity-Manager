@@ -41,7 +41,11 @@ public interface IDAO<TYPE> {
 
 	public String getColumnNamesRequestFragment(String tableAliasToUse, boolean includePK);
 
+	public String getColumnName(String attributeName);
+	
 	public TYPE read(ResultSet rs, int fromIndex);
 
 	public TYPE newInstance();
+
 }
+
