@@ -233,7 +233,7 @@ public class ReportsUI {
 
 		// Report configuration form creation
 		Composite cfgParent = new Composite(parent, SWT.NONE);
-		cfgParent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+		cfgParent.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 		cfgParent.setLayout(new GridLayout(1, false));
 
 		// Interval grop
