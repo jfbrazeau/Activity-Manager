@@ -84,53 +84,38 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
-			StringWriter sw = new StringWriter();
-			sw.append("select distinct ");
-			sw.append(collaboratorDAO.getColumnNamesRequestFragment(null));
-			sw.append(" from CONTRIBUTION ");
-			sw.append(" left join COLLABORATOR on ctb_contributor = clb_id");
-			sw.append(" where (ctb_year*10000+ctb_month*100+ctb_day) between ? and ?");
-			
-			pStmt = tx().prepareStatement(sw.toString());
-			pStmt.setLong(1, startDate);
-			pStmt.setLong(2, endDate);
-
-			// Exécution de la requête
-			Map<Long, Collaborator> collaboratorsMap = new HashMap<Long, Collaborator>();
-			rs = pStmt.executeQuery();
-			while (rs.next()) {
-				Collaborator c = collaboratorDAO.read(rs, 1);
-				collaboratorsMap.put(c.getId(), c);
-			}			
-			
-			// Fermeture du ResultSet
-			pStmt.close();
-			pStmt = null;
-	
 			/*
 			 * Retrieve contributions
 			 */
 			boolean byActivity = (taskDepth > 0);
 			// Prepare the request
-			sw = new StringWriter();
+			StringWriter sw = new StringWriter();
 			sw.append("select ");
+			int collaboratorFieldsIndex = 1;
 			// SELECT
 			if (byActivity) {
 				sw.append("activity.tsk_id, ");
-			}
-			if (byContributor) {
-				sw.append("clb_id, ");
+				collaboratorFieldsIndex++;
 			}
 			switch (intervalType) {
 			case WEEK:
 			case DAY:
 				sw.append("ctb_day, ");
+				collaboratorFieldsIndex++;
 			case MONTH:
 				sw.append("ctb_month, ");
+				collaboratorFieldsIndex++;
 			case YEAR :
 				sw.append("ctb_year, ");
+				collaboratorFieldsIndex++;
 			}
 			sw.append("sum(ctb_duration)");
+			collaboratorFieldsIndex++;
+			// Append contributor if needed
+			if (byContributor) {
+				sw.append(", ");
+				sw.append(collaboratorDAO.getColumnNamesRequestFragment(null));
+			}
 			// Append columns that are used in the order by clause not to let HSQLDB fail
 			if (byActivity) {
 				sw.append(", activity.tsk_path, activity.tsk_number");
@@ -185,7 +170,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 			// ORDER BY
 			sw.append("\norder by ");
 			String activityFragment = "activity.tsk_path, activity.tsk_number, ";
-			String clbFragment = "clb_id, ";
+			String clbFragment = "clb_login, ";
 			if (byContributor) {
 				if (byActivity){
 					if (orderByContributor) {
@@ -214,7 +199,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 			}
 			
 			String sql = sw.toString();
-			//System.out.println(sql);
+			System.out.println(sql);
 			
 			// Build the request
 			pStmt = tx().prepareStatement(sql);
@@ -239,6 +224,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 			rs = pStmt.executeQuery();
 			Report report = new Report(start, intervalType, intervalCount, rootTask, taskDepth, byContributor, orderByContributor);
 			ReportItem reportItem = null;
+			Map<Long, Collaborator> collaboratorsMap = new HashMap<Long, Collaborator>();
 			while (rs.next()) {
 				Collaborator contributor = null;
 				Task contributedTask = null;
@@ -248,8 +234,14 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 					contributedTask = tasksByIdCache.get(id);
 				}
 				if (byContributor) {
-					long id = rs.getLong(idx++);
+					long id = rs.getLong(collaboratorFieldsIndex);
 					contributor = collaboratorsMap.get(id);
+					System.out.println("from map (" + id + ")=" + contributor);
+					if (contributor == null) {
+						contributor = collaboratorDAO.read(rs, collaboratorFieldsIndex);
+						collaboratorsMap.put(id, contributor);
+						System.out.println("put to map (" + id + ")=" + contributor);
+					}
 				}
 				
 				// See whether a new item must be created
