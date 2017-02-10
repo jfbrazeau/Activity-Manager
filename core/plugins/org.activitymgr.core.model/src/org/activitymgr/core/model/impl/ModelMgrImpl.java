@@ -115,6 +115,21 @@ import com.google.inject.Inject;
  */
 public class ModelMgrImpl implements IModelMgr {
 
+	private static final String CODE_ATTRIBUTE = "code";
+
+	private static final String PATH_ATTRIBUTE = "path";
+
+	private static final String BUDGET_ATTRIBUTE = "budget";
+
+	private static final String INITIALLY_CONSUMED_ATTRIBUTE = "initiallyConsumed";
+	
+	private static final String ETC_ATTRIBUTE = "etc";
+	
+	private static final Collection<String> SUMMABLE_FIELDS = Arrays.asList(
+			BUDGET_ATTRIBUTE, INITIALLY_CONSUMED_ATTRIBUTE, ETC_ATTRIBUTE);
+
+	private static final String SUM_SUFFIX = "Sum";
+	
 	private static final String COLLABORATOR_PREFIX = "collaborator.";
 
 	private static final String TASK_PREFIX = "task.";
@@ -1169,7 +1184,7 @@ public class ModelMgrImpl implements IModelMgr {
 		// Récupération du chemin à partir de la tache parent
 		String fullpath = parentTask == null ? "" : parentTask.getFullPath(); //$NON-NLS-1$
 		log.debug("Looking for tasks with path='" + fullpath + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-		return taskDAO.select(new String[] { "path" }, new Object[] { fullpath }, new Object[] { new AscendantOrderByClause("number") }, -1);
+		return taskDAO.select(new String[] { PATH_ATTRIBUTE }, new Object[] { fullpath }, new Object[] { new AscendantOrderByClause("number") }, -1);
 	}
 
 	/*
@@ -1188,7 +1203,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public int getRootTasksCount() {
-		return (int) taskDAO.count(new String[] { "path" }, new Object[] { "" });
+		return (int) taskDAO.count(new String[] { PATH_ATTRIBUTE }, new Object[] { "" });
 	}
 
 	/*
@@ -1240,7 +1255,7 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public Task getTask(String taskPath, String taskCode) {
-		Task[] tasks = taskDAO.select(new String[] { "path", "code" }, new Object[] { taskPath, taskCode }, null, -1);
+		Task[] tasks = taskDAO.select(new String[] { PATH_ATTRIBUTE, CODE_ATTRIBUTE }, new Object[] { taskPath, taskCode }, null, -1);
 		return tasks.length > 0 ? tasks[0] : null;
 	}
 
@@ -1746,7 +1761,7 @@ public class ModelMgrImpl implements IModelMgr {
 		Task parentTask = getParentTask(task);
 
 		// Delete sub tasks
-		taskDAO.delete(new String[] { "path" }, new Object[] { new LikeStatement(task.getFullPath() + "%") });
+		taskDAO.delete(new String[] { PATH_ATTRIBUTE }, new Object[] { new LikeStatement(task.getFullPath() + "%") });
 
 		// Delete the task
 		taskDAO.delete(task);
@@ -1959,7 +1974,7 @@ public class ModelMgrImpl implements IModelMgr {
 	}
 
 	private Task getTask(String taskPath, byte taskNumber) {
-		Task[] tasks = taskDAO.select(new String[] { "path", "number" }, new Object[] { taskPath, taskNumber }, null, -1);
+		Task[] tasks = taskDAO.select(new String[] { PATH_ATTRIBUTE, "number" }, new Object[] { taskPath, taskNumber }, null, -1);
 		return tasks.length > 0 ? tasks[0] : null;
 	}
 
@@ -2005,7 +2020,7 @@ public class ModelMgrImpl implements IModelMgr {
 		// Header
 		Row header = sheet.createRow(0);
 		int idx = 0;
-		for (String columnName : new String[] { "path", "code", "name", "budget", "initiallyConsumed", "todo", "comment" }) {
+		for (String columnName : new String[] { PATH_ATTRIBUTE, CODE_ATTRIBUTE, "name", BUDGET_ATTRIBUTE, "initiallyConsumed", "todo", "comment" }) {
 			Cell cell = header.createCell(idx++);
 			cell.setCellStyle(headerCellStyle);
 			cell.setCellValue(columnName);
@@ -2017,7 +2032,7 @@ public class ModelMgrImpl implements IModelMgr {
 			tasks = taskDAO.selectAll();
 		}
 		else {
-			tasks = taskDAO.select(new String[] { "path" }, new Object[] { new LikeStatement(parentTask.getFullPath() + "%") }, null, -1);
+			tasks = taskDAO.select(new String[] { PATH_ATTRIBUTE }, new Object[] { new LikeStatement(parentTask.getFullPath() + "%") }, null, -1);
 		}
 		// Sort
 		Arrays.sort(tasks, new Comparator<Task>() {
@@ -2088,14 +2103,14 @@ public class ModelMgrImpl implements IModelMgr {
 	@Override
 	public void importFromExcel(Long parentTaskId, InputStream xls)
 			throws IOException, ModelException {
-		final List<String> numericFieldNames = Arrays.asList(new String[] { "budget", "initiallyConsumed", "todo" });
+		final List<String> numericFieldNames = Arrays.asList(new String[] { BUDGET_ATTRIBUTE, "initiallyConsumed", "todo" });
 		final TaskDAOCache taskCache = new TaskDAOCache(taskDAO);
 		final String parentTaskCodePath = parentTaskId == null ? "" : taskCache.getCodePath(parentTaskId);
 		XlsImportHelper.visit(xls, new IXLSHandler() {
 			@Override
 			public void handleRow(Map<String, XLSCell> cells) throws ModelException {
 				
-				if (!cells.containsKey("code")) {
+				if (!cells.containsKey(CODE_ATTRIBUTE)) {
 					throw new ModelException("Sheet must contain a code column");
 				}
 				
@@ -2107,7 +2122,7 @@ public class ModelMgrImpl implements IModelMgr {
 					XLSCell xlsCell = cells.get(columnName);
 					Object value = xlsCell.getValue();
 					allColumnsAreNull &= (value == null || "".equals(String.valueOf(value).trim()));
-					if ("path".equals(columnName)) {
+					if (PATH_ATTRIBUTE.equals(columnName)) {
 						if (value != null) {
 							allColumnsAreNull = false;
 							String relativePath = String.valueOf(value);
@@ -2168,12 +2183,12 @@ public class ModelMgrImpl implements IModelMgr {
 	 */
 	@Override
 	public Report buildReport(Calendar start, ReportIntervalType intervalType, Integer intervalCount, Long rootTaskId, int taskDepth,
-			boolean byContributor, boolean orderByContributor) throws ModelException {
-		return buildReport(start, intervalType, intervalCount, rootTaskId, taskDepth, byContributor, orderByContributor, (String[]) null);
+			boolean byContributor, boolean contributorCentricMode) throws ModelException {
+		return buildReport(start, intervalType, intervalCount, rootTaskId, taskDepth, byContributor, contributorCentricMode, (String[]) null);
 	}
 
 	private Report buildReport(Calendar start, ReportIntervalType intervalType, Integer intervalCount, Long rootTaskId, int taskDepth,
-			boolean byContributor, boolean orderByContributor,
+			boolean byContributor, boolean contributorCentricMode,
 			String[] orderContributorsBy) throws ModelException {
 		// task depth rectification if required
 		if (taskDepth < 0) {
@@ -2223,14 +2238,14 @@ public class ModelMgrImpl implements IModelMgr {
 		}
 		
 		// Compute the report
-		return reportDAO.buildReport(start, intervalType, intervalCount, rootTask, taskDepth, byContributor, orderByContributor, orderContributorsBy);
+		return reportDAO.buildReport(start, intervalType, intervalCount, rootTask, taskDepth, byContributor, contributorCentricMode, orderContributorsBy);
 	}
 
 	@Override
 	public Workbook buildReport(Calendar start,
 			ReportIntervalType intervalType, Integer intervalCount,
 			Long rootTaskId, int taskDepth, boolean byContributor,
-			boolean orderByContributor, Collection<String> columnIds) throws ModelException {
+			boolean contributorCentricMode, Collection<String> columnIds) throws ModelException {
 		
 		int taskFields = 0;
 		List<String> collaboratorFields = new ArrayList<String>();
@@ -2261,7 +2276,7 @@ public class ModelMgrImpl implements IModelMgr {
 				rootTaskId,
 				taskDepth,
 				byContributor,
-				orderByContributor,
+				contributorCentricMode,
 				collaboratorFields.toArray(new String[collaboratorFields.size()]));
 
 		// Convert report to XLS
@@ -2299,39 +2314,69 @@ public class ModelMgrImpl implements IModelMgr {
 			colIdx++;
 		}
 		
+		ReportItem lastItem = null;
 		for (ReportItem item : report.getItems()) {
-			Task contributedTask = item.getContributedTask();
+			TaskSums contributedTask = item.getContributedTask();
 			Row row = sheet.createRow(sheet.getLastRowNum()+1);
 			colIdx = 0;
 			for (String columnId : columnIds) {
 				Cell cell = wb.asBodyCellStyl(row.createCell(colIdx++));
 				int idx = columnId.indexOf('.');
 				String fieldId = columnId.substring(idx + 1);
-				if (columnId.startsWith(TASK_PREFIX) && "path".equals(fieldId)) {
+				if (columnId.startsWith(TASK_PREFIX) && PATH_ATTRIBUTE.equals(fieldId)) {
 					StringWriter sw = new StringWriter();
-					for (Task cursor : item.getTasks()) {
-						sw.append('/').append(cursor.getCode());
+					for (TaskSums cursor : item.getTasks()) {
+						sw.append('/').append(cursor.getTask().getCode());
 					}
 					cell.setCellValue(sw.toString());
 				}
 				else {
-					Object object = columnId.startsWith(TASK_PREFIX) ? contributedTask : item.getContributor();
-					try {
-						Object v = PropertyUtils.getProperty(object, fieldId);
-						if (v instanceof Long) {
-							cell.setCellValue(((Long) v)/100d);
+					boolean ignoreCell = false;
+					// Summable fields must only appear once and not for each occurence
+					// For example if a task has 200 as budget, this value must not appear
+					// for every vollaborator that contributes to it
+					if (SUMMABLE_FIELDS.contains(fieldId) && lastItem != null) {
+						if (lastItem.getContributedTask().getTask().getId() == contributedTask.getTask().getId()) {
+							ignoreCell = true;
 						}
-						else if (v != null) {
-							cell.setCellValue(String.valueOf(v));
+					}
+					if (!ignoreCell) {
+						Object object = null;
+						// For summable fields, TaskSums object will be used
+						if (SUMMABLE_FIELDS.contains(fieldId)) {
+							object = contributedTask;
+							fieldId += SUM_SUFFIX;
 						}
-					} catch (ReflectiveOperationException e) {
-						throw new IllegalStateException(e);
+						// Otherwise, Task or Collaborator will be used
+						else {
+							object = columnId.startsWith(TASK_PREFIX) ? contributedTask.getTask() : item.getContributor();
+						}
+						// Collaborator my be null in task oriented report with a task that
+						// has no contribution
+						if (object != null) {
+							try {
+								Object v = PropertyUtils.getProperty(object, fieldId);
+								if (v instanceof Long) {
+									cell.setCellValue(((Long) v)/100d);
+								}
+								else if (v != null) {
+									cell.setCellValue(String.valueOf(v));
+								}
+							} catch (ReflectiveOperationException e) {
+								throw new IllegalStateException(e);
+							}
+						}
 					}
 				}
 			}
 			for (int i=0; i<dates.size(); i++) {
-				wb.asBodyCellStyl(row.createCell(colIdx++)).setCellValue(item.getContributionSum(i)/100d);
+				long contributionSum = item.getContributionSum(i);
+				Cell cell = wb.asBodyCellStyl(row.createCell(colIdx++));
+				if (contributionSum > 0) {
+					cell.setCellValue(contributionSum/100d);
+				}
 			}
+			lastItem = item;
 		}
 		
 

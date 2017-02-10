@@ -918,7 +918,7 @@ public interface IModelMgr {
 	 * @param byContributor
 	 *            <code>true</code> if the report must decline contributions by
 	 *            contributors.
-	 * @param orderByContributor
+	 * @param contributorCentricMode
 	 *            <code>true</code> if the report must be ordered by
 	 *            contributors and then by tasks or the inverse. If
 	 *            <code>(byContributor == false) || (taskDepth <= 0)</code>, it
@@ -932,7 +932,7 @@ public interface IModelMgr {
 	 */
 	Workbook buildReport(Calendar start, ReportIntervalType intervalType,
 			Integer intervalCount, Long rootTaskId, int taskDepth,
-			boolean byContributor, boolean orderByContributor,
+			boolean byContributor, boolean contributorCentricMode,
 			Collection<String> columnIds) throws ModelException;
 
 }

@@ -17,7 +17,7 @@ public interface IReportDAO {
 	 * @param taskDepth
 	 * @param byContributor
 	 *            tells whether contributors must appear in the result.
-	 * @param contributorCentered
+	 * @param contributorCentricMode
 	 *            <code>true</code> if the report must be sorted by contributor,
 	 *            <code>false</code> if it must be sorted by task (ignored if
 	 *            <code>byContributor</code> is <code>false</code>).
@@ -28,7 +28,7 @@ public interface IReportDAO {
 	 */
 	Report buildReport(Calendar start, ReportIntervalType intervalType,
 			int intervalCount, Task rootTask, int taskDepth,
-			boolean byContributor, boolean contributorCentered,
+			boolean byContributor, boolean contributorCentricMode,
 			String[] orderContributorsBy);
 
 }

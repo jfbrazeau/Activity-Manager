@@ -5,8 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.activitymgr.core.dao.AbstractDAOImpl;
@@ -17,6 +19,7 @@ import org.activitymgr.core.dao.IReportDAO;
 import org.activitymgr.core.dao.ITaskDAO;
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.dto.misc.TaskSums;
 import org.activitymgr.core.dto.report.Report;
 import org.activitymgr.core.dto.report.ReportIntervalType;
 import org.activitymgr.core.dto.report.ReportItem;
@@ -41,49 +44,87 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 
 	@Override
 	public Report buildReport(Calendar start, ReportIntervalType intervalType, int intervalCount, Task rootTask, int taskDepth,
-			boolean byContributor, boolean contributorCentered, String[] orderContributorsBy) {
-		/*
-		 * Retrieve task tree
-		 */
-		String rootPath = rootTask != null ? rootTask.getFullPath() : "";
-		Map<Long, Task> tasksByIdCache = new HashMap<Long, Task>();
-		Map<String, Task> tasksByFullpathCache = new HashMap<String, Task>();
-		// Register root task
-		if (rootTask != null) {
-			tasksByIdCache.put(rootTask.getId(), rootTask);
-			tasksByFullpathCache.put(rootTask.getFullPath(), rootTask);
-		}
-		// Register sub tasks
-		if (taskDepth > 0) {
-			Task[] tasks = taskDAO.select(new String[] { "path" }, new Object[] { new LikeStatement(rootPath + "%") }, new Object[] { "path", "number" }, -1);
-			for (Task task : tasks) {
-				tasksByIdCache.put(task.getId(), task);
-				tasksByFullpathCache.put(task.getFullPath(), task);
-			}
-		}
-		
-		/*
-		 * Interval computation
-		 */
-		int startYear = start.get(Calendar.YEAR);
-		int startMonth = start.get(Calendar.MONTH) + 1;
-		int startDay = start.get(Calendar.DATE);
-		int startDate = startYear*10000+startMonth*100+startDay;
-		
-		Calendar end = (Calendar) start.clone();
-		end.add(intervalType.getIntType(), intervalCount);
-		end.add(Calendar.DATE, -1);
-		int endYear = end.get(Calendar.YEAR);
-		int endMonth = end.get(Calendar.MONTH) + 1;
-		int endDay = end.get(Calendar.DATE);
-		int endDate = endYear*10000+endMonth*100+endDay;
-		
+			boolean byContributor, boolean contributorCentricMode, String[] orderContributorsBy) {
 		/*
 		 * Retrieve contributors
 		 */
 		PreparedStatement pStmt = null;
 		ResultSet rs = null;
 		try {
+			/*
+			 * Retrieve task tree
+			 */
+			String rootPath = rootTask != null ? rootTask.getFullPath() : "";
+			int activityPathLength = taskDepth*2 + (rootPath != null ? rootPath.length() : 0);
+			Map<Long, TaskSums> tasksByIdCache = new HashMap<Long, TaskSums>();
+			Map<String, TaskSums> tasksByFullPathCache = new HashMap<String, TaskSums>();
+			List<TaskSums> orderedTasks = new ArrayList<TaskSums>();
+			// Register sub tasks
+			if (taskDepth > 0) {
+				StringBuffer request = new StringBuffer()
+					.append("select ")
+					.append("sum(leaftask.tsk_budget), sum(leaftask.tsk_initial_cons), sum(leaftask.tsk_todo), (count(leaftask.tsk_id)-1), ")
+					.append(taskDAO.getColumnNamesRequestFragment("maintask"))
+					.append(" from TASK maintask, TASK leaftask ")
+					.append("where ")
+					.append("(leaftask.tsk_id=maintask.tsk_id or leaftask.tsk_path like concat(maintask.tsk_path, maintask.tsk_number, '%')) ");
+				if (rootPath != null) {
+					request.append("and maintask.tsk_path like ? ");
+				}
+				request.append("and length(maintask.tsk_path)<=? ")
+					.append("group by maintask.tsk_id ");
+				// This helps to ensure parent tasks will be sorted before children tasks
+				request.append("order by concat(maintask.tsk_path, maintask.tsk_number, '");
+				for (int i=0; i<taskDepth; i++) {
+					request.append("00");
+				}
+				request.append("')");
+				pStmt = tx().prepareStatement(request.toString());
+				int paramIdx = 1;
+				if (rootPath != null) {
+					pStmt.setString(paramIdx++, rootPath + "%");
+				}
+				
+				pStmt.setInt(paramIdx++, activityPathLength-2);
+				rs = pStmt.executeQuery();
+				
+				while (rs.next()) {
+					TaskSums sums = new TaskSums();
+					sums.setBudgetSum(rs.getLong(1));
+					sums.setInitiallyConsumedSum(rs.getLong(2));
+					sums.setTodoSum(rs.getLong(3));
+					Task task = taskDAO.read(rs, 5);
+					boolean isActivityTask = task.getFullPath().length() == activityPathLength;
+					boolean hasNoChild = rs.getLong(4) == 0;
+					// Task without any child or activity task are considered leaf
+					sums.setLeaf(hasNoChild || isActivityTask);
+					sums.setTask(task);
+					tasksByIdCache.put(task.getId(), sums);
+					tasksByFullPathCache.put(task.getFullPath(), sums);
+					orderedTasks.add(sums);
+					System.out.println(sums.getTask().getFullPath() + " - " + sums.getTask().getName() + " - " + sums.getBudgetSum() + " - leaf : " + sums.isLeaf());
+				}
+				// Close the statement
+				pStmt.close();
+				pStmt = null;
+			}
+	
+			/*
+			 * Interval computation
+			 */
+			int startYear = start.get(Calendar.YEAR);
+			int startMonth = start.get(Calendar.MONTH) + 1;
+			int startDay = start.get(Calendar.DATE);
+			int startDate = startYear*10000+startMonth*100+startDay;
+			
+			Calendar end = (Calendar) start.clone();
+			end.add(intervalType.getIntType(), intervalCount);
+			end.add(Calendar.DATE, -1);
+			int endYear = end.get(Calendar.YEAR);
+			int endMonth = end.get(Calendar.MONTH) + 1;
+			int endDay = end.get(Calendar.DATE);
+			int endDate = endYear*10000+endMonth*100+endDay;
+		
 			/*
 			 * Retrieve contributions
 			 */
@@ -181,7 +222,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 			}
 			if (byContributor) {
 				if (byActivity){
-					if (contributorCentered) {
+					if (contributorCentricMode) {
 						sw.append(clbFragment);
 						sw.append(activityFragment);
 					}
@@ -207,12 +248,11 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 			}
 			
 			String sql = sw.toString();
-			System.out.println(sql);
+			//System.out.println(sql);
 			
 			// Build the request
 			pStmt = tx().prepareStatement(sql);
 			int idx = 1;
-			int activityPathLength = taskDepth*2 + (rootTask != null ? rootTask.getFullPath().length() : 0);
 			if (byActivity) {
 				pStmt.setInt(idx++, activityPathLength);
 			}
@@ -229,13 +269,14 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 			pStmt.setLong(idx++, endDate);
 
 			// Exécution de la requête
+			int leafTaskIdex = 0;
 			rs = pStmt.executeQuery();
-			Report report = new Report(start, intervalType, intervalCount, rootTask, taskDepth, byContributor, contributorCentered);
+			Report report = new Report(start, intervalType, intervalCount, rootTask, taskDepth, byContributor, contributorCentricMode);
 			ReportItem reportItem = null;
 			Map<Long, Collaborator> collaboratorsMap = new HashMap<Long, Collaborator>();
 			while (rs.next()) {
 				Collaborator contributor = null;
-				Task contributedTask = null;
+				TaskSums contributedTask = null;
 				idx = 1;
 				if (byActivity) {
 					long id = rs.getLong(idx++);
@@ -255,25 +296,36 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 				if (reportItem == null) {
 					newItem = true;
 				} else {
-					if (reportItem.getContributedTask() != null && !reportItem.getContributedTask().equals(contributedTask)) {
+					if (byActivity && !reportItem.getContributedTask().equals(contributedTask)) {
 						newItem = true;
 					}
-					if (reportItem.getContributor() != null && !reportItem.getContributor().equals(contributor)) {
+					if (byContributor && !reportItem.getContributor().equals(contributor)) {
 						newItem = true;
 					}
 				}
 				if (newItem) {
-					if (byActivity) {
-						String fullpath = contributedTask.getFullPath();
-						int depth = (fullpath.length() - rootPath.length()) / 2;
-						Task[] tasks = new Task[depth];
-						for (int i=0 ; i<depth; i++) {
-							tasks[i] = tasksByFullpathCache.get(fullpath.substring(0, (i+1)*2 + rootPath.length()));
-						}
-						reportItem = new ReportItem(report, contributor, tasks);
+					// Collaborator centric mode
+					if (!byActivity) {
+						reportItem = new ReportItem(report, contributor);
 					}
 					else {
-						reportItem = new ReportItem(report, contributor);
+						// If in task centric mode, may have to insert rows without contributions
+						// before adding new report line
+						if ((!contributorCentricMode || !byActivity) && (reportItem == null || !reportItem.getContributedTask().equals(contributedTask))) {
+							TaskSums cursor = null;
+							while (
+									leafTaskIdex < orderedTasks.size() 
+									&& (cursor = orderedTasks.get(leafTaskIdex++)).getTask().getId() != contributedTask.getTask().getId()) {
+								if (cursor.isLeaf()) {
+									TaskSums[] tasks = buldTasksList(rootPath,
+											tasksByFullPathCache, cursor.getTask().getFullPath());
+									new ReportItem(report, null, tasks);
+								}
+							}
+						}
+						TaskSums[] tasks = buldTasksList(rootPath,
+								tasksByFullPathCache, contributedTask.getTask().getFullPath());
+						reportItem = new ReportItem(report, contributor, tasks);
 					}
 				}
 				
@@ -329,6 +381,17 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 		} finally {
 			lastAttemptToClose(pStmt);
 		}
+	}
+
+
+	private TaskSums[] buldTasksList(String rootPath,
+			Map<String, TaskSums> tasksByFullPathCache, String fullpath) {
+		int depth = (fullpath.length() - rootPath.length()) / 2;
+		TaskSums[] tasks = new TaskSums[depth];
+		for (int i=0 ; i<depth; i++) {
+			tasks[i] = tasksByFullPathCache.get(fullpath.substring(0, (i+1)*2 + rootPath.length()));
+		}
+		return tasks;
 	}
 
 }

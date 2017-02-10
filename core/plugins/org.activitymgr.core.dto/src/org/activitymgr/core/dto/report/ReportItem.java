@@ -4,20 +4,26 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.activitymgr.core.dto.Collaborator;
-import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.dto.misc.TaskSums;
 
 public class ReportItem {
 	
 	private final Collaborator contributor;
 	
-	private final Collection<Task> tasks;
+	private final Collection<TaskSums> tasks;
 	
-	private final Task contributedTask;
+	private final TaskSums contributedTask;
 
 	private final long[] contributionSums;
 	
-	public ReportItem(Report parent, Collaborator contributor, Task... tasks) {
+	public ReportItem(Report parent, Collaborator contributor, TaskSums... tasks) {
 		contributionSums = new long[parent.getIntervalCount()];
+		System.out.print("New item :");
+		for (TaskSums task : tasks) {
+			System.out.print('/');
+			System.out.print(task.getTask().getCode());
+		}
+		System.out.println("");
 		if (tasks != null && (tasks.length > parent.getTaskDepth())) {
 			throw new IllegalStateException("Invalid task count, expected : " + parent.getTaskDepth() + ", actual:" + tasks.length);
 		}
@@ -35,7 +41,7 @@ public class ReportItem {
 		contributionSums[dateIdx] += duration;
 	}
 
-	public Collection<Task> getTasks() {
+	public Collection<TaskSums> getTasks() {
 		return tasks;
 	}
 
@@ -43,7 +49,7 @@ public class ReportItem {
 		return contributor;
 	}
 
-	public Task getContributedTask() {
+	public TaskSums getContributedTask() {
 		return contributedTask;
 	}
 

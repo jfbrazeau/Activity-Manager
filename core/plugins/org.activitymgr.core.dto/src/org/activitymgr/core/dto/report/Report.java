@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.dto.misc.TaskSums;
 import org.activitymgr.core.util.StringHelper;
 
 public class Report {
@@ -27,7 +28,7 @@ public class Report {
 	private final boolean orderByContributor;
 
 	private int intervalCount;
-	
+
 	public Report(Calendar start, ReportIntervalType intervalType, int intervalCount, Task rootTask, int taskDepth, boolean byContributor, boolean orderByContributor) {
 		this.intervalType = intervalType;
 		this.rootTask = rootTask;
@@ -93,18 +94,18 @@ public class Report {
 		long[] sums = new long[intervalCount];
 		for (ReportItem item : items) {
 			startRow(sw);
-			Task contributedTask = item.getContributedTask();
+			TaskSums contributedTask = item.getContributedTask();
 			if (byContributor && orderByContributor) {
 				appendCellRight(sw, item.getContributor().getLogin(), COLLABORATOR_PAD);
 			}
 			StringWriter pathSw = new StringWriter();
-			for (Task task : item.getTasks()) {
+			for (TaskSums task : item.getTasks()) {
 				pathSw.append('/');
-				pathSw.append(task.getCode());
+				pathSw.append(task.getTask().getCode());
 			}
 			if (taskDepth > 0) {
 				appendCellRight(sw, pathSw.toString(), TASK_PATH_PAD);
-				appendCellRight(sw, contributedTask.getName(), TASK_NAME_PAD);
+				appendCellRight(sw, contributedTask.getTask().getName(), TASK_NAME_PAD);
 			}
 			if (byContributor && !orderByContributor) {
 				appendCellRight(sw, item.getContributor().getLogin(), COLLABORATOR_PAD);
