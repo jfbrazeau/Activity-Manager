@@ -43,6 +43,7 @@ import java.util.Map;
 
 import org.activitymgr.core.dto.IDTOFactory;
 import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.dto.report.Report;
 import org.activitymgr.core.dto.report.ReportIntervalType;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
@@ -112,26 +113,26 @@ public class ReportsUI {
 	}
 
 	private static final String PATH_ATTRIBUTE = "task.path";
-
+	
 	private static final String CODE_ATTRIBUTE = "task.code";
 
 	private static final String NAME_ATTRIBUTE = "task.name";
-
+	
 	private static final String COMMENT_ATTRIBUTE = "task.comment";
-
+	
 	private static final String BUDGET_ATTRIBUTE = "task.budget";
-
+	
 	private static final String INITIALLY_CONSUMED_ATTRIBUTE = "task.initiallyConsumed";
-
+	
 	private static final String ETC_ATTRIBUTE = "task.etc";
-
-	private static final String IS_ACTIVE_ATTRIBUTE = "collaborator.isActive";
-
-	private static final String LAST_NAME_ATTRIBUTE = "collaborator.lastName";
+	
+	private static final String LOGIN_ATTRIBUTE = "collaborator.login";
 
 	private static final String FIRST_NAME_ATTRIBUTE = "collaborator.firstName";
 
-	private static final String LOGIN_ATTRIBUTE = "collaborator.login";
+	private static final String LAST_NAME_ATTRIBUTE = "collaborator.lastName";
+
+	private static final String IS_ACTIVE_ATTRIBUTE = "collaborator.isActive";
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(ReportsUI.class);
@@ -340,14 +341,14 @@ public class ReportsUI {
 		orderManagementGroup.setText("Order management");
 
 		new Label(orderManagementGroup, SWT.NONE)
-				.setText("Order resultset by :");
+				.setText("Report mode :");
 		Composite orderByComposite = new Composite(orderManagementGroup,
 				SWT.NONE);
 		orderByComposite.setLayout(new RowLayout());
 		orderByTasksButton = new Button(orderByComposite, SWT.RADIO);
-		orderByTasksButton.setText("Tasks");
+		orderByTasksButton.setText("Task centric");
 		orderByCollaboratorsButton = new Button(orderByComposite, SWT.RADIO);
-		orderByCollaboratorsButton.setText("Collaborators");
+		orderByCollaboratorsButton.setText("Collaborator centric");
 
 		new Label(orderManagementGroup, SWT.NONE)
 				.setText("Columns order mode :");
@@ -429,7 +430,6 @@ public class ReportsUI {
 		orderByTasksButton.setSelection(true);
 		endDateTime.setMonth(endDateTime.getMonth() + 1);
 		attributesCheckboxesMap.get(PATH_ATTRIBUTE).setSelection(true);
-		attributesCheckboxesMap.get(CODE_ATTRIBUTE).setSelection(true);
 		attributesCheckboxesMap.get(NAME_ATTRIBUTE).setSelection(true);
 		attributesCheckboxesMap.get(LOGIN_ATTRIBUTE).setSelection(true);
 		automaticColumnsOrderButton.setSelection(true);
@@ -531,6 +531,7 @@ public class ReportsUI {
 		Integer intervalCount = null;
 		if (endDateTime.isEnabled()) {
 			Calendar end = toCalendar(endDateTime);
+			end.add(Calendar.DATE, 1);
 			switch (intervalType) {
 			case YEAR:
 				intervalCount = end.get(Calendar.YEAR)
