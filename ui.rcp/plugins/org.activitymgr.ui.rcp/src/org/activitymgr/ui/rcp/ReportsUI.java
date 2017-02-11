@@ -172,9 +172,9 @@ public class ReportsUI {
 
 	private Button includeCollaboratorsButton;
 
-	private Button orderByTasksButton;
+	private Button tasksCentricButton;
 
-	private Button orderByCollaboratorsButton;
+	private Button collaboratorsCentricButton;
 
 	private Spinner taskDepthSpinner;
 
@@ -345,10 +345,10 @@ public class ReportsUI {
 		Composite orderByComposite = new Composite(orderManagementGroup,
 				SWT.NONE);
 		orderByComposite.setLayout(new RowLayout());
-		orderByTasksButton = new Button(orderByComposite, SWT.RADIO);
-		orderByTasksButton.setText("Task centric");
-		orderByCollaboratorsButton = new Button(orderByComposite, SWT.RADIO);
-		orderByCollaboratorsButton.setText("Collaborator centric");
+		tasksCentricButton = new Button(orderByComposite, SWT.RADIO);
+		tasksCentricButton.setText("Task centric");
+		collaboratorsCentricButton = new Button(orderByComposite, SWT.RADIO);
+		collaboratorsCentricButton.setText("Collaborator centric");
 
 		new Label(orderManagementGroup, SWT.NONE)
 				.setText("Columns order mode :");
@@ -427,7 +427,7 @@ public class ReportsUI {
 		automaticIntervalBoundsTypeRadio.setSelection(true);
 		includeTasksButton.setSelection(true);
 		includeCollaboratorsButton.setSelection(true);
-		orderByTasksButton.setSelection(true);
+		tasksCentricButton.setSelection(true);
 		endDateTime.setMonth(endDateTime.getMonth() + 1);
 		attributesCheckboxesMap.get(PATH_ATTRIBUTE).setSelection(true);
 		attributesCheckboxesMap.get(NAME_ATTRIBUTE).setSelection(true);
@@ -455,8 +455,8 @@ public class ReportsUI {
 		includeCollaboratorsButton.addSelectionListener(buttonListener);
 		automaticColumnsOrderButton.addSelectionListener(buttonListener);
 		customColumnsOrderButton.addSelectionListener(buttonListener);
-		orderByTasksButton.addSelectionListener(buttonListener);
-		orderByCollaboratorsButton.addSelectionListener(buttonListener);
+		tasksCentricButton.addSelectionListener(buttonListener);
+		collaboratorsCentricButton.addSelectionListener(buttonListener);
 		for (String id : attributesCheckboxesMap.keySet()) {
 			attributesCheckboxesMap.get(id)
 					.addSelectionListener(buttonListener);
@@ -504,7 +504,7 @@ public class ReportsUI {
 
 		// Create column elements comparator
 		columnElementsComparator = new ColumnElementsComparator(
-				orderByTasksButton, new ArrayList<String>(
+				tasksCentricButton, new ArrayList<String>(
 						attributesCheckboxesMap.keySet()));
 
 		// Update fields enablement
@@ -565,7 +565,7 @@ public class ReportsUI {
 			Workbook report = modelMgr.buildReport(start, intervalType,
 					intervalCount, rootTaskId, taskDepth,
 					includeCollaboratorsButton.getSelection(),
-					orderByCollaboratorsButton.getSelection(),
+					collaboratorsCentricButton.getSelection(),
 					columnsOrderElements);
 			File file = File.createTempFile("am-report-", ".xls");
 			System.out.println(file);
@@ -618,7 +618,7 @@ public class ReportsUI {
 		}
 		// 2nd filter : if in collaborator mode, several task fields
 		// cannot be used (because it's not possible to agregate them)
-		if (orderByCollaboratorsButton.getSelection()) {
+		if (collaboratorsCentricButton.isEnabled() && collaboratorsCentricButton.getSelection()) {
 			attributesCheckboxesMap.get(BUDGET_ATTRIBUTE).setEnabled(false);
 			attributesCheckboxesMap.get(INITIALLY_CONSUMED_ATTRIBUTE)
 					.setEnabled(false);
@@ -648,8 +648,8 @@ public class ReportsUI {
 		// Update order by fields enablement
 		boolean orderByEnabled = (includeCollaboratorsButton.getSelection() && includeTasksButton
 				.getSelection());
-		orderByTasksButton.setEnabled(orderByEnabled);
-		orderByCollaboratorsButton.setEnabled(orderByEnabled);
+		tasksCentricButton.setEnabled(orderByEnabled);
+		collaboratorsCentricButton.setEnabled(orderByEnabled);
 		boolean customMode = customColumnsOrderButton.getSelection();
 		columnsOrderViewer.getList().setEnabled(customMode);
 		IStructuredSelection columnOrderSelection = columnsOrderViewer

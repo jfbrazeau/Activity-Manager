@@ -14,17 +14,17 @@
   <tasks>
     <task><path>/PR</path><name>Projects</name></task>
     <task><path>/PR/PA</path><name>Project A</name></task>
-    <task><path>/PR/PA/SPE</path><name>Specification</name></task>
+    <task><path>/PR/PA/SPE</path><name>Specification</name><budget>100</budget><initially-consumed>200</initially-consumed><todo>300</todo></task>
     <task><path>/PR/PA/DEV</path><name>Development</name></task>
-    <task><path>/PR/PA/DEV/MA</path><name>Module A</name></task>
-    <task><path>/PR/PA/DEV/MB</path><name>Module B</name></task>
+    <task><path>/PR/PA/DEV/MA</path><name>Module A</name><budget>100</budget><todo>400</todo></task>
+    <task><path>/PR/PA/DEV/MB</path><name>Module B</name><budget>400</budget><initially-consumed>300</initially-consumed></task>
     <task><path>/PR/PA/TST</path><name>Test</name></task>
     <task><path>/PR/PB</path><name>Project B</name></task>
     <task><path>/PR/PB/SPE</path><name>Specification</name></task>
     <task><path>/PR/PB/DEV</path><name>Development</name></task>
-    <task><path>/PR/PB/DEV/MC</path><name>Module C</name></task>
-    <task><path>/PR/PB/DEV/MD</path><name>Module D</name></task>
-    <task><path>/PR/PB/TST</path><name>Test</name></task>
+    <task><path>/PR/PB/DEV/MC</path><name>Module C</name><budget>800</budget><todo>400</todo></task>
+    <task><path>/PR/PB/DEV/MD</path><name>Module D</name><initially-consumed>100</initially-consumed></task>
+    <task><path>/PR/PB/TST</path><name>Test</name><budget>600</budget></task>
     <task><path>/ABS</path><name>Absence</name></task>
     <task><path>/ABS/VAC</path><name>Vacations</name></task>
     <task><path>/ABS/ILL</path><name>Illness</name></task>

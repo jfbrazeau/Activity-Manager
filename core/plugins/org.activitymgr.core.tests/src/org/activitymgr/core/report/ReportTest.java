@@ -196,6 +196,7 @@ public class ReportTest extends AbstractModelTestCase {
 					Boolean.parseBoolean(props.getProperty(BY_CONTRIBUTOR_PROP)), // By contributor
 					Boolean.parseBoolean(props.getProperty(ORDER_BY_CONTRIBUTOR_PROP)) // Order by contributor
 					);
+			System.out.println(report);
 			assertNotNull(report);
 			List<ReportItem> items = report.getItems();
 			assertNotNull(items);

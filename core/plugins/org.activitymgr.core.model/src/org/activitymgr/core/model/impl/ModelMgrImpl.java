@@ -2357,7 +2357,9 @@ public class ModelMgrImpl implements IModelMgr {
 							try {
 								Object v = PropertyUtils.getProperty(object, fieldId);
 								if (v instanceof Long) {
-									cell.setCellValue(((Long) v)/100d);
+									if (((Long) v).longValue() != 0) {
+										cell.setCellValue(((Long) v)/100d);
+									}
 								}
 								else if (v != null) {
 									cell.setCellValue(String.valueOf(v));

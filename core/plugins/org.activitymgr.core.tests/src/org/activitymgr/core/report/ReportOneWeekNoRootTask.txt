@@ -10,22 +10,23 @@ rootTaskCodePath=
 taskDepth=10
 byContributor=true
 orderByContributor=false
-+---------------+---------------+----------+-------+
-|Path           |Name           |Contribut.|  S3-17|
-+---------------+---------------+----------+-------+
-|/PR/PA/SPE     |Specification  |jdoe      |   0.25|
-|/PR/PA/SPE     |Specification  |wsmith    |   0.25|
-|/PR/PA/TST     |Test           |jdoe      |   1.00|
-|/PR/PA/DEV/MA  |Module A       |jdoe      |   1.75|
-|/PR/PA/DEV/MB  |Module B       |jdoe      |   1.00|
-|/PR/PB/SPE     |Specification  |wsmith    |   0.75|
-|/PR/PB/TST     |Test           |wsmith    |   2.25|
-|/PR/PB/DEV/MC  |Module C       |wsmith    |   1.50|
-|/ABS/VAC       |Vacations      |jdoe      |   1.00|
-|/ABS/ILL       |Illness        |wsmith    |   0.25|
-+---------------+---------------+----------+-------+
-|               |               |          |  10.00|
-+---------------+---------------+----------+-------+
++---------------+---------------+----------+-------+-------+-------+-------+
+|Path           |Name           |Contribut.| Budget|Ini. C.|  S3-17|    ETC|
++---------------+---------------+----------+-------+-------+-------+-------+
+|/PR/PA/SPE     |Specification  |jdoe      |   1.00|   2.00|   0.25|   3.00|
+|/PR/PA/SPE     |Specification  |wsmith    |   -.--|   -.--|   0.25|   -.--|
+|/PR/PA/DEV/MA  |Module A       |jdoe      |   1.00|   0.00|   1.75|   4.00|
+|/PR/PA/DEV/MB  |Module B       |jdoe      |   4.00|   3.00|   1.00|   0.00|
+|/PR/PA/TST     |Test           |jdoe      |   0.00|   0.00|   1.00|   0.00|
+|/PR/PB/SPE     |Specification  |wsmith    |   0.00|   0.00|   0.75|   0.00|
+|/PR/PB/DEV/MC  |Module C       |wsmith    |   8.00|   0.00|   1.50|   4.00|
+|/PR/PB/DEV/MD  |Module D       |          |   0.00|   1.00|   0.00|   0.00|
+|/PR/PB/TST     |Test           |wsmith    |   6.00|   0.00|   2.25|   0.00|
+|/ABS/VAC       |Vacations      |jdoe      |   0.00|   0.00|   1.00|   0.00|
+|/ABS/ILL       |Illness        |wsmith    |   0.00|   0.00|   0.25|   0.00|
++---------------+---------------+----------+-------+-------+-------+-------+
+|               |               |          |  20.00|   6.00|  10.00|  11.00|
++---------------+---------------+----------+-------+-------+-------+-------+
 
 #
 # One week, by collaborator & task, sorted by contributor, full depth, no root task
@@ -37,14 +38,14 @@ orderByContributor=true
 |Contribut.|Path           |Name           |  S3-17|
 +----------+---------------+---------------+-------+
 |jdoe      |/PR/PA/SPE     |Specification  |   0.25|
-|jdoe      |/PR/PA/TST     |Test           |   1.00|
 |jdoe      |/PR/PA/DEV/MA  |Module A       |   1.75|
 |jdoe      |/PR/PA/DEV/MB  |Module B       |   1.00|
+|jdoe      |/PR/PA/TST     |Test           |   1.00|
 |jdoe      |/ABS/VAC       |Vacations      |   1.00|
 |wsmith    |/PR/PA/SPE     |Specification  |   0.25|
 |wsmith    |/PR/PB/SPE     |Specification  |   0.75|
-|wsmith    |/PR/PB/TST     |Test           |   2.25|
 |wsmith    |/PR/PB/DEV/MC  |Module C       |   1.50|
+|wsmith    |/PR/PB/TST     |Test           |   2.25|
 |wsmith    |/ABS/ILL       |Illness        |   0.25|
 +----------+---------------+---------------+-------+
 |          |               |               |  10.00|
@@ -56,16 +57,16 @@ orderByContributor=true
 taskDepth=1
 byContributor=true
 orderByContributor=false
-+---------------+---------------+----------+-------+
-|Path           |Name           |Contribut.|  S3-17|
-+---------------+---------------+----------+-------+
-|/PR            |Projects       |jdoe      |   4.00|
-|/PR            |Projects       |wsmith    |   4.75|
-|/ABS           |Absence        |jdoe      |   1.00|
-|/ABS           |Absence        |wsmith    |   0.25|
-+---------------+---------------+----------+-------+
-|               |               |          |  10.00|
-+---------------+---------------+----------+-------+
++---------------+---------------+----------+-------+-------+-------+-------+
+|Path           |Name           |Contribut.| Budget|Ini. C.|  S3-17|    ETC|
++---------------+---------------+----------+-------+-------+-------+-------+
+|/PR            |Projects       |jdoe      |  20.00|   6.00|   4.00|  11.00|
+|/PR            |Projects       |wsmith    |   -.--|   -.--|   4.75|   -.--|
+|/ABS           |Absence        |jdoe      |   0.00|   0.00|   1.00|   0.00|
+|/ABS           |Absence        |wsmith    |   -.--|   -.--|   0.25|   -.--|
++---------------+---------------+----------+-------+-------+-------+-------+
+|               |               |          |  20.00|   6.00|  10.00|  11.00|
++---------------+---------------+----------+-------+-------+-------+-------+
 
 #
 # One week, by collaborator & task, sorted by contributor, depth=1, no root task
@@ -90,21 +91,22 @@ orderByContributor=true
 taskDepth=10
 byContributor=false
 orderByContributor=false
-+---------------+---------------+-------+
-|Path           |Name           |  S3-17|
-+---------------+---------------+-------+
-|/PR/PA/SPE     |Specification  |   0.50|
-|/PR/PA/TST     |Test           |   1.00|
-|/PR/PA/DEV/MA  |Module A       |   1.75|
-|/PR/PA/DEV/MB  |Module B       |   1.00|
-|/PR/PB/SPE     |Specification  |   0.75|
-|/PR/PB/TST     |Test           |   2.25|
-|/PR/PB/DEV/MC  |Module C       |   1.50|
-|/ABS/VAC       |Vacations      |   1.00|
-|/ABS/ILL       |Illness        |   0.25|
-+---------------+---------------+-------+
-|               |               |  10.00|
-+---------------+---------------+-------+
++---------------+---------------+-------+-------+-------+-------+
+|Path           |Name           | Budget|Ini. C.|  S3-17|    ETC|
++---------------+---------------+-------+-------+-------+-------+
+|/PR/PA/SPE     |Specification  |   1.00|   2.00|   0.50|   3.00|
+|/PR/PA/DEV/MA  |Module A       |   1.00|   0.00|   1.75|   4.00|
+|/PR/PA/DEV/MB  |Module B       |   4.00|   3.00|   1.00|   0.00|
+|/PR/PA/TST     |Test           |   0.00|   0.00|   1.00|   0.00|
+|/PR/PB/SPE     |Specification  |   0.00|   0.00|   0.75|   0.00|
+|/PR/PB/DEV/MC  |Module C       |   8.00|   0.00|   1.50|   4.00|
+|/PR/PB/DEV/MD  |Module D       |   0.00|   1.00|   0.00|   0.00|
+|/PR/PB/TST     |Test           |   6.00|   0.00|   2.25|   0.00|
+|/ABS/VAC       |Vacations      |   0.00|   0.00|   1.00|   0.00|
+|/ABS/ILL       |Illness        |   0.00|   0.00|   0.25|   0.00|
++---------------+---------------+-------+-------+-------+-------+
+|               |               |  20.00|   6.00|  10.00|  11.00|
++---------------+---------------+-------+-------+-------+-------+
 
 #
 # One week, by task but not by collaborator, depth=1, no root task
@@ -112,14 +114,14 @@ orderByContributor=false
 taskDepth=1
 byContributor=false
 orderByContributor=false
-+---------------+---------------+-------+
-|Path           |Name           |  S3-17|
-+---------------+---------------+-------+
-|/PR            |Projects       |   8.75|
-|/ABS           |Absence        |   1.25|
-+---------------+---------------+-------+
-|               |               |  10.00|
-+---------------+---------------+-------+
++---------------+---------------+-------+-------+-------+-------+
+|Path           |Name           | Budget|Ini. C.|  S3-17|    ETC|
++---------------+---------------+-------+-------+-------+-------+
+|/PR            |Projects       |  20.00|   6.00|   8.75|  11.00|
+|/ABS           |Absence        |   0.00|   0.00|   1.25|   0.00|
++---------------+---------------+-------+-------+-------+-------+
+|               |               |  20.00|   6.00|  10.00|  11.00|
++---------------+---------------+-------+-------+-------+-------+
 
 #
 # One week, by collaborator but not by task (=> depth = 0), no root task
