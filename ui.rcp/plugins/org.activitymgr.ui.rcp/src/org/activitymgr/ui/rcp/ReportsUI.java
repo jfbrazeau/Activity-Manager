@@ -616,14 +616,6 @@ public class ReportsUI {
 				b.setEnabled(includeCollaboratorsButton.getSelection());
 			}
 		}
-		// 2nd filter : if in collaborator mode, several task fields
-		// cannot be used (because it's not possible to agregate them)
-		if (collaboratorsCentricButton.isEnabled() && collaboratorsCentricButton.getSelection()) {
-			attributesCheckboxesMap.get(BUDGET_ATTRIBUTE).setEnabled(false);
-			attributesCheckboxesMap.get(INITIALLY_CONSUMED_ATTRIBUTE)
-					.setEnabled(false);
-			attributesCheckboxesMap.get(ETC_ATTRIBUTE).setEnabled(false);
-		}
 		// Update column order list content
 		for (String id : attributesCheckboxesMap.keySet()) {
 			Button b = attributesCheckboxesMap.get(id);
@@ -663,6 +655,15 @@ public class ReportsUI {
 						&& columnsOrderViewer.getList().getSelectionIndex() != columnsOrderViewer
 								.getList().getItemCount() - 1);
 		
+		// 2nd filter : if in collaborator mode, several task fields
+		// cannot be used (because it's not possible to agregate them)
+		if (collaboratorsCentricButton.isEnabled() && collaboratorsCentricButton.getSelection()) {
+			attributesCheckboxesMap.get(BUDGET_ATTRIBUTE).setEnabled(false);
+			attributesCheckboxesMap.get(INITIALLY_CONSUMED_ATTRIBUTE)
+					.setEnabled(false);
+			attributesCheckboxesMap.get(ETC_ATTRIBUTE).setEnabled(false);
+		}
+
 		// Update dates
 		ReportIntervalType intervalType = getReportIntervalType();
 		if (!ReportIntervalType.DAY.equals(intervalType)) {
