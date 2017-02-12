@@ -40,6 +40,7 @@ import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.DatabaseUI.IDbStatusListener;
 import org.activitymgr.ui.rcp.util.UITechException;
+import org.apache.commons.dbcp.BasicDataSource;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -204,7 +205,11 @@ public class MainView extends ViewPart {
 						Connection tx = null;
 						try {
 							// Open the transaction
-							tx = databaseUI.getDatasource().getConnection();
+							BasicDataSource datasource = databaseUI.getDatasource();
+							if (datasource == null) {
+								throw new IllegalStateException("Database is closed");
+							}
+							tx = datasource.getConnection();
 							dbTxs.set(tx);
 							// Call the real model manager
 							IModelMgr wrappedModelMgr = injector.getInstance(IModelMgr.class);
