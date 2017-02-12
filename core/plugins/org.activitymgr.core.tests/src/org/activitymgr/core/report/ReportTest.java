@@ -10,6 +10,7 @@ import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
@@ -39,6 +40,7 @@ public class ReportTest extends AbstractModelTestCase {
 	private static final String ROOT_TASK_CODE_PATH_PROP = "rootTaskCodePath";
 	private static final String TASK_DEPTH_PROP = "taskDepth";
 	private static final String BY_CONTRIBUTOR_PROP = "byContributor";
+	private static final String CONTRIBUTOR_LOGINS_PROP = "contributorLogins";
 	private static final String ORDER_BY_CONTRIBUTOR_PROP = "orderByContributor";
 	
 	private static class ContribDef {
@@ -81,6 +83,7 @@ public class ReportTest extends AbstractModelTestCase {
 					null, // No root task
 					0, // No depth 
 					true, // By contributor
+					null, // Contributor ids
 					true // Order by contributor
 					);
 			fail("A model exception should be raised !");
@@ -90,6 +93,10 @@ public class ReportTest extends AbstractModelTestCase {
 		}
 	}
 	
+	public void testReportFilteredByCollaborator() throws IOException, ModelException {
+		doTestReport();
+	}
+
 	public void testReportWithoutStartNorInterval() throws IOException, ModelException {
 		doTestReport();
 	}
@@ -186,6 +193,18 @@ public class ReportTest extends AbstractModelTestCase {
 				}
 			}
 			
+			long[] contributorIds = null;
+			String contributorLoginsStr = props.getProperty(CONTRIBUTOR_LOGINS_PROP);
+			if (contributorLoginsStr != null && !"".equals(contributorLoginsStr.trim())) {
+				String[] logins = contributorLoginsStr.split(",");
+				contributorIds = new long[logins.length];
+				for (int i = 0; i < logins.length; i++) {
+					String login = logins[i].trim();
+					Collaborator collaborator = getModelMgr().getCollaborator(login);
+					contributorIds[i] = collaborator.getId();
+				}
+			}
+			
 			String intervalCountProperty = props.getProperty(INTERVAL_COUNT_PROP);
 			Report report = doBuildReport(
 					cal(props.getProperty(START_PROP)), // Start date
@@ -194,6 +213,7 @@ public class ReportTest extends AbstractModelTestCase {
 					rootTaskId, // root task
 					Integer.parseInt(props.getProperty(TASK_DEPTH_PROP)), // Task depth
 					Boolean.parseBoolean(props.getProperty(BY_CONTRIBUTOR_PROP)), // By contributor
+					contributorIds, // Contributor ids
 					Boolean.parseBoolean(props.getProperty(ORDER_BY_CONTRIBUTOR_PROP)) // Order by contributor
 					);
 			System.out.println(report);
@@ -204,7 +224,7 @@ public class ReportTest extends AbstractModelTestCase {
 		}
 	}
 	
-	private Report doBuildReport(Calendar start, ReportIntervalType intervalType, Integer intervalCount, Long rootTaskId, int taskDepth, boolean byContributor, boolean orderByContributor) throws ModelException {
+	private Report doBuildReport(Calendar start, ReportIntervalType intervalType, Integer intervalCount, Long rootTaskId, int taskDepth, boolean byContributor, long[] contributorIds, boolean orderByContributor) throws ModelException {
 		System.out.println("buildReport(");
 		System.out.println("  "
 				+ (start != null ? (start.get(Calendar.YEAR) + "/"
@@ -215,8 +235,18 @@ public class ReportTest extends AbstractModelTestCase {
 		System.out.println("  " + rootTaskId + ", // rootTaskId");
 		System.out.println("  " + taskDepth + ", // taskDepth");
 		System.out.println("  " + byContributor + ", // byContributor");
+		StringWriter sw = new StringWriter();
+		if (contributorIds != null) {
+			for (long contributorId : contributorIds) {
+				sw.append(String.valueOf(contributorId));
+				sw.append(' ');
+			}
+		}
+		System.out.println("  " + sw.toString() + ", // contributorIds");
 		System.out.println("  " + orderByContributor + ") // orderByContributor");
-		return getModelMgr().buildReport(start, intervalType, intervalCount, rootTaskId, taskDepth, byContributor, orderByContributor);
+		return getModelMgr().buildReport(start, intervalType, intervalCount,
+				rootTaskId, taskDepth, byContributor, contributorIds,
+				orderByContributor);
 	}
 
 	private Calendar cal(String cal) {

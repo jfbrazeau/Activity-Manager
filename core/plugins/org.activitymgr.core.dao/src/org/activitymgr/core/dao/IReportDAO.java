@@ -21,6 +21,8 @@ public interface IReportDAO {
 	 *            <code>true</code> if the report must be sorted by contributor,
 	 *            <code>false</code> if it must be sorted by task (ignored if
 	 *            <code>byContributor</code> is <code>false</code>).
+	 * @param contributorIds
+	 *            contributor identifiers (optional).
 	 * @param orderContributorsBy
 	 *            fields to use to order contributors (ignored if
 	 *            <code>byContributor</code> is <code>false</code>).
@@ -29,6 +31,6 @@ public interface IReportDAO {
 	Report buildReport(Calendar start, ReportIntervalType intervalType,
 			int intervalCount, Task rootTask, int taskDepth,
 			boolean byContributor, boolean contributorCentricMode,
-			String[] orderContributorsBy);
+			long[] contributorIds, String[] orderContributorsBy);
 
 }

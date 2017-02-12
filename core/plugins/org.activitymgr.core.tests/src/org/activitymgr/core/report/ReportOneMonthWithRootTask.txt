@@ -3,6 +3,7 @@ start=16012017
 intervalType=month
 intervalCount=1
 rootTaskCodePath=/PR
+contributorLogins=
 
 #
 # One month, by collaborator & task, sorted by task, full depth, root task = /PR

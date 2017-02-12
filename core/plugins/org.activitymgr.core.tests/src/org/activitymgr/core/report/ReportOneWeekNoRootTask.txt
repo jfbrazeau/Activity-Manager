@@ -3,6 +3,7 @@ start=16012017
 intervalType=week
 intervalCount=1
 rootTaskCodePath=
+contributorLogins=
 
 #
 # One week, by collaborator & task, sorted by task, full depth, no root task

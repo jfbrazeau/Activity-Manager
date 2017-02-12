@@ -3,6 +3,7 @@ start=16012017
 intervalType=day
 intervalCount=2
 rootTaskCodePath=/PR
+contributorLogins=
 
 #
 # Two days, by collaborator & task, sorted by task, full depth, root task = /PR

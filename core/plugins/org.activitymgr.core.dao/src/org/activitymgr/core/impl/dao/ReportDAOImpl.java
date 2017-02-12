@@ -41,7 +41,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 
 	@Override
 	public Report buildReport(Calendar start, ReportIntervalType intervalType, int intervalCount, Task rootTask, int taskDepth,
-			boolean byContributor, boolean contributorCentricMode, String[] orderContributorsBy) {
+			boolean byContributor, boolean contributorCentricMode, long[] contributorIds, String[] orderContributorsBy) {
 		/*
 		 * Retrieve contributors
 		 */
@@ -171,6 +171,16 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 			if (rootTask != null) {
 				sw.append("and (ctbtask.tsk_id=? or left(ctbtask.tsk_path, ?) = ?) ");
 			}
+			if (contributorIds != null) {
+				sw.append("and ctb_contributor in (");
+				for (int i=0; i<contributorIds.length; i++) {
+					if (i > 0) {
+						sw.append(", ");
+					}
+					sw.append("?");
+				}
+				sw.append(") ");
+			}
 			if (byActivity) {
 				sw.append("and (");
 				{
@@ -256,6 +266,11 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 				pStmt.setLong(idx++, rootTask.getId());
 				pStmt.setInt(idx++, rootPath.length());
 				pStmt.setString(idx++, rootPath);
+			}
+			if (contributorIds != null) {
+				for (Long contributorId : contributorIds) {
+					pStmt.setLong(idx++, contributorId);
+				}
 			}
 			if (byActivity) {
 				pStmt.setInt(idx++, activityPathLength-2);

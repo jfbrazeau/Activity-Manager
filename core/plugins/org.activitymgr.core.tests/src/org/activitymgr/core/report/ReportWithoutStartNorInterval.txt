@@ -6,6 +6,8 @@ intervalType=year
 taskDepth=10
 byContributor=true
 orderByContributor=false
+contributorLogins=
+
 +---------------+---------------+----------+-------+-------+-------+-------+-------+
 |Path           |Name           |Contribut.| Budget|Ini. C.|   2016|   2017|    ETC|
 +---------------+---------------+----------+-------+-------+-------+-------+-------+

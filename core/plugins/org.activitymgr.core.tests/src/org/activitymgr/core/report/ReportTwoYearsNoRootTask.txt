@@ -3,6 +3,7 @@ start=03012016
 intervalType=year
 intervalCount=2
 rootTaskCodePath=
+contributorLogins=
 
 #
 # Two days, by collaborator & task, sorted by task, full depth, no root task

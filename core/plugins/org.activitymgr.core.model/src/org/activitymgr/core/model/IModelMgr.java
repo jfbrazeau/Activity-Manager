@@ -819,7 +819,7 @@ public interface IModelMgr {
 	 */
 	Report buildReport(Calendar start, ReportIntervalType intervalType,
 			Integer intervalCount, Long rootTaskId, int taskDepth,
-			boolean byContributor, boolean orderByContributor)
+			boolean byContributor, long[] contributorIds, boolean orderByContributor)
 			throws ModelException;
 	
 	/**
@@ -923,6 +923,8 @@ public interface IModelMgr {
 	 *            contributors and then by tasks or the inverse. If
 	 *            <code>(byContributor == false) || (taskDepth <= 0)</code>, it
 	 *            has no effect.
+	 * @param contributorIds
+	 *            contributor identifiers (optional).
 	 * @param columnIds
 	 *            the column identifiers to user.
 	 * @return the report.
@@ -933,6 +935,6 @@ public interface IModelMgr {
 	Workbook buildReport(Calendar start, ReportIntervalType intervalType,
 			Integer intervalCount, Long rootTaskId, int taskDepth,
 			boolean byContributor, boolean contributorCentricMode,
-			Collection<String> columnIds) throws ModelException;
+			long[] contributorIds, Collection<String> columnIds) throws ModelException;
 
 }

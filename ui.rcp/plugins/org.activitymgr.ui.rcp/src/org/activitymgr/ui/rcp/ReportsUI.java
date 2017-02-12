@@ -51,6 +51,7 @@ import org.activitymgr.core.util.DateHelper;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.dialogs.ErrorDialog;
 import org.activitymgr.ui.rcp.dialogs.TaskChooserTreeWithHistoryDialog;
+import org.activitymgr.ui.rcp.util.SafeRunner;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.eclipse.jface.dialogs.Dialog;
@@ -498,7 +499,13 @@ public class ReportsUI {
 		buildReportButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				buildReport();
+				new SafeRunner() {
+					@Override
+					protected Object runUnsafe() throws Exception {
+						buildReport();
+						return null;
+					}
+				}.run(parent.getShell());
 			}
 		});
 
@@ -566,6 +573,7 @@ public class ReportsUI {
 					intervalCount, rootTaskId, taskDepth,
 					includeCollaboratorsButton.getSelection(),
 					collaboratorsCentricButton.getSelection(),
+					null, 
 					columnsOrderElements);
 			File file = File.createTempFile("am-report-", ".xls");
 			System.out.println(file);
