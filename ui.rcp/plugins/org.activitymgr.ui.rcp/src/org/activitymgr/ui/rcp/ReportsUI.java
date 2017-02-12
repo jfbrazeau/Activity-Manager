@@ -582,9 +582,9 @@ public class ReportsUI {
 			out.close();
 			Desktop.getDesktop().open(file);
 		} catch (ModelException e) {
-			new ErrorDialog(parent.getShell(), e.getMessage(), e);
+			new ErrorDialog(parent.getShell(), e.getMessage(), e).open();
 		} catch (IOException e) {
-			new ErrorDialog(parent.getShell(), e.getMessage(), e);
+			new ErrorDialog(parent.getShell(), e.getMessage(), e).open();
 		}
 	}
 
