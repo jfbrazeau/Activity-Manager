@@ -2267,7 +2267,9 @@ public class ModelMgrImpl implements IModelMgr {
 		if (taskDepth > 0 && taskFields == 0) {
 			throw new ModelException(Strings.getString("ModelMgr.errors.BAD_REPORT_PARAMS_EMPTY_TASK_ATTRIBUTES"));
 		}
-		else if (byContributor && collaboratorFields.isEmpty()) {
+		// If collaborator is expected, must specify at least one collaborator attribute
+		// (except if one and only one collaborator identifier has been given)
+		else if (byContributor && collaboratorFields.isEmpty() && !(contributorIds == null || contributorIds.length == 1)) {
 			throw new ModelException(Strings.getString("ModelMgr.errors.BAD_REPORT_PARAMS_EMPTY_COLLABORATOR_ATTRIBUTES"));
 		}
 		

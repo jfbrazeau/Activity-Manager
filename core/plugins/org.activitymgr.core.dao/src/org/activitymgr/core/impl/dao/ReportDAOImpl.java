@@ -171,7 +171,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 			if (rootTask != null) {
 				sw.append("and (ctbtask.tsk_id=? or left(ctbtask.tsk_path, ?) = ?) ");
 			}
-			if (contributorIds != null) {
+			if (contributorIds != null && contributorIds.length > 0) {
 				sw.append("and ctb_contributor in (");
 				for (int i=0; i<contributorIds.length; i++) {
 					if (i > 0) {
@@ -215,7 +215,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 			// ORDER BY
 			sw.append("\norder by ");
 			// By default order collaborators by id
-			String clbFragment = "clb_login, ";
+			String clbFragment = "clb_id, ";
 			// But if possible order by given fields
 			if (orderContributorsBy != null && orderContributorsBy.length > 0) {
 				clbFragment = "";
@@ -267,7 +267,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 				pStmt.setInt(idx++, rootPath.length());
 				pStmt.setString(idx++, rootPath);
 			}
-			if (contributorIds != null) {
+			if (contributorIds != null && contributorIds.length > 0) {
 				for (Long contributorId : contributorIds) {
 					pStmt.setLong(idx++, contributorId);
 				}
