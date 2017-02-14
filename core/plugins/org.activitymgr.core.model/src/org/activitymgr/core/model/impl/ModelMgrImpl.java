@@ -2182,15 +2182,20 @@ public class ModelMgrImpl implements IModelMgr {
 	 * @see org.activitymgr.core.model.IModelMgr#buildReport(java.util.Calendar, org.activitymgr.core.dto.report.ReportIntervalType, int, java.lang.Long, int, boolean, boolean)
 	 */
 	@Override
-	public Report buildReport(Calendar start, ReportIntervalType intervalType, Integer intervalCount, Long rootTaskId, int taskDepth,
-			boolean byContributor, long[] contributorIds, boolean contributorCentricMode) throws ModelException {
+	public Report buildReport(Calendar start, ReportIntervalType intervalType,
+			Integer intervalCount, Long rootTaskId, int taskDepth,
+			boolean onlyKeepTasksWithContributions, boolean byContributor,
+			long[] contributorIds, boolean contributorCentricMode)
+			throws ModelException {
 		return buildReport(start, intervalType, intervalCount, rootTaskId,
-				taskDepth, byContributor, contributorCentricMode,
+				taskDepth, onlyKeepTasksWithContributions, byContributor, contributorCentricMode,
 				contributorIds, (String[]) null);
 	}
 
-	private Report buildReport(Calendar start, ReportIntervalType intervalType, Integer intervalCount, Long rootTaskId, int taskDepth,
-			boolean byContributor, boolean contributorCentricMode, long[] contributorIds,
+	private Report buildReport(Calendar start, ReportIntervalType intervalType,
+			Integer intervalCount, Long rootTaskId, int taskDepth,
+			boolean onlyKeepTasksWithContributions, boolean byContributor,
+			boolean contributorCentricMode, long[] contributorIds,
 			String[] orderContributorsBy) throws ModelException {
 		// task depth rectification if required
 		if (taskDepth < 0) {
@@ -2240,13 +2245,14 @@ public class ModelMgrImpl implements IModelMgr {
 		}
 		
 		// Compute the report
-		return reportDAO.buildReport(start, intervalType, intervalCount, rootTask, taskDepth, byContributor, contributorCentricMode, contributorIds, orderContributorsBy);
+		return reportDAO.buildReport(start, intervalType, intervalCount, rootTask, taskDepth, onlyKeepTasksWithContributions, byContributor, contributorCentricMode, contributorIds, orderContributorsBy);
 	}
 
 	@Override
 	public Workbook buildReport(Calendar start,
 			ReportIntervalType intervalType, Integer intervalCount,
-			Long rootTaskId, int taskDepth, boolean byContributor,
+			Long rootTaskId, int taskDepth,
+			boolean onlyKeepTasksWithContributions, boolean byContributor,
 			boolean contributorCentricMode, long[] contributorIds,
 			Collection<String> columnIds) throws ModelException {
 		
@@ -2280,6 +2286,7 @@ public class ModelMgrImpl implements IModelMgr {
 				intervalCount,
 				rootTaskId,
 				taskDepth,
+				onlyKeepTasksWithContributions,
 				byContributor,
 				contributorCentricMode,
 				contributorIds,

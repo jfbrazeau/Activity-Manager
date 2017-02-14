@@ -199,6 +199,8 @@ public class ReportsUI {
 
 	private ColumnElementsComparator columnElementsComparator;
 
+	private Button onlyKeepTasksWithContributionsButton;
+
 	/**
 	 * Default constructor intended to be used from within a tab.
 	 * 
@@ -299,6 +301,12 @@ public class ReportsUI {
 		includeTasksButton.setLayoutData(includeTasksButtonGridData);
 		includeTasksButton.setText("Decline resultset by task");
 
+		onlyKeepTasksWithContributionsButton = new Button(taskGroup, SWT.CHECK);
+		GridData ignoreTaksWithoutAnyContributionButtonGridData = new GridData();
+		ignoreTaksWithoutAnyContributionButtonGridData.horizontalSpan = 3;
+		onlyKeepTasksWithContributionsButton.setLayoutData(ignoreTaksWithoutAnyContributionButtonGridData);
+		onlyKeepTasksWithContributionsButton.setText("Only keep tasks with contributions");
+
 		new Label(taskGroup, SWT.NONE).setText("Task tree depth :");
 		GridData taskDepthSpinnerGridData = new GridData();
 		taskDepthSpinnerGridData.horizontalSpan = 2;
@@ -386,7 +394,7 @@ public class ReportsUI {
 		columnsOrderViewer.setContentProvider(ArrayContentProvider
 				.getInstance());
 		GridData columnsOrderTableGridData = new GridData();
-		columnsOrderTableGridData.heightHint = 100;
+		columnsOrderTableGridData.heightHint = 60;
 		columnsOrderTableGridData.widthHint = 200;
 		columnsOrderList.setLayoutData(columnsOrderTableGridData);
 		columnsOrderElements = new ArrayList<String>();
@@ -571,6 +579,7 @@ public class ReportsUI {
 			}
 			Workbook report = modelMgr.buildReport(start, intervalType,
 					intervalCount, rootTaskId, taskDepth,
+					onlyKeepTasksWithContributionsButton.getSelection(), 
 					includeCollaboratorsButton.getSelection(),
 					collaboratorsCentricButton.getSelection(),
 					null, 
@@ -671,6 +680,8 @@ public class ReportsUI {
 					.setEnabled(false);
 			attributesCheckboxesMap.get(ETC_ATTRIBUTE).setEnabled(false);
 		}
+
+		onlyKeepTasksWithContributionsButton.setEnabled(includeTasksButton.getSelection() && (!collaboratorsCentricButton.isEnabled() || !collaboratorsCentricButton.getSelection()));
 
 		// Update dates
 		ReportIntervalType intervalType = getReportIntervalType();

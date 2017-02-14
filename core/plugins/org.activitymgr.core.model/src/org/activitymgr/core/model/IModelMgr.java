@@ -804,6 +804,10 @@ public interface IModelMgr {
 	 *            the task depth to consider [Required]. If this is equal to 0,
 	 *            no task will appear in the report (all tasks contributions
 	 *            will be cumulated).
+	 * @param onlyKeepTasksWithContributions
+	 *            <code>true</code> if the report must only keep tasks with
+	 *            contributions. Has no effect if <code>taskDepth == 0</code> or
+	 *            if <code>contributorCentricMode == true</code>.
 	 * @param byContributor
 	 *            <code>true</code> if the report must decline contributions by
 	 *            contributors.
@@ -819,7 +823,8 @@ public interface IModelMgr {
 	 */
 	Report buildReport(Calendar start, ReportIntervalType intervalType,
 			Integer intervalCount, Long rootTaskId, int taskDepth,
-			boolean byContributor, long[] contributorIds, boolean orderByContributor)
+			boolean onlyKeepTasksWithContributions, boolean byContributor,
+			long[] contributorIds, boolean orderByContributor)
 			throws ModelException;
 	
 	/**
@@ -915,6 +920,10 @@ public interface IModelMgr {
 	 *            the task depth to consider [Required]. If this is equal to 0,
 	 *            no task will appear in the report (all tasks contributions
 	 *            will be cumulated).
+	 * @param onlyKeepTasksWithContributions
+	 *            <code>true</code> if the report must only keep tasks with
+	 *            contributions. Has no effect if <code>taskDepth == 0</code> or
+	 *            if <code>contributorCentricMode == true</code>.
 	 * @param byContributor
 	 *            <code>true</code> if the report must decline contributions by
 	 *            contributors.
@@ -934,7 +943,8 @@ public interface IModelMgr {
 	 */
 	Workbook buildReport(Calendar start, ReportIntervalType intervalType,
 			Integer intervalCount, Long rootTaskId, int taskDepth,
-			boolean byContributor, boolean contributorCentricMode,
-			long[] contributorIds, Collection<String> columnIds) throws ModelException;
+			boolean onlyKeepTasksWithContributions, boolean byContributor,
+			boolean contributorCentricMode, long[] contributorIds,
+			Collection<String> columnIds) throws ModelException;
 
 }

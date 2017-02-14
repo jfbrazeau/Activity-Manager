@@ -4,6 +4,7 @@ intervalType=year
 intervalCount=3
 #rootTaskCodePath=
 taskDepth=10
+onlyKeepTasksWithContributions=false
 byContributor=true
 orderByContributor=false
 contributorLogins=

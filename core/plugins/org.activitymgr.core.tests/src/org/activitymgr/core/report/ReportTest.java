@@ -40,6 +40,7 @@ public class ReportTest extends AbstractModelTestCase {
 	private static final String ROOT_TASK_CODE_PATH_PROP = "rootTaskCodePath";
 	private static final String TASK_DEPTH_PROP = "taskDepth";
 	private static final String BY_CONTRIBUTOR_PROP = "byContributor";
+	private static final String ONLY_KEEP_TASKS_WITH_CONTRIBUTIONS_PROP = "onlyKeepTasksWithContributions";
 	private static final String CONTRIBUTOR_LOGINS_PROP = "contributorLogins";
 	private static final String ORDER_BY_CONTRIBUTOR_PROP = "orderByContributor";
 	
@@ -82,6 +83,7 @@ public class ReportTest extends AbstractModelTestCase {
 					3, // 3 months
 					null, // No root task
 					0, // No depth 
+					false, // onlyKeepTasksWithContributions
 					true, // By contributor
 					null, // Contributor ids
 					true // Order by contributor
@@ -212,6 +214,7 @@ public class ReportTest extends AbstractModelTestCase {
 					intervalCountProperty != null ? Integer.parseInt(intervalCountProperty) : null, // interval count
 					rootTaskId, // root task
 					Integer.parseInt(props.getProperty(TASK_DEPTH_PROP)), // Task depth
+					Boolean.parseBoolean(props.getProperty(ONLY_KEEP_TASKS_WITH_CONTRIBUTIONS_PROP)), // Only Keep Tasks With Contributions
 					Boolean.parseBoolean(props.getProperty(BY_CONTRIBUTOR_PROP)), // By contributor
 					contributorIds, // Contributor ids
 					Boolean.parseBoolean(props.getProperty(ORDER_BY_CONTRIBUTOR_PROP)) // Order by contributor
@@ -224,7 +227,12 @@ public class ReportTest extends AbstractModelTestCase {
 		}
 	}
 	
-	private Report doBuildReport(Calendar start, ReportIntervalType intervalType, Integer intervalCount, Long rootTaskId, int taskDepth, boolean byContributor, long[] contributorIds, boolean orderByContributor) throws ModelException {
+	private Report doBuildReport(Calendar start,
+			ReportIntervalType intervalType, Integer intervalCount,
+			Long rootTaskId, int taskDepth,
+			boolean onlyKeepTasksWithContributions, boolean byContributor,
+			long[] contributorIds, boolean orderByContributor)
+			throws ModelException {
 		System.out.println("buildReport(");
 		System.out.println("  "
 				+ (start != null ? (start.get(Calendar.YEAR) + "/"
@@ -234,6 +242,7 @@ public class ReportTest extends AbstractModelTestCase {
 		System.out.println("  " + intervalCount + ", // intervalCount");
 		System.out.println("  " + rootTaskId + ", // rootTaskId");
 		System.out.println("  " + taskDepth + ", // taskDepth");
+		System.out.println("  " + onlyKeepTasksWithContributions + ", // onlyKeepTasksWithContributions");
 		System.out.println("  " + byContributor + ", // byContributor");
 		StringWriter sw = new StringWriter();
 		if (contributorIds != null) {
@@ -245,8 +254,8 @@ public class ReportTest extends AbstractModelTestCase {
 		System.out.println("  " + sw.toString() + ", // contributorIds");
 		System.out.println("  " + orderByContributor + ") // orderByContributor");
 		return getModelMgr().buildReport(start, intervalType, intervalCount,
-				rootTaskId, taskDepth, byContributor, contributorIds,
-				orderByContributor);
+				rootTaskId, taskDepth, onlyKeepTasksWithContributions,
+				byContributor, contributorIds, orderByContributor);
 	}
 
 	private Calendar cal(String cal) {

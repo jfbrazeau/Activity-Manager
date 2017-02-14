@@ -3,6 +3,7 @@ start=16012017
 intervalType=week
 intervalCount=2
 rootTaskCodePath=
+onlyKeepTasksWithContributions=false
 byContributor=true
 
 # One collaborators, task centric mode

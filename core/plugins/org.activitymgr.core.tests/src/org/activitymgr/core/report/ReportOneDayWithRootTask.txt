@@ -9,6 +9,7 @@ contributorLogins=
 # One day, by collaborator & task, sorted by task, full depth, root task = /PR
 #
 taskDepth=10
+onlyKeepTasksWithContributions=false
 byContributor=true
 orderByContributor=false
 +---------------+---------------+----------+-------+-------+-------+-------+
@@ -28,9 +29,29 @@ orderByContributor=false
 +---------------+---------------+----------+-------+-------+-------+-------+
 
 #
+# One day, by collaborator & task, sorted by task, full depth, root task = /PR, onlyKeepTasksWithContributions=true
+#
+taskDepth=10
+onlyKeepTasksWithContributions=true
+byContributor=true
+orderByContributor=false
++---------------+---------------+----------+-------+-------+-------+-------+
+|Path           |Name           |Contribut.| Budget|Ini. C.| 160117|    ETC|
++---------------+---------------+----------+-------+-------+-------+-------+
+|/PA/SPE        |Specification  |jdoe      |   1.00|   2.00|   0.25|   3.00|
+|/PA/SPE        |Specification  |wsmith    |   -.--|   -.--|   0.25|   -.--|
+|/PA/DEV/MA     |Module A       |jdoe      |   1.00|   0.00|   0.50|   4.00|
+|/PA/TST        |Test           |jdoe      |   0.00|   0.00|   0.25|   0.00|
+|/PB/SPE        |Specification  |wsmith    |   0.00|   0.00|   0.50|   0.00|
++---------------+---------------+----------+-------+-------+-------+-------+
+|               |               |          |   2.00|   2.00|   1.75|   7.00|
++---------------+---------------+----------+-------+-------+-------+-------+
+
+#
 # One day, by collaborator & task, sorted by contributor, full depth, root task = /PR
 #
 taskDepth=10
+onlyKeepTasksWithContributions=false
 byContributor=true
 orderByContributor=true
 +----------+---------------+---------------+-------+
@@ -49,6 +70,7 @@ orderByContributor=true
 # One day, by collaborator & task, sorted by task, depth=1, root task = /PR
 #
 taskDepth=1
+onlyKeepTasksWithContributions=false
 byContributor=true
 orderByContributor=false
 +---------------+---------------+----------+-------+-------+-------+-------+

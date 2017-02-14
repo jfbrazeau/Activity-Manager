@@ -40,8 +40,11 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 	
 
 	@Override
-	public Report buildReport(Calendar start, ReportIntervalType intervalType, int intervalCount, Task rootTask, int taskDepth,
-			boolean byContributor, boolean contributorCentricMode, long[] contributorIds, String[] orderContributorsBy) {
+	public Report buildReport(Calendar start, ReportIntervalType intervalType,
+			int intervalCount, Task rootTask, int taskDepth,
+			boolean onlyKeepTasksWithContributions, boolean byContributor,
+			boolean contributorCentricMode, long[] contributorIds,
+			String[] orderContributorsBy) {
 		/*
 		 * Retrieve contributors
 		 */
@@ -321,7 +324,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 					else {
 						// If in task centric mode (or without contributors which is equivalent), may have to insert rows without contributions
 						// before adding new report line
-						if (!contributorCentricMode || !byContributor) {
+						if (!onlyKeepTasksWithContributions && (!contributorCentricMode || !byContributor)) {
 							if (!contributedTask.equals(orderedTasks.get(orderedTaskIndex))) {
 								// If the last report item was about the same task, we must skeep the corresponding value
 								// in the ordered task list
@@ -388,7 +391,8 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 			}
 
 			// Empty rows may have to be added at the end of the report (only in task centric mode or equivalent) 
-			if (byActivity && !contributorCentricMode || !byContributor) {
+			if (!onlyKeepTasksWithContributions && byActivity
+					&& !contributorCentricMode || !byContributor) {
 				while (++orderedTaskIndex < orderedTasks.size()) {
 					TaskSums cursor = orderedTasks.get(orderedTaskIndex);
 					if (cursor.isLeaf()) {

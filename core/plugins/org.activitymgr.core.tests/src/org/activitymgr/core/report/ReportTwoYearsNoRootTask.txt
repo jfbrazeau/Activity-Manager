@@ -3,6 +3,7 @@ start=03012016
 intervalType=year
 intervalCount=2
 rootTaskCodePath=
+onlyKeepTasksWithContributions=false
 contributorLogins=
 
 #

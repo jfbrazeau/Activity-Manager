@@ -3,6 +3,7 @@ start=16012017
 intervalType=week
 intervalCount=1
 rootTaskCodePath=/PR
+onlyKeepTasksWithContributions=false
 contributorLogins=
 
 #

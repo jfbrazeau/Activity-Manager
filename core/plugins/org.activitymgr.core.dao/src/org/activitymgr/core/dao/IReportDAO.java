@@ -15,6 +15,10 @@ public interface IReportDAO {
 	 * @param intervalCount
 	 * @param rootTask
 	 * @param taskDepth
+	 * @param onlyKeepTasksWithContributions
+	 *            <code>true</code> if the report must only keep tasks with
+	 *            contributions. Has no effect if <code>taskDepth == 0</code> or
+	 *            if <code>contributorCentricMode == true</code>.
 	 * @param byContributor
 	 *            tells whether contributors must appear in the result.
 	 * @param contributorCentricMode
@@ -30,7 +34,8 @@ public interface IReportDAO {
 	 */
 	Report buildReport(Calendar start, ReportIntervalType intervalType,
 			int intervalCount, Task rootTask, int taskDepth,
-			boolean byContributor, boolean contributorCentricMode,
-			long[] contributorIds, String[] orderContributorsBy);
+			boolean onlyKeepTasksWithContributions, boolean byContributor,
+			boolean contributorCentricMode, long[] contributorIds,
+			String[] orderContributorsBy);
 
 }
