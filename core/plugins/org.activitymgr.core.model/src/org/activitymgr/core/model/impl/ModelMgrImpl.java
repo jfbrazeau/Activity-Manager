@@ -2351,6 +2351,10 @@ public class ModelMgrImpl implements IModelMgr {
 						// For summable fields, TaskSums object will be used
 						if (SUMMABLE_FIELDS.contains(fieldId)) {
 							object = contributedTask;
+							// FIXME 'todo' attribute should be renamed to 'etc' in Task object
+							if (ETC_ATTRIBUTE.equals(fieldId)) {
+								fieldId = "todo";
+							}
 							fieldId += SUM_SUFFIX;
 						}
 						// Otherwise, Task or Collaborator will be used
