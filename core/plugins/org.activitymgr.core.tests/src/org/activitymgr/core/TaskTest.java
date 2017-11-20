@@ -103,6 +103,18 @@ public class TaskTest extends AbstractModelTestCase {
 		task2 = getModelMgr().getTask(task2.getId());
 	}
 	
+	public void testGetMaxTaskDepth() throws ModelException {
+		assertEquals(0, getModelMgr().getMaxTaskDepthUnder(null));
+		createSampleTasks();
+		assertEquals(4, getModelMgr().getMaxTaskDepthUnder(null));
+		assertEquals(2, getModelMgr().getMaxTaskDepthUnder(task1.getId()));
+		assertEquals(1, getModelMgr().getMaxTaskDepthUnder(task11.getId()));
+		assertEquals(0, getModelMgr().getMaxTaskDepthUnder(task111.getId()));
+		removeSampleTasks();
+		assertEquals(0, getModelMgr().getMaxTaskDepthUnder(null));
+	}
+	
+	
 	public void removeSampleTasks() throws ModelException {
 		removeRecursively(rootTask);
 	}

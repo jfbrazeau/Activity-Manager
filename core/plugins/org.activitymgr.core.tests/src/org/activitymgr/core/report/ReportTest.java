@@ -255,7 +255,7 @@ public class ReportTest extends AbstractModelTestCase {
 		System.out.println("  " + orderByContributor + ") // orderByContributor");
 		return getModelMgr().buildReport(start, intervalType, intervalCount,
 				rootTaskId, taskDepth, onlyKeepTasksWithContributions,
-				byContributor, contributorIds, orderByContributor);
+				byContributor, orderByContributor, contributorIds);
 	}
 
 	private Calendar cal(String cal) {

@@ -36,6 +36,7 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Contribution;
 import org.activitymgr.core.dto.Duration;
@@ -52,6 +53,12 @@ import org.xml.sax.SAXException;
  * Model manager.
  */
 public interface IModelMgr {
+
+	public static final String ETC_ATTRIBUTE = "etc";
+	public static final String INITIALLY_CONSUMED_ATTRIBUTE = "initiallyConsumed";
+	public static final String BUDGET_ATTRIBUTE = "budget";
+	public static final String PATH_ATTRIBUTE = "path";
+	public static final String CODE_ATTRIBUTE = "code";
 
 	/**
 	 * Change la tache d'une liste de contributions.
@@ -811,7 +818,7 @@ public interface IModelMgr {
 	 * @param byContributor
 	 *            <code>true</code> if the report must decline contributions by
 	 *            contributors.
-	 * @param orderByContributor
+	 * @param contributorCentricMode
 	 *            <code>true</code> if the report must be ordered by
 	 *            contributors and then by tasks or the inverse. If
 	 *            <code>(byContributor == false) || (taskDepth <= 0)</code>, it
@@ -824,7 +831,7 @@ public interface IModelMgr {
 	Report buildReport(Calendar start, ReportIntervalType intervalType,
 			Integer intervalCount, Long rootTaskId, int taskDepth,
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
-			long[] contributorIds, boolean orderByContributor)
+			boolean contributorCentricMode, long[] contributorIds)
 			throws ModelException;
 	
 	/**
@@ -947,4 +954,66 @@ public interface IModelMgr {
 			boolean contributorCentricMode, long[] contributorIds,
 			Collection<String> columnIds) throws ModelException;
 
+	/**
+	 * Builds a report and converts it in Excel format.
+	 * 
+	 * </p>
+	 * 
+	 * @param start
+	 *            the start date to consider [Optional]. If omitted, the first
+	 *            contribution in the database will be considered.
+	 * @param intervalType
+	 *            the interval type (days, weeks, months, years) [Required].
+	 * @param intervalCount
+	 *            the interval count to cover [Optional]. If omitted, the last
+	 *            contribution in the database will be considered.
+	 * @param rootTaskId
+	 *            the root task identifier [Optional]. If omitted, the whole
+	 *            database will be considered.
+	 * @param taskDepth
+	 *            the task depth to consider [Required]. If this is equal to 0,
+	 *            no task will appear in the report (all tasks contributions
+	 *            will be cumulated).
+	 * @param onlyKeepTasksWithContributions
+	 *            <code>true</code> if the report must only keep tasks with
+	 *            contributions. Has no effect if <code>taskDepth == 0</code> or
+	 *            if <code>contributorCentricMode == true</code>.
+	 * @param byContributor
+	 *            <code>true</code> if the report must decline contributions by
+	 *            contributors.
+	 * @param contributorCentricMode
+	 *            <code>true</code> if the report must be ordered by
+	 *            contributors and then by tasks or the inverse. If
+	 *            <code>(byContributor == false) || (taskDepth <= 0)</code>, it
+	 *            has no effect.
+	 * @param contributorIds
+	 *            contributor identifiers (optional).
+	 * @param columns
+	 *            the column computers to use.
+	 * @param orderContributorsBy
+	 *            fields to use to order contributors (ignored if
+	 *            <code>byContributor</code> is <code>false</code>).
+	 * 
+	 * @return the report.
+	 * @throws ModelException
+	 *             if start date is not specified and no contribution exist in
+	 *             the database.
+	 */
+	Workbook buildReport(Calendar start, ReportIntervalType intervalType,
+			Integer intervalCount, Long rootTaskId, int taskDepth,
+			boolean onlyKeepTasksWithContributions, boolean byContributor,
+			boolean contributorCentricMode, long[] contributorIds,
+			Collection<IReportColumnComputer> columns,
+			String[] orderContributorsBy) throws ModelException;
+
+
+	/**
+	 * Returns the max task tree depth under a given task.
+	 * 
+	 * @param rootTaskId the root task to consider.
+	 * @return the max task tree depth.
+	 * @throws DAOException
+	 *             thrown if a technical error occurs.
+	 */
+	int getMaxTaskDepthUnder(Long rootTaskId) throws DAOException;
 }

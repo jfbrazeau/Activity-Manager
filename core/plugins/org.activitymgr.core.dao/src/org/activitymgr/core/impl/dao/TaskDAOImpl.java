@@ -402,4 +402,36 @@ public class TaskDAOImpl extends AbstractORMDAOImpl<Task> implements ITaskDAO {
 		}
 	}
 
+	
+	@Override
+	public int getMaxTaskDepthUnder(String path) throws DAOException {
+		PreparedStatement pStmt = null;
+		ResultSet rs = null;
+		try {
+			// Préparation de la requête
+			pStmt = tx().prepareStatement("select (max(length(tsk_path))/2+1) from TASK where tsk_path like ?"); //$NON-NLS-1$
+			pStmt.setString(1, path + "%");
+			
+			// Exécution de la requête
+			rs = pStmt.executeQuery();
+			if (!rs.next())
+				throw new DAOException(
+						Strings.getString("DbMgr.errors.SQL_EMPTY_QUERY_RESULT"), null); //$NON-NLS-1$
+			int result = rs.getInt(1);
+
+			// Fermeture du ResultSet
+			pStmt.close();
+			pStmt = null;
+
+			// Retour du résultat
+			return result;
+		} catch (SQLException e) {
+			log.info("Incident SQL", e); //$NON-NLS-1$
+			throw new DAOException(
+					Strings.getString("DbMgr.errors.TASK_MAX_PATH_DEPTH_RETRIEVAL"), e); //$NON-NLS-1$
+		} finally {
+			lastAttemptToClose(pStmt);
+		}
+	}
+
 }

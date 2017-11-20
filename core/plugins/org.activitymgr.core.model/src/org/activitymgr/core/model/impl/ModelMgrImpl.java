@@ -31,8 +31,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.StringWriter;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -72,11 +70,14 @@ import org.activitymgr.core.dto.report.Report;
 import org.activitymgr.core.dto.report.ReportIntervalType;
 import org.activitymgr.core.dto.report.ReportItem;
 import org.activitymgr.core.model.IModelMgr;
+import org.activitymgr.core.model.IReportColumnComputer;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.model.XLSModelException;
 import org.activitymgr.core.model.impl.XlsImportHelper.IXLSHandler;
 import org.activitymgr.core.model.impl.XlsImportHelper.XLSCell;
 import org.activitymgr.core.model.impl.XmlHelper.ModelMgrDelegate;
+import org.activitymgr.core.model.impl.report.ReflectiveReportColumnComputer;
+import org.activitymgr.core.model.impl.report.TaskPathReportColumnComputer;
 import org.activitymgr.core.orm.query.AscendantOrderByClause;
 import org.activitymgr.core.orm.query.DescendantOrderByClause;
 import org.activitymgr.core.orm.query.InStatement;
@@ -86,12 +87,9 @@ import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.core.util.WorkbookBuilder;
-import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.BeanUtilsBean2;
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Cell;
@@ -114,25 +112,6 @@ import com.google.inject.Inject;
  * </p>
  */
 public class ModelMgrImpl implements IModelMgr {
-
-	private static final String CODE_ATTRIBUTE = "code";
-
-	private static final String PATH_ATTRIBUTE = "path";
-
-	private static final String BUDGET_ATTRIBUTE = "budget";
-
-	private static final String INITIALLY_CONSUMED_ATTRIBUTE = "initiallyConsumed";
-	
-	private static final String ETC_ATTRIBUTE = "etc";
-	
-	private static final Collection<String> SUMMABLE_FIELDS = Arrays.asList(
-			BUDGET_ATTRIBUTE, INITIALLY_CONSUMED_ATTRIBUTE, ETC_ATTRIBUTE);
-
-	private static final String SUM_SUFFIX = "Sum";
-	
-	private static final String COLLABORATOR_PREFIX = "collaborator.";
-
-	private static final String TASK_PREFIX = "task.";
 
 	/** Logger */
 	private static Logger log = Logger.getLogger(ModelMgrImpl.class);
@@ -164,6 +143,16 @@ public class ModelMgrImpl implements IModelMgr {
 	/** Bean factory */
 	@Inject
 	private IDTOFactory factory;
+	
+	/** Report columns computers map */
+	private Map<String, IReportColumnComputer> defaultReportColumnComputers = new HashMap<String, IReportColumnComputer>();
+	
+	/**
+	 * Default constructor.
+	 */
+	public ModelMgrImpl() {
+		defaultReportColumnComputers.put(ReflectiveReportColumnComputer.TASK_PREFIX + PATH_ATTRIBUTE, new TaskPathReportColumnComputer());
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -2185,7 +2174,7 @@ public class ModelMgrImpl implements IModelMgr {
 	public Report buildReport(Calendar start, ReportIntervalType intervalType,
 			Integer intervalCount, Long rootTaskId, int taskDepth,
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
-			long[] contributorIds, boolean contributorCentricMode)
+			boolean contributorCentricMode, long[] contributorIds)
 			throws ModelException {
 		return buildReport(start, intervalType, intervalCount, rootTaskId,
 				taskDepth, onlyKeepTasksWithContributions, byContributor, contributorCentricMode,
@@ -2197,10 +2186,11 @@ public class ModelMgrImpl implements IModelMgr {
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
 			boolean contributorCentricMode, long[] contributorIds,
 			String[] orderContributorsBy) throws ModelException {
-		// task depth rectification if required
+		// Fix task depth
 		if (taskDepth < 0) {
-			taskDepth = 0;
+			taskDepth = getMaxTaskDepthUnder(rootTaskId);
 		}
+		System.out.println("DEPTH : " + taskDepth);
 		
 		// If start date is omitted, compute a date
 		Task rootTask = rootTaskId != null ? taskDAO.selectByPK(rootTaskId) : null;
@@ -2255,15 +2245,22 @@ public class ModelMgrImpl implements IModelMgr {
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
 			boolean contributorCentricMode, long[] contributorIds,
 			Collection<String> columnIds) throws ModelException {
-		
+		Map<String, IReportColumnComputer> reportColumnComputers = new HashMap<String, IReportColumnComputer>(defaultReportColumnComputers); 
+		List<IReportColumnComputer> columns = new ArrayList<IReportColumnComputer>();
 		int taskFields = 0;
 		List<String> collaboratorFields = new ArrayList<String>();
 		for (String columnId : columnIds) {
-			if (columnId.startsWith(TASK_PREFIX)) {
+			IReportColumnComputer column = reportColumnComputers.get(columnId);
+			if (column == null) {
+				column = new ReflectiveReportColumnComputer(columnId);
+				reportColumnComputers.put(columnId, column);
+			}
+			columns.add(column);
+			if (columnId.startsWith(ReflectiveReportColumnComputer.TASK_PREFIX)) {
 				taskFields++;
 			}
-			else if (columnId.startsWith(COLLABORATOR_PREFIX)) {
-				collaboratorFields.add(columnId.substring(COLLABORATOR_PREFIX.length()));
+			else if (columnId.startsWith(ReflectiveReportColumnComputer.COLLABORATOR_PREFIX)) {
+				collaboratorFields.add(columnId.substring(ReflectiveReportColumnComputer.COLLABORATOR_PREFIX.length()));
 			}
 			else {
 				throw new IllegalArgumentException("Unknown field type '" + columnId + "'");
@@ -2278,7 +2275,28 @@ public class ModelMgrImpl implements IModelMgr {
 		else if (byContributor && collaboratorFields.isEmpty() && !(contributorIds == null || contributorIds.length == 1)) {
 			throw new ModelException(Strings.getString("ModelMgr.errors.BAD_REPORT_PARAMS_EMPTY_COLLABORATOR_ATTRIBUTES"));
 		}
-		
+
+		return buildReport(
+				start,
+				intervalType,
+				intervalCount,
+				rootTaskId,
+				taskDepth,
+				onlyKeepTasksWithContributions,
+				byContributor,
+				contributorCentricMode,
+				contributorIds,
+				columns,
+				collaboratorFields.toArray(new String[collaboratorFields.size()]));
+	}
+
+	@Override
+	public Workbook buildReport(Calendar start,
+			ReportIntervalType intervalType, Integer intervalCount,
+			Long rootTaskId, int taskDepth,
+			boolean onlyKeepTasksWithContributions, boolean byContributor,
+			boolean contributorCentricMode, long[] contributorIds,
+			Collection<IReportColumnComputer> columns, String[] orderContributorsBy) throws ModelException {
 		// Build raw report
 		Report report = buildReport(
 				start,
@@ -2290,7 +2308,7 @@ public class ModelMgrImpl implements IModelMgr {
 				byContributor,
 				contributorCentricMode,
 				contributorIds,
-				collaboratorFields.toArray(new String[collaboratorFields.size()]));
+				orderContributorsBy);
 
 		// Convert report to XLS
 		String dateFormat = null;
@@ -2314,10 +2332,8 @@ public class ModelMgrImpl implements IModelMgr {
 		Sheet sheet = workbook.createSheet("Report");
 		Row headerRow = sheet.createRow(sheet.getLastRowNum());
 		int colIdx = 0;
-		for (String columnId : columnIds) {
-			int idx = columnId.indexOf('.');
-			String fieldId = columnId.substring(idx + 1);
-			wb.asHeaderCellStyl(headerRow.createCell(colIdx++)).setCellValue(fieldId);
+		for (IReportColumnComputer column : columns) {
+			wb.asHeaderCellStyl(headerRow.createCell(colIdx++)).setCellValue(column.getName());
 		}
 		
 		Collection<Calendar> dates = report.getDates();
@@ -2332,59 +2348,30 @@ public class ModelMgrImpl implements IModelMgr {
 			TaskSums contributedTask = item.getContributedTask();
 			Row row = sheet.createRow(sheet.getLastRowNum()+1);
 			colIdx = 0;
-			for (String columnId : columnIds) {
+			for (IReportColumnComputer column : columns) {
 				Cell cell = wb.asBodyCellStyl(row.createCell(colIdx++));
-				int idx = columnId.indexOf('.');
-				String fieldId = columnId.substring(idx + 1);
-				if (columnId.startsWith(TASK_PREFIX) && PATH_ATTRIBUTE.equals(fieldId)) {
-					StringWriter sw = new StringWriter();
-					for (TaskSums cursor : item.getTasks()) {
-						sw.append('/').append(cursor.getTask().getCode());
+				boolean ignoreCell = false;
+				// Summable fields must only appear once and not for each occurence
+				// For example if a task has 200 as budget, this value must not appear
+				// for every vollaborator that contributes to it
+				if (column.isSummable() && lastItem != null && contributedTask != null) {
+					if (lastItem.getContributedTask().getTask().getId() == contributedTask.getTask().getId()) {
+						ignoreCell = true;
 					}
-					cell.setCellValue(sw.toString());
 				}
-				else {
-					boolean ignoreCell = false;
-					// Summable fields must only appear once and not for each occurence
-					// For example if a task has 200 as budget, this value must not appear
-					// for every vollaborator that contributes to it
-					if (SUMMABLE_FIELDS.contains(fieldId) && lastItem != null) {
-						if (lastItem.getContributedTask().getTask().getId() == contributedTask.getTask().getId()) {
-							ignoreCell = true;
-						}
+				if (!ignoreCell) {
+					Object cellValue = column.compute(item);
+					if (cellValue instanceof String) {
+						cell.setCellValue((String) cellValue);
 					}
-					if (!ignoreCell) {
-						Object object = null;
-						// For summable fields, TaskSums object will be used
-						if (SUMMABLE_FIELDS.contains(fieldId)) {
-							object = contributedTask;
-							// FIXME 'todo' attribute should be renamed to 'etc' in Task object
-							if (ETC_ATTRIBUTE.equals(fieldId)) {
-								fieldId = "todo";
-							}
-							fieldId += SUM_SUFFIX;
-						}
-						// Otherwise, Task or Collaborator will be used
-						else {
-							object = columnId.startsWith(TASK_PREFIX) ? contributedTask.getTask() : item.getContributor();
-						}
-						// Collaborator my be null in task oriented report with a task that
-						// has no contribution
-						if (object != null) {
-							try {
-								Object v = PropertyUtils.getProperty(object, fieldId);
-								if (v instanceof Long) {
-									if (((Long) v).longValue() != 0) {
-										cell.setCellValue(((Long) v)/100d);
-									}
-								}
-								else if (v != null) {
-									cell.setCellValue(String.valueOf(v));
-								}
-							} catch (ReflectiveOperationException e) {
-								throw new IllegalStateException(e);
-							}
-						}
+					else if (cellValue instanceof Double) {
+						cell.setCellValue((Double) cellValue);
+					}
+					else if (cellValue instanceof Boolean) {
+						cell.setCellValue((Boolean) cellValue);
+					}
+					else if (cellValue!=null) {
+						throw new IllegalStateException("Unexpected cell type : " + cellValue.getClass());
 					}
 				}
 			}
@@ -2402,7 +2389,7 @@ public class ModelMgrImpl implements IModelMgr {
 		
 		// Autosize code & name columns
 		colIdx = 0;
-		for (@SuppressWarnings("unused") String columnId : columnIds) {
+		for (@SuppressWarnings("unused") IReportColumnComputer column : columns) {
 			sheet.autoSizeColumn(colIdx++);
 		}
 		// Freeze
@@ -2435,4 +2422,20 @@ public class ModelMgrImpl implements IModelMgr {
 		start.set(Calendar.SECOND, 0);
 		start.set(Calendar.MILLISECOND, 0);
 	}
+
+	/* (non-Javadoc)
+	 * @see org.activitymgr.core.model.IModelMgr#getMaxTaskDepth()
+	 */
+	@Override
+	public int getMaxTaskDepthUnder(Long rootTaskId) throws DAOException {
+		String path = "";
+		if (rootTaskId != null) {
+			Task rootTask = getTask(rootTaskId);
+			path = rootTask.getFullPath();
+		}
+		// If the root task Id is a leaf task, the SQL request returns 0 (as there are no child task)
+		int maxTaskDepthUnder = taskDAO.getMaxTaskDepthUnder(path);
+		return maxTaskDepthUnder > 0 ? maxTaskDepthUnder- (path.length() / 2) : 0;
+	}
+
 }

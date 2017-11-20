@@ -44,7 +44,8 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 			int intervalCount, Task rootTask, int taskDepth,
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
 			boolean contributorCentricMode, long[] contributorIds,
-			String[] orderContributorsBy) {
+			String[] orderContributorsBy) {		
+		
 		/*
 		 * Retrieve contributors
 		 */

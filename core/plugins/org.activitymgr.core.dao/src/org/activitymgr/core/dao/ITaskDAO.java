@@ -98,5 +98,15 @@ public interface ITaskDAO extends IDAO<Task> {
 	 */
 	List<TaskSums> getTasksSums(Long taskId, String tasksPath)
 			throws DAOException;
-
+	
+	/**
+	 * Returns the max task tree depth.
+	 * 
+	 * @param path the path to consider. 
+	 * @return the max task tree depth.
+	 * @throws DAOException
+	 *             thrown if a technical error occurs.
+	 */
+	int getMaxTaskDepthUnder(String path) throws DAOException;
+	
 }

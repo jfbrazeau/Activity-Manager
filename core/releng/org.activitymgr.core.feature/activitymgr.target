@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde?>
 <!-- generated with https://github.com/mbarbero/fr.obeo.releng.targetplatform -->
-<target name="Activity Manager" sequenceNumber="1461266945">
+<target name="Activity Manager" sequenceNumber="1487191344">
   <locations>
     <location includeMode="slicer" includeAllPlatforms="false" includeSource="false" includeConfigurePhase="false" type="InstallableUnit">
       <unit id="org.eclipse.platform.feature.group" version="0.0.0"/>
@@ -32,6 +32,8 @@
       <unit id="org.apache.commons.beanutils.source" version="0.0.0"/>
       <unit id="org.apache.commons.collections" version="0.0.0"/>
       <unit id="org.apache.commons.collections.source" version="0.0.0"/>
+      <unit id="org.apache.commons.lang" version="0.0.0"/>
+      <unit id="org.apache.commons.lang.source" version="0.0.0"/>
       <unit id="com.google.inject" version="0.0.0"/>
       <unit id="com.google.inject.source" version="0.0.0"/>
       <unit id="com.google.inject.assistedinject" version="0.0.0"/>
