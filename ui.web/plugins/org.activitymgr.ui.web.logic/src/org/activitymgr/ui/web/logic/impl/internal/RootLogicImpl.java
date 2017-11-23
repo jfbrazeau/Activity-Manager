@@ -47,10 +47,6 @@ public class RootLogicImpl implements IRootLogic {
 		this.view = rootView;
 		view.registerLogic(this);
 
-		// Model manager retrieval
-		// Create authentication logic
-		getView().setContentView(new AuthenticationLogicImpl(this).getView());
-		
 		// Event listeners registration
 		IEventBus eventBus = userInjector.getInstance(IEventBus.class);
 		eventBus.register(ConnectedCollaboratorEvent.class, new IEventListener<ConnectedCollaboratorEvent>() {
@@ -80,6 +76,10 @@ public class RootLogicImpl implements IRootLogic {
 			}
 
 		});
+		// Model manager retrieval
+		// Create authentication logic
+		getView().setContentView(new AuthenticationLogicImpl(this).getView());
+		
 	}
 	
 	
