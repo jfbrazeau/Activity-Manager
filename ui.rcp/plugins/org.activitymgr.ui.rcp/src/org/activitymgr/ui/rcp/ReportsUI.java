@@ -316,7 +316,7 @@ public class ReportsUI {
 		taskDepthSpinner = new Spinner(taskDepthSpinnerComposite, SWT.NONE);
 		taskDepthSpinner.setMinimum(1);
 		new Label(taskDepthSpinnerComposite, SWT.NONE)
-				.setText("(contributions of deeper depth will be aggregated)");
+				.setText("(deeper contributions will be aggregated)");
 
 		new Label(taskGroup, SWT.NONE).setText("Columns to include :");
 		buildCheckboxes(taskGroup, 2, PATH_ATTRIBUTE, CODE_ATTRIBUTE,

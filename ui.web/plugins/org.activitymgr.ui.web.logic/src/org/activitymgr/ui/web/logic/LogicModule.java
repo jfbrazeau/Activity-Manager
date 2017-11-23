@@ -25,6 +25,7 @@ import org.activitymgr.ui.web.logic.impl.internal.CollaboratorsTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.internal.ContributionsTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.internal.DefaultConstraintsValidator;
 import org.activitymgr.ui.web.logic.impl.internal.NewContributionTaskButtonLogic;
+import org.activitymgr.ui.web.logic.impl.internal.ReportsTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.internal.TasksTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.internal.ThreadLocalizedDbTransactionProviderImpl;
 import org.activitymgr.ui.web.logic.spi.IAuthenticatorExtension;
@@ -149,6 +150,20 @@ public class LogicModule extends AbstractModule {
 			@Override
 			public ITabLogic<?> create(ITabFolderLogic parent) {
 				return new ContributionsTabLogicImpl(parent);
+			}
+		});
+		tabsBinder.addBinding().toInstance(new ITabFactory() {
+			@Override
+			public int getTabOrderPriority() {
+				return 70;
+			}
+			@Override
+			public String getTabId() {
+				return IReportsTabLogic.ID;
+			}
+			@Override
+			public ITabLogic<?> create(ITabFolderLogic parent) {
+				return new ReportsTabLogicImpl(parent);
 			}
 		});
 

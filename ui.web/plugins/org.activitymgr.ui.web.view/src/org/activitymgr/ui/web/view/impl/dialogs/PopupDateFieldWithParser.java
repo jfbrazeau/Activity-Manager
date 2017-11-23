@@ -8,7 +8,7 @@ import com.vaadin.data.util.converter.Converter;
 import com.vaadin.ui.PopupDateField;
 
 @SuppressWarnings("serial")
-public class PopuDateFieldWithParser extends PopupDateField {
+public class PopupDateFieldWithParser extends PopupDateField {
 	@Override
 	protected Date handleUnparsableDateString(String dateString)
 	        throws Converter.ConversionException {

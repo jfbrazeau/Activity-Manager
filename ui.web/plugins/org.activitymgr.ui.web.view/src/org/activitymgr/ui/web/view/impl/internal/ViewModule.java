@@ -7,6 +7,7 @@ import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.IDownloadButtonLogic;
 import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILinkLogic;
+import org.activitymgr.ui.web.logic.IReportsTabLogic;
 import org.activitymgr.ui.web.logic.ISelectFieldLogic;
 import org.activitymgr.ui.web.logic.IStandardButtonLogic;
 import org.activitymgr.ui.web.logic.ITabFolderLogic;
@@ -45,6 +46,7 @@ public class ViewModule extends AbstractModule {
 		bind(IContributionsTabLogic.View.class).to(ContributionsPanel.class);
 		bind(ICollaboratorsTabLogic.View.class).to(CollaboratorsPanel.class);
 		bind(ITasksTabLogic.View.class).to(TasksPanel.class);
+		bind(IReportsTabLogic.View.class).to(ReportsPanel.class);
 		bind(ITaskChooserLogic.View.class).to(TaskChooserDialog.class);
 		bind(ILabelLogic.View.class).to(LabelView.class);
 		bind(ILinkLogic.View.class).to(LinkView.class);

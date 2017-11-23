@@ -284,4 +284,21 @@ public class StringHelper {
 		return (String[]) queries.toArray(new String[queries.size()]);
 	}
 
+	/**
+	 * Turn the first character to upper case.
+	 * 
+	 * @param s
+	 *            the string to convert.
+	 * @return the resulting string.
+	 */
+	public static String toLowerFirst(String s) {
+		String result = null;
+		if (s != null && s.length() > 0) {
+			char[] cars = s.toCharArray();
+			cars[0] = Character.toUpperCase(cars[0]);
+			result = new String(cars);
+		}
+		return result;
+	}
+
 }

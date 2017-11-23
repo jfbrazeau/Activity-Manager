@@ -1,8 +1,5 @@
 package org.activitymgr.ui.web.view.impl.internal;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.servlet.http.Cookie;
 
 import org.activitymgr.ui.web.logic.ActivityManagerLogic;
@@ -10,15 +7,9 @@ import org.activitymgr.ui.web.logic.IGenericCallback;
 import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.IRootLogic;
 import org.activitymgr.ui.web.view.impl.dialogs.YesNoDialog;
-import org.activitymgr.ui.web.view.impl.internal.vaadin.Activator;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
+import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.util.Modules;
 import com.vaadin.annotations.Theme;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
@@ -35,30 +26,16 @@ public class ActivityManagerUI extends UI implements IRootLogic.View {
 	@SuppressWarnings("unused")
 	private IRootLogic logic;
 	private Cookie[] cookies;
-	private static Injector INJECTOR;
-	
-	static {
-		List<AbstractModule> modules = new ArrayList<AbstractModule>();
-		IConfigurationElement[] cfgs = Activator.getDefault().getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.additionalModules");
-		for (IConfigurationElement cfg : cfgs) {
-			try {
-				modules.add((AbstractModule) cfg.createExecutableExtension("class"));
-			} catch (CoreException e) {
-				throw new IllegalStateException(e);
-			}
-		}
-		// Activity Manager module can be overriden
-		Module module = Modules.override(new ViewModule()).with(modules);
-		// Injector creation
-		INJECTOR = Guice.createInjector(module);
-	}
 
+	@Inject
+	private Injector injector;
+	
 	@Override
 	protected void init(VaadinRequest request) {
 		// Fetch all cookies from the request
 		cookies = request.getCookies();
 		// Create the logic
-		new ActivityManagerLogic(this, INJECTOR);
+		new ActivityManagerLogic(this, injector);
 	}
 
 	@Override
@@ -69,7 +46,7 @@ public class ActivityManagerUI extends UI implements IRootLogic.View {
 	@Override
 	public void showConfirm(String message, IGenericCallback<Boolean> callback) {
 		YesNoDialog dialog = new YesNoDialog("Confirmation", message, callback);
-		INJECTOR.injectMembers(dialog);
+		injector.injectMembers(dialog);
 		getUI().addWindow(dialog);
 	}
 

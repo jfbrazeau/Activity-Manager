@@ -7,7 +7,7 @@ import java.util.GregorianCalendar;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.view.AbstractTabPanel;
-import org.activitymgr.ui.web.view.impl.dialogs.PopuDateFieldWithParser;
+import org.activitymgr.ui.web.view.impl.dialogs.PopupDateFieldWithParser;
 import org.activitymgr.ui.web.view.impl.internal.util.AlignHelper;
 import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
 
@@ -72,7 +72,7 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 		
 		todayButton = new Button("Today");
 		controlsContainer.addComponent(todayButton);
-		dateField = new PopuDateFieldWithParser();
+		dateField = new PopupDateFieldWithParser();
 		dateField.setImmediate(true);
 		dateField.setDateFormat("E dd/MM/yyyy");
 		dateField.setShowISOWeekNumbers(true);

@@ -3,6 +3,7 @@ package org.activitymgr.ui.web.view.impl.internal;
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
 
 import com.vaadin.event.ShortcutListener;
+import com.vaadin.server.ClientConnector.AttachEvent;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CheckBox;
@@ -10,6 +11,7 @@ import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.HasComponents.ComponentAttachEvent;
 
 @SuppressWarnings("serial")
 public class AuthenticationPanel extends GridLayout implements
@@ -86,23 +88,19 @@ public class AuthenticationPanel extends GridLayout implements
 		
 		// Default focus management
 		userField.focus();
+		
+		// Register the attach listener
+		addComponentAttachListener(new ComponentAttachListener() {
+			@Override
+			public void componentAttachedToContainer(ComponentAttachEvent event) {
+				logic.onViewAttached();
+			}
+		});
 	}
 	
 	@Override
 	public void registerLogic(IAuthenticationLogic logic) {
 		this.logic = logic;
-	}
-
-	@Override
-	public void setDefaults(String defaultUser, boolean rememberMe) {
-		userField.setValue(defaultUser != null ? defaultUser : "");
-		rememberMeCheckBox.setValue(rememberMe);
-		if (defaultUser != null) {
-			passwordField.focus();
-		}
-		else {
-			userField.focus();
-		}
 	}
 
 }
