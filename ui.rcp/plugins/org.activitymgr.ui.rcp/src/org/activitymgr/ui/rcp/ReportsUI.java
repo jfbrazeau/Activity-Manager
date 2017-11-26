@@ -624,6 +624,46 @@ public class ReportsUI {
 			setEnabled(endDateTime, true);
 		}
 
+		// Update dates
+		ReportIntervalType intervalType = getReportIntervalType();
+		if (!ReportIntervalType.DAY.equals(intervalType)) {
+			Calendar start = toCalendar(startDateTime);
+			Calendar end = toCalendar(endDateTime);
+			switch (intervalType) {
+			case YEAR:
+				// Goto start of year
+				start.set(Calendar.MONTH, 0);
+				start.set(Calendar.DATE, 1);
+				
+				// Goto start of following year
+				end.set(Calendar.MONTH, 0);
+				end.set(Calendar.DATE, 1);
+				end.add(Calendar.YEAR, 1);
+				break;
+			case MONTH:
+				// Goto start of month
+				start.set(Calendar.DATE, 1);
+				
+				// Goto start of following month
+				end.set(Calendar.DATE, 1);
+				end.add(Calendar.MONTH, 1);
+				break;
+			case WEEK:
+				// Goto start of week
+				start = DateHelper.moveToFirstDayOfWeek(start);
+				
+				// Goto start of following month
+				end = DateHelper.moveToFirstDayOfWeek(end);
+				end.add(Calendar.WEEK_OF_YEAR, 1);
+				break;
+			case DAY:
+				// Do nothing
+			}
+			setDateTime(startDateTime, start);
+			end.add(Calendar.DATE, -1);
+			setDateTime(endDateTime, end);
+		}
+
 		// Update attributes fields enablement
 		for (String id : attributesCheckboxesMap.keySet()) {
 			Button b = attributesCheckboxesMap.get(id);
@@ -683,45 +723,6 @@ public class ReportsUI {
 
 		onlyKeepTasksWithContributionsButton.setEnabled(includeTasksButton.getSelection() && (!collaboratorsCentricButton.isEnabled() || !collaboratorsCentricButton.getSelection()));
 
-		// Update dates
-		ReportIntervalType intervalType = getReportIntervalType();
-		if (!ReportIntervalType.DAY.equals(intervalType)) {
-			Calendar start = toCalendar(startDateTime);
-			Calendar end = toCalendar(endDateTime);
-			switch (intervalType) {
-			case YEAR:
-				// Goto start of year
-				start.set(Calendar.MONTH, 0);
-				start.set(Calendar.DATE, 1);
-				
-				// Goto start of following year
-				end.set(Calendar.MONTH, 0);
-				end.set(Calendar.DATE, 1);
-				end.add(Calendar.YEAR, 1);
-				break;
-			case MONTH:
-				// Goto start of month
-				start.set(Calendar.DATE, 1);
-				
-				// Goto start of following month
-				end.set(Calendar.DATE, 1);
-				end.add(Calendar.MONTH, 1);
-				break;
-			case WEEK:
-				// Goto start of week
-				start = DateHelper.moveToFirstDayOfWeek(start);
-				
-				// Goto start of following month
-				end = DateHelper.moveToFirstDayOfWeek(end);
-				end.add(Calendar.WEEK_OF_YEAR, 1);
-				break;
-			case DAY:
-				// Do nothing
-			}
-			setDateTime(startDateTime, start);
-			end.add(Calendar.DATE, -1);
-			setDateTime(endDateTime, end);
-		}
 
 	}
 

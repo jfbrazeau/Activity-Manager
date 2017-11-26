@@ -25,6 +25,8 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 
 	private OptionGroup intervalUnitGroup;
 	private OptionGroup intervalBoundsModeGroup;
+	private PopupDateFieldWithParser startDateField;
+	private PopupDateFieldWithParser endDateField;
 
 	@Override
 	protected Component createBodyComponent() {
@@ -47,40 +49,43 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		intervalUnitGroup = new OptionGroup();
 		intervalUnitGroup.setImmediate(true);
 		intervalUnitGroup.setStyleName("horizontal");
-		intervalUnitGroup.addValueChangeListener(new ValueChangeListener() {
-			@Override
-			public void valueChange(ValueChangeEvent event) {
-				getLogic().onIntervalTypeChanged(event.getProperty().getValue());
-			}
-		});
 		gl.addComponent(intervalUnitGroup);
 		
 		gl.addComponent(new Label("Interval bounds mode :"));
 		intervalBoundsModeGroup = new OptionGroup();
 		intervalBoundsModeGroup.setImmediate(true);
 		intervalBoundsModeGroup.setStyleName("horizontal");
+		gl.addComponent(intervalBoundsModeGroup);
+
+		gl.addComponent(new Label("Interval bounds :"));
+		HorizontalLayout intervalBoundsPanel = new HorizontalLayout();
+		gl.addComponent(intervalBoundsPanel);
+		startDateField = newDateField();
+		intervalBoundsPanel.addComponent(startDateField);
+		endDateField = newDateField();
+		intervalBoundsPanel.addComponent(endDateField);
+		intervalBoundsPanel.addComponent(new Label("(ignored if automatic mode is selected)"));
+
+		intervalUnitGroup.addValueChangeListener(new ValueChangeListener() {
+			@Override
+			public void valueChange(ValueChangeEvent event) {
+				getLogic().onIntervalTypeChanged(event.getProperty().getValue());
+			}
+		});
 		intervalBoundsModeGroup.addValueChangeListener(new ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
 				getLogic().onIntervalBoundsModeChanged(event.getProperty().getValue());
 			}
 		});
-		gl.addComponent(intervalBoundsModeGroup);
-
-		gl.addComponent(new Label("Interval bounds :"));
-		HorizontalLayout intervalBoundsPanel = new HorizontalLayout();
-		gl.addComponent(intervalBoundsPanel);
-		PopupDateFieldWithParser startDateField = newDateField();
-		intervalBoundsPanel.addComponent(startDateField);
-		PopupDateFieldWithParser endDateField = newDateField();
-		intervalBoundsPanel.addComponent(endDateField);
-		intervalBoundsPanel.addComponent(new Label("(ignored if automatic mode is selected)"));
-
-		intervalUnitGroup.addValueChangeListener(new Property.ValueChangeListener() {
+		ValueChangeListener dateBoundsChangeListener = new ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
+				getLogic().onIntervalBoundsChanged(startDateField.getValue(), endDateField.getValue());
 			}
-		});
+		};
+		startDateField.addValueChangeListener(dateBoundsChangeListener);
+		endDateField.addValueChangeListener(dateBoundsChangeListener);
 	}
 
 	private void createTaskManagementPanel(GridLayout gl) {
@@ -208,5 +213,17 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		group.addItem(id);
 		group.setItemCaption(id, label);
 	}
-    
+
+	@Override
+	public void setIntervalBoundsModeEnablement(boolean startDateEnablement, boolean endDateEnablement) {
+		startDateField.setEnabled(startDateEnablement);
+		endDateField.setEnabled(endDateEnablement);
+	}
+ 
+	@Override
+	public void setIntervalBounds(Date startDate, Date endDate) {
+		startDateField.setValue(startDate);
+		endDateField.setValue(endDate);
+	}
+
 }

@@ -1,5 +1,7 @@
 package org.activitymgr.ui.web.logic;
 
+import java.util.Date;
+
 
 public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 	
@@ -8,6 +10,8 @@ public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 	void onIntervalTypeChanged(Object newValue);
 
 	void onIntervalBoundsModeChanged(Object newValue);
+
+	void onIntervalBoundsChanged(Date startDate, Date endDate);
 
 	public interface View extends ITabLogic.View<IReportsTabLogic> {
 		
@@ -18,6 +22,10 @@ public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 		void addIntervalBoundsModeRadioButton(Object id, String label);
 
 		void selectIntervalBoundsModeButton(Object id);
+
+		void setIntervalBoundsModeEnablement(boolean startDateEnablement, boolean endDateEnablement);
+
+		void setIntervalBounds(Date startDate, Date endDate);
 
 	}
 
