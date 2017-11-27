@@ -1,7 +1,7 @@
 package org.activitymgr.core;
 
-import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.dto.Collaborator;
+import org.activitymgr.core.model.ModelException;
 
 public class CollaboratorsTest extends AbstractModelTestCase {
 

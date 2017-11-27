@@ -3,7 +3,6 @@ package org.activitymgr.ui.web.logic.impl;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.impl.event.ContributionsTabWeekChangedEvent;
-import org.activitymgr.ui.web.logic.spi.IFeatureAccessManager;
 
 import com.google.inject.Inject;
 

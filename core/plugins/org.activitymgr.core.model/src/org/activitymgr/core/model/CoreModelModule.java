@@ -5,11 +5,6 @@ import org.activitymgr.core.model.impl.ModelMgrImpl;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
-import com.google.inject.matcher.Matchers;
-import com.google.inject.spi.InjectionListener;
-import com.google.inject.spi.TypeEncounter;
-import com.google.inject.spi.TypeListener;
 
 public class CoreModelModule extends AbstractModule {
 

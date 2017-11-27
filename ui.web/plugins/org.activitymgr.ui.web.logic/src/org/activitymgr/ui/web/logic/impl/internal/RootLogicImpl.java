@@ -1,6 +1,5 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;

@@ -10,7 +10,6 @@ import org.activitymgr.ui.web.view.impl.internal.util.TreeTableDatasource;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
-import com.vaadin.data.util.sqlcontainer.query.generator.filter.FilterTranslator;
 import com.vaadin.event.FieldEvents;
 import com.vaadin.event.FieldEvents.TextChangeEvent;
 import com.vaadin.event.ShortcutListener;

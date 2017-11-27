@@ -28,7 +28,6 @@
 package org.activitymgr.core.dto;
 
 import org.activitymgr.core.dto.converters.TaskNumberConverter;
-import org.activitymgr.core.dto.misc.TaskSums;
 import org.activitymgr.core.orm.annotation.Column;
 import org.activitymgr.core.orm.annotation.ColumnNamePrefix;
 import org.activitymgr.core.orm.annotation.Converter;

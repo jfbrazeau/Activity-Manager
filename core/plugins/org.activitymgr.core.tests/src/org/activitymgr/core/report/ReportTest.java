@@ -10,9 +10,7 @@ import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -28,7 +26,6 @@ import org.activitymgr.core.dto.report.Report;
 import org.activitymgr.core.dto.report.ReportIntervalType;
 import org.activitymgr.core.dto.report.ReportItem;
 import org.activitymgr.core.model.ModelException;
-import org.apache.poi.util.HexDump;
 import org.xml.sax.SAXException;
 
 public class ReportTest extends AbstractModelTestCase {

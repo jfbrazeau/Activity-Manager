@@ -2,7 +2,6 @@ package org.activitymgr.ui.web.logic.impl.internal;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Set;
 
 import org.activitymgr.core.dto.report.ReportIntervalType;

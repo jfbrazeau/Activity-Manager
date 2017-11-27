@@ -6,13 +6,13 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.TimeZone;
 
-import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Contribution;
 import org.activitymgr.core.dto.Duration;
-import org.activitymgr.core.dto.misc.IntervalContributions;
 import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.dto.misc.IntervalContributions;
 import org.activitymgr.core.dto.misc.TaskContributions;
+import org.activitymgr.core.model.ModelException;
 
 public class ContributionTest extends AbstractModelTestCase {
 

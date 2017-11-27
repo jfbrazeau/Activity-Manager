@@ -2,8 +2,6 @@ package org.activitymgr.ui.web.logic;
 
 import java.util.Map;
 
-import org.activitymgr.ui.web.logic.ILogic.IView;
-
 public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 	
 	void onSelectionChanged(Long taskId);
@@ -20,7 +18,7 @@ public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 
 	void onTaskFilterChanged(String value);
 
-	public interface View extends IView<ITaskChooserLogic> {
+	public interface View extends ILogic.IView<ITaskChooserLogic> {
 
 		public void setTasksTreeProviderCallback(
 				ITreeContentProviderCallback<Long> callback);

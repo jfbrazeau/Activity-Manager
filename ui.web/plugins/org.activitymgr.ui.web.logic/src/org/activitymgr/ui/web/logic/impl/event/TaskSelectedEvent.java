@@ -1,7 +1,5 @@
 package org.activitymgr.ui.web.logic.impl.event;
 
-import org.activitymgr.core.dto.Collaborator;
-import org.activitymgr.core.dto.Task;
 import org.activitymgr.ui.web.logic.AbstractEvent;
 import org.activitymgr.ui.web.logic.ILogic;
 

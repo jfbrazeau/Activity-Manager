@@ -2,11 +2,11 @@ package org.activitymgr.core;
 
 import java.util.GregorianCalendar;
 
-import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Contribution;
 import org.activitymgr.core.dto.Duration;
 import org.activitymgr.core.dto.Task;
+import org.activitymgr.core.model.ModelException;
 
 public class DurationTest extends AbstractModelTestCase {
 

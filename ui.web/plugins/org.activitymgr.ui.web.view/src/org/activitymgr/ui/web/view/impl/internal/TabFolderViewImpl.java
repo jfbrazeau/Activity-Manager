@@ -8,7 +8,6 @@ import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.ITabFolderLogic;
 
 import com.vaadin.server.VaadinService;
-import com.vaadin.server.ClientConnector.AttachEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.themes.Runo;

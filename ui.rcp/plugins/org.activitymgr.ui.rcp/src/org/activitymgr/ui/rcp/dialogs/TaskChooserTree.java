@@ -29,7 +29,6 @@ package org.activitymgr.ui.rcp.dialogs;
 
 
 import org.activitymgr.core.dto.Task;
-import org.activitymgr.core.dto.misc.TaskSearchFilter;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.util.Strings;
 import org.activitymgr.ui.rcp.util.AbstractTableMgr;

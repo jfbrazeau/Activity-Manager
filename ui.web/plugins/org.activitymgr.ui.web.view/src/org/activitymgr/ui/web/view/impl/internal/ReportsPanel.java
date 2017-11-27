@@ -6,7 +6,6 @@ import org.activitymgr.ui.web.logic.IReportsTabLogic;
 import org.activitymgr.ui.web.view.AbstractTabPanel;
 import org.activitymgr.ui.web.view.impl.dialogs.PopupDateFieldWithParser;
 
-import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.shared.ui.label.ContentMode;
