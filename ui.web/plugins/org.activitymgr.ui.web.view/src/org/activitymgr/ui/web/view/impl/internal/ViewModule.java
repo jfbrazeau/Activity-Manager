@@ -3,6 +3,7 @@ package org.activitymgr.ui.web.view.impl.internal;
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
 import org.activitymgr.ui.web.logic.ICheckBoxFieldLogic;
 import org.activitymgr.ui.web.logic.ICollaboratorsTabLogic;
+import org.activitymgr.ui.web.logic.IContributionTaskChooserLogic;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.IDownloadButtonLogic;
 import org.activitymgr.ui.web.logic.ILabelLogic;
@@ -48,6 +49,7 @@ public class ViewModule extends AbstractModule {
 		bind(ITasksTabLogic.View.class).to(TasksPanel.class);
 		bind(IReportsTabLogic.View.class).to(ReportsPanel.class);
 		bind(ITaskChooserLogic.View.class).to(TaskChooserDialog.class);
+		bind(IContributionTaskChooserLogic.View.class).to(ContributionTaskChooserDialog.class);
 		bind(ILabelLogic.View.class).to(LabelView.class);
 		bind(ILinkLogic.View.class).to(LinkView.class);
 		bind(ITextFieldLogic.View.class).to(TextFieldView.class);

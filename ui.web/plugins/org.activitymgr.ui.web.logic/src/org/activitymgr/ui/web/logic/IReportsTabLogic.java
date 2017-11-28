@@ -13,6 +13,12 @@ public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 
 	void onIntervalBoundsChanged(Date startDate, Date endDate);
 
+	void onBrowseTaskButtonCLicked();
+
+	void onLimitTaskScopeCheckboxClicked(boolean value);
+
+	void onTaskScopePathChanged(String value);
+
 	public interface View extends ITabLogic.View<IReportsTabLogic> {
 		
 		void addIntervalTypeRadioButton(Object id, String label);
@@ -26,6 +32,10 @@ public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 		void setIntervalBoundsModeEnablement(boolean startDateEnablement, boolean endDateEnablement);
 
 		void setIntervalBounds(Date startDate, Date endDate);
+
+		void setLimitRootTaskFieldEnabled(boolean limitTaskScope);
+
+		void setTaskScopePath(String path);
 
 	}
 

@@ -1,14 +1,19 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Set;
 
+import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.dto.report.ReportIntervalType;
+import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.DateHelper;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.IReportsTabLogic;
 import org.activitymgr.ui.web.logic.ITabFolderLogic;
+import org.activitymgr.ui.web.logic.ITaskChooserLogic.ISelectedTaskCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractTabLogicImpl;
 import org.activitymgr.ui.web.logic.spi.ITabButtonFactory;
 
@@ -23,16 +28,18 @@ public class ReportsTabLogicImpl extends AbstractTabLogicImpl<IReportsTabLogic.V
 	@Inject(optional = true)
 	private Set<ITabButtonFactory<IReportsTabLogic>> buttonFactories;
 	
-	private ReportIntervalType intervalType;
+	private ReportIntervalType intervalType = ReportIntervalType.MONTH;
 
-	private ReportIntervalBoundsMode intervalBoundsMode;
-	
-	private boolean initDone = false;
+	private ReportIntervalBoundsMode intervalBoundsMode = ReportIntervalBoundsMode.AUTOMATIC;
 	
 	private Calendar start = Calendar.getInstance();
 	
 	private Calendar end = Calendar.getInstance();
 	
+	private boolean limitTaskScope;
+
+	private String taskScopePath;
+
 	public ReportsTabLogicImpl(ITabFolderLogic parent) {
 		super(parent);
 		// Add buttons
@@ -43,10 +50,7 @@ public class ReportsTabLogicImpl extends AbstractTabLogicImpl<IReportsTabLogic.V
 		for (ReportIntervalBoundsMode mode : ReportIntervalBoundsMode.values()) {
 			getView().addIntervalBoundsModeRadioButton(mode, StringHelper.toLowerFirst(mode.name().replace('_',  ' ').toLowerCase()));
 		}
-		getView().selectIntervalTypeRadioButton(ReportIntervalType.MONTH);
-		getView().selectIntervalBoundsModeButton(ReportIntervalBoundsMode.AUTOMATIC);
-		initDone = true;
-		updateFieldsEnablement();
+		updateUI();
 	}
 
 	@Override
@@ -57,26 +61,67 @@ public class ReportsTabLogicImpl extends AbstractTabLogicImpl<IReportsTabLogic.V
 	@Override
 	public void onIntervalTypeChanged(Object newValue) {
 		intervalType = (ReportIntervalType) newValue;
-		updateFieldsEnablement();
+		updateUI();
 	}
 	
 	@Override
 	public void onIntervalBoundsModeChanged(Object newValue) {
 		intervalBoundsMode = (ReportIntervalBoundsMode) newValue;
-		updateFieldsEnablement();
+		updateUI();
 	}
 
 	@Override
 	public void onIntervalBoundsChanged(Date startDate, Date endDate) {
 		start.setTime(startDate);
 		end.setTime(endDate);
-		updateFieldsEnablement();
+		updateUI();
 	}
 
-	void updateFieldsEnablement() {
-		if (!initDone) {
-			return;
+	@Override
+	public void onLimitTaskScopeCheckboxClicked(boolean value) {
+		limitTaskScope = value;
+		updateUI();
+	}
+
+	@Override
+	public void onBrowseTaskButtonCLicked() {
+		Long selectedTask = null;
+		try {
+			if (taskScopePath != null) {
+				Task task = getModelMgr().getTaskByCodePath(taskScopePath);
+				selectedTask = task.getId();
+			}
+		} catch (ModelException e) {
+			// Simply ignore, and consider that no task is selected
 		}
+		new TaskChooserLogic(this, selectedTask, new ISelectedTaskCallback() {
+			@Override
+			public void taskSelected(long taskId) {
+				Task task = getModelMgr().getTask(taskId);
+				try {
+					getView().setTaskScopePath(
+							getModelMgr().getTaskCodePath(task));
+				} catch (ModelException e) {
+					ByteArrayOutputStream out = new ByteArrayOutputStream();
+					e.printStackTrace(new PrintWriter(out));
+					getRoot().getView().showErrorNotification(
+							"Unexpeced error while retrieving task path",
+							new String(out.toByteArray()));
+				}
+			}
+		});
+	}
+
+	@Override
+	public void onTaskScopePathChanged(String value) {
+		taskScopePath = value;
+	}
+
+	void updateUI() {
+		// Update interval type & bounds
+		getView().selectIntervalTypeRadioButton(intervalType);
+		getView().selectIntervalBoundsModeButton(intervalBoundsMode);
+
 		// Update date fields enablement
 		switch (intervalBoundsMode) {
 		case AUTOMATIC:
@@ -124,5 +169,14 @@ public class ReportsTabLogicImpl extends AbstractTabLogicImpl<IReportsTabLogic.V
 			end.add(Calendar.DATE, -1);
 			getView().setIntervalBounds(start.getTime(), end.getTime());
 		}
+
+		// Task scope management
+		getView().setLimitRootTaskFieldEnabled(limitTaskScope);
+
+		// taskDepthSpinner.setEnabled(includeTasksButton.getSelection());
+		// filterByTaskText.setEnabled(filterByTaskCheckbox.getSelection());
+		// filterByTaskSelectButton
+		// .setEnabled(filterByTaskCheckbox.getSelection());
 	}
+
 }

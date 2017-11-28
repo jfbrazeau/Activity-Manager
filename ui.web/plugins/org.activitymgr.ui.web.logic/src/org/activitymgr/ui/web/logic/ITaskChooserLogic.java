@@ -1,31 +1,19 @@
 package org.activitymgr.ui.web.logic;
 
-import java.util.Map;
-
-public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
+public interface ITaskChooserLogic<VIEW extends ITaskChooserLogic.View<?>>
+		extends ILogic<VIEW> {
 	
 	void onSelectionChanged(Long taskId);
 
 	void onOkButtonClicked(long taskId);
 
-	void onRecentTaskClicked(long taskId);
-	
-	void onNewTaskCheckboxClicked();
-
-	void onNewTaskNameChanged(String newName);
-
-	void onNewTaskCodeChanged(String newCode);
-
 	void onTaskFilterChanged(String value);
 
-	public interface View extends ILogic.IView<ITaskChooserLogic> {
+	public interface View<LOGIC extends ITaskChooserLogic<?>> extends
+			ILogic.IView<LOGIC> {
 
 		public void setTasksTreeProviderCallback(
 				ITreeContentProviderCallback<Long> callback);
-
-		public void setRecentTasks(Map<Long, String> recentTasks);
-
-		public void setCreationPatterns(Map<String, String> patterns);
 
 		public void setOkButtonEnabled(boolean enabled);
 
@@ -35,17 +23,11 @@ public interface ITaskChooserLogic extends ILogic<ITaskChooserLogic.View> {
 
 		public void expandToTask(long taskId);
 
-		public boolean isNewTaskChecked();
+	}
 
-		public String getNewTaskName();
-		
-		public String getNewTaskCode();
-		
-		public long getSelectedTaskId();
+	public static interface ISelectedTaskCallback {
 
-		public void setNewTaskFieldsEnabled(boolean enabled);
-
-		public String getSelectedTaskCreationPatternId();
+		void taskSelected(long taskId);
 
 	}
 

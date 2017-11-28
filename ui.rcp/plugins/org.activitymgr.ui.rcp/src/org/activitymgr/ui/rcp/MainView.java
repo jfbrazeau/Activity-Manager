@@ -128,7 +128,7 @@ public class MainView extends ViewPart {
 		reportsTab = new TabItem(tabFolder, SWT.NONE);
 		reportsTab.setText(Strings
 				.getString("Main.tabs.REPORTS")); //$NON-NLS-1$
-		reportsUI = new ReportsUI(reportsTab, modelMgr, factory);
+		reportsUI = new ReportsUI(reportsTab, modelMgr);
 
 		// General informations tab creation
 		aboutTab = new TabItem(tabFolder, SWT.NONE);

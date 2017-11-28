@@ -1,7 +1,6 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,13 +10,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.IDTOFactory;
 import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.ui.web.logic.IConstraintsValidator;
+import org.activitymgr.ui.web.logic.IConstraintsValidator.ErrorStatus;
 import org.activitymgr.ui.web.logic.IConstraintsValidator.IStatus;
-import org.activitymgr.ui.web.logic.ITaskChooserLogic;
+import org.activitymgr.ui.web.logic.IContributionTaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
@@ -25,7 +24,9 @@ import org.activitymgr.ui.web.logic.spi.ITaskCreationPatternHandler;
 
 import com.google.inject.Inject;
 
-public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.View> implements ITaskChooserLogic {
+public class ContributionTaskChooserLogicImpl extends
+		AbstractTaskChooserLogicImpl<IContributionTaskChooserLogic.View>
+		implements IContributionTaskChooserLogic {
 	
 	private Collection<Long> alreadySelectedTaskIds;
 	
@@ -40,30 +41,32 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 
 	private TaskTreeCellProvider treeContentProvider;
 	
-	public TaskChooserLogicImpl(AbstractLogicImpl<?> parent, Collection<Long> selectedTaskIds, Collaborator contributor, Calendar monday) {
-		super(parent);
+	private String newTaskName;
+
+	private String newTaskCode;
+
+	private boolean newTaskChecked;
+
+	private static Long lastSelectedTask;
+
+	public ContributionTaskChooserLogicImpl(AbstractLogicImpl<?> parent,
+			Collection<Long> selectedTaskIds, Task[] recentTasks) {
+		super(parent, lastSelectedTask, null);
 		// Remember already selected task ids
 		this.alreadySelectedTaskIds = selectedTaskIds;
 		
-		// Set filter
-		onTaskFilterChanged("");
-		
 		// Retrieve recent tasks labels
-		Calendar from = (Calendar) monday.clone();
-		from.add(Calendar.DATE, -7);
-		Calendar to = (Calendar) monday.clone();
-		to.add(Calendar.DATE, 6);
 		try {
 			final Map<Long, Task> recentTasksMap = new HashMap<Long, Task>();
 			// Retrieve recent tasks
-			Task[] recentTasks = getModelMgr().getContributedTasks(contributor, from, to);
 			for (Task recentTask : recentTasks) {
 				recentTasksMap.put(recentTask.getId(), recentTask);
 			}
 			// Add selected ID (if missing)
 			for (Long selectedTaskId : alreadySelectedTaskIds) {
 				if (!recentTasksMap.containsKey(selectedTaskId)) {
-					recentTasksMap.put(selectedTaskId, getModelMgr().getTask(selectedTaskId));
+					recentTasksMap.put(selectedTaskId,
+							getModelMgr().getTask(selectedTaskId));
 				}
 			}
 			// Retrieve task code path
@@ -104,6 +107,9 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 		
 			// Open the window
 			getRoot().getView().openWindow(getView());
+
+			// Update state
+			updateUI();
 		} catch (ModelException e) {
 			throw new IllegalStateException("Unexpected error while retrieving recent tasks", e);
 		}
@@ -128,107 +134,81 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 	}
 
 	@Override
-	public void onSelectionChanged(Long taskId) {
-		try {
-			checkDialogRules(taskId, getView().getNewTaskName(), getView().getNewTaskCode());
-		}
-		catch (ModelException e) {
-			doThrow(e);
-		}
+	public void onNewTaskCheckboxClicked() {
+		newTaskChecked = !newTaskChecked;
+		updateUI();
 	}
 
 	@Override
-	public void onNewTaskCheckboxClicked() {
-		try {
-			checkDialogRules(getView().getSelectedTaskId(), getView()
-					.getNewTaskName(), getView().getNewTaskCode());
-		}
-		catch (ModelException e) {
-			doThrow(e);
-		}
-	}
-	
-	@Override
 	public void onNewTaskNameChanged(String newTaskName) {
-		try {
-			checkDialogRules(getView().getSelectedTaskId(), newTaskName, getView()
-					.getNewTaskCode());
-		}
-		catch (ModelException e) {
-			doThrow(e);
-		}
+		this.newTaskName = newTaskName;
+		updateUI();
 	}
 
 	@Override
 	public void onNewTaskCodeChanged(String newTaskCode) {
-		try {
-			checkDialogRules(getView().getSelectedTaskId(), getView()
-				.getNewTaskName(), newTaskCode);
-		}
-		catch (ModelException e) {
-			doThrow(e);
-		}
+		this.newTaskCode = newTaskCode;
+		updateUI();
 	}
 
-	private void checkDialogRules(Long selectedTaskId, String newTaskName, String newTaskCode) throws ModelException {
-		getView().setStatus("");
-		getView().setOkButtonEnabled(false);
-		Task selectedTask = selectedTaskId != null ? getModelMgr().getTask(selectedTaskId) : null;
-		String newStatus = "";
-		boolean okButtonEnabled = false;
+	@Override
+	protected IStatus checkDialogRules() throws ModelException {
+		IStatus status = super.checkDialogRules();
+		if (status.isError()) {
+			return status;
+		}
+		Task selectedTask = getSelectedTaskId() != null ? getModelMgr()
+				.getTask(getSelectedTaskId()) : null;
+		String newStatus = null;
 		boolean newTaskFieldsEnabled = false;
 		if (selectedTask != null) {
 			boolean isLeaf = getModelMgr().isLeaf(selectedTask.getId());
-			boolean newTaskChecked = getView().isNewTaskChecked();
 			if (newTaskChecked) {
 				newTaskFieldsEnabled = true;
 				// Check constraints
 				for (IConstraintsValidator cv : constraintsValidators) {
-					IStatus status = cv.canCreateSubTaskUnder(selectedTask);
+					status = cv.canCreateSubTaskUnder(selectedTask);
 					if (status.isError()) {
 						newStatus = "It's not possible to create a sub task under the selected task :\n" + status.getErrorReason();
 						break;
 					}
 				}
 				// If constraints OK, check following rules
-				if ("".equals(newStatus)) {
+				if (newStatus == null) {
 					if (newTaskCode != null && !"".equals(newTaskCode = newTaskCode.trim()) && getModelMgr().getTask(selectedTask.getFullPath(), newTaskCode) != null) {
 						newStatus = "This code is already in use";
 					}
 					else if (newTaskName == null || "".equals(newTaskName.trim())) {
 						newStatus = "Enter a task name";
 					}
-					else {
-						okButtonEnabled = true;
-					}
 				}
-			}
-			else if (!isLeaf) {
+			} else if (!isLeaf) {
 				newStatus = "You cannot select a container task";
-			}
-			else if (alreadySelectedTaskIds.contains(selectedTask.getId())) {
+			} else if (alreadySelectedTaskIds != null
+					&& alreadySelectedTaskIds.contains(selectedTask.getId())) {
 				newStatus = "This task is already selected";
-			} 
-			else {
-				okButtonEnabled = true;
 			}
 		}
-		getView().setStatus(newStatus);
-		getView().setOkButtonEnabled(okButtonEnabled);
 		getView().setNewTaskFieldsEnabled(newTaskFieldsEnabled);
+		if (newStatus != null) {
+			return new ErrorStatus(newStatus);
+		} else {
+			return IConstraintsValidator.OK_STATUS;
+		}
 	}
 
 	@Override
 	public void onOkButtonClicked(long taskId) {
 		try {
-			if (!getView().isNewTaskChecked()) {
+			if (!newTaskChecked) {
 				((AbstractContributionTabLogicImpl) getParent()).addTasks(taskId);
+				lastSelectedTask = taskId;
 			}
 			else {
 				Task parent = getModelMgr().getTask(taskId);
 				Task newTask = dtoFactory.newTask();
-				newTask.setName(getView().getNewTaskName());
-				String code = getView().getNewTaskCode().trim();
+				newTask.setName(newTaskName.trim());
+				String code = newTaskCode != null ? newTaskCode.trim() : "";
 				if ("".equals(code)) {
 					code = newTask.getName().trim().replaceAll(" ", "").toUpperCase();
 					if (code.length() > 7) {
@@ -238,6 +218,7 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 				}
 				newTask.setCode(code);
 				getModelMgr().createTask(parent, newTask);
+				lastSelectedTask = newTask.getId();
 				
 				// Init task to select list
 				List<Long> selectedTaskIds = new ArrayList<Long>();
@@ -279,9 +260,4 @@ public class TaskChooserLogicImpl extends AbstractLogicImpl<ITaskChooserLogic.Vi
 		getView().selectTask(taskId);
 	}
 
-	@Override
-	public void dispose() {
-		this.treeContentProvider.dispose();
-		super.dispose();
-	}
 }

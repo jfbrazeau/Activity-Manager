@@ -6,10 +6,12 @@ import org.activitymgr.ui.web.logic.IReportsTabLogic;
 import org.activitymgr.ui.web.view.AbstractTabPanel;
 import org.activitymgr.ui.web.view.impl.dialogs.PopupDateFieldWithParser;
 
+import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
@@ -26,6 +28,8 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 	private OptionGroup intervalBoundsModeGroup;
 	private PopupDateFieldWithParser startDateField;
 	private PopupDateFieldWithParser endDateField;
+	private TextField taskPathScopeTextField;
+	private Button browseTaskButton;
 
 	@Override
 	protected Component createBodyComponent() {
@@ -65,6 +69,7 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		intervalBoundsPanel.addComponent(endDateField);
 		intervalBoundsPanel.addComponent(new Label("(ignored if automatic mode is selected)"));
 
+		// Register listeners
 		intervalUnitGroup.addValueChangeListener(new ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
@@ -94,10 +99,10 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		gl.addComponent(limitTaskScopeCheckbox);
 		HorizontalLayout taskScopePanel = new HorizontalLayout();
 		gl.addComponent(taskScopePanel);
-		TextField taskPathScopeTextField = new TextField();
+		taskPathScopeTextField = new TextField();
 		taskPathScopeTextField.setWidth("300px");
 		taskScopePanel.addComponent(taskPathScopeTextField);
-		Button browseTaskButton = new Button("...");
+		browseTaskButton = new Button("...");
 		taskScopePanel.addComponent(browseTaskButton);
 		
 		CheckBox declineResultsetByTaskCheckbox = new CheckBox("Decline resultset by task");
@@ -124,6 +129,29 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		taskColumnstoInclude.setHeight("70px");
 		gl.addComponent(taskColumnstoInclude);
 		
+		// Register listeners
+		browseTaskButton.addClickListener(new Button.ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				getLogic().onBrowseTaskButtonCLicked();
+			}
+		});
+		limitTaskScopeCheckbox
+				.addValueChangeListener(new Property.ValueChangeListener() {
+					@Override
+					public void valueChange(ValueChangeEvent event) {
+						getLogic().onLimitTaskScopeCheckboxClicked(
+								(Boolean) event.getProperty().getValue());
+					}
+				});
+		taskPathScopeTextField
+				.addValueChangeListener(new Property.ValueChangeListener() {
+					@Override
+					public void valueChange(ValueChangeEvent event) {
+						getLogic().onTaskScopePathChanged(
+								(String) event.getProperty().getValue());
+					}
+				});
 	}
 
 	private void createCollaboratorsManagementPanel(GridLayout gl) {
@@ -223,6 +251,18 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 	public void setIntervalBounds(Date startDate, Date endDate) {
 		startDateField.setValue(startDate);
 		endDateField.setValue(endDate);
+	}
+
+	@Override
+	public void setLimitRootTaskFieldEnabled(boolean enabled) {
+		taskPathScopeTextField.setEnabled(enabled);
+		browseTaskButton.setEnabled(enabled);
+
+	}
+
+	@Override
+	public void setTaskScopePath(String path) {
+		taskPathScopeTextField.setValue(path);
 	}
 
 }

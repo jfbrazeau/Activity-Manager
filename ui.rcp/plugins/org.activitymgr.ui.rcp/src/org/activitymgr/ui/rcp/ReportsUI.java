@@ -132,6 +132,7 @@ public class ReportsUI {
 	private static final String IS_ACTIVE_ATTRIBUTE = "collaborator.isActive";
 
 	/** Logger */
+	@SuppressWarnings("unused")
 	private static Logger log = Logger.getLogger(ReportsUI.class);
 
 	/** Model manager */
@@ -139,9 +140,6 @@ public class ReportsUI {
 
 	/** Composant parent */
 	private Composite parent;
-
-	/** Bean factory */
-	private IDTOFactory factory;
 
 	private Button dayButton;
 
@@ -207,8 +205,8 @@ public class ReportsUI {
 	 * @param factory
 	 *            the {@link IDTOFactory DTO factory}.
 	 */
-	public ReportsUI(TabItem tabItem, IModelMgr modelMgr, IDTOFactory factory) {
-		this(tabItem.getParent(), modelMgr, factory);
+	public ReportsUI(TabItem tabItem, IModelMgr modelMgr) {
+		this(tabItem.getParent(), modelMgr);
 		tabItem.setControl(parent);
 	}
 
@@ -219,13 +217,9 @@ public class ReportsUI {
 	 *            the parent composite.
 	 * @param modelMgr
 	 *            the model manager instance.
-	 * @param factory
-	 *            bean factory.
 	 */
-	public ReportsUI(Composite parentComposite, final IModelMgr modelMgr,
-			IDTOFactory factory) {
+	public ReportsUI(Composite parentComposite, final IModelMgr modelMgr) {
 		this.modelMgr = modelMgr;
-		this.factory = factory;
 
 		// Création du composite parent
 		parent = new Composite(parentComposite, SWT.NONE);
@@ -443,7 +437,7 @@ public class ReportsUI {
 		SelectionAdapter buttonListener = new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				updateFieldsEnablement();
+				updateUI();
 			}
 		};
 		dayButton.addSelectionListener(buttonListener);
@@ -519,7 +513,7 @@ public class ReportsUI {
 						attributesCheckboxesMap.keySet()));
 
 		// Update fields enablement
-		updateFieldsEnablement();
+		updateUI();
 
 	}
 
@@ -530,7 +524,7 @@ public class ReportsUI {
 		columnsOrderElements.remove(item);
 		columnsOrderElements.add(idx + (up ? -1 : 1), item);
 		// columnsOrderViewer.refresh();
-		updateFieldsEnablement();
+		updateUI();
 	}
 
 	private void buildReport() {
@@ -606,8 +600,7 @@ public class ReportsUI {
 		return start;
 	}
 
-	private void updateFieldsEnablement() {
-		System.out.println("updateFieldsEnablement" + System.currentTimeMillis());
+	private void updateUI() {
 		// Update date fields enablement
 		if (automaticIntervalBoundsTypeRadio.getSelection()) {
 			setEnabled(startDateTime, false);
@@ -660,6 +653,12 @@ public class ReportsUI {
 			setDateTime(endDateTime, end);
 		}
 
+		// Task scope management
+		filterByTaskText.setEnabled(filterByTaskCheckbox.getSelection());
+		filterByTaskSelectButton
+				.setEnabled(filterByTaskCheckbox.getSelection());
+		taskDepthSpinner.setEnabled(includeTasksButton.getSelection());
+
 		// Update attributes fields enablement
 		for (String id : attributesCheckboxesMap.keySet()) {
 			Button b = attributesCheckboxesMap.get(id);
@@ -685,10 +684,6 @@ public class ReportsUI {
 		}
 		// And then refresh the viewer
 		columnsOrderViewer.refresh();
-		taskDepthSpinner.setEnabled(includeTasksButton.getSelection());
-		filterByTaskText.setEnabled(filterByTaskCheckbox.getSelection());
-		filterByTaskSelectButton
-				.setEnabled(filterByTaskCheckbox.getSelection());
 
 		// Update order by fields enablement
 		boolean orderByEnabled = (includeCollaboratorsButton.getSelection() && includeTasksButton

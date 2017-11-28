@@ -1,5 +1,9 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
+import java.util.Calendar;
+
+import org.activitymgr.core.dto.Collaborator;
+import org.activitymgr.core.dto.Task;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeContributionTabStandardButtonLogicImpl;
@@ -21,10 +25,19 @@ public class NewContributionTaskButtonLogic extends AbstractSafeContributionTabS
 	@Override
 	protected void unsafeOnClick() {
 		AbstractContributionTabLogicImpl contributionTabLogic = (AbstractContributionTabLogicImpl) getParent();
-		new TaskChooserLogicImpl(contributionTabLogic,
-				contributionTabLogic.getTaskIds(),
-				contributionTabLogic.getContributor(),
-				contributionTabLogic.getFirstDayOfWeek());
+		Collaborator contributor = contributionTabLogic.getContributor();
+
+		// Retrieve recent tasks labels
+		Calendar monday = contributionTabLogic.getFirstDayOfWeek();
+		Calendar from = (Calendar) monday.clone();
+		from.add(Calendar.DATE, -7);
+		Calendar to = (Calendar) monday.clone();
+		to.add(Calendar.DATE, 6);
+		Task[] recentTasks = getModelMgr().getContributedTasks(contributor,
+				from, to);
+
+		new ContributionTaskChooserLogicImpl(contributionTabLogic,
+				contributionTabLogic.getTaskIds(), recentTasks);
 	}
 
 	@Override
