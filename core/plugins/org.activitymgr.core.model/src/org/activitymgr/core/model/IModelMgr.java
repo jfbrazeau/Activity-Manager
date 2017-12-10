@@ -943,6 +943,12 @@ public interface IModelMgr {
 	 *            contributor identifiers (optional).
 	 * @param columnIds
 	 *            the column identifiers to user.
+	 * @param orderContributorsBy
+	 *            fields to use to order contributors (ignored if
+	 *            <code>byContributor</code> is <code>false</code>).
+	 * @param dryRun
+	 *            <code>true</code> to perform a dry run test (report is not
+	 *            generated in such case).
 	 * @return the report.
 	 * @throws ModelException
 	 *             if start date is not specified and no contribution exist in
@@ -952,7 +958,8 @@ public interface IModelMgr {
 			Integer intervalCount, Long rootTaskId, int taskDepth,
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
 			boolean contributorCentricMode, long[] contributorIds,
-			Collection<String> columnIds) throws ModelException;
+			String[] columnIds, boolean dryRun)
+			throws ModelException;
 
 	/**
 	 * Builds a report and converts it in Excel format.
@@ -993,6 +1000,9 @@ public interface IModelMgr {
 	 * @param orderContributorsBy
 	 *            fields to use to order contributors (ignored if
 	 *            <code>byContributor</code> is <code>false</code>).
+	 * @param dryRun
+	 *            <code>true</code> to perform a dry run test (report is not
+	 *            generated in such case).
 	 * 
 	 * @return the report.
 	 * @throws ModelException
@@ -1003,8 +1013,8 @@ public interface IModelMgr {
 			Integer intervalCount, Long rootTaskId, int taskDepth,
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
 			boolean contributorCentricMode, long[] contributorIds,
-			Collection<IReportColumnComputer> columns,
-			String[] orderContributorsBy) throws ModelException;
+			IReportColumnComputer[] columns, String[] orderContributorsBy,
+			boolean dryRun) throws ModelException;
 
 
 	/**

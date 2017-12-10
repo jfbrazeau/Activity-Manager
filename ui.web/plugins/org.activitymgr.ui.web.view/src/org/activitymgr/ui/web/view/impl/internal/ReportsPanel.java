@@ -2,47 +2,65 @@ package org.activitymgr.ui.web.view.impl.internal;
 
 import java.util.Date;
 
+import org.activitymgr.ui.web.logic.IDownloadButtonLogic;
 import org.activitymgr.ui.web.logic.IReportsTabLogic;
+import org.activitymgr.ui.web.logic.ITwinSelectLogic.View;
 import org.activitymgr.ui.web.view.AbstractTabPanel;
+import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.dialogs.PopupDateFieldWithParser;
 
+import com.google.inject.Inject;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
+import com.vaadin.ui.GridLayout.Area;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Image;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.ListSelect;
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextField;
 
 @SuppressWarnings("serial")
 public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements IReportsTabLogic.View {
 
+	private GridLayout bodyComponent;
 	private OptionGroup intervalUnitGroup;
 	private OptionGroup intervalBoundsModeGroup;
 	private PopupDateFieldWithParser startDateField;
 	private PopupDateFieldWithParser endDateField;
-	private TextField taskPathScopeTextField;
+	private TextField rootTaskTextField;
 	private Button browseTaskButton;
+	private TextField taskDepthTextField;
+	private Component selectedCollaboratorsComponent;
+	private Component selectedColumnsComponent;
+	private Label statusLabel;
+	private Image warningIcon;
+	private HorizontalLayout statusLayout;
+	private Button buildReportButton;
+
+	@Inject
+	public ReportsPanel(IResourceCache resourceCache) {
+		super(resourceCache);
+	}
 
 	@Override
 	protected Component createBodyComponent() {
-		GridLayout v = new GridLayout(2, 16);
-		//v.setMargin(true);
-		v.setSpacing(true);
-		v.setWidth("850px");
+		bodyComponent = new GridLayout(2, 16);
+		bodyComponent.setSpacing(true);
+		bodyComponent.setWidth("850px");
 		
-		createIntervalConfigurationPanel(v);
-		createTaskManagementPanel(v);
-		createCollaboratorsManagementPanel(v);
-		createOrderManagementPanel(v);
-		return v;
+		createIntervalConfigurationPanel(bodyComponent);
+		createScopeConfigurationPanel(bodyComponent);
+		createColumnsConfigurationPanel(bodyComponent);
+		createStatusPanel();
+
+		return bodyComponent;
 	}
 
 	private void createIntervalConfigurationPanel(GridLayout gl) {
@@ -92,43 +110,41 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		endDateField.addValueChangeListener(dateBoundsChangeListener);
 	}
 
-	private void createTaskManagementPanel(GridLayout gl) {
-		addTitle(gl, "Task management", 4);
-		
-		CheckBox limitTaskScopeCheckbox = new CheckBox("Limit task scope to :");
-		gl.addComponent(limitTaskScopeCheckbox);
-		HorizontalLayout taskScopePanel = new HorizontalLayout();
-		gl.addComponent(taskScopePanel);
-		taskPathScopeTextField = new TextField();
-		taskPathScopeTextField.setWidth("300px");
-		taskScopePanel.addComponent(taskPathScopeTextField);
+	private void createScopeConfigurationPanel(GridLayout gl) {
+		addTitle(gl, "Scope configuration", 4);
+
+		gl.addComponent(new Label("Root task :"));
+		HorizontalLayout rootTaskPanel = new HorizontalLayout();
+		gl.addComponent(rootTaskPanel);
+		rootTaskTextField = new TextField();
+		rootTaskTextField.setImmediate(true);
+		rootTaskTextField.setWidth("300px");
+		rootTaskPanel.addComponent(rootTaskTextField);
 		browseTaskButton = new Button("...");
-		taskScopePanel.addComponent(browseTaskButton);
-		
-		CheckBox declineResultsetByTaskCheckbox = new CheckBox("Decline resultset by task");
-		gl.addComponent(declineResultsetByTaskCheckbox, 0, 6, 1, 6);
-		
+		browseTaskButton.setImmediate(true);
+		rootTaskPanel.addComponent(browseTaskButton);
+
 		gl.addComponent(new Label("Task tree depth :"));
 		HorizontalLayout taskDepthLayout = new HorizontalLayout();
 		gl.addComponent(taskDepthLayout);
 		Button decreaseTaskDepthButton = new Button("-");
+		decreaseTaskDepthButton.setImmediate(true);
 		taskDepthLayout.addComponent(decreaseTaskDepthButton);
-		TextField taskDepthTextField = new TextField();
+		taskDepthTextField = new TextField();
+		taskDepthTextField.setImmediate(true);
 		taskDepthTextField.setWidth("40px");
+		taskDepthTextField.addStyleName("center");
 		taskDepthLayout.addComponent(taskDepthTextField);
 		Button increaseTaskDepthButton = new Button("+");
+		increaseTaskDepthButton.setImmediate(true);
 		taskDepthLayout.addComponent(increaseTaskDepthButton);
-		taskDepthLayout.addComponent(new Label("(deeper contributions will be aggregated)"));
-		
-		gl.addComponent(new Label("Columns to include :"));
-		ListSelect taskColumnstoInclude = new ListSelect();
-		taskColumnstoInclude.setImmediate(true);
-		taskColumnstoInclude.setMultiSelect(true);
-		taskColumnstoInclude.setWidth("300px");
-		taskColumnstoInclude.addItems("path", "code", "name", "comment", "budget", "initially consumed", "etc");
-		taskColumnstoInclude.setHeight("70px");
-		gl.addComponent(taskColumnstoInclude);
-		
+		taskDepthLayout.addComponent(new Label(
+				"(deeper contributions will be aggregated)"));
+
+		gl.addComponent(new Label("Collaborators :"));
+		selectedCollaboratorsComponent = new Label("");
+		gl.addComponent(selectedCollaboratorsComponent);
+
 		// Register listeners
 		browseTaskButton.addClickListener(new Button.ClickListener() {
 			@Override
@@ -136,15 +152,7 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 				getLogic().onBrowseTaskButtonCLicked();
 			}
 		});
-		limitTaskScopeCheckbox
-				.addValueChangeListener(new Property.ValueChangeListener() {
-					@Override
-					public void valueChange(ValueChangeEvent event) {
-						getLogic().onLimitTaskScopeCheckboxClicked(
-								(Boolean) event.getProperty().getValue());
-					}
-				});
-		taskPathScopeTextField
+		rootTaskTextField
 				.addValueChangeListener(new Property.ValueChangeListener() {
 					@Override
 					public void valueChange(ValueChangeEvent event) {
@@ -152,51 +160,91 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 								(String) event.getProperty().getValue());
 					}
 				});
+		decreaseTaskDepthButton.addClickListener(new Button.ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				increaseOrDecreaseTaskTreeDepth(-1);
+			}
+		});
+		taskDepthTextField
+				.addValueChangeListener(new Property.ValueChangeListener() {
+					@Override
+					public void valueChange(ValueChangeEvent event) {
+						try {
+							getLogic().onTaskTreeDepthChanged(
+									Integer.parseInt(taskDepthTextField
+											.getValue()));
+						} catch (NumberFormatException e) {
+							getLogic().onTaskTreeDepthChanged(0);
+						}
+					}
+				});
+		increaseTaskDepthButton.addClickListener(new Button.ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				increaseOrDecreaseTaskTreeDepth(1);
+			}
+		});
 	}
 
-	private void createCollaboratorsManagementPanel(GridLayout gl) {
-		addTitle(gl, "Collaborators management", 9);
-	
-		CheckBox declineResultsetByContributorCheckbox = new CheckBox("Decline resultset by contributor");
-		gl.addComponent(declineResultsetByContributorCheckbox, 0, 10, 1, 10);
-
-		gl.addComponent(new Label("Columns to include :"));
-		ListSelect contributorColumnstoInclude = new ListSelect();
-		contributorColumnstoInclude.setImmediate(true);
-		contributorColumnstoInclude.setMultiSelect(true);
-		contributorColumnstoInclude.addItems("login", "first name", "last name", "active");
-		contributorColumnstoInclude.setWidth("300px");
-		contributorColumnstoInclude.setHeight("70px");
-		gl.addComponent(contributorColumnstoInclude);
-
+	private void createColumnsConfigurationPanel(GridLayout gl) {
+		addTitle(gl, "Columns configuration", 8);
+		gl.addComponent(new Label(""));
+		selectedColumnsComponent = new Label("");
+		gl.addComponent(selectedColumnsComponent);
 	}
 
-	private void createOrderManagementPanel(GridLayout gl) {
-		addTitle(gl, "Order management", 12);
+	private void createStatusPanel() {
+		bodyComponent.addComponent(new Label("")); // Empty cell
+		statusLayout = new HorizontalLayout();
+		bodyComponent.addComponent(statusLayout); // Empty cell
+		warningIcon = new Image(null, getResourceCache().getResource(
+				"warning.gif"));
+		statusLayout.addComponent(warningIcon);
+		warningIcon.setVisible(false);
+		statusLayout.setComponentAlignment(warningIcon, Alignment.MIDDLE_RIGHT);
+		statusLabel = new Label("");
+		statusLayout.addComponent(statusLabel);
+		statusLayout.setComponentAlignment(statusLabel, Alignment.MIDDLE_RIGHT);
+	}
 
-		gl.addComponent(new Label("Report mode :"));
-		OptionGroup reportModeUnitGroup = new OptionGroup();
-		reportModeUnitGroup.setImmediate(true);
-		reportModeUnitGroup.addItems("Task centric", "Collaborator centric");
-		reportModeUnitGroup.setStyleName("horizontal");
-		gl.addComponent(reportModeUnitGroup);
+	private void increaseOrDecreaseTaskTreeDepth(int amount) {
+		try {
+			int actual = Integer.parseInt(taskDepthTextField.getValue());
+			taskDepthTextField.setValue(String.valueOf(actual + amount));
+		} catch (NumberFormatException e) {
+			taskDepthTextField.setValue("");
+		}
+	}
 
-		gl.addComponent(new Label("Columns order mode :"));
-		OptionGroup columnsOrderModeUnitGroup = new OptionGroup();
-		columnsOrderModeUnitGroup.setImmediate(true);
-		columnsOrderModeUnitGroup.addItems("Automatic", "Manual");
-		columnsOrderModeUnitGroup.setStyleName("horizontal");
-		gl.addComponent(columnsOrderModeUnitGroup);
-		
-		gl.addComponent(new Label("Columns order :"));
-		ListSelect columnsOrderInclude = new ListSelect();
-		columnsOrderInclude.setImmediate(true);
-		columnsOrderInclude.addItems("login (collaborator)", "first name (collaborator)", "last name (collaborator)", "active (collaborator)");
-		columnsOrderInclude.setNullSelectionAllowed(false);
-		columnsOrderInclude.setWidth("300px");
-		columnsOrderInclude.setHeight("100px");
-		gl.addComponent(columnsOrderInclude);
+	@Override
+	public void setColumnSelectionView(View view) {
+		Component newComponent = (Component) view;
+		substituteBodyComponent(selectedColumnsComponent, newComponent);
+		selectedColumnsComponent = newComponent;
+	}
 
+	@Override
+	public void setCollaboratorsSelectionView(View view) {
+		Component newComponent = (Component) view;
+		substituteBodyComponent(selectedCollaboratorsComponent,
+				newComponent);
+		selectedCollaboratorsComponent = newComponent;
+	}
+
+	@Override
+	public void setBuildReportButtonView(IDownloadButtonLogic.View view) {
+		buildReportButton = (Button) view;
+		statusLayout.addComponent(buildReportButton, 0);
+	}
+
+	private void substituteBodyComponent(Component componentToSubstitute,
+			Component newComponent) {
+		Area area = bodyComponent.getComponentArea(componentToSubstitute);
+		bodyComponent.removeComponent(componentToSubstitute);
+		bodyComponent.addComponent(newComponent,
+				area.getColumn1(), area.getRow1(), area.getColumn2(),
+				area.getRow2());
 	}
 
 	private void addTitle(GridLayout gl, String caption, int row) {
@@ -254,15 +302,29 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 	}
 
 	@Override
-	public void setLimitRootTaskFieldEnabled(boolean enabled) {
-		taskPathScopeTextField.setEnabled(enabled);
-		browseTaskButton.setEnabled(enabled);
-
+	public void setTaskScopePath(String path) {
+		rootTaskTextField.setValue(path);
 	}
 
 	@Override
-	public void setTaskScopePath(String path) {
-		taskPathScopeTextField.setValue(path);
+	public void setTaskTreeDepth(int i) {
+		taskDepthTextField.setValue(String.valueOf(i));
+	}
+
+	@Override
+	public void setBuildReportButtonEnabled(boolean enabled) {
+		buildReportButton.setEnabled(enabled);
+	}
+
+	@Override
+	public void setErrorMessage(String message) {
+		if (message != null && !"".equals(message.trim())) {
+			warningIcon.setVisible(true);
+			statusLabel.setValue(message);
+		} else {
+			warningIcon.setVisible(false);
+			statusLabel.setValue("");
+		}
 	}
 
 }

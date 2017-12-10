@@ -3,9 +3,11 @@ package org.activitymgr.ui.web.view.impl.internal;
 import org.activitymgr.ui.web.logic.ITasksTabLogic;
 import org.activitymgr.ui.web.logic.ITreeContentProviderCallback;
 import org.activitymgr.ui.web.view.AbstractTabPanel;
+import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.internal.util.AlignHelper;
 import org.activitymgr.ui.web.view.impl.internal.util.TreeTableDatasource;
 
+import com.google.inject.Inject;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.ui.Component;
@@ -16,6 +18,11 @@ import com.vaadin.ui.TreeTable;
 public class TasksPanel extends AbstractTabPanel<ITasksTabLogic> implements ITasksTabLogic.View {
 
 	private TreeTable taskTree;
+
+	@Inject
+	public TasksPanel(IResourceCache resourceCache) {
+		super(resourceCache);
+	}
 
 	@Override
 	protected Component createBodyComponent() {

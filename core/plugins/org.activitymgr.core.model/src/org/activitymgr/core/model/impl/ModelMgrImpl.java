@@ -2176,21 +2176,19 @@ public class ModelMgrImpl implements IModelMgr {
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
 			boolean contributorCentricMode, long[] contributorIds)
 			throws ModelException {
-		return buildReport(start, intervalType, intervalCount, rootTaskId,
-				taskDepth, onlyKeepTasksWithContributions, byContributor, contributorCentricMode,
-				contributorIds, (String[]) null);
+		return doBuildReport(start, intervalType, intervalCount, rootTaskId,
+				taskDepth, onlyKeepTasksWithContributions, byContributor, contributorCentricMode, contributorIds, (String[]) null, false);
 	}
 
-	private Report buildReport(Calendar start, ReportIntervalType intervalType,
+	private Report doBuildReport(Calendar start, ReportIntervalType intervalType,
 			Integer intervalCount, Long rootTaskId, int taskDepth,
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
 			boolean contributorCentricMode, long[] contributorIds,
-			String[] orderContributorsBy) throws ModelException {
+			String[] orderContributorsBy, boolean dryRun) throws ModelException {
 		// Fix task depth
 		if (taskDepth < 0) {
 			taskDepth = getMaxTaskDepthUnder(rootTaskId);
 		}
-		System.out.println("DEPTH : " + taskDepth);
 		
 		// If start date is omitted, compute a date
 		Task rootTask = rootTaskId != null ? taskDAO.selectByPK(rootTaskId) : null;
@@ -2235,7 +2233,14 @@ public class ModelMgrImpl implements IModelMgr {
 		}
 		
 		// Compute the report
-		return reportDAO.buildReport(start, intervalType, intervalCount, rootTask, taskDepth, onlyKeepTasksWithContributions, byContributor, contributorCentricMode, contributorIds, orderContributorsBy);
+		if (dryRun) {
+			return null;
+		} else {
+			return reportDAO.buildReport(start, intervalType, intervalCount,
+					rootTask, taskDepth, onlyKeepTasksWithContributions,
+					byContributor, contributorCentricMode, contributorIds,
+					orderContributorsBy);
+		}
 	}
 
 	@Override
@@ -2244,7 +2249,7 @@ public class ModelMgrImpl implements IModelMgr {
 			Long rootTaskId, int taskDepth,
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
 			boolean contributorCentricMode, long[] contributorIds,
-			Collection<String> columnIds) throws ModelException {
+			String[] columnIds, boolean dryRun) throws ModelException {
 		Map<String, IReportColumnComputer> reportColumnComputers = new HashMap<String, IReportColumnComputer>(defaultReportColumnComputers); 
 		List<IReportColumnComputer> columns = new ArrayList<IReportColumnComputer>();
 		int taskFields = 0;
@@ -2286,8 +2291,10 @@ public class ModelMgrImpl implements IModelMgr {
 				byContributor,
 				contributorCentricMode,
 				contributorIds,
-				columns,
-				collaboratorFields.toArray(new String[collaboratorFields.size()]));
+				(IReportColumnComputer[]) columns
+						.toArray(new IReportColumnComputer[columns.size()]),
+				collaboratorFields.toArray(new String[collaboratorFields.size()]),
+				dryRun);
 	}
 
 	@Override
@@ -2296,9 +2303,10 @@ public class ModelMgrImpl implements IModelMgr {
 			Long rootTaskId, int taskDepth,
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
 			boolean contributorCentricMode, long[] contributorIds,
-			Collection<IReportColumnComputer> columns, String[] orderContributorsBy) throws ModelException {
+			IReportColumnComputer[] columns, String[] orderContributorsBy,
+			boolean dryRun) throws ModelException {
 		// Build raw report
-		Report report = buildReport(
+		Report report = doBuildReport(
 				start,
 				intervalType,
 				intervalCount,
@@ -2308,7 +2316,12 @@ public class ModelMgrImpl implements IModelMgr {
 				byContributor,
 				contributorCentricMode,
 				contributorIds,
-				orderContributorsBy);
+				orderContributorsBy, dryRun);
+
+		// Stop here if dry run mode
+		if (dryRun) {
+			return null;
+		}
 
 		// Convert report to XLS
 		String dateFormat = null;

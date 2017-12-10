@@ -15,9 +15,9 @@ public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 
 	void onBrowseTaskButtonCLicked();
 
-	void onLimitTaskScopeCheckboxClicked(boolean value);
-
 	void onTaskScopePathChanged(String value);
+
+	void onTaskTreeDepthChanged(int parseInt);
 
 	public interface View extends ITabLogic.View<IReportsTabLogic> {
 		
@@ -33,9 +33,19 @@ public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 
 		void setIntervalBounds(Date startDate, Date endDate);
 
-		void setLimitRootTaskFieldEnabled(boolean limitTaskScope);
+		void setColumnSelectionView(ITwinSelectLogic.View view);
+
+		void setCollaboratorsSelectionView(ITwinSelectLogic.View view);
 
 		void setTaskScopePath(String path);
+
+		void setTaskTreeDepth(int i);
+
+		void setBuildReportButtonView(IDownloadButtonLogic.View view);
+
+		void setBuildReportButtonEnabled(boolean b);
+
+		void setErrorMessage(String message);
 
 	}
 

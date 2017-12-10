@@ -5,10 +5,18 @@ import org.activitymgr.ui.web.logic.ITabLogic;
 
 public abstract class AbstractSafeDownloadButtonLogicImpl extends AbstractLogicImpl<IDownloadButtonLogic.View> implements IDownloadButtonLogic {
 	
-	public AbstractSafeDownloadButtonLogicImpl(ITabLogic<?> parent, String label, String iconId) {
+	public AbstractSafeDownloadButtonLogicImpl(ITabLogic<?> parent,
+			String label, String description, String iconId) {
 		super(parent);
-		getView().setIcon(iconId);
-		getView().setDescription(label);
+		if (label != null) {
+			getView().setLabel(label);
+		}
+		if (description != null) {
+			getView().setDescription(description);
+		}
+		if (iconId != null) {
+			getView().setIcon(iconId);
+		}
 	}
 
 	@Override

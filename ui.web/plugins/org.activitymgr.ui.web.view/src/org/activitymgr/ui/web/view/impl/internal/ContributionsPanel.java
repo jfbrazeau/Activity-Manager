@@ -7,10 +7,12 @@ import java.util.GregorianCalendar;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 import org.activitymgr.ui.web.view.AbstractTabPanel;
+import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.dialogs.PopupDateFieldWithParser;
 import org.activitymgr.ui.web.view.impl.internal.util.AlignHelper;
 import org.activitymgr.ui.web.view.impl.internal.util.TableDatasource;
 
+import com.google.inject.Inject;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.event.ShortcutListener;
@@ -48,6 +50,11 @@ public class ContributionsPanel extends AbstractTabPanel<IContributionsTabLogic>
 	private Table collaboratorsTable;
 
 	private ITableCellProviderCallback<Long> contributionsProvider;
+
+	@Inject
+	public ContributionsPanel(IResourceCache resourceCache) {
+		super(resourceCache);
+	}
 
 	@Override
 	protected Component createHeaderComponent() {

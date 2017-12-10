@@ -27,6 +27,11 @@ public class DownloadButtonView extends Button implements View {
 	}
 
 	@Override
+	public void setLabel(String label) {
+		setCaption(label);
+	}
+
+	@Override
 	public void registerLogic(final IDownloadButtonLogic logic) {
 		this.logic = logic;
 		setImmediate(true);

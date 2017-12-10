@@ -573,7 +573,9 @@ public class ReportsUI {
 					includeCollaboratorsButton.getSelection(),
 					collaboratorsCentricButton.getSelection(),
 					null, 
-					columnsOrderElements);
+					columnsOrderElements
+							.toArray(new String[columnsOrderElements.size()]),
+					false);
 			File file = File.createTempFile("am-report-", ".xls");
 			System.out.println(file);
 			FileOutputStream out = new FileOutputStream(file);

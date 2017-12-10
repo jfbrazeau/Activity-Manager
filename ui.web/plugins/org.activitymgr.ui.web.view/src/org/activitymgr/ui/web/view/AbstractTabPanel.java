@@ -56,7 +56,6 @@ public abstract class AbstractTabPanel<LOGIC extends ITabLogic<?>> extends Verti
 	}
 
 	
-	@Inject
 	private IResourceCache resourceCache;
 	private LOGIC logic;
 	private VerticalLayout actionsContainer;
@@ -64,7 +63,9 @@ public abstract class AbstractTabPanel<LOGIC extends ITabLogic<?>> extends Verti
 	private List<ButtonBasedShortcutListener> activeActions = new ArrayList<ButtonBasedShortcutListener>();
 	private Component bodyComponent;
 
-	public AbstractTabPanel() {
+	@Inject
+	public AbstractTabPanel(IResourceCache resourceCache) {
+		this.resourceCache = resourceCache;
 		setSpacing(true);
 		setMargin(true);
 		setSizeFull();

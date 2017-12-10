@@ -27,6 +27,11 @@ public class StandardButtonView extends Button implements View {
 	}
 
 	@Override
+	public void setLabel(String label) {
+		setCaption(label);
+	}
+
+	@Override
 	public void setShortcut(final char key, final boolean ctrl, final boolean shift, final boolean alt) {
 		shortcut = new ButtonBasedShortcutListener(StandardButtonView.this, key, ctrl, shift, alt);
 	}
