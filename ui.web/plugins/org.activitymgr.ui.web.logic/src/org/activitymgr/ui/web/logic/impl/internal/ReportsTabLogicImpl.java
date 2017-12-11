@@ -92,6 +92,8 @@ public class ReportsTabLogicImpl extends
 	
 	private boolean initialized = false;
 
+	private boolean onlyKeepTaskWithContributions;
+
 	public ReportsTabLogicImpl(ITabFolderLogic parent) {
 		super(parent);
 		// Add buttons
@@ -257,68 +259,79 @@ public class ReportsTabLogicImpl extends
 	}
 
 	void updateUI() {
-		getView().setErrorMessage("");
-		// Update interval type & bounds
-		getView().selectIntervalTypeRadioButton(intervalType);
-		getView().selectIntervalBoundsModeButton(intervalBoundsMode);
+		if (initialized) {
+			getView().setErrorMessage("");
+			// Update interval type & bounds
+			getView().selectIntervalTypeRadioButton(intervalType);
+			getView().selectIntervalBoundsModeButton(intervalBoundsMode);
 
-		// Update date fields enablement
-		switch (intervalBoundsMode) {
-		case AUTOMATIC:
-			getView().setIntervalBoundsModeEnablement(false, false);
-			break;
-		case LOWER_BOUND:
-			getView().setIntervalBoundsModeEnablement(true, false);
-			break;
-		case BOTH_BOUNDS:
-			getView().setIntervalBoundsModeEnablement(true, true);
-		}
-
-		// Update dates
-		if (!ReportIntervalType.DAY.equals(intervalType)) {
-			switch (intervalType) {
-			case YEAR:
-				// Goto start of year
-				start.set(Calendar.MONTH, 0);
-				start.set(Calendar.DATE, 1);
-				
-				// Goto start of following year
-				end.set(Calendar.MONTH, 0);
-				end.set(Calendar.DATE, 1);
-				end.add(Calendar.YEAR, 1);
+			// Update date fields enablement
+			switch (intervalBoundsMode) {
+			case AUTOMATIC:
+				getView().setIntervalBoundsModeEnablement(false, false);
 				break;
-			case MONTH:
-				// Goto start of month
-				start.set(Calendar.DATE, 1);
-				
-				// Goto start of following month
-				end.set(Calendar.DATE, 1);
-				end.add(Calendar.MONTH, 1);
+			case LOWER_BOUND:
+				getView().setIntervalBoundsModeEnablement(true, false);
 				break;
-			case WEEK:
-				// Goto start of week
-				start = DateHelper.moveToFirstDayOfWeek(start);
-				
-				// Goto start of following month
-				end = DateHelper.moveToFirstDayOfWeek(end);
-				end.add(Calendar.WEEK_OF_YEAR, 1);
-				break;
-			case DAY:
-				// Do nothing
+			case BOTH_BOUNDS:
+				getView().setIntervalBoundsModeEnablement(true, true);
 			}
-			end.add(Calendar.DATE, -1);
-			getView().setIntervalBounds(start.getTime(), end.getTime());
-		}
-		try {
-			if (initialized) {
+
+			// Update dates
+			if (!ReportIntervalType.DAY.equals(intervalType)) {
+				switch (intervalType) {
+				case YEAR:
+					// Goto start of year
+					start.set(Calendar.MONTH, 0);
+					start.set(Calendar.DATE, 1);
+
+					// Goto start of following year
+					end.set(Calendar.MONTH, 0);
+					end.set(Calendar.DATE, 1);
+					end.add(Calendar.YEAR, 1);
+					break;
+				case MONTH:
+					// Goto start of month
+					start.set(Calendar.DATE, 1);
+
+					// Goto start of following month
+					end.set(Calendar.DATE, 1);
+					end.add(Calendar.MONTH, 1);
+					break;
+				case WEEK:
+					// Goto start of week
+					start = DateHelper.moveToFirstDayOfWeek(start);
+
+					// Goto start of following month
+					end = DateHelper.moveToFirstDayOfWeek(end);
+					end.add(Calendar.WEEK_OF_YEAR, 1);
+					break;
+				case DAY:
+					// Do nothing
+				}
+				end.add(Calendar.DATE, -1);
+				getView().setIntervalBounds(start.getTime(), end.getTime());
+			}
+			// Check if one task attribute is selected
+			List<DTOAttribute> selectedColumns = columnsSelectionLogic
+					.getValue();
+			boolean includeTaskAttrs = false;
+			for (DTOAttribute att : selectedColumns) {
+				if (att.getId().startsWith("task")) {
+					includeTaskAttrs = true;
+					break;
+				}
+			}
+			getView().setRowContentConfigurationEnabled(includeTaskAttrs);
+
+			try {
 				buildReport(true);
 				getView().setBuildReportButtonEnabled(true);
+			} catch (ModelException e) {
+				getView().setBuildReportButtonEnabled(false);
+				getView().setErrorMessage(e.getMessage());
 			}
-		} catch (ModelException e) {
-			getView().setBuildReportButtonEnabled(false);
-			getView().setErrorMessage(e.getMessage());
 		}
-
 	}
 
 	private Workbook buildReport(boolean dryRun) throws ModelException {
@@ -398,7 +411,8 @@ public class ReportsTabLogicImpl extends
 				rootTaskId, // Root task id
 				includeTasks ? taskTreeDepth : 0, // Task tree
 													// depth
-				false, // Only keep tasks with contributions
+				onlyKeepTaskWithContributions, // Only keep tasks with
+												// contributions
 				includeCollaborators, // Include collaborators
 				contributorCentricMode, // Collaborators centric mode
 				contributorIds, // Contributor ids
@@ -407,6 +421,10 @@ public class ReportsTabLogicImpl extends
 		return report;
 	}
 
+	@Override
+	public void onOnlyKeepTaskWithContributionsCheckboxChanged(boolean value) {
+		onlyKeepTaskWithContributions = value;
+	}
 }
 
 class DTOAttribute {

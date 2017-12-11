@@ -17,6 +17,7 @@ import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.GridLayout.Area;
@@ -43,6 +44,9 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 	private Image warningIcon;
 	private HorizontalLayout statusLayout;
 	private Button buildReportButton;
+	private CheckBox onlyKeepTasksWithContribsChackbox;
+	private Button decreaseTaskDepthButton;
+	private Button increaseTaskDepthButton;
 
 	@Inject
 	public ReportsPanel(IResourceCache resourceCache) {
@@ -57,14 +61,15 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		
 		createIntervalConfigurationPanel(bodyComponent);
 		createScopeConfigurationPanel(bodyComponent);
-		createColumnsConfigurationPanel(bodyComponent);
+		createColumnsContentConfigurationPanel(bodyComponent);
+		createRowsContentConfigurationPanel(bodyComponent);
 		createStatusPanel();
 
 		return bodyComponent;
 	}
 
 	private void createIntervalConfigurationPanel(GridLayout gl) {
-		addTitle(gl, "Interval configuration", 0);
+		addTitle(gl, "Interval configuration");
 
 		gl.addComponent(new Label("Interval unit :"));
 		intervalUnitGroup = new OptionGroup();
@@ -111,7 +116,7 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 	}
 
 	private void createScopeConfigurationPanel(GridLayout gl) {
-		addTitle(gl, "Scope configuration", 4);
+		addTitle(gl, "Scope configuration");
 
 		gl.addComponent(new Label("Root task :"));
 		HorizontalLayout rootTaskPanel = new HorizontalLayout();
@@ -123,23 +128,6 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		browseTaskButton = new Button("...");
 		browseTaskButton.setImmediate(true);
 		rootTaskPanel.addComponent(browseTaskButton);
-
-		gl.addComponent(new Label("Task tree depth :"));
-		HorizontalLayout taskDepthLayout = new HorizontalLayout();
-		gl.addComponent(taskDepthLayout);
-		Button decreaseTaskDepthButton = new Button("-");
-		decreaseTaskDepthButton.setImmediate(true);
-		taskDepthLayout.addComponent(decreaseTaskDepthButton);
-		taskDepthTextField = new TextField();
-		taskDepthTextField.setImmediate(true);
-		taskDepthTextField.setWidth("40px");
-		taskDepthTextField.addStyleName("center");
-		taskDepthLayout.addComponent(taskDepthTextField);
-		Button increaseTaskDepthButton = new Button("+");
-		increaseTaskDepthButton.setImmediate(true);
-		taskDepthLayout.addComponent(increaseTaskDepthButton);
-		taskDepthLayout.addComponent(new Label(
-				"(deeper contributions will be aggregated)"));
 
 		gl.addComponent(new Label("Collaborators :"));
 		selectedCollaboratorsComponent = new Label("");
@@ -160,6 +148,44 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 								(String) event.getProperty().getValue());
 					}
 				});
+	}
+
+	private void createColumnsContentConfigurationPanel(GridLayout gl) {
+		addTitle(gl, "Header columns content configuration");
+
+		gl.addComponent(new Label("Fields :"));
+		selectedColumnsComponent = new Label("");
+		gl.addComponent(selectedColumnsComponent);
+
+	}
+
+	private void createRowsContentConfigurationPanel(GridLayout gl) {
+		addTitle(gl, "Rows content configuration");
+
+		gl.addComponent(new Label("Task tree depth :"));
+		HorizontalLayout taskDepthLayout = new HorizontalLayout();
+		gl.addComponent(taskDepthLayout);
+		decreaseTaskDepthButton = new Button("-");
+		decreaseTaskDepthButton.setImmediate(true);
+		taskDepthLayout.addComponent(decreaseTaskDepthButton);
+		taskDepthTextField = new TextField();
+		taskDepthTextField.setImmediate(true);
+		taskDepthTextField.setWidth("40px");
+		taskDepthTextField.addStyleName("center");
+		taskDepthLayout.addComponent(taskDepthTextField);
+		increaseTaskDepthButton = new Button("+");
+		increaseTaskDepthButton.setImmediate(true);
+		taskDepthLayout.addComponent(increaseTaskDepthButton);
+		Label docLabel = new Label(
+				" (from root ; deeper contributions will be aggregated)");
+		taskDepthLayout.addComponent(docLabel);
+		taskDepthLayout.setComponentAlignment(docLabel, Alignment.MIDDLE_LEFT);
+
+		gl.addComponent(new Label("Filter empty tasks rows :"));
+		onlyKeepTasksWithContribsChackbox = new CheckBox(
+				"Don't show rows for task that have no contribution");
+		gl.addComponent(onlyKeepTasksWithContribsChackbox);
+
 		decreaseTaskDepthButton.addClickListener(new Button.ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
@@ -185,13 +211,16 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 				increaseOrDecreaseTaskTreeDepth(1);
 			}
 		});
-	}
-
-	private void createColumnsConfigurationPanel(GridLayout gl) {
-		addTitle(gl, "Columns configuration", 8);
-		gl.addComponent(new Label(""));
-		selectedColumnsComponent = new Label("");
-		gl.addComponent(selectedColumnsComponent);
+		onlyKeepTasksWithContribsChackbox
+				.addValueChangeListener(new ValueChangeListener() {
+					@Override
+					public void valueChange(ValueChangeEvent event) {
+						getLogic()
+								.onOnlyKeepTaskWithContributionsCheckboxChanged(
+										onlyKeepTasksWithContribsChackbox
+												.getValue());
+					}
+				});
 	}
 
 	private void createStatusPanel() {
@@ -247,11 +276,19 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 				area.getRow2());
 	}
 
-	private void addTitle(GridLayout gl, String caption, int row) {
+	private void addTitle(GridLayout gl, String caption) {
 		Label label = new Label("<b>" + caption + "</b><hr>", ContentMode.HTML);
 		label.setWidth("100%");
-		gl.addComponent(label, 0, row, 1, row);
-		
+		addComponentWithHorizontalSpan(gl, label);
+	}
+
+	private void addComponentWithHorizontalSpan(GridLayout gl,
+			Component component) {
+		gl.addComponent(component);
+		Area area = gl.getComponentArea(component);
+		gl.removeComponent(component);
+		gl.addComponent(component, area.getColumn1(), area.getRow1(),
+				area.getColumn2() + 1, area.getRow2());
 	}
 
 	private PopupDateFieldWithParser newDateField() {
@@ -327,4 +364,11 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		}
 	}
 
+	@Override
+	public void setRowContentConfigurationEnabled(boolean enabled) {
+		decreaseTaskDepthButton.setEnabled(enabled);
+		taskDepthTextField.setEnabled(enabled);
+		increaseTaskDepthButton.setEnabled(enabled);
+		onlyKeepTasksWithContribsChackbox.setEnabled(enabled);
+	}
 }

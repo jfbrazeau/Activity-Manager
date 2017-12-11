@@ -19,6 +19,8 @@ public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 
 	void onTaskTreeDepthChanged(int parseInt);
 
+	void onOnlyKeepTaskWithContributionsCheckboxChanged(boolean value);
+
 	public interface View extends ITabLogic.View<IReportsTabLogic> {
 		
 		void addIntervalTypeRadioButton(Object id, String label);
@@ -46,6 +48,8 @@ public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 		void setBuildReportButtonEnabled(boolean b);
 
 		void setErrorMessage(String message);
+
+		void setRowContentConfigurationEnabled(boolean includeTaskAttrs);
 
 	}
 
