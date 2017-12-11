@@ -33,9 +33,9 @@ public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 
 		void setIntervalBounds(Date startDate, Date endDate);
 
-		void setColumnSelectionView(ITwinSelectLogic.View view);
+		void setColumnSelectionView(ITwinSelectFieldLogic.View view);
 
-		void setCollaboratorsSelectionView(ITwinSelectLogic.View view);
+		void setCollaboratorsSelectionView(ITwinSelectFieldLogic.View view);
 
 		void setTaskScopePath(String path);
 

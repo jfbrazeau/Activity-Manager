@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -23,9 +24,9 @@ import org.activitymgr.ui.web.logic.IReportsTabLogic;
 import org.activitymgr.ui.web.logic.ITabFolderLogic;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic.ISelectedTaskCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeDownloadButtonLogicImpl;
+import org.activitymgr.ui.web.logic.impl.AbstractSafeTwinSelectFieldLogic;
+import org.activitymgr.ui.web.logic.impl.AbstractSafeTwinSelectFieldLogic.IDTOInfosProvider;
 import org.activitymgr.ui.web.logic.impl.AbstractTabLogicImpl;
-import org.activitymgr.ui.web.logic.impl.TwinSelectLogic;
-import org.activitymgr.ui.web.logic.impl.TwinSelectLogic.IDTOInfosProvider;
 import org.activitymgr.ui.web.logic.spi.ITabButtonFactory;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -83,9 +84,9 @@ public class ReportsTabLogicImpl extends
 
 	private int taskTreeDepth = 1;
 
-	private TwinSelectLogic<Collaborator> collaboratorsSelectionLogic;
+	private AbstractSafeTwinSelectFieldLogic<Collaborator> collaboratorsSelectionLogic;
 
-	private TwinSelectLogic<DTOAttribute> columnsSelectionLogic;
+	private AbstractSafeTwinSelectFieldLogic<DTOAttribute> columnsSelectionLogic;
 
 	private Collaborator[] collaborators;
 	
@@ -107,8 +108,14 @@ public class ReportsTabLogicImpl extends
 		 * Collaborators twin select
 		 */
 		collaborators = getModelMgr().getCollaborators();
-		collaboratorsSelectionLogic = new TwinSelectLogic<Collaborator>(this,
-				false, COLLABORATORS_INFOS_PROVIDER, collaborators);
+		collaboratorsSelectionLogic = new AbstractSafeTwinSelectFieldLogic<Collaborator>(
+				this, false, COLLABORATORS_INFOS_PROVIDER, collaborators) {
+			@Override
+			protected void unsafeOnValueChanged(Collection<String> newValue)
+					throws Exception {
+				updateUI();
+			}
+		};
 		collaboratorsSelectionLogic.selectAll();
 		getView().setCollaboratorsSelectionView(
 				collaboratorsSelectionLogic.getView());
@@ -126,9 +133,15 @@ public class ReportsTabLogicImpl extends
 					return o1.getLabel().compareTo(o2.getLabel());
 				}
 			});
-			columnsSelectionLogic = new TwinSelectLogic<DTOAttribute>(
+			columnsSelectionLogic = new AbstractSafeTwinSelectFieldLogic<DTOAttribute>(
 					this, true, DTO_ATTRIBUTE_INFOS_PROVIDER,
-					attributes.toArray(new DTOAttribute[attributes.size()]));
+					attributes.toArray(new DTOAttribute[attributes.size()])) {
+				@Override
+				protected void unsafeOnValueChanged(Collection<String> newValue)
+						throws Exception {
+					updateUI();
+				}
+			};
 			Map<String, DTOAttribute> map = new HashMap<String, DTOAttribute>();
 			for (DTOAttribute att : attributes) {
 				map.put(att.getId(), att);
@@ -356,7 +369,7 @@ public class ReportsTabLogicImpl extends
 			}
 		}
 		if (selectedColumns.size() == 0) {
-			throw new IllegalStateException(
+			throw new ModelException(
 					"At least one column must be selected");
 		}
 		boolean contributorCentricMode = selectedColumns.get(0).getId()

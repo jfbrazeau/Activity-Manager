@@ -15,7 +15,7 @@ import org.activitymgr.ui.web.logic.ITabFolderLogic;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic;
 import org.activitymgr.ui.web.logic.ITasksTabLogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
-import org.activitymgr.ui.web.logic.ITwinSelectLogic;
+import org.activitymgr.ui.web.logic.ITwinSelectFieldLogic;
 import org.activitymgr.ui.web.logic.LogicModule;
 import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.dialogs.TaskChooserDialog;
@@ -60,7 +60,7 @@ public class ViewModule extends AbstractModule {
 		bind(IStandardButtonLogic.View.class).to(StandardButtonView.class);
 		bind(IDownloadButtonLogic.View.class).to(DownloadButtonView.class);
 		bind(ISelectFieldLogic.View.class).to(SelectFieldView.class);
-		bind(ITwinSelectLogic.View.class).to(TwinSelectView.class);
+		bind(ITwinSelectFieldLogic.View.class).to(TwinSelectView.class);
 	}
 
 }

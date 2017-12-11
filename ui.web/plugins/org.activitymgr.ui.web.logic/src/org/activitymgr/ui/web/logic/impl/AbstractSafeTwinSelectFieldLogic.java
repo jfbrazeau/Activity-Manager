@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.activitymgr.ui.web.logic.ILogic;
-import org.activitymgr.ui.web.logic.ITwinSelectLogic;
+import org.activitymgr.ui.web.logic.ITwinSelectFieldLogic;
 
-public class TwinSelectLogic<DTO> extends
-		AbstractLogicImpl<ITwinSelectLogic.View>
-		implements ITwinSelectLogic {
+public abstract class AbstractSafeTwinSelectFieldLogic<DTO> extends
+		AbstractLogicImpl<ITwinSelectFieldLogic.View>
+		implements ITwinSelectFieldLogic {
 
 	public static interface IDTOInfosProvider<DTO> {
 
@@ -27,7 +27,7 @@ public class TwinSelectLogic<DTO> extends
 
 	private IDTOInfosProvider<DTO> dtoInfoProvider;
 
-	public TwinSelectLogic(ILogic<?> parent, boolean ordered,
+	public AbstractSafeTwinSelectFieldLogic(ILogic<?> parent, boolean ordered,
 			IDTOInfosProvider<DTO> dtoInfoProvider, DTO... dtos) {
 		super(parent);
 		this.dtoInfoProvider = dtoInfoProvider;
@@ -42,9 +42,18 @@ public class TwinSelectLogic<DTO> extends
 	}
 
 	@Override
-	public void onValueChangedChanged(Collection<String> itemIds) {
-		selectedDTOIds = itemIds;
+	public void onValueChanged(Collection<String> newValue) {
+		try {
+			selectedDTOIds = newValue;
+			unsafeOnValueChanged(newValue);
+		} catch (Throwable t) {
+			getView().focus();
+			doThrow(t);
+		}
 	}
+
+	protected abstract void unsafeOnValueChanged(Collection<String> newValue)
+			throws Exception;
 
 	public List<DTO> getValue() {
 		List<DTO> result = new ArrayList<DTO>();
@@ -61,9 +70,11 @@ public class TwinSelectLogic<DTO> extends
 	}
 
 	public void select(DTO... dtos) {
+		Collection<String> value = new ArrayList<String>();
 		for (DTO dto : dtos) {
-			getView().select(dtoInfoProvider.getId(dto));
+			value.add(dtoInfoProvider.getId(dto));
 		}
+		getView().setValue(value);
 	}
 
 }

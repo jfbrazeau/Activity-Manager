@@ -4,7 +4,7 @@ import java.util.Date;
 
 import org.activitymgr.ui.web.logic.IDownloadButtonLogic;
 import org.activitymgr.ui.web.logic.IReportsTabLogic;
-import org.activitymgr.ui.web.logic.ITwinSelectLogic.View;
+import org.activitymgr.ui.web.logic.ITwinSelectFieldLogic.View;
 import org.activitymgr.ui.web.view.AbstractTabPanel;
 import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.dialogs.PopupDateFieldWithParser;

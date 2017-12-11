@@ -9,8 +9,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.activitymgr.ui.web.logic.ITwinSelectLogic;
-import org.activitymgr.ui.web.logic.ITwinSelectLogic.View;
+import org.activitymgr.ui.web.logic.ITwinSelectFieldLogic;
+import org.activitymgr.ui.web.logic.ITwinSelectFieldLogic.View;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -26,7 +26,7 @@ import com.vaadin.ui.VerticalLayout;
 @SuppressWarnings("serial")
 public class TwinSelectView extends HorizontalLayout implements View {
 
-	private ITwinSelectLogic logic;
+	private ITwinSelectFieldLogic logic;
 	private ListSelect leftSelect;
 	private ListSelect rightSelect;
 	private Button moveAllRightButton;
@@ -160,7 +160,7 @@ public class TwinSelectView extends HorizontalLayout implements View {
 		@SuppressWarnings("unchecked")
 		Collection<String> itemIds = (Collection<String>) rightSelect
 				.getItemIds();
-		logic.onValueChangedChanged(itemIds);
+		logic.onValueChanged(itemIds);
 	}
 
 	@Override
@@ -261,7 +261,7 @@ public class TwinSelectView extends HorizontalLayout implements View {
 	}
 
 	@Override
-	public void registerLogic(ITwinSelectLogic logic) {
+	public void registerLogic(ITwinSelectFieldLogic logic) {
 		this.logic = logic;
 	}
 
@@ -280,7 +280,7 @@ public class TwinSelectView extends HorizontalLayout implements View {
 		@SuppressWarnings("unchecked")
 		Collection<String> itemIds = (Collection<String>) rightSelect
 				.getItemIds();
-		logic.onValueChangedChanged(itemIds);
+		logic.onValueChanged(itemIds);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -320,7 +320,7 @@ public class TwinSelectView extends HorizontalLayout implements View {
 		// Notify the logic
 		Collection<String> itemIds = (Collection<String>) rightSelect
 				.getItemIds();
-		logic.onValueChangedChanged(itemIds);
+		logic.onValueChanged(itemIds);
 	}
 
 	@Override
@@ -333,9 +333,17 @@ public class TwinSelectView extends HorizontalLayout implements View {
 	}
 
 	@Override
-	public void select(String id) {
-		leftSelect.select(id);
+	public void setValue(Collection<String> value) {
+		for (String itemId : value) {
+			if (leftSelect.containsId(itemId)) {
+				leftSelect.select(itemId);
+			}
+		}
 		moveSelectedItems(leftSelect, rightSelect);
 	}
 
+	@Override
+	public void focus() {
+		super.focus();
+	}
 }
