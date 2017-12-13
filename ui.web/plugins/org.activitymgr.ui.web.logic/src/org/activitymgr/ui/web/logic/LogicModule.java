@@ -159,11 +159,27 @@ public class LogicModule extends AbstractModule {
 			}
 			@Override
 			public String getTabId() {
-				return IReportsTabLogic.ID;
+				return IReportsTabLogic.ADVANCED_REPORTS_ID;
+			}
+
+			@Override
+			public ITabLogic<?> create(ITabFolderLogic parent) {
+				return new ReportsTabLogicImpl(parent, true);
+			}
+		});
+		tabsBinder.addBinding().toInstance(new ITabFactory() {
+			@Override
+			public int getTabOrderPriority() {
+				return 71;
+			}
+
+			@Override
+			public String getTabId() {
+				return IReportsTabLogic.MY_REPORTS_ID;
 			}
 			@Override
 			public ITabLogic<?> create(ITabFolderLogic parent) {
-				return new ReportsTabLogicImpl(parent);
+				return new ReportsTabLogicImpl(parent, false);
 			}
 		});
 
@@ -222,11 +238,13 @@ class DefaultFeatureAccessManager implements IFeatureAccessManager {
 	public boolean hasAccessToTab(Collaborator collaborator, String tab) {
 		return true;
 	}
+
 	@Override
 	public boolean canUpdateContributions(Collaborator connected,
 			Collaborator contributor) {
 		return true;
 	}
+
 }
 
 class DefaultAuthenticatorExtension implements IAuthenticatorExtension {

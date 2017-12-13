@@ -15,7 +15,7 @@ import org.activitymgr.ui.web.logic.ITwinSelectFieldLogic.View;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.util.IndexedContainer;
-import com.vaadin.event.ContextClickEvent;
+import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -42,13 +42,14 @@ public class TwinSelectView extends HorizontalLayout implements View {
 	public TwinSelectView() {
 		super();
 		// Left select
-		leftSelect = newSelect("Available");
+		leftSelect = newSelect();
 		addComponent(leftSelect);
 
 		// Middle buttons
 		VerticalLayout middleButtonsLayout = new VerticalLayout();
-		addComponent(middleButtonsLayout);
 		middleButtonsLayout.setMargin(true);
+		middleButtonsLayout.setMargin(new MarginInfo(false, true));
+		addComponent(middleButtonsLayout);
 		moveAllRightButton = addButton(middleButtonsLayout, ">>");
 		moveRightButton = addButton(middleButtonsLayout, ">");
 		moveLeftButton = addButton(middleButtonsLayout, "<");
@@ -61,7 +62,7 @@ public class TwinSelectView extends HorizontalLayout implements View {
 		moveDownButton.setImmediate(true);
 
 		// Right select
-		rightSelect = newSelect("Selected");
+		rightSelect = newSelect();
 		addComponent(rightSelect);
 
 		Property.ValueChangeListener listener = new Property.ValueChangeListener() {
@@ -72,13 +73,6 @@ public class TwinSelectView extends HorizontalLayout implements View {
 		};
 		leftSelect.addValueChangeListener(listener);
 		rightSelect.addValueChangeListener(listener);
-		addContextClickListener(new ContextClickEvent.ContextClickListener() {
-			@Override
-			public void contextClick(ContextClickEvent event) {
-				System.out.println("click!");
-				System.out.println(event);
-			}
-		});
 
 		moveAllRightButton.addClickListener(new Button.ClickListener() {
 			@Override
@@ -169,6 +163,7 @@ public class TwinSelectView extends HorizontalLayout implements View {
 		// Right buttons
 		VerticalLayout orderButtonsLayout = new VerticalLayout();
 		orderButtonsLayout.setMargin(true);
+		orderButtonsLayout.setMargin(new MarginInfo(false, true));
 		addComponent(orderButtonsLayout);
 		orderButtonsLayout.addComponent(moveUpButton);
 		orderButtonsLayout.addComponent(moveDownButton);
@@ -251,12 +246,12 @@ public class TwinSelectView extends HorizontalLayout implements View {
 		return button;
 	}
 
-	private ListSelect newSelect(String caption) {
-		ListSelect select = new ListSelect(caption);
+	private ListSelect newSelect() {
+		ListSelect select = new ListSelect();
 		select.setImmediate(true);
 		select.setMultiSelect(true);
 		select.setWidth("130px");
-		select.setHeight("130px");
+		select.setHeight("100px");
 		return select;
 	}
 
@@ -334,12 +329,31 @@ public class TwinSelectView extends HorizontalLayout implements View {
 
 	@Override
 	public void setValue(Collection<String> value) {
-		for (String itemId : value) {
-			if (leftSelect.containsId(itemId)) {
-				leftSelect.select(itemId);
+		if (orderMode) {
+			// In order mode, simply move elements
+			// (don't use move function, or value order
+			// will not be preserved)
+			for (String itemId : value) {
+				if (leftSelect.containsId(itemId)) {
+					leftSelect.removeItem(itemId);
+					rightSelect.addItem(itemId);
+				}
 			}
+			// Notify update
+			@SuppressWarnings("unchecked")
+			Collection<String> itemIds = (Collection<String>) rightSelect
+					.getItemIds();
+			logic.onValueChanged(itemIds);
+		} else {
+			// In non order mode, reuse move function
+			// (so that elements will be sorted)
+			for (String itemId : value) {
+				if (leftSelect.containsId(itemId)) {
+					leftSelect.select(itemId);
+				}
+			}
+			moveSelectedItems(leftSelect, rightSelect);
 		}
-		moveSelectedItems(leftSelect, rightSelect);
 	}
 
 	@Override

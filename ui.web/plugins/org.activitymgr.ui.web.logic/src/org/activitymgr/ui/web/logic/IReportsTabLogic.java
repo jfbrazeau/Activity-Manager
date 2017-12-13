@@ -5,13 +5,17 @@ import java.util.Date;
 
 public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 	
-	String ID = "reports";
+	String ADVANCED_REPORTS_ID = "reports";
 	
+	String MY_REPORTS_ID = "myReports";
+
 	void onIntervalTypeChanged(Object newValue);
 
 	void onIntervalBoundsModeChanged(Object newValue);
 
 	void onIntervalBoundsChanged(Date startDate, Date endDate);
+
+	void onCollaboratorsSelectionModeChanged(Object value);
 
 	void onBrowseTaskButtonCLicked();
 
@@ -23,6 +27,8 @@ public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 
 	public interface View extends ITabLogic.View<IReportsTabLogic> {
 		
+		void initialize(boolean advancedMode);
+
 		void addIntervalTypeRadioButton(Object id, String label);
 		
 		void selectIntervalTypeRadioButton(Object id);
@@ -33,11 +39,17 @@ public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 
 		void setIntervalBoundsModeEnablement(boolean startDateEnablement, boolean endDateEnablement);
 
+		void addCollaboratorsSelectionModeRadioButton(Object id, String label);
+
+		void selectCollaboratorsSelectionModeRadioButton(Object newValue);
+
 		void setIntervalBounds(Date startDate, Date endDate);
 
-		void setColumnSelectionView(ITwinSelectFieldLogic.View view);
-
 		void setCollaboratorsSelectionView(ITwinSelectFieldLogic.View view);
+
+		void setCollaboratorsSelectionUIEnabled(boolean enabled);
+
+		void setColumnSelectionView(ITwinSelectFieldLogic.View view);
 
 		void setTaskScopePath(String path);
 

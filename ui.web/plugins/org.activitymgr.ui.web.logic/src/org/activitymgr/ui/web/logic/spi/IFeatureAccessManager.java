@@ -4,10 +4,10 @@ import org.activitymgr.core.dto.Collaborator;
 
 public interface IFeatureAccessManager {
 	
-	boolean hasAccessToTab(Collaborator collaborator, String tab);
+	boolean hasAccessToTab(Collaborator connected, String tab);
 	
 	/**
-	 * Tells weather a button is enabled for a given connected user when
+	 * Tells whether a button is enabled for a given connected user when
 	 * accessing to a given collaborator's week contributions.
 	 * 
 	 * @param connected

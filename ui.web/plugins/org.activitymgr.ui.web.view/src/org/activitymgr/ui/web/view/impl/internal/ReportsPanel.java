@@ -47,6 +47,8 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 	private CheckBox onlyKeepTasksWithContribsChackbox;
 	private Button decreaseTaskDepthButton;
 	private Button increaseTaskDepthButton;
+	private Label taskDepthLayoutDocLabel;
+	private OptionGroup collaboratorsModeUnitGroup;
 
 	@Inject
 	public ReportsPanel(IResourceCache resourceCache) {
@@ -59,13 +61,18 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		bodyComponent.setSpacing(true);
 		bodyComponent.setWidth("850px");
 		
-		createIntervalConfigurationPanel(bodyComponent);
-		createScopeConfigurationPanel(bodyComponent);
-		createColumnsContentConfigurationPanel(bodyComponent);
-		createRowsContentConfigurationPanel(bodyComponent);
-		createStatusPanel();
-
 		return bodyComponent;
+	}
+
+	@Override
+	public void initialize(boolean advancedMode) {
+		createIntervalConfigurationPanel(bodyComponent);
+		createScopeConfigurationPanel(bodyComponent, advancedMode);
+		createHeaderColumnsContentConfigurationPanel(bodyComponent,
+				advancedMode);
+		createRowsContentConfigurationPanel(bodyComponent,
+				advancedMode);
+		createStatusPanel();
 	}
 
 	private void createIntervalConfigurationPanel(GridLayout gl) {
@@ -115,7 +122,8 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		endDateField.addValueChangeListener(dateBoundsChangeListener);
 	}
 
-	private void createScopeConfigurationPanel(GridLayout gl) {
+	private void createScopeConfigurationPanel(GridLayout gl,
+			boolean advancedMode) {
 		addTitle(gl, "Scope configuration");
 
 		gl.addComponent(new Label("Root task :"));
@@ -129,9 +137,19 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		browseTaskButton.setImmediate(true);
 		rootTaskPanel.addComponent(browseTaskButton);
 
-		gl.addComponent(new Label("Collaborators :"));
+		collaboratorsModeUnitGroup = new OptionGroup();
+		collaboratorsModeUnitGroup.setImmediate(true);
+		collaboratorsModeUnitGroup.setStyleName("horizontal");
+		if (advancedMode) {
+			gl.addComponent(new Label("Collaborators :"));
+			gl.addComponent(collaboratorsModeUnitGroup);
+		}
+
 		selectedCollaboratorsComponent = new Label("");
-		gl.addComponent(selectedCollaboratorsComponent);
+		if (advancedMode) {
+			gl.addComponent(new Label(""));
+			gl.addComponent(selectedCollaboratorsComponent);
+		}
 
 		// Register listeners
 		browseTaskButton.addClickListener(new Button.ClickListener() {
@@ -148,18 +166,30 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 								(String) event.getProperty().getValue());
 					}
 				});
+		collaboratorsModeUnitGroup
+				.addValueChangeListener(new ValueChangeListener() {
+					@Override
+					public void valueChange(ValueChangeEvent event) {
+						getLogic().onCollaboratorsSelectionModeChanged(
+								event.getProperty().getValue());
+					}
+				});
 	}
 
-	private void createColumnsContentConfigurationPanel(GridLayout gl) {
-		addTitle(gl, "Header columns content configuration");
-
-		gl.addComponent(new Label("Fields :"));
+	private void createHeaderColumnsContentConfigurationPanel(GridLayout gl,
+			boolean advancedMode) {
+		if (advancedMode) {
+			addTitle(gl, "Header columns content configuration");
+		}
 		selectedColumnsComponent = new Label("");
-		gl.addComponent(selectedColumnsComponent);
-
+		if (advancedMode) {
+			gl.addComponent(new Label("Fields :"));
+			gl.addComponent(selectedColumnsComponent);
+		}
 	}
 
-	private void createRowsContentConfigurationPanel(GridLayout gl) {
+	private void createRowsContentConfigurationPanel(GridLayout gl,
+			boolean advancedMode) {
 		addTitle(gl, "Rows content configuration");
 
 		gl.addComponent(new Label("Task tree depth :"));
@@ -176,15 +206,17 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		increaseTaskDepthButton = new Button("+");
 		increaseTaskDepthButton.setImmediate(true);
 		taskDepthLayout.addComponent(increaseTaskDepthButton);
-		Label docLabel = new Label(
+		taskDepthLayoutDocLabel = new Label(
 				" (from root ; deeper contributions will be aggregated)");
-		taskDepthLayout.addComponent(docLabel);
-		taskDepthLayout.setComponentAlignment(docLabel, Alignment.MIDDLE_LEFT);
+		taskDepthLayout.addComponent(taskDepthLayoutDocLabel);
+		taskDepthLayout.setComponentAlignment(taskDepthLayoutDocLabel, Alignment.MIDDLE_LEFT);
 
-		gl.addComponent(new Label("Filter empty tasks rows :"));
 		onlyKeepTasksWithContribsChackbox = new CheckBox(
 				"Don't show rows for task that have no contribution");
-		gl.addComponent(onlyKeepTasksWithContribsChackbox);
+		if (advancedMode) {
+			gl.addComponent(new Label("Filter empty tasks rows :"));
+			gl.addComponent(onlyKeepTasksWithContribsChackbox);
+		}
 
 		decreaseTaskDepthButton.addClickListener(new Button.ClickListener() {
 			@Override
@@ -321,6 +353,11 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		intervalBoundsModeGroup.setValue(id);
 	}
 
+	@Override
+	public void addCollaboratorsSelectionModeRadioButton(Object id, String label) {
+		addCheckboxToGroup(collaboratorsModeUnitGroup, id, label);
+	}
+
 	private static void addCheckboxToGroup(OptionGroup group, Object id, String label) {
 		group.addItem(id);
 		group.setItemCaption(id, label);
@@ -369,6 +406,18 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		decreaseTaskDepthButton.setEnabled(enabled);
 		taskDepthTextField.setEnabled(enabled);
 		increaseTaskDepthButton.setEnabled(enabled);
+		taskDepthLayoutDocLabel.setEnabled(enabled);
 		onlyKeepTasksWithContribsChackbox.setEnabled(enabled);
 	}
+
+	@Override
+	public void setCollaboratorsSelectionUIEnabled(boolean enabled) {
+		selectedCollaboratorsComponent.setEnabled(enabled);
+	}
+
+	@Override
+	public void selectCollaboratorsSelectionModeRadioButton(Object newValue) {
+		collaboratorsModeUnitGroup.select(newValue);
+	}
+
 }

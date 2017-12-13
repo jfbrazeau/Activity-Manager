@@ -312,7 +312,6 @@ public class ContributionDAOImpl extends AbstractORMDAOImpl<Contribution> implem
 			if (filterByTaskPath) {
 				request += " join TASK on ctb_task=tsk_id where tsk_path like ? or concat(tsk_path, tsk_number)=?";
 			}
-			System.out.println(request);
 			pStmt = tx().prepareStatement(request);
 			if (filterByTaskPath) {
 				pStmt.setString(1, taskPath + '%');
