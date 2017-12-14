@@ -441,19 +441,10 @@ public class ReportsTabLogicImpl extends
 		for (int i = 0; i < selectedColumns.size(); i++) {
 			selectedColumnIds[i] = selectedColumns.get(i).getId();
 		}
-		boolean includeCollaborators = false;
-		boolean contributorCentricMode = false;
-		// switch (collaboratorsSelectionMode) {
-		// case ME:
-		// includeCollaborators = false;
-		// contributorCentricMode = false;
-		// break;
-		// case ALL_COLLABORATORS:
-		// case SELECT_COLLABORATORS:
-			contributorCentricMode = selectedColumns.get(0).getId().startsWith(COLLABORATOR);
-			includeCollaborators = containsDTOAttribute(selectedColumns,
+		boolean contributorCentricMode = selectedColumns.get(0).getId()
+				.startsWith(COLLABORATOR);
+		boolean includeCollaborators = containsDTOAttribute(selectedColumns,
 					COLLABORATOR);
-		// }
 
 		boolean includeTasks = containsDTOAttribute(selectedColumns, TASK);
 
