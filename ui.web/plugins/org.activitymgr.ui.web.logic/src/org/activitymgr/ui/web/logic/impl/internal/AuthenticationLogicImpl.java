@@ -16,19 +16,27 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 
 	@Inject
 	private IAuthenticatorExtension authenticator;
-	
-	public AuthenticationLogicImpl(ILogic<?> parent) {
+
+	private boolean afterLogout;
+
+	public AuthenticationLogicImpl(ILogic<?> parent, boolean afterLogout) {
 		super(parent);
+		this.afterLogout = afterLogout;
 	}
 
 	@Override
 	public void onViewAttached() {
-		// Init defaults
-		String rememberedLogin = getRoot().getView().getCookie(NAME_COOKIE);
-		if (rememberedLogin != null) {
-			Collaborator collaborator = getModelMgr().getCollaborator(rememberedLogin);
-			if (collaborator != null) {
-				authenticationSuccessfull(collaborator);
+		if (afterLogout) {
+			getRoot().getView().setCookie(NAME_COOKIE, null);
+		} else {
+			// Init defaults
+			String rememberedLogin = getRoot().getView().getCookie(NAME_COOKIE);
+			if (rememberedLogin != null) {
+				Collaborator collaborator = getModelMgr().getCollaborator(
+						rememberedLogin);
+				if (collaborator != null) {
+					authenticationSuccessfull(collaborator);
+				}
 			}
 		}
 	}
@@ -37,10 +45,10 @@ public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLo
 	public void onAuthenticate(String login, String password, boolean rememberMe) {
 		// Cookie management
 		if (rememberMe) {
-			getRoot().getView().setCookie(NAME_COOKIE, login);
+			getRoot().getView().setCookie(AuthenticationLogicImpl.NAME_COOKIE, login);
 		}
 		else {
-			getRoot().getView().removeCookie(NAME_COOKIE);
+			getRoot().getView().removeCookie(AuthenticationLogicImpl.NAME_COOKIE);
 		}
 		// Authentication
 		if (authenticator.authenticate(login, password)) {

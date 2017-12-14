@@ -15,6 +15,7 @@ import org.activitymgr.ui.web.logic.ITabLogic;
 import org.activitymgr.ui.web.logic.ITransactionalWrapperBuilder;
 import org.activitymgr.ui.web.logic.impl.event.ConnectedCollaboratorEvent;
 import org.activitymgr.ui.web.logic.impl.event.EventBusImpl;
+import org.activitymgr.ui.web.logic.impl.event.LogoutEvent;
 import org.activitymgr.ui.web.logic.spi.IFeatureAccessManager;
 import org.activitymgr.ui.web.logic.spi.ITabFactory;
 
@@ -78,10 +79,21 @@ public class RootLogicImpl implements IRootLogic {
 			}
 
 		});
-		// Model manager retrieval
 		// Create authentication logic
-		getView().setContentView(new AuthenticationLogicImpl(this).getView());
+		showAuthenticationUI(false);
 		
+		// Register logout listener
+		eventBus.register(LogoutEvent.class, new IEventListener<LogoutEvent>() {
+			@Override
+			public void handle(LogoutEvent event) {
+				showAuthenticationUI(true);
+			}
+		});
+	}
+
+	private void showAuthenticationUI(boolean afterLogout) {
+		getView().setContentView(
+				new AuthenticationLogicImpl(this, afterLogout).getView());
 	}
 	
 	
