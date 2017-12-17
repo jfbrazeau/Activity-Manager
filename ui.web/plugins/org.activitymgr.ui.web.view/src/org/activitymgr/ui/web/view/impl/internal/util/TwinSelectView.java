@@ -12,8 +12,8 @@ import java.util.Map;
 import org.activitymgr.ui.web.logic.ITwinSelectFieldLogic;
 import org.activitymgr.ui.web.logic.ITwinSelectFieldLogic.View;
 
-import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
@@ -38,6 +38,7 @@ public class TwinSelectView extends HorizontalLayout implements View {
 	private Button moveUpButton;
 	private Button moveDownButton;
 	private boolean orderMode;
+	private boolean logicNotificationEnabled = false;
 
 	public TwinSelectView() {
 		super();
@@ -65,10 +66,10 @@ public class TwinSelectView extends HorizontalLayout implements View {
 		rightSelect = newSelect();
 		addComponent(rightSelect);
 
-		Property.ValueChangeListener listener = new Property.ValueChangeListener() {
+		ValueChangeListener listener = new ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
-				updateButtonsEnablment();
+				updateButtonsEnablement();
 			}
 		};
 		leftSelect.addValueChangeListener(listener);
@@ -138,6 +139,7 @@ public class TwinSelectView extends HorizontalLayout implements View {
 				moveRightSelectItemUpOrDown(itemIdToMove, newIdx);
 			}
 		});
+		logicNotificationEnabled = true;
 	}
 
 	private void moveRightSelectItemUpOrDown(String itemId, int newIdx) {
@@ -148,13 +150,9 @@ public class TwinSelectView extends HorizontalLayout implements View {
 		rightSelect.setItemCaption(itemId, labels.get(itemId));
 
 		// Update buttons
-		updateButtonsEnablment();
+		updateButtonsEnablement();
 
-		// Notify
-		@SuppressWarnings("unchecked")
-		Collection<String> itemIds = (Collection<String>) rightSelect
-				.getItemIds();
-		logic.onValueChanged(itemIds);
+		notifyChangeToLogic();
 	}
 
 	@Override
@@ -175,10 +173,10 @@ public class TwinSelectView extends HorizontalLayout implements View {
 		labels.put(id, label);
 		leftSelect.addItem(id);
 		leftSelect.setItemCaption(id, label);
-		updateButtonsEnablment();
+		updateButtonsEnablement();
 	}
 
-	private void updateButtonsEnablment() {
+	private void updateButtonsEnablement() {
 		List<Object> rightItemIds = new ArrayList<Object>(
 				rightSelect.getItemIds());
 		List<String> rightSelectedItems = getRightSelectedItemIds();
@@ -270,12 +268,8 @@ public class TwinSelectView extends HorizontalLayout implements View {
 			select.setItemCaption(id, labels.get(id));
 		}
 		// Update buttons
-		updateButtonsEnablment();
-		// Notify the logic
-		@SuppressWarnings("unchecked")
-		Collection<String> itemIds = (Collection<String>) rightSelect
-				.getItemIds();
-		logic.onValueChanged(itemIds);
+		updateButtonsEnablement();
+		notifyChangeToLogic();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -311,11 +305,9 @@ public class TwinSelectView extends HorizontalLayout implements View {
 			from.removeItem(itemIdToMove);
 		}
 		// Update buttons
-		updateButtonsEnablment();
+		updateButtonsEnablement();
 		// Notify the logic
-		Collection<String> itemIds = (Collection<String>) rightSelect
-				.getItemIds();
-		logic.onValueChanged(itemIds);
+		notifyChangeToLogic();
 	}
 
 	@Override
@@ -329,30 +321,41 @@ public class TwinSelectView extends HorizontalLayout implements View {
 
 	@Override
 	public void setValue(Collection<String> value) {
-		if (orderMode) {
-			// In order mode, simply move elements
-			// (don't use move function, or value order
-			// will not be preserved)
-			for (String itemId : value) {
-				if (leftSelect.containsId(itemId)) {
-					leftSelect.removeItem(itemId);
-					rightSelect.addItem(itemId);
+		logicNotificationEnabled = false;
+		try {
+			if (orderMode) {
+				// In order mode, simply move elements
+				// (don't use move function, or value order
+				// will not be preserved)
+				for (String itemId : value) {
+					if (leftSelect.containsId(itemId)) {
+						leftSelect.removeItem(itemId);
+						rightSelect.addItem(itemId);
+					}
 				}
+				// Notify update
+				notifyChangeToLogic();
+			} else {
+				// In non order mode, reuse move function
+				// (so that elements will be sorted)
+				for (String itemId : value) {
+					if (leftSelect.containsId(itemId)) {
+						leftSelect.select(itemId);
+					}
+				}
+				moveSelectedItems(leftSelect, rightSelect);
 			}
-			// Notify update
+		} finally {
+			logicNotificationEnabled = true;
+		}
+	}
+
+	private void notifyChangeToLogic() {
+		if (logicNotificationEnabled) {
 			@SuppressWarnings("unchecked")
 			Collection<String> itemIds = (Collection<String>) rightSelect
 					.getItemIds();
 			logic.onValueChanged(itemIds);
-		} else {
-			// In non order mode, reuse move function
-			// (so that elements will be sorted)
-			for (String itemId : value) {
-				if (leftSelect.containsId(itemId)) {
-					leftSelect.select(itemId);
-				}
-			}
-			moveSelectedItems(leftSelect, rightSelect);
 		}
 	}
 

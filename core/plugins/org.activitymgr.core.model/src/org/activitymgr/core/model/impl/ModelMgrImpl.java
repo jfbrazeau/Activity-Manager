@@ -2230,6 +2230,12 @@ public class ModelMgrImpl implements IModelMgr {
 			case DAY:
 				intervalCount = DateHelper.countDaysBetween(start, end);
 			}
+		} else if (intervalCount < 0) {
+			throw new ModelException(
+					"Invalid interval (negative value is not allowed)");
+		} else if (intervalCount == 0) {
+			throw new ModelException(
+					"Invalid interval (null value is not allowed)");
 		}
 		
 		// Compute the report

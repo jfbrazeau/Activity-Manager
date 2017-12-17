@@ -1,5 +1,7 @@
 package org.activitymgr.ui.web.view.impl.internal;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 
 import org.activitymgr.ui.web.logic.IDownloadButtonLogic;
@@ -8,12 +10,13 @@ import org.activitymgr.ui.web.logic.ITwinSelectFieldLogic.View;
 import org.activitymgr.ui.web.view.AbstractTabPanel;
 import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.dialogs.PopupDateFieldWithParser;
+import org.activitymgr.ui.web.view.impl.internal.util.DisableableValueChangeListener;
 
 import com.google.inject.Inject;
-import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -44,11 +47,13 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 	private Image warningIcon;
 	private HorizontalLayout statusLayout;
 	private Button buildReportButton;
-	private CheckBox onlyKeepTasksWithContribsChackbox;
+	private CheckBox onlyKeepTasksWithContribsCheckbox;
 	private Button decreaseTaskDepthButton;
 	private Button increaseTaskDepthButton;
 	private Label taskDepthLayoutDocLabel;
 	private OptionGroup collaboratorsModeUnitGroup;
+	private Label intervalCountLabel;
+	private TextField intervalCountTextField;
 
 	@Inject
 	public ReportsPanel(IResourceCache resourceCache) {
@@ -60,7 +65,7 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		bodyComponent = new GridLayout(2, 16);
 		bodyComponent.setSpacing(true);
 		bodyComponent.setWidth("850px");
-		
+
 		return bodyComponent;
 	}
 
@@ -97,29 +102,54 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		intervalBoundsPanel.addComponent(startDateField);
 		endDateField = newDateField();
 		intervalBoundsPanel.addComponent(endDateField);
-		intervalBoundsPanel.addComponent(new Label("(ignored if automatic mode is selected)"));
+		intervalBoundsPanel
+				.addComponent(new Label("(&nbsp;", ContentMode.HTML));
+		intervalCountTextField = new TextField();
+		intervalCountTextField.setImmediate(true);
+		intervalCountTextField.setWidth("40px");
+		intervalCountTextField.addStyleName("center");
+		intervalBoundsPanel.addComponent(intervalCountTextField);
+		intervalCountLabel = new Label();
+		intervalBoundsPanel.addComponent(new Label("&nbsp;", ContentMode.HTML));
+		intervalBoundsPanel.addComponent(intervalCountLabel);
+		intervalBoundsPanel.addComponent(new Label(")"));
 
 		// Register listeners
-		intervalUnitGroup.addValueChangeListener(new ValueChangeListener() {
+		intervalUnitGroup
+				.addValueChangeListener(new DisableableValueChangeListener() {
 			@Override
-			public void valueChange(ValueChangeEvent event) {
+					public void doValueChange(ValueChangeEvent event) {
 				getLogic().onIntervalTypeChanged(event.getProperty().getValue());
 			}
 		});
-		intervalBoundsModeGroup.addValueChangeListener(new ValueChangeListener() {
+		intervalBoundsModeGroup
+				.addValueChangeListener(new DisableableValueChangeListener() {
 			@Override
-			public void valueChange(ValueChangeEvent event) {
+					public void doValueChange(ValueChangeEvent event) {
 				getLogic().onIntervalBoundsModeChanged(event.getProperty().getValue());
 			}
 		});
-		ValueChangeListener dateBoundsChangeListener = new ValueChangeListener() {
+		ValueChangeListener dateBoundsChangeListener = new DisableableValueChangeListener() {
 			@Override
-			public void valueChange(ValueChangeEvent event) {
+			public void doValueChange(ValueChangeEvent event) {
 				getLogic().onIntervalBoundsChanged(startDateField.getValue(), endDateField.getValue());
 			}
 		};
 		startDateField.addValueChangeListener(dateBoundsChangeListener);
 		endDateField.addValueChangeListener(dateBoundsChangeListener);
+		intervalCountTextField
+				.addValueChangeListener(new DisableableValueChangeListener() {
+					@Override
+					public void doValueChange(ValueChangeEvent event) {
+						try {
+							getLogic().onIntervalCountChanged(
+									Integer.parseInt(intervalCountTextField
+											.getValue()));
+						} catch (NumberFormatException e) {
+							getLogic().onIntervalCountChanged(1);
+						}
+					}
+				});
 	}
 
 	private void createScopeConfigurationPanel(GridLayout gl,
@@ -159,17 +189,17 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 			}
 		});
 		rootTaskTextField
-				.addValueChangeListener(new Property.ValueChangeListener() {
+				.addValueChangeListener(new DisableableValueChangeListener() {
 					@Override
-					public void valueChange(ValueChangeEvent event) {
+					public void doValueChange(ValueChangeEvent event) {
 						getLogic().onTaskScopePathChanged(
 								(String) event.getProperty().getValue());
 					}
 				});
 		collaboratorsModeUnitGroup
-				.addValueChangeListener(new ValueChangeListener() {
+				.addValueChangeListener(new DisableableValueChangeListener() {
 					@Override
-					public void valueChange(ValueChangeEvent event) {
+					public void doValueChange(ValueChangeEvent event) {
 						getLogic().onCollaboratorsSelectionModeChanged(
 								event.getProperty().getValue());
 					}
@@ -211,11 +241,11 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		taskDepthLayout.addComponent(taskDepthLayoutDocLabel);
 		taskDepthLayout.setComponentAlignment(taskDepthLayoutDocLabel, Alignment.MIDDLE_LEFT);
 
-		onlyKeepTasksWithContribsChackbox = new CheckBox(
+		onlyKeepTasksWithContribsCheckbox = new CheckBox(
 				"Don't show rows for task that have no contribution");
 		if (advancedMode) {
 			gl.addComponent(new Label("Filter empty tasks rows :"));
-			gl.addComponent(onlyKeepTasksWithContribsChackbox);
+			gl.addComponent(onlyKeepTasksWithContribsCheckbox);
 		}
 
 		decreaseTaskDepthButton.addClickListener(new Button.ClickListener() {
@@ -225,9 +255,9 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 			}
 		});
 		taskDepthTextField
-				.addValueChangeListener(new Property.ValueChangeListener() {
+				.addValueChangeListener(new DisableableValueChangeListener() {
 					@Override
-					public void valueChange(ValueChangeEvent event) {
+					public void doValueChange(ValueChangeEvent event) {
 						try {
 							getLogic().onTaskTreeDepthChanged(
 									Integer.parseInt(taskDepthTextField
@@ -243,13 +273,13 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 				increaseOrDecreaseTaskTreeDepth(1);
 			}
 		});
-		onlyKeepTasksWithContribsChackbox
-				.addValueChangeListener(new ValueChangeListener() {
+		onlyKeepTasksWithContribsCheckbox
+				.addValueChangeListener(new DisableableValueChangeListener() {
 					@Override
-					public void valueChange(ValueChangeEvent event) {
+					public void doValueChange(ValueChangeEvent event) {
 						getLogic()
 								.onOnlyKeepTaskWithContributionsCheckboxChanged(
-										onlyKeepTasksWithContribsChackbox
+										onlyKeepTasksWithContribsCheckbox
 												.getValue());
 					}
 				});
@@ -340,7 +370,19 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 	
 	@Override
 	public void selectIntervalTypeRadioButton(Object id) {
-		intervalUnitGroup.setValue(id);
+		setFieldValueSilently(intervalUnitGroup, id);
+		updateIntervalCountLabel();
+	}
+
+	private void updateIntervalCountLabel() {
+		boolean plural = false;
+		try {
+			plural = Integer.parseInt(intervalCountTextField.getValue()) > 1;
+		} catch (NumberFormatException ignored) {
+		}
+		intervalCountLabel.setValue(" "
+				+ intervalUnitGroup.getValue().toString().toLowerCase()
+				+ (plural ? "s" : ""));
 	}
 
 	@Override
@@ -350,7 +392,7 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 
 	@Override
 	public void selectIntervalBoundsModeButton(Object id) {
-		intervalBoundsModeGroup.setValue(id);
+		setFieldValueSilently(intervalBoundsModeGroup, id);
 	}
 
 	@Override
@@ -367,22 +409,30 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 	public void setIntervalBoundsModeEnablement(boolean startDateEnablement, boolean endDateEnablement) {
 		startDateField.setEnabled(startDateEnablement);
 		endDateField.setEnabled(endDateEnablement);
+		intervalCountTextField.setEnabled(endDateEnablement);
 	}
  
 	@Override
 	public void setIntervalBounds(Date startDate, Date endDate) {
-		startDateField.setValue(startDate);
-		endDateField.setValue(endDate);
+		setFieldValueSilently(startDateField, startDate);
+		setFieldValueSilently(endDateField, endDate);
+	}
+
+	@Override
+	public void setIntervalCount(int intervalCount) {
+		setFieldValueSilently(intervalCountTextField,
+				String.valueOf(intervalCount));
+		updateIntervalCountLabel();
 	}
 
 	@Override
 	public void setTaskScopePath(String path) {
-		rootTaskTextField.setValue(path);
+		setFieldValueSilently(rootTaskTextField, path);
 	}
 
 	@Override
 	public void setTaskTreeDepth(int i) {
-		taskDepthTextField.setValue(String.valueOf(i));
+		setFieldValueSilently(taskDepthTextField, String.valueOf(i));
 	}
 
 	@Override
@@ -407,7 +457,7 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		taskDepthTextField.setEnabled(enabled);
 		increaseTaskDepthButton.setEnabled(enabled);
 		taskDepthLayoutDocLabel.setEnabled(enabled);
-		onlyKeepTasksWithContribsChackbox.setEnabled(enabled);
+		onlyKeepTasksWithContribsCheckbox.setEnabled(enabled);
 	}
 
 	@Override
@@ -417,7 +467,28 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 
 	@Override
 	public void selectCollaboratorsSelectionModeRadioButton(Object newValue) {
-		collaboratorsModeUnitGroup.select(newValue);
+		setFieldValueSilently(collaboratorsModeUnitGroup, newValue);
+	}
+
+	private <T> void setFieldValueSilently(AbstractField<T> field, T newValue) {
+		Collection<?> listeners = field.getListeners(ValueChangeEvent.class);
+		Collection<DisableableValueChangeListener> disabledListeners = new ArrayList<DisableableValueChangeListener>();
+		try {
+			// Disable listeners
+			for (Object listener : listeners) {
+				if (listener instanceof DisableableValueChangeListener) {
+					DisableableValueChangeListener dListener = (DisableableValueChangeListener) listener;
+					dListener.setEnabled(false);
+					disabledListeners.add(dListener);
+				}
+			}
+			field.setValue(newValue);
+		} finally {
+			// Reanable listeners
+			for (DisableableValueChangeListener disabledListener : disabledListeners) {
+				disabledListener.setEnabled(true);
+			}
+		}
 	}
 
 }

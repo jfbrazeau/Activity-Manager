@@ -18,12 +18,6 @@ public class ReportItem {
 	
 	public ReportItem(Report parent, Collaborator contributor, TaskSums... tasks) {
 		contributionSums = new long[parent.getIntervalCount()];
-//		System.out.print("New item :");
-//		for (TaskSums task : tasks) {
-//			System.out.print('/');
-//			System.out.print(task.getTask().getCode());
-//		}
-//		System.out.println("");
 		if (tasks != null && (tasks.length > parent.getTaskDepth())) {
 			throw new IllegalStateException("Invalid task count, expected : " + parent.getTaskDepth() + ", actual:" + tasks.length);
 		}

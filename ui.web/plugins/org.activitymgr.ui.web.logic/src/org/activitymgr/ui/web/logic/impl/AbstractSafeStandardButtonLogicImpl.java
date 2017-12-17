@@ -8,9 +8,15 @@ public abstract class AbstractSafeStandardButtonLogicImpl extends AbstractLogicI
 
 	public AbstractSafeStandardButtonLogicImpl(ITabLogic<?> parent, String label, String iconId, String shortcutKey) {
 		super(parent);
-		getView().setIcon(iconId);
-		getView().setDescription(label + (shortcutKey != null ? " <em>"
-				+ shortcutKey + "</em>" : ""));
+		if (iconId != null) {
+			getView().setIcon(iconId);
+		}
+		if (label != null) {
+			getView().setDescription(
+					label
+							+ (shortcutKey != null ? " <em>" + shortcutKey
+									+ "</em>" : ""));
+		}
 		if (shortcutKey != null) {
 			KeyBinding kb = new KeyBinding(shortcutKey);
 			getView().setShortcut(kb.getKey(), kb.isCtrl(), kb.isShift(), kb.isAlt());

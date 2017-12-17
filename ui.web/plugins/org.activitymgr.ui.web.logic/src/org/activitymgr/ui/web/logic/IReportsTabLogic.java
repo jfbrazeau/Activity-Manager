@@ -25,6 +25,8 @@ public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 
 	void onOnlyKeepTaskWithContributionsCheckboxChanged(boolean value);
 
+	void onIntervalCountChanged(int intervalCount);
+
 	public interface View extends ITabLogic.View<IReportsTabLogic> {
 		
 		void initialize(boolean advancedMode);
@@ -44,6 +46,8 @@ public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 		void selectCollaboratorsSelectionModeRadioButton(Object newValue);
 
 		void setIntervalBounds(Date startDate, Date endDate);
+
+		void setIntervalCount(int intervalCount);
 
 		void setCollaboratorsSelectionView(ITwinSelectFieldLogic.View view);
 

@@ -16,7 +16,7 @@ public abstract class AbstractTabLogicImpl<VIEW extends ITabLogic.View<?>> exten
 	@SuppressWarnings("unchecked")
 	protected <TABLOGIC extends ITabLogic<VIEW>> void registerButtons(Set<ITabButtonFactory<TABLOGIC>> buttonFactories) {
 		AbstractSafeStandardButtonLogicImpl logoutButtonLogic = new AbstractSafeStandardButtonLogicImpl(
-				this, null, "quit",
+				this, "logout", "quit",
 				null) {
 			@Override
 			protected void unsafeOnClick() throws Exception {
