@@ -1,17 +1,17 @@
 package org.activitymgr.ui.web.view.impl.internal.vaadin;
 
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 
+import org.activitymgr.ui.web.view.impl.internal.ViewModule;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.ILog;
@@ -22,14 +22,17 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.http.HttpContext;
 import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
 import com.google.gwt.dev.util.collect.HashSet;
-import com.vaadin.server.VaadinServlet;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.util.Modules;
 
 @SuppressWarnings("rawtypes")
 public class Activator implements BundleActivator, ServiceTrackerCustomizer {
@@ -58,7 +61,10 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer {
 
 	private static Activator singleton = null;
 	
+	private Injector injector;
+
 	public Activator() {
+		// Save singleton
 		singleton = this;
 	}
 	
@@ -122,6 +128,20 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer {
 
 
 	private void init() {
+		List<AbstractModule> modules = new ArrayList<AbstractModule>();
+		IConfigurationElement[] cfgs = getExtensionRegistryService().getConfigurationElementsFor("org.activitymgr.ui.web.logic.additionalModules");
+		for (IConfigurationElement cfg : cfgs) {
+			try {
+				modules.add((AbstractModule) cfg.createExecutableExtension("class"));
+			} catch (CoreException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+		// Activity Manager module can be overriden
+		Module module = Modules.override(new ViewModule()).with(modules);
+		// Injector creation
+		injector = Guice.createInjector(module);
+
 		Properties props = new Properties();
 		props.put(PRODUCTION_MODE_PARAM,
 				"true");
@@ -138,12 +158,11 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer {
 		}
 		
 		// Register application bundle
-		final long start = System.currentTimeMillis();
 		Exception exception = null;
 		try {
 			httpService.registerServlet(
 					"/",
-					new VaadinServlet(),
+					new ActivityMgrServlet(),
 					props,
 					new OSGiUIHttpContext(httpService
 							.createDefaultHttpContext(), resourceProviderBundles));
@@ -173,6 +192,10 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer {
 		ILog log = Platform.getLog(context.getBundle());
 		log.log(new Status(IStatus.WARNING, BUNDLE_ID, message));
 
+	}
+
+	public Injector getInjector() {
+		return injector;
 	}
 
 }

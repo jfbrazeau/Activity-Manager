@@ -2260,6 +2260,10 @@ public class ModelMgrImpl implements IModelMgr {
 		List<IReportColumnComputer> columns = new ArrayList<IReportColumnComputer>();
 		int taskFields = 0;
 		List<String> collaboratorFields = new ArrayList<String>();
+		if (columnIds == null) {
+			columnIds = new String[] { "task.path", "task.name",
+					"collaborator.login" };
+		}
 		for (String columnId : columnIds) {
 			IReportColumnComputer column = reportColumnComputers.get(columnId);
 			if (column == null) {

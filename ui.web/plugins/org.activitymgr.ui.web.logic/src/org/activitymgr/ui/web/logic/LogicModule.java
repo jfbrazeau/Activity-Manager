@@ -28,6 +28,7 @@ import org.activitymgr.ui.web.logic.impl.internal.NewContributionTaskButtonLogic
 import org.activitymgr.ui.web.logic.impl.internal.ReportsTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.internal.TasksTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.internal.ThreadLocalizedDbTransactionProviderImpl;
+import org.activitymgr.ui.web.logic.impl.internal.services.RESTServicesModule;
 import org.activitymgr.ui.web.logic.spi.IAuthenticatorExtension;
 import org.activitymgr.ui.web.logic.spi.ICollaboratorsCellLogicFactory;
 import org.activitymgr.ui.web.logic.spi.IContributionsCellLogicFactory;
@@ -108,6 +109,9 @@ public class LogicModule extends AbstractModule {
 		bind(IContributionsCellLogicFactory.class).toInstance(new ContributionsCellLogicFatory());
 		bind(ITasksCellLogicFactory.class).toInstance(new TasksCellLogicFatory());
 		
+		// Install REST services
+		install(new RESTServicesModule());
+
 		// Bind tabs
 		Multibinder<ITabFactory> tabsBinder = Multibinder.newSetBinder(binder(), ITabFactory.class);
 		tabsBinder.addBinding().toInstance(new ITabFactory() {
@@ -199,6 +203,7 @@ public class LogicModule extends AbstractModule {
 		// Bind constraints validator
 		Multibinder<IConstraintsValidator> cvBinder = Multibinder.newSetBinder(binder(), new TypeLiteral<IConstraintsValidator>() {});
 		cvBinder.addBinding().to(DefaultConstraintsValidator.class);
+
 	}
 
 	private boolean attempToLoadConfiguration(Properties props, File cfgFolder) {
