@@ -12,7 +12,7 @@ import com.google.inject.Inject;
 
 public class AuthenticationLogicImpl extends AbstractLogicImpl<IAuthenticationLogic.View> implements IAuthenticationLogic {
 	
-	private static final String NAME_COOKIE = "name";
+	public static final String NAME_COOKIE = "name";
 
 	@Inject
 	private IAuthenticatorExtension authenticator;

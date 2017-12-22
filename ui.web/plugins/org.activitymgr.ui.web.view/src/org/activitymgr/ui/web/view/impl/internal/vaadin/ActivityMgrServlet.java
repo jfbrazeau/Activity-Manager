@@ -1,6 +1,7 @@
 package org.activitymgr.ui.web.view.impl.internal.vaadin;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -8,6 +9,7 @@ import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -51,7 +53,25 @@ final class ActivityMgrServlet extends VaadinServlet {
 			String servicePath = uri.substring("/service".length());
 			IRESTServiceLogic serviceLogic = serviceLogicsMap.get(servicePath);
 			if (serviceLogic != null) {
-				serviceLogic.service(new IRESTServiceLogic.Parameters() {
+				serviceLogic.service(new IRESTServiceLogic.Request() {
+
+					@Override
+					public String getCookie(String name) {
+						if (name != null) {
+							for (Cookie cookie : request.getCookies()) {
+								if (name.equals(cookie.getName())) {
+									return cookie.getValue();
+								}
+							}
+						}
+						return null;
+					}
+
+					@Override
+					public String getHeader(String name) {
+						return request.getHeader(name);
+					}
+
 					@Override
 					public String getParameter(String name) {
 						return request.getParameter(name);
@@ -69,7 +89,36 @@ final class ActivityMgrServlet extends VaadinServlet {
 						}
 						return result;
 					}
-				}, res.getOutputStream());
+				}, new IRESTServiceLogic.Response() {
+					private String contentType;
+
+					@Override
+					public void setContentType(String contentType) {
+						this.contentType = contentType;
+						response.setHeader("Content-type", contentType);
+					}
+
+					@Override
+					public void sendError(int sc, String msg)
+							throws IOException {
+						response.sendError(sc, msg);
+					}
+
+					@Override
+					public OutputStream getOutputStream() throws IOException {
+						return response.getOutputStream();
+					}
+
+					@Override
+					public String getContentType() {
+						return contentType;
+					}
+
+					@Override
+					public void addHeader(String name, String value) {
+						response.addHeader(name, value);
+					}
+				});
 			} else {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			}

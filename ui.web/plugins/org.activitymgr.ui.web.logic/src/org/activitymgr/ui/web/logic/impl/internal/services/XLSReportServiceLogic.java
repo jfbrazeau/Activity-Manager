@@ -1,7 +1,6 @@
 package org.activitymgr.ui.web.logic.impl.internal.services;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -25,13 +24,12 @@ public class XLSReportServiceLogic extends AbstractServiceLogic {
 	}
 
 	@Override
-	public String getContentType() {
-		return "application/vnd.ms-excel";
-	}
-
-	@Override
-	protected void doService(Parameters parameters, OutputStream response)
+	protected void doService(Request parameters, Response response)
 			throws ModelException, IOException {
+		response.setContentType("application/vnd.ms-excel");
+		response.addHeader("Content-Disposition",
+				"attachment; filename=MyFileName.xls");
+
 		Calendar start = null;
 		String startParam = parameters.getParameter("start");
 		if (startParam != null) {
@@ -95,7 +93,7 @@ public class XLSReportServiceLogic extends AbstractServiceLogic {
 				rootTaskId, taskDepth, onlyKeepTasksWithContributions,
 				byContributor, contributorCentricMode, contributorIds,
 				columnIds, false);
-		xls.write(response);
+		xls.write(response.getOutputStream());
 	}
 
 }

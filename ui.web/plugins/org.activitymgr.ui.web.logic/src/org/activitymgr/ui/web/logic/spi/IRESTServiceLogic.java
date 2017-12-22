@@ -5,7 +5,11 @@ import java.io.OutputStream;
 
 public interface IRESTServiceLogic {
 
-	interface Parameters {
+	interface Request {
+
+		String getHeader(String name);
+
+		String getCookie(String name);
 
 		String getParameter(String name);
 
@@ -13,11 +17,23 @@ public interface IRESTServiceLogic {
 
 	}
 
-	String getContentType();
+	interface Response {
+
+		void setContentType(String contentType);
+
+		String getContentType();
+
+		void addHeader(String name, String value);
+
+		void sendError(int sc, String msg) throws IOException;
+
+		OutputStream getOutputStream() throws IOException;
+
+	}
 
 	String getPath();
 
-	void service(Parameters parameters, OutputStream response)
+	void service(Request request, Response response)
 			throws IOException;
 
 }
