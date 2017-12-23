@@ -285,8 +285,9 @@ public class ReportsTabLogicImpl extends
 			public void taskSelected(long taskId) {
 				Task task = getModelMgr().getTask(taskId);
 				try {
-					getView().setTaskScopePath(
-							getModelMgr().getTaskCodePath(task));
+					String taskCodePath = getModelMgr().getTaskCodePath(task);
+					ReportsTabLogicImpl.this.taskScopePath = taskCodePath;
+					getView().setTaskScopePath(taskCodePath);
 				} catch (ModelException e) {
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
 					e.printStackTrace(new PrintWriter(out));
@@ -463,7 +464,8 @@ public class ReportsTabLogicImpl extends
 		for (int i = 0; i < selectedColumns.size(); i++) {
 			selectedColumnIds[i] = selectedColumns.get(i).getId();
 		}
-		boolean contributorCentricMode = selectedColumns.get(0).getId()
+		boolean contributorCentricMode = selectedColumns.size() > 0
+				&& selectedColumns.get(0).getId()
 				.startsWith(COLLABORATOR);
 		boolean includeCollaborators = containsDTOAttribute(selectedColumns,
 					COLLABORATOR);
