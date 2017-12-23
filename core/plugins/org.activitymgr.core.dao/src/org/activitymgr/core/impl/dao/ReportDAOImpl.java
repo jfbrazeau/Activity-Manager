@@ -393,7 +393,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 
 			// Empty rows may have to be added at the end of the report (only in task centric mode or equivalent) 
 			if (!onlyKeepTasksWithContributions && byActivity
-					&& !contributorCentricMode || !byContributor) {
+					&& (!contributorCentricMode || !byContributor)) {
 				while (++orderedTaskIndex < orderedTasks.size()) {
 					TaskSums cursor = orderedTasks.get(orderedTaskIndex);
 					if (cursor.isLeaf()) {
