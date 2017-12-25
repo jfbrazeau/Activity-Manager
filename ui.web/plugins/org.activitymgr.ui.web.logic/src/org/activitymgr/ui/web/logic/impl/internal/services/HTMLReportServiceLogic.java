@@ -30,10 +30,10 @@ public class HTMLReportServiceLogic extends AbstractReportServiceLogic {
 		pw.println("<body>");
 		pw.println("<table border='1' cellspacing='0' cellpadding='0'>");
 		Sheet sheet = report.getSheetAt(0);
-		for (int r = 0; r<sheet.getLastRowNum(); r++) {
+		for (int r = 0; r <= sheet.getLastRowNum(); r++) {
 			Row row = sheet.getRow(r);
 			pw.println("<tr>");
-			for (int c=0; c<row.getLastCellNum(); c++) {
+			for (int c = 0; c < row.getLastCellNum(); c++) {
 				Cell cell = row.getCell(c);
 				CellStyle style = cell.getCellStyle();
 				pw.print("  <td");
@@ -75,7 +75,12 @@ public class HTMLReportServiceLogic extends AbstractReportServiceLogic {
 					pw.print(String.valueOf(cell.getNumericCellValue()));
 					break;
 				case Cell.CELL_TYPE_STRING:
-					pw.print(cell.getStringCellValue());
+					String str = cell.getStringCellValue();
+					if (str != null) {
+						str = str.replaceAll("<", "&lt;");
+						str = str.replaceAll(">", "&gt;");
+					}
+					pw.print(str);
 				}
 				pw.println("</td>");
 			}
