@@ -39,6 +39,7 @@ public class WorkbookBuilder {
 	private Workbook workbook = new HSSFWorkbook();
 	private CellStyle headerCellStyle;
 	private CellStyle bodyCellStyle;
+	private CellStyle bodyRightAlignmentCellStyle;
 	
 	public WorkbookBuilder() {
 		// Création du style de l'entête
@@ -50,13 +51,18 @@ public class WorkbookBuilder {
 		headerCellStyle.setBorderLeft(headerCellStyle.getBorderBottom());
 		headerCellStyle.setBorderRight(headerCellStyle.getBorderBottom());
 		headerCellStyle.setBorderTop(headerCellStyle.getBorderBottom());
-		//headerCellStyle.setWrapText(true);
+
 		// Création du style des cellules
 		bodyCellStyle = workbook.createCellStyle();
 		bodyCellStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
 		bodyCellStyle.setBorderLeft(bodyCellStyle.getBorderBottom());
 		bodyCellStyle.setBorderRight(bodyCellStyle.getBorderBottom());
 		bodyCellStyle.setBorderTop(bodyCellStyle.getBorderBottom());
+
+		// Création du style des cellules alignées à gauche
+		bodyRightAlignmentCellStyle = workbook.createCellStyle();
+		bodyRightAlignmentCellStyle.cloneStyleFrom(bodyCellStyle);
+		bodyRightAlignmentCellStyle.setAlignment(CellStyle.ALIGN_RIGHT);
 	}
 	
 	public Workbook getWorkbook() {
@@ -78,6 +84,11 @@ public class WorkbookBuilder {
 
 	public Cell asBodyCellStyl(Cell cell) {
 		cell.setCellStyle(bodyCellStyle);
+		return cell;
+	}
+
+	public Cell asBodyRightAlignmentCellStyl(Cell cell) {
+		cell.setCellStyle(bodyRightAlignmentCellStyle);
 		return cell;
 	}
 

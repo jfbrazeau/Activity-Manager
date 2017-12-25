@@ -2,10 +2,13 @@ package org.activitymgr.ui.web.logic.spi;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Enumeration;
 
 public interface IRESTServiceLogic {
 
 	interface Request {
+
+		Enumeration<String> getParameterNames();
 
 		String getHeader(String name);
 

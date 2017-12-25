@@ -27,6 +27,8 @@ public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 
 	void onIntervalCountChanged(int intervalCount);
 
+	void onBuildHtmlReportButtonClicked();
+
 	public interface View extends ITabLogic.View<IReportsTabLogic> {
 		
 		void initialize(boolean advancedMode);
@@ -60,8 +62,6 @@ public interface IReportsTabLogic extends ITabLogic<IReportsTabLogic.View> {
 		void setTaskTreeDepth(int i);
 
 		void setBuildReportButtonView(IDownloadButtonLogic.View view);
-
-		void setBuildReportButtonEnabled(boolean b);
 
 		void setErrorMessage(String message);
 

@@ -331,6 +331,7 @@ public class TwinSelectView extends HorizontalLayout implements View {
 					if (leftSelect.containsId(itemId)) {
 						leftSelect.removeItem(itemId);
 						rightSelect.addItem(itemId);
+						rightSelect.setItemCaption(itemId, labels.get(itemId));
 					}
 				}
 				// Notify update

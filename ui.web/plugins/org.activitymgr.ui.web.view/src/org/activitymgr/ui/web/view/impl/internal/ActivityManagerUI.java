@@ -99,5 +99,9 @@ public class ActivityManagerUI extends UI implements IRootLogic.View {
 		addWindow((Window) view);
 
 	}
-	
+
+	@Override
+	public void openExternalUrl(String url) {
+		getUI().getPage().open(url, "_blank");
+	}
 }

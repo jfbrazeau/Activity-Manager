@@ -13,7 +13,11 @@ public class RESTServicesModule extends AbstractModule {
 		// Bind rest services
 		Multibinder<IRESTServiceLogic> restBinder = Multibinder.newSetBinder(
 				binder(), IRESTServiceLogic.class);
+		restBinder.addBinding().to(LoadingWrapperServiceLogic.class)
+				.in(Singleton.class);
 		restBinder.addBinding().to(XLSReportServiceLogic.class)
+				.in(Singleton.class);
+		restBinder.addBinding().to(HTMLReportServiceLogic.class)
 				.in(Singleton.class);
 	}
 

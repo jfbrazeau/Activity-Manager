@@ -6,6 +6,7 @@ import org.activitymgr.ui.web.logic.ICollaboratorsTabLogic;
 import org.activitymgr.ui.web.logic.IContributionTaskChooserLogic;
 import org.activitymgr.ui.web.logic.IContributionsTabLogic;
 import org.activitymgr.ui.web.logic.IDownloadButtonLogic;
+import org.activitymgr.ui.web.logic.IExternalContentDialogLogic;
 import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILinkLogic;
 import org.activitymgr.ui.web.logic.IReportsTabLogic;
@@ -18,6 +19,7 @@ import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.ITwinSelectFieldLogic;
 import org.activitymgr.ui.web.logic.LogicModule;
 import org.activitymgr.ui.web.view.IResourceCache;
+import org.activitymgr.ui.web.view.impl.dialogs.ExternalContentDialog;
 import org.activitymgr.ui.web.view.impl.dialogs.TaskChooserDialog;
 import org.activitymgr.ui.web.view.impl.internal.util.CheckBoxView;
 import org.activitymgr.ui.web.view.impl.internal.util.DownloadButtonView;
@@ -61,6 +63,8 @@ public class ViewModule extends AbstractModule {
 		bind(IDownloadButtonLogic.View.class).to(DownloadButtonView.class);
 		bind(ISelectFieldLogic.View.class).to(SelectFieldView.class);
 		bind(ITwinSelectFieldLogic.View.class).to(TwinSelectView.class);
+		bind(IExternalContentDialogLogic.View.class).to(
+				ExternalContentDialog.class);
 	}
 
 }

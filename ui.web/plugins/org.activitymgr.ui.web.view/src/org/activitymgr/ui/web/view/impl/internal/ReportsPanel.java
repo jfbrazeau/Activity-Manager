@@ -20,6 +20,7 @@ import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
@@ -46,7 +47,6 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 	private Label statusLabel;
 	private Image warningIcon;
 	private HorizontalLayout statusLayout;
-	private Button buildReportButton;
 	private CheckBox onlyKeepTasksWithContribsCheckbox;
 	private Button decreaseTaskDepthButton;
 	private Button increaseTaskDepthButton;
@@ -62,10 +62,12 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 
 	@Override
 	protected Component createBodyComponent() {
+		// Left panel
 		bodyComponent = new GridLayout(2, 16);
 		bodyComponent.setSpacing(true);
-		bodyComponent.setWidth("850px");
-
+		bodyComponent.setWidth("650px");
+		bodyComponent.setColumnExpandRatio(0, 30);
+		bodyComponent.setColumnExpandRatio(0, 70);
 		return bodyComponent;
 	}
 
@@ -77,7 +79,7 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 				advancedMode);
 		createRowsContentConfigurationPanel(bodyComponent,
 				advancedMode);
-		createStatusPanel();
+		createStatusPanel(bodyComponent);
 	}
 
 	private void createIntervalConfigurationPanel(GridLayout gl) {
@@ -285,10 +287,12 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 				});
 	}
 
-	private void createStatusPanel() {
-		bodyComponent.addComponent(new Label("")); // Empty cell
+	private void createStatusPanel(GridLayout gl) {
+		gl.addComponent(new Label("")); // Empty cell
 		statusLayout = new HorizontalLayout();
-		bodyComponent.addComponent(statusLayout); // Empty cell
+		Button htmlPreviewReportButton = new Button("Preview (html)");
+		statusLayout.addComponent(htmlPreviewReportButton);
+		gl.addComponent(statusLayout);
 		warningIcon = new Image(null, getResourceCache().getResource(
 				"warning.gif"));
 		statusLayout.addComponent(warningIcon);
@@ -297,6 +301,13 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		statusLabel = new Label("");
 		statusLayout.addComponent(statusLabel);
 		statusLayout.setComponentAlignment(statusLabel, Alignment.MIDDLE_RIGHT);
+
+		htmlPreviewReportButton.addClickListener(new ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				getLogic().onBuildHtmlReportButtonClicked();
+			}
+		});
 	}
 
 	private void increaseOrDecreaseTaskTreeDepth(int amount) {
@@ -325,8 +336,7 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 
 	@Override
 	public void setBuildReportButtonView(IDownloadButtonLogic.View view) {
-		buildReportButton = (Button) view;
-		statusLayout.addComponent(buildReportButton, 0);
+		statusLayout.addComponent((Button) view, 0);
 	}
 
 	private void substituteBodyComponent(Component componentToSubstitute,
@@ -339,9 +349,14 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 	}
 
 	private void addTitle(GridLayout gl, String caption) {
+		Label label = newTitleLabel(caption);
+		addComponentWithHorizontalSpan(gl, label);
+	}
+
+	private Label newTitleLabel(String caption) {
 		Label label = new Label("<b>" + caption + "</b><hr>", ContentMode.HTML);
 		label.setWidth("100%");
-		addComponentWithHorizontalSpan(gl, label);
+		return label;
 	}
 
 	private void addComponentWithHorizontalSpan(GridLayout gl,
@@ -433,11 +448,6 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 	@Override
 	public void setTaskTreeDepth(int i) {
 		setFieldValueSilently(taskDepthTextField, String.valueOf(i));
-	}
-
-	@Override
-	public void setBuildReportButtonEnabled(boolean enabled) {
-		buildReportButton.setEnabled(enabled);
 	}
 
 	@Override

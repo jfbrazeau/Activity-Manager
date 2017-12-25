@@ -2,6 +2,9 @@ package org.activitymgr.ui.web.logic.impl.internal;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -28,6 +31,8 @@ import org.activitymgr.ui.web.logic.impl.AbstractSafeDownloadButtonLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTwinSelectFieldLogic;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTwinSelectFieldLogic.IDTOInfosProvider;
 import org.activitymgr.ui.web.logic.impl.AbstractTabLogicImpl;
+import org.activitymgr.ui.web.logic.impl.ExternalContentDialogLogicImpl;
+import org.activitymgr.ui.web.logic.impl.internal.services.AbstractReportServiceLogic;
 import org.activitymgr.ui.web.logic.spi.ITabButtonFactory;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -92,7 +97,7 @@ public class ReportsTabLogicImpl extends
 	
 	private int intervalCount;
 
-	private String taskScopePath;
+	private String taskScopePath = "";
 
 	private ReportCollaboratorsSelectionMode collaboratorsSelectionMode;
 
@@ -108,8 +113,14 @@ public class ReportsTabLogicImpl extends
 
 	private String tabLabel;
 
+	private AbstractSafeDownloadButtonLogicImpl downloadReportButtonLogic;
+
+	private boolean advancedMode;
+
 	public ReportsTabLogicImpl(ITabFolderLogic parent, boolean advancedMode) {
 		super(parent);
+		this.advancedMode = advancedMode;
+
 		// Global initializations
 		onlyKeepTaskWithContributions = !advancedMode; // in basic mode, only
 														// keep non empty tasks
@@ -195,36 +206,27 @@ public class ReportsTabLogicImpl extends
 		} catch (ReflectiveOperationException e) {
 			throw new IllegalStateException(e);
 		}
+		downloadReportButtonLogic = new AbstractSafeDownloadButtonLogicImpl(
+				this, "Build report",
+				null, null) {
+			@Override
+			protected byte[] unsafeGetContent() throws Exception {
+				Workbook report = buildReport(false);
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				report.write(out);
+				return out.toByteArray();
+			}
+
+			@Override
+			protected String unsafeGetFileName() throws Exception {
+				SimpleDateFormat sdf = new SimpleDateFormat(
+						"yyyyMMdd-HHmmss-SSS");
+				return "am-report-" + sdf.format(new Date()) + ".xls";
+			}
+
+		};
 		getView().setBuildReportButtonView(
-				new AbstractSafeDownloadButtonLogicImpl(this, "Build report",
-						null, null) {
-					@Override
-					protected byte[] unsafeGetContent() throws Exception {
-						Workbook report = buildReport(false);
-						ByteArrayOutputStream out = new ByteArrayOutputStream();
-						report.write(out);
-						return out.toByteArray();
-					}
-
-					@Override
-					protected String unsafeGetFileName() throws Exception {
-						SimpleDateFormat sdf = new SimpleDateFormat(
-								"yyyyMMdd-HHmmss-SSS");
-						String name = "am-report-" + sdf.format(new Date());
-						switch (collaboratorsSelectionMode) {
-						case ME:
-							name += "-"
-									+ getContext().getConnectedCollaborator()
-											.getLogin();
-							break;
-						case ALL_COLLABORATORS:
-							name += "-all";
-						case SELECT_COLLABORATORS:
-						}
-						return name + ".xls";
-					}
-
-				}.getView());
+				downloadReportButtonLogic.getView());
 		updateUI();
 	}
 
@@ -343,6 +345,91 @@ public class ReportsTabLogicImpl extends
 		updateUI();
 	}
 
+	@Override
+	public void onBuildHtmlReportButtonClicked() {
+		StringWriter url = new StringWriter();
+		url.append("/service/load");
+		appendUrlParam(url, true, "service", "/service/report/html");
+		appendUrlParam(url,
+				AbstractReportServiceLogic.INTERVAL_TYPE_PARAMETER,
+				intervalType.toString());
+		appendUrlParam(url, AbstractReportServiceLogic.START_PARAMETER,
+				new SimpleDateFormat("yyyyMMdd").format(start.getTime()));
+		appendUrlParam(url,
+				AbstractReportServiceLogic.INTERVAL_COUNT_PARAMETER,
+				intervalCount);
+		appendUrlParam(url, AbstractReportServiceLogic.ROOT_TASK_PARAMETER,
+				taskScopePath);
+		if (advancedMode) {
+			switch (collaboratorsSelectionMode) {
+			case ME:
+				appendUrlParam(url,
+						AbstractReportServiceLogic.CONTRIBUTOR_IDS_PARAMETERS,
+						getContext().getConnectedCollaborator().getId());
+			case ALL_COLLABORATORS:
+				appendUrlParam(url,
+						AbstractReportServiceLogic.CONTRIBUTOR_IDS_PARAMETERS,
+						"*");
+			case SELECT_COLLABORATORS:
+				List<Collaborator> selectedCollaborators = collaboratorsSelectionLogic
+						.getValue();
+				Object[] contributorIds = new Object[selectedCollaborators
+						.size()];
+				int idx = 0;
+				for (Collaborator selectedCollaborator : selectedCollaborators) {
+					contributorIds[idx++] = selectedCollaborator.getId();
+				}
+				appendUrlParam(url,
+						AbstractReportServiceLogic.CONTRIBUTOR_IDS_PARAMETERS,
+						contributorIds);
+			}
+			List<DTOAttribute> selectedAttributes = columnsSelectionLogic
+					.getValue();
+			Object[] columnIds = new String[selectedAttributes.size()];
+			int idx = 0;
+			for (DTOAttribute selectedAttribute : selectedAttributes) {
+				columnIds[idx++] = selectedAttribute.getId();
+			}
+			appendUrlParam(url,
+					AbstractReportServiceLogic.COLUMN_IDS_PARAMETER, columnIds);
+		}
+		appendUrlParam(url, AbstractReportServiceLogic.TASK_DEPTH_PARAMETER,
+				taskTreeDepth);
+		if (advancedMode) {
+			appendUrlParam(
+					url,
+					AbstractReportServiceLogic.ONLY_KEEP_TASKS_WITH_CONTRIBUTIONS_PARAMETER,
+					onlyKeepTaskWithContributions);
+		}
+		ExternalContentDialogLogicImpl popup = new ExternalContentDialogLogicImpl(
+				this, "Preview", url.toString());
+		getRoot().getView().openWindow(popup.getView());
+	}
+
+	private static void appendUrlParam(StringWriter sw, String param,
+			Object... values) {
+		appendUrlParam(sw, false, param, values);
+	}
+
+	private static void appendUrlParam(StringWriter sw, boolean first,
+			String param, Object... values) {
+		try {
+			sw.append(first ? "?" : "&");
+			sw.append(param);
+			sw.append("=");
+			boolean firstValue = true;
+			for (Object value : values) {
+				if (!firstValue) {
+					sw.append(",");
+				}
+				sw.append(URLEncoder.encode(String.valueOf(value), "UTF-8"));
+				firstValue = false;
+			}
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
 	void updateUI() {
 		getView().setErrorMessage("");
 		// Update interval type & bounds
@@ -440,9 +527,9 @@ public class ReportsTabLogicImpl extends
 
 		try {
 			buildReport(true);
-			getView().setBuildReportButtonEnabled(true);
+			downloadReportButtonLogic.getView().setEnabled(true);
 		} catch (ModelException e) {
-			getView().setBuildReportButtonEnabled(false);
+			downloadReportButtonLogic.getView().setEnabled(false);
 			getView().setErrorMessage(e.getMessage());
 		}
 	}

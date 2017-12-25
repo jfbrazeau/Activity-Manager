@@ -2389,6 +2389,7 @@ public class ModelMgrImpl implements IModelMgr {
 					}
 					else if (cellValue instanceof Double) {
 						cell.setCellValue((Double) cellValue);
+						wb.asBodyRightAlignmentCellStyl(cell);
 					}
 					else if (cellValue instanceof Boolean) {
 						cell.setCellValue((Boolean) cellValue);
@@ -2403,6 +2404,7 @@ public class ModelMgrImpl implements IModelMgr {
 				Cell cell = wb.asBodyCellStyl(row.createCell(colIdx++));
 				if (contributionSum > 0) {
 					cell.setCellValue(contributionSum/100d);
+					wb.asBodyRightAlignmentCellStyl(cell);
 				}
 			}
 			lastItem = item;

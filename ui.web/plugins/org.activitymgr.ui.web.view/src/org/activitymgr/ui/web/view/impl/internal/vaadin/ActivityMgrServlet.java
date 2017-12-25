@@ -2,6 +2,7 @@ package org.activitymgr.ui.web.view.impl.internal.vaadin;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +40,6 @@ final class ActivityMgrServlet extends VaadinServlet {
 			}
 			serviceLogicsMap.put(path, serviceLogic);
 		}
-		System.out.println(serviceLogics);
 	}
 
 	@Override
@@ -54,6 +54,10 @@ final class ActivityMgrServlet extends VaadinServlet {
 			IRESTServiceLogic serviceLogic = serviceLogicsMap.get(servicePath);
 			if (serviceLogic != null) {
 				serviceLogic.service(new IRESTServiceLogic.Request() {
+					@Override
+					public Enumeration<String> getParameterNames() {
+						return request.getParameterNames();
+					}
 
 					@Override
 					public String getCookie(String name) {
