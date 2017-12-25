@@ -19,7 +19,6 @@ public class TaskPathReportColumnComputer extends IReportColumnComputer.Impl {
 		for (Task cursor : item.getTasks()) {
 			sw.append('/').append(cursor.getCode());
 		}
-		sw.append('/').append(item.getContributedTask().getTask().getCode());
 		return sw.toString();
 	}
 

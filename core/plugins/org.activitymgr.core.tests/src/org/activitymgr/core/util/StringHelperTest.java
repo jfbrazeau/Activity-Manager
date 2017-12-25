@@ -114,8 +114,9 @@ public class StringHelperTest extends TestCase {
 		}
 	}
 	public void testBase32Overflow() {
+		StringHelper.toBase32(1023); // No overflow
 		try {
-			StringHelper.toBase32(1024);
+			StringHelper.toBase32(1024); // Overflow
 			fail("Illegal argument exception should have been raised");
 		}
 		catch (IllegalArgumentException expected) {

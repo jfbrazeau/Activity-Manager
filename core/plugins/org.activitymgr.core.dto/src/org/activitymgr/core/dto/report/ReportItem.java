@@ -1,5 +1,6 @@
 package org.activitymgr.core.dto.report;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -11,19 +12,24 @@ public class ReportItem {
 	
 	private final Collaborator contributor;
 	
-	private final Collection<Task> tasks;
+	private final Collection<Task> tasks = new ArrayList<Task>();
 	
 	private final TaskSums contributedTask;
 
 	private final long[] contributionSums;
 	
 	public ReportItem(Report parent, Collaborator contributor,
-			TaskSums contributedTask, Task... tasks) {
+			TaskSums contributedTask, Task... parentTasks) {
 		contributionSums = new long[parent.getIntervalCount()];
-		if (tasks != null && (tasks.length > parent.getTaskDepth())) {
-			throw new IllegalStateException("Invalid task count, expected : " + parent.getTaskDepth() + ", actual:" + tasks.length);
+		if (parentTasks != null && (parentTasks.length > parent.getTaskDepth())) {
+			throw new IllegalStateException("Invalid task count, expected : " + parent.getTaskDepth() + ", actual:" + parentTasks.length);
 		}
-		this.tasks = tasks != null ? Arrays.asList(tasks) : null;
+		if (parentTasks != null) {
+			this.tasks.addAll(Arrays.asList(parentTasks));
+		}
+		if (contributedTask != null) {
+			this.tasks.add(contributedTask.getTask());
+		}
 		this.contributor = contributor;
 		this.contributedTask = contributedTask;
 		parent.add(this);
