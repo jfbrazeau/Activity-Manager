@@ -111,9 +111,9 @@ public class Report {
 			}
 			if (taskDepth > 0) {
 				StringWriter pathSw = new StringWriter();
-				for (TaskSums task : item.getTasks()) {
+				for (Task task : item.getTasks()) {
 					pathSw.append('/');
-					pathSw.append(task.getTask().getCode());
+					pathSw.append(task.getCode());
 				}
 				appendCellRight(sw, pathSw.toString(), TASK_PATH_PAD);
 				appendCellRight(sw, contributedTask.getTask().getName(), TASK_NAME_PAD);

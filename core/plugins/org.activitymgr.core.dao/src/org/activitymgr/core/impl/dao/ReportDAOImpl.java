@@ -70,7 +70,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 					.append("where ")
 					.append("(leaftask.tsk_id=activitytask.tsk_id or leaftask.tsk_path like concat(activitytask.tsk_path, activitytask.tsk_number, '%')) ");
 				if (rootPath != null) {
-					request.append("and activitytask.tsk_path like ? ");
+					request.append("and concat(activitytask.tsk_path, activitytask.tsk_number) like ? ");
 				}
 				request.append("and length(activitytask.tsk_path)<=? ")
 					.append("group by activitytask.tsk_id ");
@@ -310,7 +310,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 				if (reportItem == null) {
 					newItem = true;
 				} else {
-					if (byActivity && !reportItem.getContributedTask().equals(contributedTask)) {
+					if (byActivity && !contributedTask.equals(reportItem.getContributedTask())) {
 						newItem = true;
 					}
 					if (byContributor && !reportItem.getContributor().equals(contributor)) {
@@ -320,12 +320,14 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 				if (newItem) {
 					// If no task is present, simply create a report item
 					if (!byActivity) {
-						reportItem = new ReportItem(report, contributor);
+						reportItem = new ReportItem(report, contributor, null);
 					}
 					else {
 						// If in task centric mode (or without contributors which is equivalent), may have to insert rows without contributions
 						// before adding new report line
-						if (!onlyKeepTasksWithContributions && (!contributorCentricMode || !byContributor)) {
+						if (!onlyKeepTasksWithContributions
+								&& orderedTasks.size() > 0
+								&& (!contributorCentricMode || !byContributor)) {
 							if (!contributedTask.equals(orderedTasks.get(orderedTaskIndex))) {
 								// If the last report item was about the same task, we must skeep the corresponding value
 								// in the ordered task list
@@ -337,18 +339,21 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 								TaskSums cursor = null;
 								while (!(cursor = orderedTasks.get(orderedTaskIndex)).equals(contributedTask)) {
 									if (cursor.isLeaf()) {
-										TaskSums[] tasks = buldTasksList(rootPath,
+										Task[] tasks = buildTasksList(rootPath,
 												tasksByFullPathCache, cursor.getTask().getFullPath());
-										new ReportItem(report, null, tasks);
+										new ReportItem(report, null, cursor,
+												tasks);
 									}
 									orderedTaskIndex++;
 								}
 							}
 						}
 						// Add report item
-						TaskSums[] tasks = buldTasksList(rootPath,
-								tasksByFullPathCache, contributedTask.getTask().getFullPath());
-						reportItem = new ReportItem(report, contributor, tasks);
+						Task[] tasks = buildTasksList(rootPath,
+								tasksByFullPathCache, contributedTask.getTask()
+										.getFullPath());
+						reportItem = new ReportItem(report, contributor,
+								contributedTask, tasks);
 					}
 				}
 				
@@ -397,9 +402,9 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 				while (++orderedTaskIndex < orderedTasks.size()) {
 					TaskSums cursor = orderedTasks.get(orderedTaskIndex);
 					if (cursor.isLeaf()) {
-						TaskSums[] tasks = buldTasksList(rootPath,
+						Task[] tasks = buildTasksList(rootPath,
 								tasksByFullPathCache, cursor.getTask().getFullPath());
-						new ReportItem(report, null, tasks);
+						new ReportItem(report, null, cursor, tasks);
 					}
 				}
 			}
@@ -428,12 +433,19 @@ public class ReportDAOImpl extends AbstractDAOImpl implements IReportDAO {
 		request.append("')");
 	}
 
-	private TaskSums[] buldTasksList(String rootPath,
+	private Task[] buildTasksList(String rootPath,
 			Map<String, TaskSums> tasksByFullPathCache, String fullpath) {
 		int depth = (fullpath.length() - rootPath.length()) / 2;
-		TaskSums[] tasks = new TaskSums[depth];
-		for (int i=0 ; i<depth; i++) {
-			tasks[i] = tasksByFullPathCache.get(fullpath.substring(0, (i+1)*2 + rootPath.length()));
+		Task[] tasks = null;
+		if (depth > 0) {
+			tasks = new Task[depth - 1];
+			for (int i = 0; i < depth - 1; i++) {
+				tasks[i] = tasksByFullPathCache.get(
+						fullpath.substring(0, (i + 1) * 2 + rootPath.length()))
+						.getTask();
+			}
+		} else {
+			tasks = new Task[0];
 		}
 		return tasks;
 	}
