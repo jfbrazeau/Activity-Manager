@@ -451,7 +451,8 @@ public class ReportsTabLogicImpl extends
 			}
 
 			// In automatic mode, auto select dates
-			if (intervalBoundsMode == ReportIntervalBoundsMode.AUTOMATIC) {
+			if (intervalBoundsMode == ReportIntervalBoundsMode.AUTOMATIC
+					|| intervalBoundsMode == ReportIntervalBoundsMode.LOWER_BOUND) {
 				Long rootTaskId = null;
 				if (taskScopePath != null && taskScopePath.trim().length() > 0) {
 					Task selectedTask = getModelMgr().getTaskByCodePath(
@@ -460,8 +461,18 @@ public class ReportsTabLogicImpl extends
 							: null;
 				}
 				Calendar[] interval = getModelMgr().getContributionsInterval(rootTaskId);
-				start = interval[0];
-				end = interval[1];
+				if (interval != null) {
+					// In automatic mode auto set the start date
+					if (intervalBoundsMode == ReportIntervalBoundsMode.AUTOMATIC) {
+						start = interval[0];
+					}
+					// In both modes auto set the end date
+					end = interval[1];
+				} else {
+					// If the task has no contribution, no interval will be
+					// returned : align end on start in such case
+					end = start;
+				}
 			}
 
 			// Update dates
