@@ -26,7 +26,10 @@ public class HTMLReportServiceLogic extends AbstractReportServiceLogic {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		pw.println("<html>");
-		pw.println("<head><title>Export global contributions</title></head>");
+		pw.println("<head>");
+		pw.println("<title>Export global contributions</title>");
+		pw.println("<meta charset='UTF-8'>");
+		pw.println("</head>");
 		pw.println("<body>");
 		pw.println("<table border='1' cellspacing='0' cellpadding='0'>");
 		Sheet sheet = report.getSheetAt(0);
@@ -89,6 +92,6 @@ public class HTMLReportServiceLogic extends AbstractReportServiceLogic {
 		pw.println("</table>");
 		pw.println("</body>");
 		pw.println("</html>");
-		response.getOutputStream().write(sw.toString().getBytes());
+		response.getOutputStream().write(sw.toString().getBytes("UTF-8"));
 	}
 }
