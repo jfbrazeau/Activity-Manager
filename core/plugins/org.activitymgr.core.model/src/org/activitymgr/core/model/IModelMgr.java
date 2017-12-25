@@ -1026,4 +1026,14 @@ public interface IModelMgr {
 	 *             thrown if a technical error occurs.
 	 */
 	int getMaxTaskDepthUnder(Long rootTaskId) throws DAOException;
+
+	/**
+	 * Returns the contributions interval.
+	 * 
+	 * @param rootTask
+	 *            the optional root task identifier to filter the contributions.
+	 * @return the contributions interval.
+	 */
+	Calendar[] getContributionsInterval(Long rootTaskId);
+
 }

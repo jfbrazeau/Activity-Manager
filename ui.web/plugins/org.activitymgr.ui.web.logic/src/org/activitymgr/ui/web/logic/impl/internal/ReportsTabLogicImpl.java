@@ -290,6 +290,7 @@ public class ReportsTabLogicImpl extends
 					String taskCodePath = getModelMgr().getTaskCodePath(task);
 					ReportsTabLogicImpl.this.taskScopePath = taskCodePath;
 					getView().setTaskScopePath(taskCodePath);
+					updateUI();
 				} catch (ModelException e) {
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
 					e.printStackTrace(new PrintWriter(out));
@@ -431,101 +432,117 @@ public class ReportsTabLogicImpl extends
 	}
 
 	void updateUI() {
-		getView().setErrorMessage("");
-		// Update interval type & bounds
-		getView().selectIntervalTypeRadioButton(intervalType);
-		getView().selectIntervalBoundsModeButton(intervalBoundsMode);
+		try {
+			getView().setErrorMessage("");
+			// Update interval type & bounds
+			getView().selectIntervalTypeRadioButton(intervalType);
+			getView().selectIntervalBoundsModeButton(intervalBoundsMode);
 
-		// Update date fields enablement
-		switch (intervalBoundsMode) {
-		case AUTOMATIC:
-			getView().setIntervalBoundsModeEnablement(false, false);
-			break;
-		case LOWER_BOUND:
-			getView().setIntervalBoundsModeEnablement(true, false);
-			break;
-		case BOTH_BOUNDS:
-			getView().setIntervalBoundsModeEnablement(true, true);
-		}
+			// Update date fields enablement
+			switch (intervalBoundsMode) {
+			case AUTOMATIC:
+				getView().setIntervalBoundsModeEnablement(false, false);
+				break;
+			case LOWER_BOUND:
+				getView().setIntervalBoundsModeEnablement(true, false);
+				break;
+			case BOTH_BOUNDS:
+				getView().setIntervalBoundsModeEnablement(true, true);
+			}
 
-		// Update dates
-		if (!ReportIntervalType.DAY.equals(intervalType)) {
+			// In automatic mode, auto select dates
+			if (intervalBoundsMode == ReportIntervalBoundsMode.AUTOMATIC) {
+				Long rootTaskId = null;
+				if (taskScopePath != null && taskScopePath.trim().length() > 0) {
+					Task selectedTask = getModelMgr().getTaskByCodePath(
+							taskScopePath);
+					rootTaskId = selectedTask != null ? selectedTask.getId()
+							: null;
+				}
+				Calendar[] interval = getModelMgr().getContributionsInterval(rootTaskId);
+				start = interval[0];
+				end = interval[1];
+			}
+
+			// Update dates
+			if (!ReportIntervalType.DAY.equals(intervalType)) {
+				switch (intervalType) {
+				case YEAR:
+					// Goto start of year
+					start.set(Calendar.MONTH, 0);
+					start.set(Calendar.DATE, 1);
+
+					// Goto start of following year
+					end.set(Calendar.MONTH, 0);
+					end.set(Calendar.DATE, 1);
+					end.add(Calendar.YEAR, 1);
+					break;
+				case MONTH:
+					// Goto start of month
+					start.set(Calendar.DATE, 1);
+
+					// Goto start of following month
+					end.set(Calendar.DATE, 1);
+					end.add(Calendar.MONTH, 1);
+					break;
+				case WEEK:
+					// Goto start of week
+					start = DateHelper.moveToFirstDayOfWeek(start);
+
+					// Goto start of following month
+					end = DateHelper.moveToFirstDayOfWeek(end);
+					end.add(Calendar.WEEK_OF_YEAR, 1);
+					break;
+				case DAY:
+					// Do nothing
+				}
+				end.add(Calendar.DATE, -1);
+			}
+			getView().setIntervalBounds(start.getTime(),
+					ReportsTabLogicImpl.this.end.getTime());
+
+			// Compute interval count
+			Calendar endClone = (Calendar) end.clone();
 			switch (intervalType) {
 			case YEAR:
-				// Goto start of year
-				start.set(Calendar.MONTH, 0);
-				start.set(Calendar.DATE, 1);
-
-				// Goto start of following year
-				end.set(Calendar.MONTH, 0);
-				end.set(Calendar.DATE, 1);
-				end.add(Calendar.YEAR, 1);
+				intervalCount = endClone.get(Calendar.YEAR)
+						- start.get(Calendar.YEAR);
 				break;
 			case MONTH:
-				// Goto start of month
-				start.set(Calendar.DATE, 1);
-
-				// Goto start of following month
-				end.set(Calendar.DATE, 1);
-				end.add(Calendar.MONTH, 1);
+				intervalCount = (endClone.get(Calendar.YEAR) - start
+						.get(Calendar.YEAR))
+						* 12
+						+ (endClone.get(Calendar.MONTH) - start
+								.get(Calendar.MONTH));
 				break;
 			case WEEK:
-				// Goto start of week
-				start = DateHelper.moveToFirstDayOfWeek(start);
-
-				// Goto start of following month
-				end = DateHelper.moveToFirstDayOfWeek(end);
-				end.add(Calendar.WEEK_OF_YEAR, 1);
+				intervalCount = DateHelper.countDaysBetween(start, endClone) / 7;
 				break;
 			case DAY:
-				// Do nothing
+				intervalCount = DateHelper.countDaysBetween(start, endClone);
 			}
-			end.add(Calendar.DATE, -1);
-		}
-		getView().setIntervalBounds(start.getTime(),
-				ReportsTabLogicImpl.this.end.getTime());
+			intervalCount++;
+			getView().setIntervalCount(intervalCount);
 
-		// Compute interval count
-		Calendar endClone = (Calendar) end.clone();
-		switch (intervalType) {
-		case YEAR:
-			intervalCount = endClone.get(Calendar.YEAR)
-					- start.get(Calendar.YEAR);
-			break;
-		case MONTH:
-			intervalCount = (endClone.get(Calendar.YEAR) - start
-					.get(Calendar.YEAR))
-					* 12
-					+ (endClone.get(Calendar.MONTH) - start.get(Calendar.MONTH));
-			break;
-		case WEEK:
-			intervalCount = DateHelper.countDaysBetween(start, endClone) / 7;
-			break;
-		case DAY:
-			intervalCount = DateHelper.countDaysBetween(start, endClone);
-		}
-		intervalCount++;
-		getView().setIntervalCount(intervalCount);
+			// Check if collaborators selection UI must be enables
+			getView().selectCollaboratorsSelectionModeRadioButton(
+					collaboratorsSelectionMode);
+			getView()
+					.setCollaboratorsSelectionUIEnabled(
+							collaboratorsSelectionMode == ReportCollaboratorsSelectionMode.SELECT_COLLABORATORS);
 
-		// Check if collaborators selection UI must be enables
-		getView().selectCollaboratorsSelectionModeRadioButton(
-				collaboratorsSelectionMode);
-		getView()
-				.setCollaboratorsSelectionUIEnabled(
-						collaboratorsSelectionMode == ReportCollaboratorsSelectionMode.SELECT_COLLABORATORS);
-
-		// Check if one task attribute is selected
-		List<DTOAttribute> selectedColumns = columnsSelectionLogic.getValue();
-		boolean includeTaskAttrs = false;
-		for (DTOAttribute att : selectedColumns) {
-			if (att.getId().startsWith(TASK)) {
-				includeTaskAttrs = true;
-				break;
+			// Check if one task attribute is selected
+			List<DTOAttribute> selectedColumns = columnsSelectionLogic
+					.getValue();
+			boolean includeTaskAttrs = false;
+			for (DTOAttribute att : selectedColumns) {
+				if (att.getId().startsWith(TASK)) {
+					includeTaskAttrs = true;
+					break;
+				}
 			}
-		}
-		getView().setRowContentConfigurationEnabled(includeTaskAttrs);
+			getView().setRowContentConfigurationEnabled(includeTaskAttrs);
 
-		try {
 			buildReport(true);
 			downloadReportButtonLogic.getView().setEnabled(true);
 		} catch (ModelException e) {

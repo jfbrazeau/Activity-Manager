@@ -2463,4 +2463,16 @@ public class ModelMgrImpl implements IModelMgr {
 		return maxTaskDepthUnder > 0 ? maxTaskDepthUnder- (path.length() / 2) : 0;
 	}
 
+	@Override
+	public Calendar[] getContributionsInterval(Long rootTaskId) {
+		String rootTaskPath = null;
+		if (rootTaskId != null) {
+			Task rootTask = getTask(rootTaskId);
+			if (rootTask != null) {
+				rootTaskPath = rootTask.getFullPath();
+			}
+		}
+		return contributionDAO.getContributionsInterval(rootTaskPath);
+	}
+
 }
