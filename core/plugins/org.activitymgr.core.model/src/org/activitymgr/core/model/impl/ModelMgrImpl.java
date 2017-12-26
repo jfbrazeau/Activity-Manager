@@ -2365,7 +2365,9 @@ public class ModelMgrImpl implements IModelMgr {
 			wb.asHeaderCellStyl(headerRow.createCell(colIdx)).setCellValue(week);
 			colIdx++;
 		}
+		wb.asHeaderCellStyl(headerRow.createCell(colIdx)).setCellValue("Total");
 		
+		long[] columnSums = new long[dates.size()];
 		ReportItem lastItem = null;
 		for (ReportItem item : report.getItems()) {
 			TaskSums contributedTask = item.getContributedTask();
@@ -2399,17 +2401,34 @@ public class ModelMgrImpl implements IModelMgr {
 					}
 				}
 			}
+			long sum = 0;
 			for (int i=0; i<dates.size(); i++) {
 				long contributionSum = item.getContributionSum(i);
-				Cell cell = wb.asBodyCellStyl(row.createCell(colIdx++));
+				Cell cell = wb.asBodyRightAlignmentCellStyl(row
+						.createCell(colIdx++));
 				if (contributionSum > 0) {
+					sum += contributionSum;
+					columnSums[i] += contributionSum;
 					cell.setCellValue(contributionSum/100d);
-					wb.asBodyRightAlignmentCellStyl(cell);
 				}
 			}
+			wb.asFooterCellStyl(row.createCell(colIdx++)).setCellValue(
+					sum / 100d);
 			lastItem = item;
 		}
 		
+		// Footer
+		colIdx = columns.length;
+		Row row = sheet.createRow(sheet.getLastRowNum()+1);
+		long globalSum = 0;
+		for (int i=0; i<dates.size(); i++) {
+			long columnSum = columnSums[i];
+			wb.asFooterCellStyl(row.createCell(colIdx++)).setCellValue(
+					columnSum / 100d);
+			globalSum += columnSum;
+		}
+		wb.asFooterCellStyl(row.createCell(colIdx++)).setCellValue(
+				globalSum / 100d);
 
 		
 		// Autosize code & name columns

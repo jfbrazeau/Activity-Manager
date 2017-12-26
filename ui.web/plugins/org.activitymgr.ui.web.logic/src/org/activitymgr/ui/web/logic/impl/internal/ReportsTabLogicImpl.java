@@ -348,72 +348,74 @@ public class ReportsTabLogicImpl extends
 
 	@Override
 	public void onBuildHtmlReportButtonClicked() {
-		StringWriter url = new StringWriter();
-		url.append("/service/load");
-		appendUrlParam(url, true, "service", "/service/report/html");
-		appendUrlParam(url,
-				AbstractReportServiceLogic.INTERVAL_TYPE_PARAMETER,
-				intervalType.toString());
-		appendUrlParam(url, AbstractReportServiceLogic.START_PARAMETER,
-				new SimpleDateFormat("yyyyMMdd").format(start.getTime()));
-		appendUrlParam(url,
-				AbstractReportServiceLogic.INTERVAL_COUNT_PARAMETER,
-				intervalCount);
-		appendUrlParam(url, AbstractReportServiceLogic.ROOT_TASK_PARAMETER,
-				taskScopePath);
-		if (advancedMode) {
-			switch (collaboratorsSelectionMode) {
-			case ME:
+		try {
+			StringWriter url = new StringWriter();
+			url.append("/service/load");
+			appendUrlParam(url, true, "service", "/service/report/html");
+			ReportParameters reportParameters = prepareReportParameters();
+			appendUrlParam(url,
+					AbstractReportServiceLogic.INTERVAL_TYPE_PARAMETER,
+					reportParameters.intervalType.toString());
+			if (reportParameters.start != null) {
+				appendUrlParam(url, AbstractReportServiceLogic.START_PARAMETER,
+						new SimpleDateFormat("yyyyMMdd")
+								.format(reportParameters.start.getTime()));
+			}
+			if (reportParameters.intervalCount != null) {
 				appendUrlParam(url,
-						AbstractReportServiceLogic.CONTRIBUTOR_IDS_PARAMETERS,
-						getContext().getConnectedCollaborator().getId());
-			case ALL_COLLABORATORS:
+					AbstractReportServiceLogic.INTERVAL_COUNT_PARAMETER,
+						reportParameters.intervalCount);
+			}
+			if (reportParameters.rootTaskId != null) {
 				appendUrlParam(url,
-						AbstractReportServiceLogic.CONTRIBUTOR_IDS_PARAMETERS,
-						"*");
-			case SELECT_COLLABORATORS:
-				List<Collaborator> selectedCollaborators = collaboratorsSelectionLogic
-						.getValue();
-				Object[] contributorIds = new Object[selectedCollaborators
-						.size()];
-				int idx = 0;
-				for (Collaborator selectedCollaborator : selectedCollaborators) {
-					contributorIds[idx++] = selectedCollaborator.getId();
+						AbstractReportServiceLogic.ROOT_TASK_PARAMETER,
+						taskScopePath);
+			}
+			appendUrlParam(url,
+					AbstractReportServiceLogic.TASK_DEPTH_PARAMETER,
+					reportParameters.taskDepth);
+			if (reportParameters.contributorIds != null) {
+				Object[] array = new Object[reportParameters.contributorIds.length];
+				for (int i = 0; i < reportParameters.contributorIds.length; i++) {
+					array[i] = reportParameters.contributorIds[i];
 				}
 				appendUrlParam(url,
 						AbstractReportServiceLogic.CONTRIBUTOR_IDS_PARAMETERS,
-						contributorIds);
+						array);
 			}
-			List<DTOAttribute> selectedAttributes = columnsSelectionLogic
-					.getValue();
-			Object[] columnIds = new String[selectedAttributes.size()];
-			int idx = 0;
-			for (DTOAttribute selectedAttribute : selectedAttributes) {
-				columnIds[idx++] = selectedAttribute.getId();
+			if (advancedMode) {
+				appendUrlParam(url,
+						AbstractReportServiceLogic.BY_CONTRIBUTOR_PARAMETER,
+						reportParameters.byContributor);
+				appendUrlParam(
+						url,
+						AbstractReportServiceLogic.CONTRIBUTOR_CENTRIC_MODE_PARAMETER,
+						reportParameters.contributorCentricMode);
+				appendUrlParam(url,
+						AbstractReportServiceLogic.COLUMN_IDS_PARAMETER,
+						reportParameters.columnIds);
+				appendUrlParam(
+						url,
+						AbstractReportServiceLogic.ONLY_KEEP_TASKS_WITH_CONTRIBUTIONS_PARAMETER,
+						onlyKeepTaskWithContributions);
 			}
-			appendUrlParam(url,
-					AbstractReportServiceLogic.COLUMN_IDS_PARAMETER, columnIds);
+			ExternalContentDialogLogicImpl popup = new ExternalContentDialogLogicImpl(
+					this, "Preview", url.toString());
+			getRoot().getView().openWindow(popup.getView());
+		} catch (ModelException e) {
+			// Shouldn't occur (if a ModelException is raised, the button
+			// should be disabled)
+			throw new IllegalStateException(e);
 		}
-		appendUrlParam(url, AbstractReportServiceLogic.TASK_DEPTH_PARAMETER,
-				taskTreeDepth);
-		if (advancedMode) {
-			appendUrlParam(
-					url,
-					AbstractReportServiceLogic.ONLY_KEEP_TASKS_WITH_CONTRIBUTIONS_PARAMETER,
-					onlyKeepTaskWithContributions);
-		}
-		ExternalContentDialogLogicImpl popup = new ExternalContentDialogLogicImpl(
-				this, "Preview", url.toString());
-		getRoot().getView().openWindow(popup.getView());
 	}
 
-	private static void appendUrlParam(StringWriter sw, String param,
-			Object... values) {
+	private static <O> void appendUrlParam(StringWriter sw, String param,
+			O... values) {
 		appendUrlParam(sw, false, param, values);
 	}
 
-	private static void appendUrlParam(StringWriter sw, boolean first,
-			String param, Object... values) {
+	private static <O> void appendUrlParam(StringWriter sw, boolean first,
+			String param, O... values) {
 		try {
 			sw.append(first ? "?" : "&");
 			sw.append(param);
@@ -563,38 +565,63 @@ public class ReportsTabLogicImpl extends
 	}
 
 	private Workbook buildReport(boolean dryRun) throws ModelException {
-		Calendar start = null;
-		if (intervalBoundsMode != ReportIntervalBoundsMode.AUTOMATIC) {
-			start = ReportsTabLogicImpl.this.start;
-		}
+		ReportParameters reportParameters = prepareReportParameters();
 
-		Long rootTaskId = null;
+		Workbook report = getModelMgr().buildReport(start, // Start date
+						reportParameters.intervalType, // Interval type
+				reportParameters.intervalCount, // Interval count
+				reportParameters.rootTaskId, // Root task id
+				reportParameters.taskDepth, // Task tree
+													// depth
+				reportParameters.onlyKeepTasksWithContributions, // Only keep
+																	// tasks
+																	// with
+												// contributions
+				reportParameters.byContributor, // Include collaborators
+				reportParameters.contributorCentricMode, // Collaborators
+															// centric mode
+				reportParameters.contributorIds, // Contributor ids
+				reportParameters.columnIds, // Column ids
+				dryRun);
+		return report;
+	}
+
+	private ReportParameters prepareReportParameters() throws ModelException {
+		ReportParameters reportParameters = new ReportParameters();
+		if (intervalBoundsMode != ReportIntervalBoundsMode.AUTOMATIC) {
+			reportParameters.start = ReportsTabLogicImpl.this.start;
+		}
+		reportParameters.intervalType = intervalType;
+		reportParameters.intervalCount = intervalBoundsMode != ReportIntervalBoundsMode.AUTOMATIC ? intervalCount
+				: null;
+
 		if (taskScopePath != null && taskScopePath.trim().length() > 0) {
 			Task selectedTask = getModelMgr().getTaskByCodePath(taskScopePath);
-			rootTaskId = selectedTask != null ? selectedTask.getId() : null;
+			reportParameters.rootTaskId = selectedTask != null ? selectedTask
+					.getId() : null;
 		}
 
 		List<DTOAttribute> selectedColumns = columnsSelectionLogic.getValue();
-		String[] selectedColumnIds = new String[selectedColumns.size()];
+		reportParameters.columnIds = new String[selectedColumns.size()];
 		for (int i = 0; i < selectedColumns.size(); i++) {
-			selectedColumnIds[i] = selectedColumns.get(i).getId();
+			reportParameters.columnIds[i] = selectedColumns.get(i).getId();
 		}
-		boolean contributorCentricMode = selectedColumns.size() > 0
+		reportParameters.contributorCentricMode = selectedColumns.size() > 0
 				&& selectedColumns.get(0).getId()
 				.startsWith(COLLABORATOR);
-		boolean includeCollaborators = containsDTOAttribute(selectedColumns,
+		reportParameters.byContributor = containsDTOAttribute(selectedColumns,
 					COLLABORATOR);
 
 		boolean includeTasks = containsDTOAttribute(selectedColumns, TASK);
+		reportParameters.taskDepth = includeTasks ? taskTreeDepth : 0;
 
-		long[] contributorIds = null;
 		switch (collaboratorsSelectionMode) {
 		case ME:
-			contributorIds = new long[] { getContext()
+			reportParameters.contributorIds = new long[] { getContext()
 					.getConnectedCollaborator().getId() };
 			break;
 		case ALL_COLLABORATORS:
-			contributorIds = null;
+			reportParameters.contributorIds = null;
 			break;
 		case SELECT_COLLABORATORS:
 			List<Collaborator> selectedCollaborators = collaboratorsSelectionLogic
@@ -603,28 +630,16 @@ public class ReportsTabLogicImpl extends
 				throw new ModelException(
 						"At least one collaborator must be selected");
 			if (selectedCollaborators.size() != collaborators.length) {
-				contributorIds = new long[selectedCollaborators.size()];
+				reportParameters.contributorIds = new long[selectedCollaborators
+						.size()];
 				for (int i = 0; i < selectedCollaborators.size(); i++) {
-					contributorIds[i] = selectedCollaborators.get(i).getId();
+					reportParameters.contributorIds[i] = selectedCollaborators
+							.get(i).getId();
 				}
 			}
 		}
-
-		Workbook report = getModelMgr().buildReport(start, // Start date
-				intervalType, // Interval type
-						intervalBoundsMode != ReportIntervalBoundsMode.AUTOMATIC ? intervalCount
-								: null, // Interval count
-				rootTaskId, // Root task id
-				includeTasks ? taskTreeDepth : 0, // Task tree
-													// depth
-				onlyKeepTaskWithContributions, // Only keep tasks with
-												// contributions
-				includeCollaborators, // Include collaborators
-				contributorCentricMode, // Collaborators centric mode
-				contributorIds, // Contributor ids
-				selectedColumnIds, // Column ids
-				dryRun);
-		return report;
+		reportParameters.onlyKeepTasksWithContributions = onlyKeepTaskWithContributions;
+		return reportParameters;
 	}
 
 	private boolean containsDTOAttribute(List<DTOAttribute> attributes,
@@ -659,4 +674,17 @@ class DTOAttribute {
 		return label;
 	}
 
+}
+
+class ReportParameters {
+	Calendar start;
+	ReportIntervalType intervalType;
+	Integer intervalCount;
+	Long rootTaskId;
+	int taskDepth;
+	boolean onlyKeepTasksWithContributions;
+	boolean byContributor;
+	boolean contributorCentricMode;
+	long[] contributorIds;
+	String[] columnIds;
 }

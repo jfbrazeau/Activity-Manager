@@ -40,18 +40,9 @@ public class WorkbookBuilder {
 	private CellStyle headerCellStyle;
 	private CellStyle bodyCellStyle;
 	private CellStyle bodyRightAlignmentCellStyle;
+	private CellStyle footerCellStyle;
 	
 	public WorkbookBuilder() {
-		// Création du style de l'entête
-		headerCellStyle = workbook.createCellStyle();
-		headerCellStyle.setFillForegroundColor(HSSFColor.GREY_25_PERCENT.index);
-		headerCellStyle.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
-		headerCellStyle.setAlignment(HSSFCellStyle.ALIGN_LEFT);
-		headerCellStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
-		headerCellStyle.setBorderLeft(headerCellStyle.getBorderBottom());
-		headerCellStyle.setBorderRight(headerCellStyle.getBorderBottom());
-		headerCellStyle.setBorderTop(headerCellStyle.getBorderBottom());
-
 		// Création du style des cellules
 		bodyCellStyle = workbook.createCellStyle();
 		bodyCellStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
@@ -59,10 +50,24 @@ public class WorkbookBuilder {
 		bodyCellStyle.setBorderRight(bodyCellStyle.getBorderBottom());
 		bodyCellStyle.setBorderTop(bodyCellStyle.getBorderBottom());
 
-		// Création du style des cellules alignées à gauche
+		// Création du style de l'entête
+		headerCellStyle = workbook.createCellStyle();
+		headerCellStyle.cloneStyleFrom(bodyCellStyle);
+		headerCellStyle.setFillForegroundColor(HSSFColor.GREY_40_PERCENT.index);
+		headerCellStyle.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
+		headerCellStyle.setAlignment(HSSFCellStyle.ALIGN_LEFT);
+
+		// Création du style des cellules alignées à droite
 		bodyRightAlignmentCellStyle = workbook.createCellStyle();
 		bodyRightAlignmentCellStyle.cloneStyleFrom(bodyCellStyle);
 		bodyRightAlignmentCellStyle.setAlignment(CellStyle.ALIGN_RIGHT);
+
+		// Création du style des cellules alignées à gauche
+		footerCellStyle = workbook.createCellStyle();
+		footerCellStyle.cloneStyleFrom(bodyRightAlignmentCellStyle);
+		footerCellStyle
+				.setFillForegroundColor(HSSFColor.GREY_25_PERCENT.index);
+		footerCellStyle.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
 	}
 	
 	public Workbook getWorkbook() {
@@ -92,4 +97,8 @@ public class WorkbookBuilder {
 		return cell;
 	}
 
+	public Cell asFooterCellStyl(Cell cell) {
+		cell.setCellStyle(footerCellStyle);
+		return cell;
+	}
 }

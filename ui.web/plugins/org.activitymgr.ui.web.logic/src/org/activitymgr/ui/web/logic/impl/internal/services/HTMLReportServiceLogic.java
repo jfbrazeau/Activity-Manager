@@ -38,54 +38,59 @@ public class HTMLReportServiceLogic extends AbstractReportServiceLogic {
 			pw.println("<tr>");
 			for (int c = 0; c < row.getLastCellNum(); c++) {
 				Cell cell = row.getCell(c);
-				CellStyle style = cell.getCellStyle();
-				pw.print("  <td");
-				HSSFColor bgColor = (HSSFColor) style
-						.getFillForegroundColorColor();
-				if (bgColor != null
-						&& !HSSFColor.AUTOMATIC.getInstance().equals(bgColor)) {
-					pw.print(" bgcolor='#");
-					pw.print(bgColor.getHexString());
-					pw.print("'");
-				}
-				pw.print(" align='");
-				switch (style.getAlignment()) {
-				case CellStyle.ALIGN_CENTER:
-					pw.print("center");
-					break;
-				case CellStyle.ALIGN_RIGHT:
-					pw.print("right");
-					break;
-				default:
-					pw.print("left");
-				}
-				pw.print("'");
-				pw.print(">");
-				int cellType = cell.getCellType();
-				if (cellType == Cell.CELL_TYPE_FORMULA) {
-					cellType = cell.getCachedFormulaResultType();
-				}
-				switch (cellType) {
-				case Cell.CELL_TYPE_BLANK:
-					break;
-				case Cell.CELL_TYPE_BOOLEAN:
-					pw.print(cell.getBooleanCellValue());
-					break;
-				case Cell.CELL_TYPE_ERROR:
-					pw.print("#ERROR");
-					break;
-				case Cell.CELL_TYPE_NUMERIC:
-					pw.print(String.valueOf(cell.getNumericCellValue()));
-					break;
-				case Cell.CELL_TYPE_STRING:
-					String str = cell.getStringCellValue();
-					if (str != null) {
-						str = str.replaceAll("<", "&lt;");
-						str = str.replaceAll(">", "&gt;");
+				if (cell == null) {
+					pw.println("  <td></td>");
+				} else {
+					CellStyle style = cell.getCellStyle();
+					pw.print("  <td");
+					HSSFColor bgColor = (HSSFColor) style
+							.getFillForegroundColorColor();
+					if (bgColor != null
+							&& !HSSFColor.AUTOMATIC.getInstance().equals(
+									bgColor)) {
+						pw.print(" bgcolor='#");
+						pw.print(bgColor.getHexString());
+						pw.print("'");
 					}
-					pw.print(str);
+					pw.print(" align='");
+					switch (style.getAlignment()) {
+					case CellStyle.ALIGN_CENTER:
+						pw.print("center");
+						break;
+					case CellStyle.ALIGN_RIGHT:
+						pw.print("right");
+						break;
+					default:
+						pw.print("left");
+					}
+					pw.print("'");
+					pw.print(">");
+					int cellType = cell.getCellType();
+					if (cellType == Cell.CELL_TYPE_FORMULA) {
+						cellType = cell.getCachedFormulaResultType();
+					}
+					switch (cellType) {
+					case Cell.CELL_TYPE_BLANK:
+						break;
+					case Cell.CELL_TYPE_BOOLEAN:
+						pw.print(cell.getBooleanCellValue());
+						break;
+					case Cell.CELL_TYPE_ERROR:
+						pw.print("#ERROR");
+						break;
+					case Cell.CELL_TYPE_NUMERIC:
+						pw.print(String.valueOf(cell.getNumericCellValue()));
+						break;
+					case Cell.CELL_TYPE_STRING:
+						String str = cell.getStringCellValue();
+						if (str != null) {
+							str = str.replaceAll("<", "&lt;");
+							str = str.replaceAll(">", "&gt;");
+						}
+						pw.print(str);
+					}
+					pw.println("</td>");
 				}
-				pw.println("</td>");
 			}
 			pw.println("</tr>");
 		}
