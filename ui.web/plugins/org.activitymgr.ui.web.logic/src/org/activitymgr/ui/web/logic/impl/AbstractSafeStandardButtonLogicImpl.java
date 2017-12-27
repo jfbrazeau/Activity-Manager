@@ -10,6 +10,8 @@ public abstract class AbstractSafeStandardButtonLogicImpl extends AbstractLogicI
 		super(parent);
 		if (iconId != null) {
 			getView().setIcon(iconId);
+		} else if (label != null) {
+			getView().setLabel(label);
 		}
 		if (label != null) {
 			getView().setDescription(

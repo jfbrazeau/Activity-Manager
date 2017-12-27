@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
-import org.activitymgr.ui.web.logic.IDownloadButtonLogic;
+import org.activitymgr.ui.web.logic.IButtonLogic;
 import org.activitymgr.ui.web.logic.IReportsTabLogic;
 import org.activitymgr.ui.web.logic.ITwinSelectFieldLogic.View;
 import org.activitymgr.ui.web.view.AbstractTabPanel;
@@ -20,7 +20,6 @@ import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
@@ -46,7 +45,7 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 	private Component selectedColumnsComponent;
 	private Label statusLabel;
 	private Image warningIcon;
-	private HorizontalLayout statusLayout;
+	private HorizontalLayout reportButtonsLayout;
 	private CheckBox onlyKeepTasksWithContribsCheckbox;
 	private Button decreaseTaskDepthButton;
 	private Button increaseTaskDepthButton;
@@ -79,6 +78,11 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 				advancedMode);
 		createRowsContentConfigurationPanel(bodyComponent,
 				advancedMode);
+		// Report buttons
+		bodyComponent.addComponent(new Label("")); // Empty cell
+		reportButtonsLayout = new HorizontalLayout();
+		bodyComponent.addComponent(reportButtonsLayout);
+
 		createStatusPanel(bodyComponent);
 	}
 
@@ -289,9 +293,7 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 
 	private void createStatusPanel(GridLayout gl) {
 		gl.addComponent(new Label("")); // Empty cell
-		statusLayout = new HorizontalLayout();
-		Button htmlPreviewReportButton = new Button("Preview (html)");
-		statusLayout.addComponent(htmlPreviewReportButton);
+		HorizontalLayout statusLayout = new HorizontalLayout();
 		gl.addComponent(statusLayout);
 		warningIcon = new Image(null, getResourceCache().getResource(
 				"warning.gif"));
@@ -301,13 +303,6 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		statusLabel = new Label("");
 		statusLayout.addComponent(statusLabel);
 		statusLayout.setComponentAlignment(statusLabel, Alignment.MIDDLE_RIGHT);
-
-		htmlPreviewReportButton.addClickListener(new ClickListener() {
-			@Override
-			public void buttonClick(ClickEvent event) {
-				getLogic().onBuildHtmlReportButtonClicked();
-			}
-		});
 	}
 
 	private void increaseOrDecreaseTaskTreeDepth(int amount) {
@@ -335,8 +330,8 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 	}
 
 	@Override
-	public void setBuildReportButtonView(IDownloadButtonLogic.View view) {
-		statusLayout.addComponent((Button) view, 0);
+	public void addReportButton(IButtonLogic.View<?> view) {
+		reportButtonsLayout.addComponent((Button) view, 0);
 	}
 
 	private void substituteBodyComponent(Component componentToSubstitute,

@@ -28,6 +28,7 @@ import org.activitymgr.ui.web.logic.IReportsTabLogic;
 import org.activitymgr.ui.web.logic.ITabFolderLogic;
 import org.activitymgr.ui.web.logic.ITaskChooserLogic.ISelectedTaskCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeDownloadButtonLogicImpl;
+import org.activitymgr.ui.web.logic.impl.AbstractSafeStandardButtonLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTwinSelectFieldLogic;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTwinSelectFieldLogic.IDTOInfosProvider;
 import org.activitymgr.ui.web.logic.impl.AbstractTabLogicImpl;
@@ -41,6 +42,10 @@ import com.google.inject.Inject;
 
 public class ReportsTabLogicImpl extends
 		AbstractTabLogicImpl<IReportsTabLogic.View> implements IReportsTabLogic {
+
+	private static final String SERVICE_LOAD_URI = "/service/load";
+
+	private static final String SERVICE_REPORT_HTML_URI = "/service/report/html";
 
 	private static final String TASK = Task.class.getSimpleName().toLowerCase();
 
@@ -117,6 +122,10 @@ public class ReportsTabLogicImpl extends
 
 	private boolean advancedMode;
 
+	private AbstractSafeStandardButtonLogicImpl showPreviewDialogButtonLogic;
+
+	private AbstractSafeStandardButtonLogicImpl showPreviewFullscreenButtonLogic;
+
 	public ReportsTabLogicImpl(ITabFolderLogic parent, boolean advancedMode) {
 		super(parent);
 		this.advancedMode = advancedMode;
@@ -135,16 +144,20 @@ public class ReportsTabLogicImpl extends
 		// Add buttons
 		registerButtons(buttonFactories);
 		for (ReportIntervalType type : ReportIntervalType.values()) {
-			getView().addIntervalTypeRadioButton(type, StringHelper.toLowerFirst(type.name().toLowerCase()));
+			getView().addIntervalTypeRadioButton(type,
+					StringHelper.toUpperFirst(type.name().toLowerCase()));
 		}
 		for (ReportIntervalBoundsMode mode : ReportIntervalBoundsMode.values()) {
-			getView().addIntervalBoundsModeRadioButton(mode, StringHelper.toLowerFirst(mode.name().replace('_',  ' ').toLowerCase()));
+			getView().addIntervalBoundsModeRadioButton(
+					mode,
+					StringHelper.toUpperFirst(mode.name().replace('_', ' ')
+							.toLowerCase()));
 		}
 		if (advancedMode) {
 			for (ReportCollaboratorsSelectionMode mode : ReportCollaboratorsSelectionMode.values()) {
 				getView().addCollaboratorsSelectionModeRadioButton(
 						mode,
-						StringHelper.toLowerFirst(mode.name().replace('_', ' ')
+						StringHelper.toUpperFirst(mode.name().replace('_', ' ')
 								.toLowerCase()));
 			}
 		}
@@ -206,6 +219,24 @@ public class ReportsTabLogicImpl extends
 		} catch (ReflectiveOperationException e) {
 			throw new IllegalStateException(e);
 		}
+		showPreviewFullscreenButtonLogic = new AbstractSafeStandardButtonLogicImpl(
+				this, "Preview (fullscreen)", null, null) {
+			@Override
+			protected void unsafeOnClick() throws Exception {
+				onShowPreviewFullscreenButtonClicked();
+			}
+		};
+		getView().addReportButton(showPreviewFullscreenButtonLogic.getView());
+		showPreviewDialogButtonLogic = new AbstractSafeStandardButtonLogicImpl(this,
+				"Preview (html)",
+				null, null) {
+			@Override
+			protected void unsafeOnClick() throws Exception {
+				onShowPreviewDialogButtonClicked();
+			}
+		};
+		getView().addReportButton(
+				showPreviewDialogButtonLogic.getView());
 		downloadReportButtonLogic = new AbstractSafeDownloadButtonLogicImpl(
 				this, "Build report",
 				null, null) {
@@ -225,7 +256,7 @@ public class ReportsTabLogicImpl extends
 			}
 
 		};
-		getView().setBuildReportButtonView(
+		getView().addReportButton(
 				downloadReportButtonLogic.getView());
 		updateUI();
 	}
@@ -235,7 +266,9 @@ public class ReportsTabLogicImpl extends
 		for (Object property : BeanUtils.describe(dto).keySet()) {
 			if (!"class".equals(property)) {
 				DTOAttribute att = new DTOAttribute(dtoLabel + "." + property,
-						property + " (" + dtoLabel + ")");
+						StringHelper.camelCaseToPhrase(String.valueOf(property))
+								+ " ("
+								+ dtoLabel + ")");
 				attributes.add(att);
 			}
 		}
@@ -346,32 +379,44 @@ public class ReportsTabLogicImpl extends
 		updateUI();
 	}
 
-	@Override
-	public void onBuildHtmlReportButtonClicked() {
+	private void onShowPreviewFullscreenButtonClicked() {
+		String url = buildRestServiceURL();
+		getRoot().getView().openExternalUrl(url);
+	}
+
+	private void onShowPreviewDialogButtonClicked() {
+		String url = buildRestServiceURL();
+		ExternalContentDialogLogicImpl popup = new ExternalContentDialogLogicImpl(
+				this, "Preview", url);
+		getRoot().getView().openWindow(popup.getView());
+	}
+
+	private String buildRestServiceURL() {
+		String url = null;
 		try {
-			StringWriter url = new StringWriter();
-			url.append("/service/load");
-			appendUrlParam(url, true, "service", "/service/report/html");
+			StringWriter sw = new StringWriter();
+				sw.append(SERVICE_LOAD_URI);
+				appendUrlParam(sw, true, "service", SERVICE_REPORT_HTML_URI);
 			ReportParameters reportParameters = prepareReportParameters();
-			appendUrlParam(url,
+			appendUrlParam(sw,
 					AbstractReportServiceLogic.INTERVAL_TYPE_PARAMETER,
 					reportParameters.intervalType.toString());
 			if (reportParameters.start != null) {
-				appendUrlParam(url, AbstractReportServiceLogic.START_PARAMETER,
+				appendUrlParam(sw, AbstractReportServiceLogic.START_PARAMETER,
 						new SimpleDateFormat("yyyyMMdd")
 								.format(reportParameters.start.getTime()));
 			}
 			if (reportParameters.intervalCount != null) {
-				appendUrlParam(url,
+				appendUrlParam(sw,
 					AbstractReportServiceLogic.INTERVAL_COUNT_PARAMETER,
 						reportParameters.intervalCount);
 			}
 			if (reportParameters.rootTaskId != null) {
-				appendUrlParam(url,
+				appendUrlParam(sw,
 						AbstractReportServiceLogic.ROOT_TASK_PARAMETER,
 						taskScopePath);
 			}
-			appendUrlParam(url,
+			appendUrlParam(sw,
 					AbstractReportServiceLogic.TASK_DEPTH_PARAMETER,
 					reportParameters.taskDepth);
 			if (reportParameters.contributorIds != null) {
@@ -379,34 +424,33 @@ public class ReportsTabLogicImpl extends
 				for (int i = 0; i < reportParameters.contributorIds.length; i++) {
 					array[i] = reportParameters.contributorIds[i];
 				}
-				appendUrlParam(url,
+				appendUrlParam(sw,
 						AbstractReportServiceLogic.CONTRIBUTOR_IDS_PARAMETERS,
 						array);
 			}
 			if (advancedMode) {
-				appendUrlParam(url,
+				appendUrlParam(sw,
 						AbstractReportServiceLogic.BY_CONTRIBUTOR_PARAMETER,
 						reportParameters.byContributor);
 				appendUrlParam(
-						url,
+						sw,
 						AbstractReportServiceLogic.CONTRIBUTOR_CENTRIC_MODE_PARAMETER,
 						reportParameters.contributorCentricMode);
-				appendUrlParam(url,
+				appendUrlParam(sw,
 						AbstractReportServiceLogic.COLUMN_IDS_PARAMETER,
 						reportParameters.columnIds);
 				appendUrlParam(
-						url,
+						sw,
 						AbstractReportServiceLogic.ONLY_KEEP_TASKS_WITH_CONTRIBUTIONS_PARAMETER,
 						onlyKeepTaskWithContributions);
 			}
-			ExternalContentDialogLogicImpl popup = new ExternalContentDialogLogicImpl(
-					this, "Preview", url.toString());
-			getRoot().getView().openWindow(popup.getView());
+			url = sw.toString();
 		} catch (ModelException e) {
 			// Shouldn't occur (if a ModelException is raised, the button
 			// should be disabled)
 			throw new IllegalStateException(e);
 		}
+		return url;
 	}
 
 	private static <O> void appendUrlParam(StringWriter sw, String param,
@@ -558,8 +602,10 @@ public class ReportsTabLogicImpl extends
 
 			buildReport(true);
 			downloadReportButtonLogic.getView().setEnabled(true);
+			showPreviewDialogButtonLogic.getView().setEnabled(true);
 		} catch (ModelException e) {
 			downloadReportButtonLogic.getView().setEnabled(false);
+			showPreviewDialogButtonLogic.getView().setEnabled(false);
 			getView().setErrorMessage(e.getMessage());
 		}
 	}

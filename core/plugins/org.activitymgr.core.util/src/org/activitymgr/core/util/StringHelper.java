@@ -37,12 +37,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
  * Classe offrant des services de manipulation de chaines de caractères.
  */
-public class StringHelper {
+public class StringHelper extends StringUtils {
 
 	/** Max base32 value (1024) */
 	private static final int MAX_BASE32_VALUE = 0x400;
@@ -285,17 +286,59 @@ public class StringHelper {
 	}
 
 	/**
+	 * Converts a camel cased string into a phrase.
+	 * 
+	 * @param camelCaseStr
+	 *            the string to convert.
+	 * @return the converted strnig.
+	 */
+	public static String camelCaseToPhrase(String camelCaseStr) {
+		String[] split = StringUtils.splitByCharacterTypeCamelCase(camelCaseStr
+				.replaceAll(" ", ""));
+		for (int i = 0; i < split.length; i++) {
+			split[i] = StringHelper.toUpperFirst(split[i]);
+		}
+		return StringUtils.join(split, ' ');
+	}
+
+	/**
 	 * Turn the first character to upper case.
 	 * 
 	 * @param s
 	 *            the string to convert.
 	 * @return the resulting string.
 	 */
+	public static String toUpperFirst(String s) {
+		return toUpperOrLowerFirst(s, true);
+	}
+
+	/**
+	 * Turn the first character to lower case.
+	 * 
+	 * @param s
+	 *            the string to convert.
+	 * @return the resulting string.
+	 */
 	public static String toLowerFirst(String s) {
+		return toUpperOrLowerFirst(s, false);
+	}
+
+	/**
+	 * Turn the first character to lower or upper case.
+	 * 
+	 * @param s
+	 *            the string to convert.
+	 * @param upper
+	 *            <code>true</code> if the character must be turned to upper
+	 *            case, <code>false</code> otherwise.
+	 * @return the resulting string.
+	 */
+	public static String toUpperOrLowerFirst(String s, boolean upper) {
 		String result = null;
 		if (s != null && s.length() > 0) {
 			char[] cars = s.toCharArray();
-			cars[0] = Character.toUpperCase(cars[0]);
+			cars[0] = upper ? Character.toUpperCase(cars[0]) : Character
+					.toLowerCase(cars[0]);
 			result = new String(cars);
 		}
 		return result;

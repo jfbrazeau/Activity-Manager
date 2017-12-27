@@ -113,6 +113,7 @@ public class StringHelperTest extends TestCase {
 			assertEquals(value, decoded);
 		}
 	}
+
 	public void testBase32Overflow() {
 		StringHelper.toBase32(1023); // No overflow
 		try {
@@ -122,4 +123,14 @@ public class StringHelperTest extends TestCase {
 		catch (IllegalArgumentException expected) {
 		}
 	}
+
+	public void testConvertCamelcase() {
+		assertEquals("My Taylor Is Rich",
+				StringHelper.camelCaseToPhrase("myTaylorIsRich"));
+		assertEquals("My Taylor Is Rich",
+				StringHelper.camelCaseToPhrase("my Taylor Is Rich"));
+		assertEquals("My Taylor Is Rich",
+				StringHelper.camelCaseToPhrase(" My  Taylor   Is   Rich  "));
+	}
+
 }

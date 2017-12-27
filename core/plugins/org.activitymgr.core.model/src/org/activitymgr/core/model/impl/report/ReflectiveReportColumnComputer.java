@@ -7,8 +7,8 @@ import org.activitymgr.core.dto.misc.TaskSums;
 import org.activitymgr.core.dto.report.ReportItem;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.IReportColumnComputer;
+import org.activitymgr.core.util.StringHelper;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang.StringUtils;
 
 public class ReflectiveReportColumnComputer implements IReportColumnComputer {
 	
@@ -34,7 +34,7 @@ public class ReflectiveReportColumnComputer implements IReportColumnComputer {
 		int idx = id.indexOf('.');
 		String thefieldId = id.substring(idx + 1);
 		this.isSummable = SUMMABLE_FIELDS.contains(thefieldId);
-		this.name = StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(thefieldId), ' ');
+		this.name = StringHelper.camelCaseToPhrase(thefieldId);
 		if (isSummable) {
 			// FIXME 'todo' attribute should be renamed to 'etc' in Task object
 			if (IModelMgr.ETC_ATTRIBUTE.equals(thefieldId)) {

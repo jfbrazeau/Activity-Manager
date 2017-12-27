@@ -27,7 +27,7 @@ public class HTMLReportServiceLogic extends AbstractReportServiceLogic {
 		PrintWriter pw = new PrintWriter(sw);
 		pw.println("<html>");
 		pw.println("<head>");
-		pw.println("<title>Export global contributions</title>");
+		pw.println("<title>Activity Manager Report</title>");
 		pw.println("<meta charset='UTF-8'>");
 		pw.println("</head>");
 		pw.println("<body>");
