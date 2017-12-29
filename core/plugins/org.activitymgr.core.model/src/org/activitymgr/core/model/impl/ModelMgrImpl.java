@@ -2260,25 +2260,28 @@ public class ModelMgrImpl implements IModelMgr {
 		List<IReportColumnComputer> columns = new ArrayList<IReportColumnComputer>();
 		int taskFields = 0;
 		List<String> collaboratorFields = new ArrayList<String>();
-		if (columnIds == null) {
-			columnIds = new String[] { "task.path", "task.name",
-					"collaborator.login" };
-		}
-		for (String columnId : columnIds) {
-			IReportColumnComputer column = reportColumnComputers.get(columnId);
-			if (column == null) {
-				column = new ReflectiveReportColumnComputer(columnId);
-				reportColumnComputers.put(columnId, column);
-			}
-			columns.add(column);
-			if (columnId.startsWith(ReflectiveReportColumnComputer.TASK_PREFIX)) {
-				taskFields++;
-			}
-			else if (columnId.startsWith(ReflectiveReportColumnComputer.COLLABORATOR_PREFIX)) {
-				collaboratorFields.add(columnId.substring(ReflectiveReportColumnComputer.COLLABORATOR_PREFIX.length()));
-			}
-			else {
-				throw new IllegalArgumentException("Unknown field type '" + columnId + "'");
+		if (columnIds != null) {
+			for (String columnId : columnIds) {
+				IReportColumnComputer column = reportColumnComputers
+						.get(columnId);
+				if (column == null) {
+					column = new ReflectiveReportColumnComputer(columnId);
+					reportColumnComputers.put(columnId, column);
+				}
+				columns.add(column);
+				if (columnId
+						.startsWith(ReflectiveReportColumnComputer.TASK_PREFIX)) {
+					taskFields++;
+				} else if (columnId
+						.startsWith(ReflectiveReportColumnComputer.COLLABORATOR_PREFIX)) {
+					collaboratorFields
+							.add(columnId
+									.substring(ReflectiveReportColumnComputer.COLLABORATOR_PREFIX
+											.length()));
+				} else {
+					throw new IllegalArgumentException("Unknown field type '"
+							+ columnId + "'");
+				}
 			}
 		}
 		// Check attributes to include

@@ -44,8 +44,9 @@ public abstract class AbstractSafeTwinSelectFieldLogic<DTO> extends
 	@Override
 	public void onValueChanged(Collection<String> newValue) {
 		try {
-			selectedDTOIds = newValue;
-			unsafeOnValueChanged(newValue);
+			selectedDTOIds.clear();
+			selectedDTOIds.addAll(newValue);
+			unsafeOnValueChanged(selectedDTOIds);
 		} catch (Throwable t) {
 			getView().focus();
 			doThrow(t);

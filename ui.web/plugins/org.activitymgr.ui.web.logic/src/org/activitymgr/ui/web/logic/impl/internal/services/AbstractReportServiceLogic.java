@@ -98,8 +98,13 @@ public abstract class AbstractReportServiceLogic extends
 			}
 		}
 
-		String[] columnIds = parameters.getListParameter(COLUMN_IDS_PARAMETER);
-		if (columnIds == null) {
+		String columnIdStr = parameters.getParameter(COLUMN_IDS_PARAMETER);
+		String[] columnIds = null;
+		if (columnIdStr != null) {
+			if (!"".equals(columnIdStr.trim())) {
+				columnIds = parameters.getListParameter(COLUMN_IDS_PARAMETER);
+			}
+		} else {
 			columnIds = new String[] { "task.path", "task.name" };
 		}
 

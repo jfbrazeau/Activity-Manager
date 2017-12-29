@@ -86,9 +86,12 @@ final class ActivityMgrServlet extends VaadinServlet {
 						String str = request.getParameter(name);
 						String[] result = null;
 						if (str != null) {
-							result = str.split(",");
-							for (int i = 0; i < result.length; i++) {
-								result[i] = result[i].trim();
+							str = str.trim();
+							if (!"".equals(str)) {
+								result = str.split(",");
+								for (int i = 0; i < result.length; i++) {
+									result[i] = result[i].trim();
+								}
 							}
 						}
 						return result;

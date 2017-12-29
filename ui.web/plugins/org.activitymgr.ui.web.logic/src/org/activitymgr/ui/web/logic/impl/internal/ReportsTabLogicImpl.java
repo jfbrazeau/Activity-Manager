@@ -126,17 +126,14 @@ public class ReportsTabLogicImpl extends
 
 	private AbstractSafeStandardButtonLogicImpl showPreviewFullscreenButtonLogic;
 
-	public ReportsTabLogicImpl(ITabFolderLogic parent, boolean advancedMode) {
+	private List<DTOAttribute> attributes;
+
+	public ReportsTabLogicImpl(ITabFolderLogic parent,
+			final boolean advancedMode) {
 		super(parent);
 		this.advancedMode = advancedMode;
 
-		// Global initializations
-		onlyKeepTaskWithContributions = !advancedMode; // in basic mode, only
-														// keep non empty tasks
-														// by default
 		tabLabel = advancedMode ? "Adv. reports" : "My reports";
-		collaboratorsSelectionMode = advancedMode ? ReportCollaboratorsSelectionMode.ALL_COLLABORATORS
-				: ReportCollaboratorsSelectionMode.ME;
 
 		// Initialize view
 		getView().initialize(advancedMode);
@@ -181,7 +178,7 @@ public class ReportsTabLogicImpl extends
 			/*
 			 * Attributes twin select
 			 */
-			List<DTOAttribute> attributes = new ArrayList<DTOAttribute>();
+			attributes = new ArrayList<DTOAttribute>();
 			appendDTOAttributes(attributes, dtoFactory.newTask(), TASK);
 			appendDTOAttributes(attributes, dtoFactory.newCollaborator(),
 					COLLABORATOR);
@@ -200,36 +197,29 @@ public class ReportsTabLogicImpl extends
 					updateUI();
 				}
 			};
-			Map<String, DTOAttribute> map = new HashMap<String, DTOAttribute>();
-			for (DTOAttribute att : attributes) {
-				map.put(att.getId(), att);
-			}
-			if (advancedMode) {
-				columnsSelectionLogic.select(map.get("task.path"),
-						map.get("task.name"),
-						map.get("collaborator.login"));
-				getView().setColumnSelectionView(
-						columnsSelectionLogic.getView());
-			} else {
-				columnsSelectionLogic.select(map.get("task.path"),
-						map.get("task.name"));
-			}
 
-			getView().setTaskTreeDepth(taskTreeDepth);
 		} catch (ReflectiveOperationException e) {
 			throw new IllegalStateException(e);
 		}
+		getView().addReportButton(
+				new AbstractSafeStandardButtonLogicImpl(this, "Defaults", null,
+						null) {
+					@Override
+					protected void unsafeOnClick() throws Exception {
+						restoreDefaultValues();
+					}
+
+				}.getView());
 		showPreviewFullscreenButtonLogic = new AbstractSafeStandardButtonLogicImpl(
-				this, "Preview (fullscreen)", null, null) {
+				this, "Preview (page)", null, null) {
 			@Override
 			protected void unsafeOnClick() throws Exception {
 				onShowPreviewFullscreenButtonClicked();
 			}
 		};
 		getView().addReportButton(showPreviewFullscreenButtonLogic.getView());
-		showPreviewDialogButtonLogic = new AbstractSafeStandardButtonLogicImpl(this,
-				"Preview (html)",
-				null, null) {
+		showPreviewDialogButtonLogic = new AbstractSafeStandardButtonLogicImpl(
+				this, "Preview (dialog)", null, null) {
 			@Override
 			protected void unsafeOnClick() throws Exception {
 				onShowPreviewDialogButtonClicked();
@@ -258,6 +248,39 @@ public class ReportsTabLogicImpl extends
 		};
 		getView().addReportButton(
 				downloadReportButtonLogic.getView());
+		restoreDefaultValues();
+	}
+
+	private void restoreDefaultValues() {
+		intervalType = ReportIntervalType.MONTH;
+		intervalBoundsMode = ReportIntervalBoundsMode.AUTOMATIC;
+		start = Calendar.getInstance();
+		end = Calendar.getInstance();
+		intervalCount = 0;
+		taskScopePath = "";
+		getView().setTaskScopePath(taskScopePath);
+		collaboratorsSelectionMode = advancedMode ? ReportCollaboratorsSelectionMode.ALL_COLLABORATORS
+				: ReportCollaboratorsSelectionMode.ME;
+		taskTreeDepth = 1;
+		getView().setTaskTreeDepth(taskTreeDepth);
+		if (advancedMode) {
+			collaboratorsSelectionLogic.select(new Collaborator[0]);
+			Map<String, DTOAttribute> map = new HashMap<String, DTOAttribute>();
+			for (DTOAttribute att : attributes) {
+				map.put(att.getId(), att);
+			}
+			if (advancedMode) {
+				columnsSelectionLogic.select(map.get("task.path"),
+						map.get("task.name"), map.get("collaborator.login"));
+				getView().setColumnSelectionView(
+						columnsSelectionLogic.getView());
+			} else {
+				columnsSelectionLogic.select(map.get("task.path"),
+						map.get("task.name"));
+			}
+		}
+		// in basic mode, only keep non empty tasks by default
+		onlyKeepTaskWithContributions = !advancedMode;
 		updateUI();
 	}
 
@@ -601,13 +624,17 @@ public class ReportsTabLogicImpl extends
 			getView().setRowContentConfigurationEnabled(includeTaskAttrs);
 
 			buildReport(true);
-			downloadReportButtonLogic.getView().setEnabled(true);
-			showPreviewDialogButtonLogic.getView().setEnabled(true);
+			setReportButtonsEnabled(true);
 		} catch (ModelException e) {
-			downloadReportButtonLogic.getView().setEnabled(false);
-			showPreviewDialogButtonLogic.getView().setEnabled(false);
+			setReportButtonsEnabled(false);
 			getView().setErrorMessage(e.getMessage());
 		}
+	}
+
+	private void setReportButtonsEnabled(boolean enabled) {
+		downloadReportButtonLogic.getView().setEnabled(enabled);
+		showPreviewDialogButtonLogic.getView().setEnabled(enabled);
+		showPreviewFullscreenButtonLogic.getView().setEnabled(enabled);
 	}
 
 	private Workbook buildReport(boolean dryRun) throws ModelException {
