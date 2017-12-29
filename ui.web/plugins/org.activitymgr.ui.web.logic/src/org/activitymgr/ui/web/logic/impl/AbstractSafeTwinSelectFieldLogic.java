@@ -72,6 +72,7 @@ public abstract class AbstractSafeTwinSelectFieldLogic<DTO> extends
 
 	public void select(DTO... dtos) {
 		selectedDTOIds.clear();
+		getView().setValue(selectedDTOIds);
 		for (DTO dto : dtos) {
 			selectedDTOIds.add(dtoInfoProvider.getId(dto));
 		}

@@ -324,6 +324,19 @@ public class TwinSelectView extends HorizontalLayout implements View {
 		logicNotificationEnabled = false;
 		try {
 			if (orderMode) {
+				// Remove elements from the right
+				List<Object> itemsToRemove = new ArrayList<Object>();
+				for (Object itemId : rightSelect.getItemIds()) {
+					if (!value.contains(itemId)) {
+						itemsToRemove.add(itemId);
+					}
+				}
+				for (Object itemId : itemsToRemove) {
+					rightSelect.removeItem(itemId);
+					leftSelect.addItem(itemId);
+					leftSelect.setItemCaption(itemId, labels.get(itemId));
+				}
+
 				// In order mode, simply move elements
 				// (don't use move function, or value order
 				// will not be preserved)
@@ -337,6 +350,14 @@ public class TwinSelectView extends HorizontalLayout implements View {
 				// Notify update
 				notifyChangeToLogic();
 			} else {
+				// Remove elements from the right
+				for (Object itemId : rightSelect.getItemIds()) {
+					if (!value.contains(itemId)) {
+						rightSelect.select(itemId);
+					}
+				}
+
+				moveSelectedItems(rightSelect, leftSelect);
 				// In non order mode, reuse move function
 				// (so that elements will be sorted)
 				for (String itemId : value) {
