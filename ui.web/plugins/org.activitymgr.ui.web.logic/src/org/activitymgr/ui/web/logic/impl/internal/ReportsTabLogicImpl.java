@@ -161,16 +161,16 @@ public class ReportsTabLogicImpl extends
 		/*
 		 * Collaborators twin select
 		 */
+		collaborators = getModelMgr().getCollaborators();
+		collaboratorsSelectionLogic = new AbstractSafeTwinSelectFieldLogic<Collaborator>(
+				this, false, COLLABORATORS_INFOS_PROVIDER, collaborators) {
+			@Override
+			protected void unsafeOnValueChanged(Collection<String> newValue)
+					throws Exception {
+				updateUI();
+			}
+		};
 		if (advancedMode) {
-			collaborators = getModelMgr().getCollaborators();
-			collaboratorsSelectionLogic = new AbstractSafeTwinSelectFieldLogic<Collaborator>(
-					this, false, COLLABORATORS_INFOS_PROVIDER, collaborators) {
-				@Override
-				protected void unsafeOnValueChanged(Collection<String> newValue)
-						throws Exception {
-					updateUI();
-				}
-			};
 			getView().setCollaboratorsSelectionView(
 					collaboratorsSelectionLogic.getView());
 		}
@@ -197,6 +197,10 @@ public class ReportsTabLogicImpl extends
 					updateUI();
 				}
 			};
+			if (advancedMode) {
+				getView().setColumnSelectionView(
+						columnsSelectionLogic.getView());
+			}
 
 		} catch (ReflectiveOperationException e) {
 			throw new IllegalStateException(e);
@@ -263,21 +267,17 @@ public class ReportsTabLogicImpl extends
 				: ReportCollaboratorsSelectionMode.ME;
 		taskTreeDepth = 1;
 		getView().setTaskTreeDepth(taskTreeDepth);
+		collaboratorsSelectionLogic.select(new Collaborator[0]);
+		Map<String, DTOAttribute> map = new HashMap<String, DTOAttribute>();
+		for (DTOAttribute att : attributes) {
+			map.put(att.getId(), att);
+		}
 		if (advancedMode) {
-			collaboratorsSelectionLogic.select(new Collaborator[0]);
-			Map<String, DTOAttribute> map = new HashMap<String, DTOAttribute>();
-			for (DTOAttribute att : attributes) {
-				map.put(att.getId(), att);
-			}
-			if (advancedMode) {
-				columnsSelectionLogic.select(map.get("task.path"),
-						map.get("task.name"), map.get("collaborator.login"));
-				getView().setColumnSelectionView(
-						columnsSelectionLogic.getView());
-			} else {
-				columnsSelectionLogic.select(map.get("task.path"),
-						map.get("task.name"));
-			}
+			columnsSelectionLogic.select(map.get("task.path"),
+					map.get("task.name"), map.get("collaborator.login"));
+		} else {
+			columnsSelectionLogic.select(map.get("task.path"),
+					map.get("task.name"));
 		}
 		// in basic mode, only keep non empty tasks by default
 		onlyKeepTaskWithContributions = !advancedMode;
