@@ -20,6 +20,12 @@ public class SelectFieldView<ITEM_ID_TYPE> extends NativeSelect implements View<
 	@Inject
 	private IResourceCache resourceCache;
 
+	public SelectFieldView() {
+		setImmediate(true);
+		setNullSelectionItemId("");
+		setNullSelectionAllowed(true);
+	}
+
 	@Override
 	public void registerLogic(final ISelectFieldLogic<ITEM_ID_TYPE> logic) {
 		this.logic = logic;
@@ -35,7 +41,7 @@ public class SelectFieldView<ITEM_ID_TYPE> extends NativeSelect implements View<
 
 	@Override
 	public void setItems(Map<ITEM_ID_TYPE, String> items) {
-    	setContainerDataSource(new MapBasedDatasource<ITEM_ID_TYPE>(items));
+		setContainerDataSource(new MapBasedDatasource<ITEM_ID_TYPE>(items));
 	}
 
 	@Override

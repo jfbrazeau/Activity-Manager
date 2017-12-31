@@ -158,7 +158,7 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 		// the cell logic cache must be invalidated to let the corresponding cell become
 		// read-only 
 		Task parentTask = modelMgr.getParentTask(task);
-		if (taskIds.contains(parentTask.getId())) {
+		if (parentTask != null && taskIds.contains(parentTask.getId())) {
 			cellLogics.invalidate(parentTask.getId());
 		}
 	}

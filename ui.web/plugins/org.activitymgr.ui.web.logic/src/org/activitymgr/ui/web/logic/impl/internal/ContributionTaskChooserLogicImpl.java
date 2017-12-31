@@ -103,7 +103,7 @@ public class ContributionTaskChooserLogicImpl extends
 			getView().setCreationPatterns(taskCreationPatternHandlersLabelsMap);
 
 			// Reset button state & status label
-			onSelectionChanged(null);
+			onSelectionChanged(lastSelectedTask);
 		
 			// Open the window
 			getRoot().getView().openWindow(getView());

@@ -2212,7 +2212,8 @@ public class ModelMgrImpl implements IModelMgr {
 
 		// Ensure we have an interval count
 		if (intervalCount == null) {
-			Calendar end = interval[1];
+			Calendar end = interval != null ? interval[1] : Calendar
+					.getInstance();
 			prepareCalendarForReport(end, intervalType);
 			end.add(intervalType.getIntType(), 1);
 			
