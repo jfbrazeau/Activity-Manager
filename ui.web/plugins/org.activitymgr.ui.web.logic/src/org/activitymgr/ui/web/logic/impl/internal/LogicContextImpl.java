@@ -9,7 +9,6 @@ import org.activitymgr.ui.web.logic.ILogicContext;
 import org.eclipse.core.runtime.IConfigurationElement;
 
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 
 // TODO Inject ?
 public class LogicContextImpl implements ILogicContext {
@@ -18,9 +17,6 @@ public class LogicContextImpl implements ILogicContext {
 
 	@Inject
 	private IEventBus eventBus;
-	
-	@Inject
-	private Injector injector;
 	
 	/* (non-Javadoc)
 	 * @see org.activitymgr.ui.web.logic.impl.ILogicContext#getConnectedCollaborator()

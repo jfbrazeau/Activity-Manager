@@ -50,7 +50,7 @@ public class TasksCellLogicFatory implements ITasksCellLogicFactory {
 		if (NAME_PROPERTY_ID.equals(propertyId)) {
 			if (readOnly) {
 				String name = highlightFilter(filter, task.getName());
-				logic = new LabelLogicImpl(parentLogic, name);
+				logic = new LabelLogicImpl(parentLogic, name, true);
 			} else {
 				logic = new TaskPropertyTextFieldLogic(parentLogic, task.getName(), propertyId, task);
 			}
@@ -58,7 +58,7 @@ public class TasksCellLogicFatory implements ITasksCellLogicFactory {
 		else if (CODE_PROPERTY_ID.equals(propertyId)) {
 			if (readOnly) {
 				String code = highlightFilter(filter, task.getCode());
-				logic = new LabelLogicImpl(parentLogic, code);
+				logic = new LabelLogicImpl(parentLogic, code, true);
 			} else {
 				logic = new TaskPropertyTextFieldLogic(parentLogic, task.getCode(), propertyId, task);
 			}
@@ -157,7 +157,8 @@ public class TasksCellLogicFatory implements ITasksCellLogicFactory {
 		}
 	}
 
-	private String highlightFilter(final String filter, final String text) {
+	private String highlightFilter(final String filter, String text) {
+		text = text.replaceAll("<", "&lt;");
 		if (filter == null || filter.length() == 0) {
 			return text;
 		}

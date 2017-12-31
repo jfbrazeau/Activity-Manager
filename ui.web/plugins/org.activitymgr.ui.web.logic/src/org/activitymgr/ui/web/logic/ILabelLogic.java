@@ -8,6 +8,8 @@ public interface ILabelLogic extends ILogic<ILabelLogic.View> {
 		void setLabel(String s);
 		
 		String getLabel();
+
+		void setHtmlMode(boolean htmlMode);
 		
 	}
 
