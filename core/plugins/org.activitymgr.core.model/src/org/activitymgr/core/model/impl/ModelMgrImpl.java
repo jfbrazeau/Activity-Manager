@@ -2176,15 +2176,31 @@ public class ModelMgrImpl implements IModelMgr {
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
 			boolean contributorCentricMode, long[] contributorIds)
 			throws ModelException {
-		return doBuildReport(start, intervalType, intervalCount, rootTaskId,
-				taskDepth, onlyKeepTasksWithContributions, byContributor, contributorCentricMode, contributorIds, (String[]) null, false);
+		try {
+			return doBuildReport(start, intervalType, intervalCount,
+					rootTaskId, taskDepth, onlyKeepTasksWithContributions,
+					byContributor, contributorCentricMode, contributorIds,
+					(String[]) null, -1, false);
+		} catch (ColumnsOverflowException e) {
+			// Shouldn't happe
+			throw new IllegalStateException(e);
+		}
 	}
 
+	/**
+	 * 
+	 * @param maxIntervalCount
+	 *            helps to detect EXCEL overlfows (when used in an EXCEL
+	 *            context).
+	 * @throws ColumnsOverflowException
+	 *             throw if the max columns count is overflowed.
+	 */
 	private Report doBuildReport(Calendar start, ReportIntervalType intervalType,
 			Integer intervalCount, Long rootTaskId, int taskDepth,
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
 			boolean contributorCentricMode, long[] contributorIds,
-			String[] orderContributorsBy, boolean dryRun) throws ModelException {
+			String[] orderContributorsBy, int maxIntervalCount, boolean dryRun)
+			throws ModelException, ColumnsOverflowException {
 		// Fix task depth
 		if (taskDepth < 0) {
 			taskDepth = getMaxTaskDepthUnder(rootTaskId);
@@ -2237,6 +2253,11 @@ public class ModelMgrImpl implements IModelMgr {
 		} else if (intervalCount == 0) {
 			throw new ModelException(
 					"Invalid interval (null value is not allowed)");
+		}
+		
+		// Column count computation
+		if (maxIntervalCount > 0 && intervalCount >= maxIntervalCount) {
+			throw new ColumnsOverflowException(intervalCount);
 		}
 		
 		// Compute the report
@@ -2319,135 +2340,144 @@ public class ModelMgrImpl implements IModelMgr {
 			boolean contributorCentricMode, long[] contributorIds,
 			IReportColumnComputer[] columns, String[] orderContributorsBy,
 			boolean dryRun) throws ModelException {
-		// Build raw report
-		Report report = doBuildReport(
-				start,
-				intervalType,
-				intervalCount,
-				rootTaskId,
-				taskDepth,
-				onlyKeepTasksWithContributions,
-				byContributor,
-				contributorCentricMode,
-				contributorIds,
-				orderContributorsBy, dryRun);
+		try {
+			// In Excel 97 format, it is not possible to have more than 256
+			// columns
+			int maxIntervalCount = 256 - columns.length - 1;
+			// Build raw report
+			Report report = doBuildReport(start, intervalType, intervalCount,
+					rootTaskId, taskDepth, onlyKeepTasksWithContributions,
+					byContributor, contributorCentricMode, contributorIds,
+					orderContributorsBy, maxIntervalCount, dryRun);
 
-		// Stop here if dry run mode
-		if (dryRun) {
-			return null;
-		}
+			// Stop here if dry run mode
+			if (dryRun) {
+				return null;
+			}
 
-		// Convert report to XLS
-		String dateFormat = null;
-		switch (intervalType) {
-		case YEAR :
-			dateFormat = "yyyy";
-			break;
-		case MONTH :
-			dateFormat = "MM/yy";
-			break;
-		case WEEK :
-			dateFormat = "ww/YY";
-			break;
-		case DAY:
-			dateFormat = "dd/MM";
-			break;
-		}
-		SimpleDateFormat xlsSdf = new SimpleDateFormat(dateFormat);
-		WorkbookBuilder wb = new WorkbookBuilder();
-		Workbook workbook = wb.getWorkbook();
-		Sheet sheet = workbook.createSheet("Report");
-		Row headerRow = sheet.createRow(sheet.getLastRowNum());
-		int colIdx = 0;
-		for (IReportColumnComputer column : columns) {
-			wb.asHeaderCellStyl(headerRow.createCell(colIdx++)).setCellValue(column.getName());
-		}
-		
-		Collection<Calendar> dates = report.getDates();
-		for (Calendar date : dates) {
-			String week = xlsSdf.format(date.getTime());
-			wb.asHeaderCellStyl(headerRow.createCell(colIdx)).setCellValue(week);
-			colIdx++;
-		}
-		wb.asHeaderCellStyl(headerRow.createCell(colIdx)).setCellValue("Total");
-		
-		long[] columnSums = new long[dates.size()];
-		ReportItem lastItem = null;
-		for (ReportItem item : report.getItems()) {
-			TaskSums contributedTask = item.getContributedTask();
-			Row row = sheet.createRow(sheet.getLastRowNum()+1);
-			colIdx = 0;
+			// Convert report to XLS
+			String dateFormat = null;
+			switch (intervalType) {
+			case YEAR:
+				dateFormat = "yyyy";
+				break;
+			case MONTH:
+				dateFormat = "MM/yy";
+				break;
+			case WEEK:
+				dateFormat = "ww/YY";
+				break;
+			case DAY:
+				dateFormat = "dd/MM";
+				break;
+			}
+			SimpleDateFormat xlsSdf = new SimpleDateFormat(dateFormat);
+			WorkbookBuilder wb = new WorkbookBuilder();
+			Workbook workbook = wb.getWorkbook();
+			Sheet sheet = workbook.createSheet("Report");
+			Row headerRow = sheet.createRow(sheet.getLastRowNum());
+			int colIdx = 0;
 			for (IReportColumnComputer column : columns) {
-				Cell cell = wb.asBodyCellStyl(row.createCell(colIdx++));
-				boolean ignoreCell = false;
-				// Summable fields must only appear once and not for each occurence
-				// For example if a task has 200 as budget, this value must not appear
-				// for every vollaborator that contributes to it
-				if (column.isSummable() && lastItem != null && contributedTask != null) {
-					if (lastItem.getContributedTask().getTask().getId() == contributedTask.getTask().getId()) {
-						ignoreCell = true;
-					}
-				}
-				if (!ignoreCell) {
-					Object cellValue = column.compute(item);
-					if (cellValue instanceof String) {
-						cell.setCellValue((String) cellValue);
-					}
-					else if (cellValue instanceof Double) {
-						cell.setCellValue((Double) cellValue);
-						wb.asBodyRightAlignmentCellStyl(cell);
-					}
-					else if (cellValue instanceof Boolean) {
-						cell.setCellValue((Boolean) cellValue);
-					}
-					else if (cellValue!=null) {
-						throw new IllegalStateException("Unexpected cell type : " + cellValue.getClass());
-					}
-				}
+				wb.asHeaderCellStyl(headerRow.createCell(colIdx++))
+						.setCellValue(column.getName());
 			}
-			long sum = 0;
-			for (int i=0; i<dates.size(); i++) {
-				long contributionSum = item.getContributionSum(i);
-				Cell cell = wb.asBodyRightAlignmentCellStyl(row
-						.createCell(colIdx++));
-				if (contributionSum > 0) {
-					sum += contributionSum;
-					columnSums[i] += contributionSum;
-					cell.setCellValue(contributionSum/100d);
-				}
-			}
-			wb.asFooterCellStyl(row.createCell(colIdx++)).setCellValue(
-					sum / 100d);
-			lastItem = item;
-		}
-		
-		// Footer
-		colIdx = columns.length;
-		Row row = sheet.createRow(sheet.getLastRowNum()+1);
-		long globalSum = 0;
-		for (int i=0; i<dates.size(); i++) {
-			long columnSum = columnSums[i];
-			wb.asFooterCellStyl(row.createCell(colIdx++)).setCellValue(
-					columnSum / 100d);
-			globalSum += columnSum;
-		}
-		wb.asFooterCellStyl(row.createCell(colIdx++)).setCellValue(
-				globalSum / 100d);
 
+			Collection<Calendar> dates = report.getDates();
+			for (Calendar date : dates) {
+				String week = xlsSdf.format(date.getTime());
+				wb.asHeaderCellStyl(headerRow.createCell(colIdx)).setCellValue(
+						week);
+				colIdx++;
+			}
+			wb.asHeaderCellStyl(headerRow.createCell(colIdx)).setCellValue(
+					"Total");
+
+			long[] columnSums = new long[dates.size()];
+			ReportItem lastItem = null;
+			for (ReportItem item : report.getItems()) {
+				TaskSums contributedTask = item.getContributedTask();
+				Row row = sheet.createRow(sheet.getLastRowNum() + 1);
+				colIdx = 0;
+				for (IReportColumnComputer column : columns) {
+					Cell cell = wb.asBodyCellStyl(row.createCell(colIdx++));
+					boolean ignoreCell = false;
+					// Summable fields must only appear once and not for each
+					// occurence
+					// For example if a task has 200 as budget, this value must
+					// not appear
+					// for every vollaborator that contributes to it
+					if (column.isSummable() && lastItem != null
+							&& contributedTask != null) {
+						if (lastItem.getContributedTask().getTask().getId() == contributedTask
+								.getTask().getId()) {
+							ignoreCell = true;
+						}
+					}
+					if (!ignoreCell) {
+						Object cellValue = column.compute(item);
+						if (cellValue instanceof String) {
+							cell.setCellValue((String) cellValue);
+						} else if (cellValue instanceof Double) {
+							cell.setCellValue((Double) cellValue);
+							wb.asBodyRightAlignmentCellStyl(cell);
+						} else if (cellValue instanceof Boolean) {
+							cell.setCellValue((Boolean) cellValue);
+						} else if (cellValue != null) {
+							throw new IllegalStateException(
+									"Unexpected cell type : "
+											+ cellValue.getClass());
+						}
+					}
+				}
+				long sum = 0;
+				for (int i = 0; i < dates.size(); i++) {
+					long contributionSum = item.getContributionSum(i);
+					Cell cell = wb.asBodyRightAlignmentCellStyl(row
+							.createCell(colIdx++));
+					if (contributionSum > 0) {
+						sum += contributionSum;
+						columnSums[i] += contributionSum;
+						cell.setCellValue(contributionSum / 100d);
+					}
+				}
+				wb.asFooterCellStyl(row.createCell(colIdx++)).setCellValue(
+						sum / 100d);
+				lastItem = item;
+			}
+
+			// Footer
+			colIdx = columns.length;
+			Row row = sheet.createRow(sheet.getLastRowNum() + 1);
+			long globalSum = 0;
+			for (int i=0; i<dates.size(); i++) {
+				long columnSum = columnSums[i];
+				wb.asFooterCellStyl(row.createCell(colIdx++)).setCellValue(
+						columnSum / 100d);
+				globalSum += columnSum;
+			}
+			wb.asFooterCellStyl(row.createCell(colIdx++)).setCellValue(
+					globalSum / 100d);
+
+			// Autosize code & name columns
+			colIdx = 0;
+			for (@SuppressWarnings("unused")
+			IReportColumnComputer column : columns) {
+				sheet.autoSizeColumn(colIdx++);
+			}
+			// Freeze
+			sheet.createFreezePane(colIdx, 1);
+			for (@SuppressWarnings("unused")
+			Calendar date : dates) {
+				sheet.setColumnWidth(colIdx, 1900);
+				colIdx++;
+			}
 		
-		// Autosize code & name columns
-		colIdx = 0;
-		for (@SuppressWarnings("unused") IReportColumnComputer column : columns) {
-			sheet.autoSizeColumn(colIdx++);
+			return workbook;
+		} catch (ColumnsOverflowException e) {
+			throw new ModelException("Too many generated columns :"
+					+ e.getColumnsCount()
+					+ " (Try to change your report interval type)");
 		}
-		// Freeze
-		sheet.createFreezePane(colIdx, 1);
-		for (@SuppressWarnings("unused") Calendar date : dates) {
-			sheet.setColumnWidth(colIdx, 1900);
-			colIdx++;
-		}
-	
-		return workbook;
 	}
 	
 	private void prepareCalendarForReport(Calendar start, ReportIntervalType intervalType) {
@@ -2496,6 +2526,37 @@ public class ModelMgrImpl implements IModelMgr {
 			}
 		}
 		return contributionDAO.getContributionsInterval(rootTaskPath);
+	}
+
+}
+
+/**
+ * Exception that is used to detect EXCEL columns overflow.
+ *
+ */
+@SuppressWarnings("serial")
+class ColumnsOverflowException extends Exception {
+
+	/** Columnc count. */
+	private int columnsCount;
+
+	/**
+	 * Default constructor.
+	 * 
+	 * @param columnsCount
+	 *            the columns count.
+	 */
+	public ColumnsOverflowException(int columnsCount) {
+		this.columnsCount = columnsCount;
+	}
+
+	/**
+	 * Returns the columns count.
+	 * 
+	 * @return the columns count.
+	 */
+	public int getColumnsCount() {
+		return columnsCount;
 	}
 
 }

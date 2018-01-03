@@ -8,7 +8,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -193,4 +195,13 @@ public abstract class AbstractModelTestCase extends TestCase implements
 	protected IDTOFactory getFactory() {
 		return injector.getInstance(IDTOFactory.class);
 	}
+
+	protected Calendar cal(int year, int month, int day) {
+		Calendar start = Calendar.getInstance(Locale.FRANCE);
+		start.set(Calendar.YEAR, year);
+		start.set(Calendar.MONTH, month - 1);
+		start.set(Calendar.DAY_OF_MONTH, day);
+		return start;
+	}
+
 }

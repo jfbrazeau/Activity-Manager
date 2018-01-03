@@ -8,11 +8,9 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -59,8 +57,6 @@ public class ReportTest extends AbstractModelTestCase {
 	private Collaborator wsmith;
 	
 	private Calendar sampleDataStart;
-	
-	private SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
 	
 	@Override
 	protected void setUp() throws Exception {
@@ -263,14 +259,6 @@ public class ReportTest extends AbstractModelTestCase {
 			throw new IllegalArgumentException("Invalide date, must match ddMMyyyy");
 		}
 		return cal(Integer.parseInt(cal.substring(4, 8)), Integer.parseInt(cal.substring(2, 4)), Integer.parseInt(cal.substring(0, 2)));
-	}
-	private Calendar cal(int year, int month, int day) {
-		//System.out.println("cal(" + year + ", "+ month + ", " + day +  ")");
-		Calendar start = Calendar.getInstance(Locale.FRANCE);
-		start.set(Calendar.YEAR, year);
-		start.set(Calendar.MONTH, month - 1);
-		start.set(Calendar.DAY_OF_MONTH, day);
-		return start;
 	}
 
 	private void loadSampleModel() throws FileNotFoundException, IOException,
