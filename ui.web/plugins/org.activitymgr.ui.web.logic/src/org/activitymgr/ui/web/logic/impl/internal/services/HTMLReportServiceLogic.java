@@ -23,11 +23,29 @@ public class HTMLReportServiceLogic extends AbstractReportServiceLogic {
 	protected void doService(Collaborator connected, Request request,
 			Response response, Workbook report) throws IOException {
 		response.setContentType("text/html");
+
+		/*
+		 * Prevents EXCEL from caching the page see
+		 * https://blogs.technet.microsoft
+		 * .com/the_microsoft_excel_support_team_blog
+		 * /2011/11/15/cannot-download-
+		 */
+		response.addHeader("Cache-Control", "max-age=0");
+		response.addHeader("Pragma", "public");
+
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		pw.println("<html>");
 		pw.println("<head>");
 		pw.println("<title>Activity Manager Report</title>");
+		/*
+		 * Prevents EXCEL from caching the page see
+		 * https://blogs.technet.microsoft
+		 * .com/the_microsoft_excel_support_team_blog
+		 * /2011/11/15/cannot-download-
+		 * the-information-you-requested-executing-web-query-from-excel/
+		 */
+		pw.println("<http-equiv=\"PRAGMA\" content=\"NO-CACHE\">");
 		pw.println("<meta charset='UTF-8'>");
 		pw.println("</head>");
 		pw.println("<body>");
