@@ -7,6 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -48,6 +49,10 @@ public class ReportsTabLogicImpl extends
 	private static final String SERVICE_REPORT_HTML_URI = "/service/report/html";
 
 	private static final String TASK = Task.class.getSimpleName().toLowerCase();
+	
+	private static final Collection<String> DTO_ATTRIBUTE_IDS_BLACKLIST = Arrays
+			.asList(new String[] { "collaborator.id", "task.id",
+					"task.fullPath", "task.number", "task.numberAsHex" });
 
 	private static final String COLLABORATOR = Collaborator.class
 			.getSimpleName().toLowerCase();
@@ -292,7 +297,9 @@ public class ReportsTabLogicImpl extends
 						StringHelper.camelCaseToPhrase(String.valueOf(property))
 								+ " ("
 								+ dtoLabel + ")");
-				attributes.add(att);
+				if (!DTO_ATTRIBUTE_IDS_BLACKLIST.contains(att.getId())) {
+					attributes.add(att);
+				}
 			}
 		}
 	}
