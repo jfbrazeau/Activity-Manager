@@ -61,8 +61,9 @@ final class ActivityMgrServlet extends VaadinServlet {
 
 					@Override
 					public String getCookie(String name) {
-						if (name != null) {
-							for (Cookie cookie : request.getCookies()) {
+						Cookie[] cookies = request.getCookies();
+						if (name != null && cookies != null) {
+							for (Cookie cookie : cookies) {
 								if (name.equals(cookie.getName())) {
 									return cookie.getValue();
 								}
