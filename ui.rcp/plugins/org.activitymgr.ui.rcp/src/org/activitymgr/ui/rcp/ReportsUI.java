@@ -575,7 +575,7 @@ public class ReportsUI {
 					null, 
 					columnsOrderElements
 							.toArray(new String[columnsOrderElements.size()]),
-					false);
+					true, false);
 			File file = File.createTempFile("am-report-", ".xls");
 			System.out.println(file);
 			FileOutputStream out = new FileOutputStream(file);

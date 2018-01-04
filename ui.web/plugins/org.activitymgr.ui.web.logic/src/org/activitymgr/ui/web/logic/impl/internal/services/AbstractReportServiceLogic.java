@@ -28,6 +28,7 @@ public abstract class AbstractReportServiceLogic extends
 	public static final String INTERVAL_COUNT_PARAMETER = "intervalCount";
 	public static final String INTERVAL_TYPE_PARAMETER = "intervalType";
 	public static final String START_PARAMETER = "start";
+	public static final String OMIT_TOTALS_PARAMETER = "omitTotals";
 
 	@Inject
 	private IModelMgr modelMgr;
@@ -107,11 +108,14 @@ public abstract class AbstractReportServiceLogic extends
 		} else {
 			columnIds = new String[] { "task.path", "task.name" };
 		}
+		String omitTotalsParameter = parameters.getParameter(OMIT_TOTALS_PARAMETER);
+		boolean includeTotals = (omitTotalsParameter == null)
+				|| (!"true".equals(omitTotalsParameter));
 
 		Workbook xls = modelMgr.buildReport(start, intervalType, intervalCount,
 				rootTaskId, taskDepth, onlyKeepTasksWithContributions,
 				byContributor, contributorCentricMode, contributorIds,
-				columnIds, false);
+				columnIds, includeTotals, false);
 		doService(connected, parameters, response, xls);
 	}
 

@@ -946,6 +946,9 @@ public interface IModelMgr {
 	 * @param orderContributorsBy
 	 *            fields to use to order contributors (ignored if
 	 *            <code>byContributor</code> is <code>false</code>).
+	 * @param includeTotals
+	 *            <code>true</code> to include a column with row sums and a row
+	 *            with columns sums.
 	 * @param dryRun
 	 *            <code>true</code> to perform a dry run test (report is not
 	 *            generated in such case).
@@ -958,7 +961,7 @@ public interface IModelMgr {
 			Integer intervalCount, Long rootTaskId, int taskDepth,
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
 			boolean contributorCentricMode, long[] contributorIds,
-			String[] columnIds, boolean dryRun)
+			String[] columnIds, boolean includeTotals, boolean dryRun)
 			throws ModelException;
 
 	/**
@@ -1000,6 +1003,9 @@ public interface IModelMgr {
 	 * @param orderContributorsBy
 	 *            fields to use to order contributors (ignored if
 	 *            <code>byContributor</code> is <code>false</code>).
+	 * @param includeTotals
+	 *            <code>true</code> to include a column with row sums and a row
+	 *            with columns sums.
 	 * @param dryRun
 	 *            <code>true</code> to perform a dry run test (report is not
 	 *            generated in such case).
@@ -1014,7 +1020,8 @@ public interface IModelMgr {
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
 			boolean contributorCentricMode, long[] contributorIds,
 			IReportColumnComputer[] columns, String[] orderContributorsBy,
-			boolean dryRun) throws ModelException;
+			boolean includeTotals, boolean dryRun)
+			throws ModelException;
 
 
 	/**

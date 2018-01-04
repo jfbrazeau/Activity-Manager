@@ -662,6 +662,7 @@ public class ReportsTabLogicImpl extends
 															// centric mode
 				reportParameters.contributorIds, // Contributor ids
 				reportParameters.columnIds, // Column ids
+				true,
 				dryRun);
 		return report;
 	}

@@ -3,6 +3,7 @@ package org.activitymgr.ui.web.logic.impl.internal.services;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.NumberFormat;
 
 import org.activitymgr.core.dto.Collaborator;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -14,6 +15,12 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 public class HTMLReportServiceLogic extends AbstractReportServiceLogic {
 
+	private static enum DecimalSeparator {
+		COMMA, DOT;
+	}
+
+	public static final String DECIMAL_SEPARATOR_PARAMETER = "decimalSeparator";
+
 	@Override
 	public String getPath() {
 		return "/report/html";
@@ -22,6 +29,17 @@ public class HTMLReportServiceLogic extends AbstractReportServiceLogic {
 	@Override
 	protected void doService(Collaborator connected, Request request,
 			Response response, Workbook report) throws IOException {
+
+		// Retrieve decimal separator
+		String decimalSeparatorParam = request
+				.getParameter(DECIMAL_SEPARATOR_PARAMETER);
+		DecimalSeparator decimalSeparator = null;
+		if (decimalSeparatorParam != null) {
+			decimalSeparator = DecimalSeparator.valueOf(decimalSeparatorParam
+					.trim().toUpperCase());
+		}
+
+		// Set response content type
 		response.setContentType("text/html");
 
 		/*
@@ -33,6 +51,7 @@ public class HTMLReportServiceLogic extends AbstractReportServiceLogic {
 		response.addHeader("Cache-Control", "max-age=0");
 		response.addHeader("Pragma", "public");
 
+		// Output the table
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		pw.println("<html>");
@@ -97,7 +116,19 @@ public class HTMLReportServiceLogic extends AbstractReportServiceLogic {
 						pw.print("#ERROR");
 						break;
 					case Cell.CELL_TYPE_NUMERIC:
-						pw.print(String.valueOf(cell.getNumericCellValue()));
+						String formatted = NumberFormat.getNumberInstance()
+								.format(cell.getNumericCellValue());
+						if (decimalSeparator != null) {
+							switch (decimalSeparator) {
+							case COMMA:
+								formatted = formatted.replace('.', ',');
+								break;
+							case DOT:
+								formatted = formatted.replace(',', '.');
+								break;
+							}
+						}
+						pw.print(formatted);
 						break;
 					case Cell.CELL_TYPE_STRING:
 						String str = cell.getStringCellValue();

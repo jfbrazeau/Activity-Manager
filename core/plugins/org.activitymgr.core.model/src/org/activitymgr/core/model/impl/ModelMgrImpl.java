@@ -2277,7 +2277,8 @@ public class ModelMgrImpl implements IModelMgr {
 			Long rootTaskId, int taskDepth,
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
 			boolean contributorCentricMode, long[] contributorIds,
-			String[] columnIds, boolean dryRun) throws ModelException {
+			String[] columnIds, boolean includeTotals, boolean dryRun)
+			throws ModelException {
 		Map<String, IReportColumnComputer> reportColumnComputers = new HashMap<String, IReportColumnComputer>(defaultReportColumnComputers); 
 		List<IReportColumnComputer> columns = new ArrayList<IReportColumnComputer>();
 		int taskFields = 0;
@@ -2329,6 +2330,7 @@ public class ModelMgrImpl implements IModelMgr {
 				(IReportColumnComputer[]) columns
 						.toArray(new IReportColumnComputer[columns.size()]),
 				collaboratorFields.toArray(new String[collaboratorFields.size()]),
+				includeTotals,
 				dryRun);
 	}
 
@@ -2339,7 +2341,7 @@ public class ModelMgrImpl implements IModelMgr {
 			boolean onlyKeepTasksWithContributions, boolean byContributor,
 			boolean contributorCentricMode, long[] contributorIds,
 			IReportColumnComputer[] columns, String[] orderContributorsBy,
-			boolean dryRun) throws ModelException {
+			boolean includeTotals, boolean dryRun) throws ModelException {
 		try {
 			// In Excel 97 format, it is not possible to have more than 256
 			// columns
@@ -2389,8 +2391,10 @@ public class ModelMgrImpl implements IModelMgr {
 						week);
 				colIdx++;
 			}
-			wb.asHeaderCellStyl(headerRow.createCell(colIdx)).setCellValue(
-					"Total");
+			if (includeTotals) {
+				wb.asHeaderCellStyl(headerRow.createCell(colIdx)).setCellValue(
+						"Total");
+			}
 
 			long[] columnSums = new long[dates.size()];
 			ReportItem lastItem = null;
@@ -2440,23 +2444,27 @@ public class ModelMgrImpl implements IModelMgr {
 						cell.setCellValue(contributionSum / 100d);
 					}
 				}
-				wb.asFooterCellStyl(row.createCell(colIdx++)).setCellValue(
-						sum / 100d);
+				if (includeTotals) {
+					wb.asFooterCellStyl(row.createCell(colIdx++)).setCellValue(
+							sum / 100d);
+				}
 				lastItem = item;
 			}
 
 			// Footer
-			colIdx = columns.length;
-			Row row = sheet.createRow(sheet.getLastRowNum() + 1);
-			long globalSum = 0;
-			for (int i=0; i<dates.size(); i++) {
-				long columnSum = columnSums[i];
+			if (includeTotals) {
+				colIdx = columns.length;
+				Row row = sheet.createRow(sheet.getLastRowNum() + 1);
+				long globalSum = 0;
+				for (int i = 0; i < dates.size(); i++) {
+					long columnSum = columnSums[i];
+					wb.asFooterCellStyl(row.createCell(colIdx++)).setCellValue(
+							columnSum / 100d);
+					globalSum += columnSum;
+				}
 				wb.asFooterCellStyl(row.createCell(colIdx++)).setCellValue(
-						columnSum / 100d);
-				globalSum += columnSum;
+						globalSum / 100d);
 			}
-			wb.asFooterCellStyl(row.createCell(colIdx++)).setCellValue(
-					globalSum / 100d);
 
 			// Autosize code & name columns
 			colIdx = 0;
