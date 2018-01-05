@@ -31,7 +31,6 @@ import org.activitymgr.ui.web.view.impl.internal.util.TextFieldView;
 import org.activitymgr.ui.web.view.impl.internal.util.TwinSelectView;
 
 import com.google.inject.AbstractModule;
-import com.vaadin.ui.UI;
 
 public class ViewModule extends AbstractModule {
 
@@ -42,9 +41,6 @@ public class ViewModule extends AbstractModule {
 
 		// Resource cache
 		bind(IResourceCache.class).toInstance(new ResourceCacheImpl());
-		
-		// Bind Vaadin UI
-		bind(UI.class).to(ActivityManagerUI.class);
 		
 		// Bind views
 		bind(IAuthenticationLogic.View.class).to(AuthenticationPanel.class);

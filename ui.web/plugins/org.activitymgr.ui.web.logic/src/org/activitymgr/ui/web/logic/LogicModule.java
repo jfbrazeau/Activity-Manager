@@ -9,7 +9,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Stack;
 
@@ -43,6 +45,7 @@ import org.apache.log4j.PropertyConfigurator;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
@@ -82,6 +85,35 @@ public class LogicModule extends AbstractModule {
 			public boolean getBooleanParameter(String key) {
 				return Boolean.TRUE.toString().equalsIgnoreCase(props.getProperty(key));
 			}
+
+			@Override
+			public Map<String, String> getScopedParameters(String prefix,
+					String suffix) {
+				if (prefix != null && !prefix.startsWith(".")) {
+					prefix += ".";
+				}
+				if (suffix != null && !suffix.startsWith(".")) {
+					suffix = "." + suffix;
+				}
+				Map<String, String> parameters = new HashMap<String, String>();
+				for (String key : props.stringPropertyNames()) {
+					if ((prefix == null || key.startsWith(prefix))
+							&& (suffix == null || key.endsWith(suffix))) {
+						String newKey = key;
+						if (prefix != null) {
+							newKey = newKey.substring(prefix.length());
+						}
+						if (suffix != null) {
+							newKey = newKey.substring(0,
+									key.length() - suffix.length());
+						}
+						parameters.put(newKey,
+								props.getProperty(key));
+					}
+				}
+				System.out.println(parameters);
+				return parameters;
+			}
 		});
 		
 		// Configure log4j
@@ -104,7 +136,8 @@ public class LogicModule extends AbstractModule {
 		
 		// Default SPI implementations
 		bind(IFeatureAccessManager.class).toInstance(new DefaultFeatureAccessManager());
-		bind(IAuthenticatorExtension.class).toInstance(new DefaultAuthenticatorExtension());
+		bind(IAuthenticatorExtension.class).to(
+				DefaultAuthenticatorExtension.class).in(Singleton.class);
 		bind(ICollaboratorsCellLogicFactory.class).toInstance(new CollaboratorsCellLogicFatory());
 		bind(IContributionsCellLogicFactory.class).toInstance(new ContributionsCellLogicFatory());
 		bind(ITasksCellLogicFactory.class).toInstance(new TasksCellLogicFatory());
@@ -257,9 +290,24 @@ class DefaultAuthenticatorExtension implements IAuthenticatorExtension {
 	@Inject
 	private IModelMgr modelMgr;
 
+	private Map<String, String> passwords;
+
+	@Inject
+	public DefaultAuthenticatorExtension(IConfiguration cfg) {
+		passwords = cfg.getScopedParameters("users", "passwords");
+	}
+
 	@Override
 	public boolean authenticate(String login, String password) {
-		return modelMgr.getCollaborator(login) != null;
+		if (passwords.size() > 0) {
+			String pwd = passwords.get(login);
+			return pwd != null && pwd.equals(password)
+					&& modelMgr.getCollaborator(login) != null;
+		} else {
+			// If there is no password configured, simply check that the user
+			// exists in the database
+			return modelMgr.getCollaborator(login) != null;
+		}
 	}
 
 }
