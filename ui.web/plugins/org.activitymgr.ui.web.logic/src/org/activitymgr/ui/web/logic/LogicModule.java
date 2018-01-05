@@ -104,14 +104,13 @@ public class LogicModule extends AbstractModule {
 							newKey = newKey.substring(prefix.length());
 						}
 						if (suffix != null) {
-							newKey = newKey.substring(0,
-									key.length() - suffix.length());
+							newKey = newKey.substring(0, newKey.length()
+									- suffix.length());
 						}
 						parameters.put(newKey,
 								props.getProperty(key));
 					}
 				}
-				System.out.println(parameters);
 				return parameters;
 			}
 		});
@@ -294,7 +293,7 @@ class DefaultAuthenticatorExtension implements IAuthenticatorExtension {
 
 	@Inject
 	public DefaultAuthenticatorExtension(IConfiguration cfg) {
-		passwords = cfg.getScopedParameters("users", "passwords");
+		passwords = cfg.getScopedParameters("users", "password");
 	}
 
 	@Override
