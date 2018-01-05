@@ -9,9 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Stack;
 
@@ -24,6 +22,7 @@ import org.activitymgr.ui.web.logic.impl.CollaboratorsCellLogicFatory;
 import org.activitymgr.ui.web.logic.impl.ContributionsCellLogicFatory;
 import org.activitymgr.ui.web.logic.impl.TasksCellLogicFatory;
 import org.activitymgr.ui.web.logic.impl.internal.CollaboratorsTabLogicImpl;
+import org.activitymgr.ui.web.logic.impl.internal.ConfigurationImpl;
 import org.activitymgr.ui.web.logic.impl.internal.ContributionsTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.internal.DefaultConstraintsValidator;
 import org.activitymgr.ui.web.logic.impl.internal.NewContributionTaskButtonLogic;
@@ -54,75 +53,42 @@ public class LogicModule extends AbstractModule {
 
 	@Override
 	protected void configure() {
-		// Install core module
-		install(new CoreModelModule());
-		
 		// Load configuration
-		final Properties props = new Properties();
+		Properties props = new Properties();
 		try {
-			String installArea = new URL(System.getProperty("osgi.install.area")).getFile();
+			String installArea = new URL(
+					System.getProperty("osgi.install.area")).getFile();
 			if (!attempToLoadConfiguration(props, new File(installArea))) {
-				attempToLoadConfiguration(props, new File(System.getProperty("activitymgr.config", System.getProperty("user.home"))));
+				attempToLoadConfiguration(
+						props,
+						new File(System.getProperty("activitymgr.config",
+								System.getProperty("user.home"))));
 			}
 		} catch (MalformedURLException e) {
 			throw new IllegalStateException(e);
 		}
-		
-		// Bind configuration
-		bind(IConfiguration.class).toInstance(new IConfiguration() {
-			
-			@Override
-			public String getStringParameter(String key) {
-				return props.getProperty(key);
-			}
-			
-			@Override
-			public int getIntParameter(String key) {
-				return Integer.parseInt(props.getProperty(key));
-			}
-			
-			@Override
-			public boolean getBooleanParameter(String key) {
-				return Boolean.TRUE.toString().equalsIgnoreCase(props.getProperty(key));
-			}
 
-			@Override
-			public Map<String, String> getScopedParameters(String prefix,
-					String suffix) {
-				if (prefix != null && !prefix.startsWith(".")) {
-					prefix += ".";
-				}
-				if (suffix != null && !suffix.startsWith(".")) {
-					suffix = "." + suffix;
-				}
-				Map<String, String> parameters = new HashMap<String, String>();
-				for (String key : props.stringPropertyNames()) {
-					if ((prefix == null || key.startsWith(prefix))
-							&& (suffix == null || key.endsWith(suffix))) {
-						String newKey = key;
-						if (prefix != null) {
-							newKey = newKey.substring(prefix.length());
-						}
-						if (suffix != null) {
-							newKey = newKey.substring(0, newKey.length()
-									- suffix.length());
-						}
-						parameters.put(newKey,
-								props.getProperty(key));
-					}
-				}
-				return parameters;
-			}
-		});
-		
 		// Configure log4j
 		PropertyConfigurator.configure(props);
+
+		// Bind configuration
+		ConfigurationImpl cfg = new ConfigurationImpl(props);
+		bind(IConfiguration.class).toInstance(cfg);
+
+		// Install core module
+		install(new CoreModelModule());
+		
 		// Create the datasource
 		BasicDataSource datasource = new BasicDataSource();
-		datasource.setDriverClassName(props.getProperty("activitymgr.jdbc.driver", "com.mysql.jdbc.Driver"));
-		datasource.setUrl(props.getProperty("activitymgr.jdbc.url", "jdbc:mysql://localhost:3306/taskmgr_db"));
-		datasource.setUsername(props.getProperty("activitymgr.jdbc.user", "taskmgr"));
-		datasource.setPassword(props.getProperty("activitymgr.jdbc.password", "taskmgr"));
+		IConfiguration jdbcCfg = cfg.getScoped("activitymgr.jdbc",
+				null);
+		datasource.setDriverClassName(jdbcCfg.get("driver",
+				"com.mysql.jdbc.Driver"));
+		datasource.setUrl(jdbcCfg.get("url",
+				"jdbc:mysql://localhost:3306/taskmgr_db"));
+		datasource.setUsername(jdbcCfg.get("user", "taskmgr"));
+		datasource.setPassword(jdbcCfg
+				.get("password", "taskmgr"));
 		datasource.setDefaultAutoCommit(false);
 		final ThreadLocalizedDbTransactionProviderImpl dbTxProvider = new ThreadLocalizedDbTransactionProviderImpl(datasource);
 		bind(ThreadLocalizedDbTransactionProviderImpl.class).toInstance(dbTxProvider);
@@ -239,7 +205,8 @@ public class LogicModule extends AbstractModule {
 	}
 
 	private boolean attempToLoadConfiguration(Properties props, File cfgFolder) {
-		System.out.println("Trying to load configuration from " + cfgFolder.getAbsolutePath());
+		System.out.println("Trying to load configuration from "
+				+ cfgFolder.getAbsolutePath());
 		if (cfgFolder.exists() && cfgFolder.isDirectory()) {
 			try {
 				File[] propFiles = cfgFolder.listFiles(new FilenameFilter() {
@@ -289,16 +256,16 @@ class DefaultAuthenticatorExtension implements IAuthenticatorExtension {
 	@Inject
 	private IModelMgr modelMgr;
 
-	private Map<String, String> passwords;
+	private IConfiguration passwords;
 
 	@Inject
 	public DefaultAuthenticatorExtension(IConfiguration cfg) {
-		passwords = cfg.getScopedParameters("users", "password");
+		passwords = cfg.getScoped("users", "password");
 	}
 
 	@Override
 	public boolean authenticate(String login, String password) {
-		if (passwords.size() > 0) {
+		if (!passwords.isEmpty()) {
 			String pwd = passwords.get(login);
 			return pwd != null && pwd.equals(password)
 					&& modelMgr.getCollaborator(login) != null;

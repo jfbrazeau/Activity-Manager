@@ -1,15 +1,21 @@
 package org.activitymgr.ui.web.logic;
 
-import java.util.Map;
-
 public interface IConfiguration {
 
-	String getStringParameter(String key);
-	
-	int getIntParameter(String key);
-	
-	boolean getBooleanParameter(String key);
+	String get(String key, String defaultValue);
 
-	Map<String, String> getScopedParameters(String prefix, String suffix);
+	String get(String key);
+	
+	int getInt(String key, int defaultValue);
+
+	int getInt(String key);
+	
+	boolean getBoolean(String key, boolean defaultValue);
+
+	boolean getBoolean(String key);
+
+	IConfiguration getScoped(String prefix, String suffix);
+
+	boolean isEmpty();
 
 }
