@@ -5,9 +5,8 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.activitymgr.ui.web.logic.IButtonLogic;
-import org.activitymgr.ui.web.logic.IReportsTabLogic;
+import org.activitymgr.ui.web.logic.IReportsLogic;
 import org.activitymgr.ui.web.logic.ITwinSelectFieldLogic.View;
-import org.activitymgr.ui.web.view.AbstractTabPanel;
 import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.dialogs.PopupDateFieldWithParser;
 import org.activitymgr.ui.web.view.impl.internal.util.DisableableValueChangeListener;
@@ -23,7 +22,6 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
-import com.vaadin.ui.GridLayout.Area;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Image;
 import com.vaadin.ui.Label;
@@ -31,9 +29,8 @@ import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextField;
 
 @SuppressWarnings("serial")
-public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements IReportsTabLogic.View {
+public class ReportsPanel extends GridLayout implements IReportsLogic.View {
 
-	private GridLayout bodyComponent;
 	private OptionGroup intervalUnitGroup;
 	private OptionGroup intervalBoundsModeGroup;
 	private PopupDateFieldWithParser startDateField;
@@ -53,57 +50,58 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 	private OptionGroup collaboratorsModeUnitGroup;
 	private Label intervalCountLabel;
 	private TextField intervalCountTextField;
+	private IReportsLogic logic;
+	private IResourceCache resourceCache;
 
 	@Inject
 	public ReportsPanel(IResourceCache resourceCache) {
-		super(resourceCache);
+		super(2, 16);
+		setSpacing(true);
+		setWidth("650px");
+		setColumnExpandRatio(0, 30);
+		setColumnExpandRatio(0, 70);
+		this.resourceCache = resourceCache;
 	}
 
 	@Override
-	protected Component createBodyComponent() {
-		// Left panel
-		bodyComponent = new GridLayout(2, 16);
-		bodyComponent.setSpacing(true);
-		bodyComponent.setWidth("650px");
-		bodyComponent.setColumnExpandRatio(0, 30);
-		bodyComponent.setColumnExpandRatio(0, 70);
-		return bodyComponent;
+	public void registerLogic(IReportsLogic logic) {
+		this.logic = logic;
 	}
 
 	@Override
 	public void initialize(boolean advancedMode) {
-		createIntervalConfigurationPanel(bodyComponent);
-		createScopeConfigurationPanel(bodyComponent, advancedMode);
-		createHeaderColumnsContentConfigurationPanel(bodyComponent,
+		createIntervalConfigurationPanel();
+		createScopeConfigurationPanel(advancedMode);
+		createHeaderColumnsContentConfigurationPanel(
 				advancedMode);
-		createRowsContentConfigurationPanel(bodyComponent,
+		createRowsContentConfigurationPanel(
 				advancedMode);
 		// Report buttons
-		bodyComponent.addComponent(new Label("")); // Empty cell
+		addComponent(new Label("")); // Empty cell
 		reportButtonsLayout = new HorizontalLayout();
-		bodyComponent.addComponent(reportButtonsLayout);
+		addComponent(reportButtonsLayout);
 
-		createStatusPanel(bodyComponent);
+		createStatusPanel();
 	}
 
-	private void createIntervalConfigurationPanel(GridLayout gl) {
-		addTitle(gl, "Interval configuration");
+	private void createIntervalConfigurationPanel() {
+		addTitle("Interval configuration");
 
-		gl.addComponent(new Label("Interval unit :"));
+		addComponent(new Label("Interval unit :"));
 		intervalUnitGroup = new OptionGroup();
 		intervalUnitGroup.setImmediate(true);
 		intervalUnitGroup.setStyleName("horizontal");
-		gl.addComponent(intervalUnitGroup);
+		addComponent(intervalUnitGroup);
 		
-		gl.addComponent(new Label("Interval bounds mode :"));
+		addComponent(new Label("Interval bounds mode :"));
 		intervalBoundsModeGroup = new OptionGroup();
 		intervalBoundsModeGroup.setImmediate(true);
 		intervalBoundsModeGroup.setStyleName("horizontal");
-		gl.addComponent(intervalBoundsModeGroup);
+		addComponent(intervalBoundsModeGroup);
 
-		gl.addComponent(new Label("Interval bounds :"));
+		addComponent(new Label("Interval bounds :"));
 		HorizontalLayout intervalBoundsPanel = new HorizontalLayout();
-		gl.addComponent(intervalBoundsPanel);
+		addComponent(intervalBoundsPanel);
 		startDateField = newDateField();
 		intervalBoundsPanel.addComponent(startDateField);
 		endDateField = newDateField();
@@ -125,20 +123,23 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 				.addValueChangeListener(new DisableableValueChangeListener() {
 			@Override
 					public void doValueChange(ValueChangeEvent event) {
-				getLogic().onIntervalTypeChanged(event.getProperty().getValue());
+						logic.onIntervalTypeChanged(event.getProperty()
+								.getValue());
 			}
 		});
 		intervalBoundsModeGroup
 				.addValueChangeListener(new DisableableValueChangeListener() {
 			@Override
 					public void doValueChange(ValueChangeEvent event) {
-				getLogic().onIntervalBoundsModeChanged(event.getProperty().getValue());
+						logic.onIntervalBoundsModeChanged(event.getProperty()
+								.getValue());
 			}
 		});
 		ValueChangeListener dateBoundsChangeListener = new DisableableValueChangeListener() {
 			@Override
 			public void doValueChange(ValueChangeEvent event) {
-				getLogic().onIntervalBoundsChanged(startDateField.getValue(), endDateField.getValue());
+				logic.onIntervalBoundsChanged(startDateField.getValue(),
+						endDateField.getValue());
 			}
 		};
 		startDateField.addValueChangeListener(dateBoundsChangeListener);
@@ -148,23 +149,23 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 					@Override
 					public void doValueChange(ValueChangeEvent event) {
 						try {
-							getLogic().onIntervalCountChanged(
+							logic.onIntervalCountChanged(
 									Integer.parseInt(intervalCountTextField
 											.getValue()));
 						} catch (NumberFormatException e) {
-							getLogic().onIntervalCountChanged(1);
+							logic.onIntervalCountChanged(1);
 						}
 					}
 				});
 	}
 
-	private void createScopeConfigurationPanel(GridLayout gl,
+	private void createScopeConfigurationPanel(
 			boolean advancedMode) {
-		addTitle(gl, "Scope configuration");
+		addTitle("Scope configuration");
 
-		gl.addComponent(new Label("Root task :"));
+		addComponent(new Label("Root task :"));
 		HorizontalLayout rootTaskPanel = new HorizontalLayout();
-		gl.addComponent(rootTaskPanel);
+		addComponent(rootTaskPanel);
 		rootTaskTextField = new TextField();
 		rootTaskTextField.setImmediate(true);
 		rootTaskTextField.setWidth("300px");
@@ -177,28 +178,28 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		collaboratorsModeUnitGroup.setImmediate(true);
 		collaboratorsModeUnitGroup.setStyleName("horizontal");
 		if (advancedMode) {
-			gl.addComponent(new Label("Collaborators :"));
-			gl.addComponent(collaboratorsModeUnitGroup);
+			addComponent(new Label("Collaborators :"));
+			addComponent(collaboratorsModeUnitGroup);
 		}
 
 		selectedCollaboratorsComponent = new Label("");
 		if (advancedMode) {
-			gl.addComponent(new Label(""));
-			gl.addComponent(selectedCollaboratorsComponent);
+			addComponent(new Label(""));
+			addComponent(selectedCollaboratorsComponent);
 		}
 
 		// Register listeners
 		browseTaskButton.addClickListener(new Button.ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				getLogic().onBrowseTaskButtonCLicked();
+				logic.onBrowseTaskButtonCLicked();
 			}
 		});
 		rootTaskTextField
 				.addValueChangeListener(new DisableableValueChangeListener() {
 					@Override
 					public void doValueChange(ValueChangeEvent event) {
-						getLogic().onTaskScopePathChanged(
+						logic.onTaskScopePathChanged(
 								(String) event.getProperty().getValue());
 					}
 				});
@@ -206,31 +207,31 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 				.addValueChangeListener(new DisableableValueChangeListener() {
 					@Override
 					public void doValueChange(ValueChangeEvent event) {
-						getLogic().onCollaboratorsSelectionModeChanged(
+						logic.onCollaboratorsSelectionModeChanged(
 								event.getProperty().getValue());
 					}
 				});
 	}
 
-	private void createHeaderColumnsContentConfigurationPanel(GridLayout gl,
+	private void createHeaderColumnsContentConfigurationPanel(
 			boolean advancedMode) {
 		if (advancedMode) {
-			addTitle(gl, "Header columns content configuration");
+			addTitle("Header columns content configuration");
 		}
 		selectedColumnsComponent = new Label("");
 		if (advancedMode) {
-			gl.addComponent(new Label("Fields :"));
-			gl.addComponent(selectedColumnsComponent);
+			addComponent(new Label("Fields :"));
+			addComponent(selectedColumnsComponent);
 		}
 	}
 
-	private void createRowsContentConfigurationPanel(GridLayout gl,
+	private void createRowsContentConfigurationPanel(
 			boolean advancedMode) {
-		addTitle(gl, "Rows content configuration");
+		addTitle("Rows content configuration");
 
-		gl.addComponent(new Label("Task tree depth :"));
+		addComponent(new Label("Task tree depth :"));
 		HorizontalLayout taskDepthLayout = new HorizontalLayout();
-		gl.addComponent(taskDepthLayout);
+		addComponent(taskDepthLayout);
 		decreaseTaskDepthButton = new Button("-");
 		decreaseTaskDepthButton.setImmediate(true);
 		taskDepthLayout.addComponent(decreaseTaskDepthButton);
@@ -250,8 +251,8 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		onlyKeepTasksWithContribsCheckbox = new CheckBox(
 				"Don't show rows for task that have no contribution");
 		if (advancedMode) {
-			gl.addComponent(new Label("Filter empty tasks rows :"));
-			gl.addComponent(onlyKeepTasksWithContribsCheckbox);
+			addComponent(new Label("Filter empty tasks rows :"));
+			addComponent(onlyKeepTasksWithContribsCheckbox);
 		}
 
 		decreaseTaskDepthButton.addClickListener(new Button.ClickListener() {
@@ -265,11 +266,11 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 					@Override
 					public void doValueChange(ValueChangeEvent event) {
 						try {
-							getLogic().onTaskTreeDepthChanged(
+							logic.onTaskTreeDepthChanged(
 									Integer.parseInt(taskDepthTextField
 											.getValue()));
 						} catch (NumberFormatException e) {
-							getLogic().onTaskTreeDepthChanged(0);
+							logic.onTaskTreeDepthChanged(0);
 						}
 					}
 				});
@@ -283,19 +284,18 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 				.addValueChangeListener(new DisableableValueChangeListener() {
 					@Override
 					public void doValueChange(ValueChangeEvent event) {
-						getLogic()
-								.onOnlyKeepTaskWithContributionsCheckboxChanged(
+						logic.onOnlyKeepTaskWithContributionsCheckboxChanged(
 										onlyKeepTasksWithContribsCheckbox
 												.getValue());
 					}
 				});
 	}
 
-	private void createStatusPanel(GridLayout gl) {
-		gl.addComponent(new Label("")); // Empty cell
+	private void createStatusPanel() {
+		addComponent(new Label("")); // Empty cell
 		HorizontalLayout statusLayout = new HorizontalLayout();
-		gl.addComponent(statusLayout);
-		warningIcon = new Image(null, getResourceCache().getResource(
+		addComponent(statusLayout);
+		warningIcon = new Image(null, resourceCache.getResource(
 				"warning.gif"));
 		statusLayout.addComponent(warningIcon);
 		warningIcon.setVisible(false);
@@ -336,16 +336,16 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 
 	private void substituteBodyComponent(Component componentToSubstitute,
 			Component newComponent) {
-		Area area = bodyComponent.getComponentArea(componentToSubstitute);
-		bodyComponent.removeComponent(componentToSubstitute);
-		bodyComponent.addComponent(newComponent,
+		Area area = getComponentArea(componentToSubstitute);
+		removeComponent(componentToSubstitute);
+		addComponent(newComponent,
 				area.getColumn1(), area.getRow1(), area.getColumn2(),
 				area.getRow2());
 	}
 
-	private void addTitle(GridLayout gl, String caption) {
+	private void addTitle(String caption) {
 		Label label = newTitleLabel(caption);
-		addComponentWithHorizontalSpan(gl, label);
+		addComponentWithHorizontalSpan(label);
 	}
 
 	private Label newTitleLabel(String caption) {
@@ -354,12 +354,12 @@ public class ReportsPanel extends AbstractTabPanel<IReportsTabLogic> implements 
 		return label;
 	}
 
-	private void addComponentWithHorizontalSpan(GridLayout gl,
+	private void addComponentWithHorizontalSpan(
 			Component component) {
-		gl.addComponent(component);
-		Area area = gl.getComponentArea(component);
-		gl.removeComponent(component);
-		gl.addComponent(component, area.getColumn1(), area.getRow1(),
+		addComponent(component);
+		Area area = getComponentArea(component);
+		removeComponent(component);
+		addComponent(component, area.getColumn1(), area.getRow1(),
 				area.getColumn2() + 1, area.getRow2());
 	}
 

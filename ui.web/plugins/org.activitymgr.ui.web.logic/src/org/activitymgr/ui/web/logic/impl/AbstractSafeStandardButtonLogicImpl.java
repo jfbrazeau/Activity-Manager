@@ -1,12 +1,13 @@
 package org.activitymgr.ui.web.logic.impl;
 
+import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.IStandardButtonLogic;
-import org.activitymgr.ui.web.logic.ITabLogic;
 import org.activitymgr.ui.web.logic.impl.internal.KeyBinding;
 
 public abstract class AbstractSafeStandardButtonLogicImpl extends AbstractLogicImpl<IStandardButtonLogic.View> implements IStandardButtonLogic {
 
-	public AbstractSafeStandardButtonLogicImpl(ITabLogic<?> parent, String label, String iconId, String shortcutKey) {
+	public AbstractSafeStandardButtonLogicImpl(ILogic<?> parent, String label,
+			String iconId, String shortcutKey) {
 		super(parent);
 		if (iconId != null) {
 			getView().setIcon(iconId);
