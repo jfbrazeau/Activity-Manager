@@ -47,11 +47,10 @@ public class ContributionTaskChooserLogicImpl extends
 
 	private boolean newTaskChecked;
 
-	private static Long lastSelectedTask;
-
 	public ContributionTaskChooserLogicImpl(AbstractLogicImpl<?> parent,
-			Collection<Long> selectedTaskIds, Task[] recentTasks) {
-		super(parent, lastSelectedTask, null);
+			Long taskIdToExpand, Collection<Long> selectedTaskIds,
+			Task[] recentTasks) {
+		super(parent, taskIdToExpand, null);
 		// Remember already selected task ids
 		this.alreadySelectedTaskIds = selectedTaskIds;
 		
@@ -103,7 +102,7 @@ public class ContributionTaskChooserLogicImpl extends
 			getView().setCreationPatterns(taskCreationPatternHandlersLabelsMap);
 
 			// Reset button state & status label
-			onSelectionChanged(lastSelectedTask);
+			onSelectionChanged(taskIdToExpand);
 		
 			// Open the window
 			getRoot().getView().openWindow(getView());
@@ -202,7 +201,6 @@ public class ContributionTaskChooserLogicImpl extends
 		try {
 			if (!newTaskChecked) {
 				((AbstractContributionTabLogicImpl) getParent()).addTasks(taskId);
-				lastSelectedTask = taskId;
 			}
 			else {
 				Task parent = getModelMgr().getTask(taskId);
@@ -218,7 +216,6 @@ public class ContributionTaskChooserLogicImpl extends
 				}
 				newTask.setCode(code);
 				getModelMgr().createTask(parent, newTask);
-				lastSelectedTask = newTask.getId();
 				
 				// Init task to select list
 				List<Long> selectedTaskIds = new ArrayList<Long>();

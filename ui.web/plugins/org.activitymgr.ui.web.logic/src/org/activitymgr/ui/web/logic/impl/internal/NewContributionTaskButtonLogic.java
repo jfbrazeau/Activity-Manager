@@ -37,6 +37,7 @@ public class NewContributionTaskButtonLogic extends AbstractSafeContributionTabS
 				from, to);
 
 		new ContributionTaskChooserLogicImpl(contributionTabLogic,
+				contributionTabLogic.getLastSelectedTaskId(),
 				contributionTabLogic.getTaskIds(), recentTasks);
 	}
 

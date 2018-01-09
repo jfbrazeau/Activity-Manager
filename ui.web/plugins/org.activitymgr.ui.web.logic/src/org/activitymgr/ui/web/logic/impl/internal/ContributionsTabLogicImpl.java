@@ -30,6 +30,8 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 	
 	private ContributionsListTableCellProvider contributionsProvider;
 
+	private Long lastSelectedTaskId;
+
 	public ContributionsTabLogicImpl(ITabFolderLogic parent) {
 		super(parent);
 
@@ -158,6 +160,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 	public void addTasks(long... taskIds) {
 		try {
 			if (taskIds.length > 0) {
+				lastSelectedTaskId = taskIds[0];
 				for (long taskId : taskIds) {
 					if (!contributionsProvider.getTaskIds().contains(taskId)) {
 						contributionsProvider.addEmptyWeekContribution(taskId);
@@ -217,5 +220,9 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 		return "Contributions";
 	}
 
+	@Override
+	public Long getLastSelectedTaskId() {
+		return lastSelectedTaskId;
+	}
 }
 
