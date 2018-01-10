@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -61,6 +62,9 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 
 	/** Default converters */
 	private static final Map<Class<?>, IConverter<?>> DEFAULT_CONVERTERS = new HashMap<Class<?>, IConverter<?>>();
+	
+	private static final Map<Class<?>, Integer> SQL_TYPES = new HashMap<Class<?>, Integer>();
+	
 	static {
 		DEFAULT_CONVERTERS.put(BigDecimal.class, new BigDecimalConverter());
 		DEFAULT_CONVERTERS.put(Boolean.class, new BooleanConverter());
@@ -81,6 +85,30 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 		DEFAULT_CONVERTERS.put(Short.class, new ShortConverter());
 		DEFAULT_CONVERTERS.put(short.class, new ShortConverter());
 		DEFAULT_CONVERTERS.put(String.class, new StringConverter());
+		
+		/*
+		 * Source : https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs
+		 * /guide/jdbc/getstart/mapping.doc.html#1005577
+		 */
+		SQL_TYPES.put(BigDecimal.class, Types.DECIMAL);
+		SQL_TYPES.put(Boolean.class, Types.BOOLEAN);
+		SQL_TYPES.put(boolean.class, Types.BOOLEAN);
+		SQL_TYPES.put(Byte.class, Types.TINYINT);
+		SQL_TYPES.put(byte.class, Types.TINYINT);
+		SQL_TYPES.put(Calendar.class, Types.DATE);
+		SQL_TYPES.put(Character.class, Types.CHAR);
+		SQL_TYPES.put(char.class, Types.CHAR);
+		SQL_TYPES.put(Double.class, Types.DOUBLE);
+		SQL_TYPES.put(double.class, Types.DOUBLE);
+		SQL_TYPES.put(Float.class, Types.REAL);
+		SQL_TYPES.put(float.class,  Types.REAL);
+		SQL_TYPES.put(Integer.class, Types.INTEGER);
+		SQL_TYPES.put(int.class, Types.INTEGER);
+		SQL_TYPES.put(Long.class, Types.BIGINT);
+		SQL_TYPES.put(long.class, Types.BIGINT);
+		SQL_TYPES.put(Short.class, Types.SMALLINT);
+		SQL_TYPES.put(short.class, Types.SMALLINT);
+		SQL_TYPES.put(String.class, Types.VARCHAR);
 	}
 	
 	/** The class */
@@ -779,11 +807,10 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 					else if (attributeValue instanceof LikeStatement) {
 						LikeStatement lts = (LikeStatement) attributeValue;
 						attributeValueToStatementColumn(attribute, lts.getValue(), pStmt, parameterIdx++);
-					}
-					else 
+					} else {
 						throw new IllegalStateException("Unknown statement type : " + attributeValue);
-				}
-				else {
+					}
+				} else if (attributeValue != null) {
 					attributeValueToStatementColumn(attribute, attributeValue, pStmt, parameterIdx++);
 				}
 			}
@@ -808,7 +835,17 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 		if (sqlLog.isDebugEnabled())
 			sqlLog.debug("    +-> attributeValue='" + attributeValue + "'");
 		// Par d�faut le param�tre est mapp� sur la valeur directe de l'attribut
-		converter.bind(pStmt, parameterIdx, attributeValue);
+		if (attributeValue == null) {
+			Class<?> type = attribute.getType();
+			Integer sqlType = SQL_TYPES.get(type);
+			if (sqlType == null) {
+				throw new IllegalStateException(
+						"Unexpected Java field type with null value : " + type);
+			}
+			pStmt.setNull(parameterIdx, sqlType);
+		} else {
+			converter.bind(pStmt, parameterIdx, attributeValue);
+		}
 	}
 
 	@Override
@@ -829,6 +866,7 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 	private void resultSetToInstanceAttributes(ResultSet rs, TYPE instance, boolean includePK) throws SQLException, IllegalArgumentException, IllegalAccessException {
 		resultSetToInstanceAttributes(rs, 1, instance, includePK);
 	}
+
 	private void resultSetToInstanceAttributes(ResultSet rs, int fromIndex, TYPE instance, boolean includePK) throws SQLException, IllegalArgumentException, IllegalAccessException {
 		int parameterIdx = fromIndex;
 		for (Field attribute : attributes) {
@@ -843,9 +881,29 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 		@SuppressWarnings("unchecked")
 		IConverter<Object> converter = (IConverter<Object>) converters.get(attribute);
 		Object attributeValue = converter.readValue(rs, rsColumnIdx);
+		// Test if the value was null
+		if (rs.wasNull()) {
+			attributeValue = null;
+		}
 		if (log.isDebugEnabled())
 			log.debug("    +-> '" + attribute.getName() + "'='" + attributeValue + "'");
-		attribute.set(instance, attributeValue);
+		// If the atttibute value is null, retrieve the default value for a
+		// primitive type
+		if (attributeValue == null) {
+			attribute.set(instance, defaultTypeValue(attribute.getType()));
+		} else {
+			attribute.set(instance, attributeValue);
+		}
+	}
+
+	private Object defaultTypeValue(Class<?> type) {
+		if (!type.isPrimitive()) {
+			return null;
+		} else if (type.equals(boolean.class)) {
+			return (boolean) false;
+		} else {
+			return 0;
+		}
 	}
 
 	@Override
@@ -946,9 +1004,10 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 					}
 					else 
 						throw new IllegalStateException("Unknown statement type : " + whereClauseAttributeValue);
-				}
-				else {
+				} else if (whereClauseAttributeValue != null) {
 					buf.append("=?");
+				} else {
+					buf.append(" is null");
 				}
 			}
 		}
