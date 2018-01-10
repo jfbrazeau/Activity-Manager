@@ -1,3 +1,4 @@
+drop table if exists REPORT_CONFIG;
 drop table if exists CONTRIBUTION;
 drop table if exists DURATION;
 drop table if exists TASK;
@@ -65,4 +66,18 @@ create table CONTRIBUTION (
     constraint CTB_CONTRIBUTOR_FK foreign key (CTB_CONTRIBUTOR) references COLLABORATOR (CLB_ID),
     constraint CTB_TASK_FK foreign key (CTB_TASK) references TASK (TSK_ID),
     constraint CTB_DURATION_FK foreign key (CTB_DURATION) references DURATION (DUR_ID)
+) engine=innodb;
+
+--------------------------------------------------------------
+-- Report configurations
+--------------------------------------------------------------
+create table REPORT_CONFIG (
+	REP_ID            integer(   3) not null auto_increment,
+	REP_CATEGORY      varchar(  50) not null,
+	REP_OWNER         integer(   3),
+	REP_NAME          varchar( 100) not null,
+	REP_CONFIGURATION varchar(1024),
+    index REP_OWNER_IDX (REP_OWNER),
+    constraint REP_PK primary key (REP_ID),
+    constraint REP_CONTRIBUTOR_FK foreign key (REP_OWNER) references COLLABORATOR (CLB_ID)
 ) engine=innodb;

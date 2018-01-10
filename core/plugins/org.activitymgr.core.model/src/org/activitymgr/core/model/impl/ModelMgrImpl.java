@@ -53,6 +53,7 @@ import org.activitymgr.core.dao.ICollaboratorDAO;
 import org.activitymgr.core.dao.IContributionDAO;
 import org.activitymgr.core.dao.ICoreDAO;
 import org.activitymgr.core.dao.IDurationDAO;
+import org.activitymgr.core.dao.IReportCfgDAO;
 import org.activitymgr.core.dao.IReportDAO;
 import org.activitymgr.core.dao.ITaskDAO;
 import org.activitymgr.core.dao.TaskDAOCache;
@@ -60,6 +61,7 @@ import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Contribution;
 import org.activitymgr.core.dto.Duration;
 import org.activitymgr.core.dto.IDTOFactory;
+import org.activitymgr.core.dto.ReportCfg;
 import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.dto.misc.IntervalContributions;
 import org.activitymgr.core.dto.misc.TaskContributions;
@@ -139,6 +141,10 @@ public class ModelMgrImpl implements IModelMgr {
 	/** Reports DAO */
 	@Inject
 	private IReportDAO reportDAO;
+
+	/** Report configurations DAO */
+	@Inject
+	private IReportCfgDAO reportCfgDAO;
 
 	/** Bean factory */
 	@Inject
@@ -2534,6 +2540,86 @@ public class ModelMgrImpl implements IModelMgr {
 			}
 		}
 		return contributionDAO.getContributionsInterval(rootTaskPath);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.model.IModelMgr#getConfigurations(java.lang.String,
+	 * java.lang.Long)
+	 */
+	@Override
+	public ReportCfg[] getReportCfgs(String category, Long ownerId)
+			throws ModelException {
+		checkReportCfgCategory(category);
+		return reportCfgDAO
+				.select(new String[] { "category", "ownerId" }, new Object[] {
+						category, ownerId }, new Object[] { "name" }, -1);
+	}
+
+	/**
+	 * Checks if a category is non null.
+	 * 
+	 * @param category
+	 *            the category to check.
+	 * @throws ModelException
+	 *             if the category is null.
+	 */
+	private void checkReportCfgCategory(String category) throws ModelException {
+		if (category == null) {
+			throw new ModelException("Category cannot be null");
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.model.IModelMgr#createReportCfg(org.activitymgr.
+	 * core.dto.ReportCfg)
+	 */
+	@Override
+	public ReportCfg createReportCfg(ReportCfg reportCfg) throws ModelException {
+		checkReportCfgCategory(reportCfg.getCategory());
+		if (reportCfg.getName() == null) {
+			throw new ModelException("Name cannot be null");
+		}
+		return reportCfgDAO.insert(reportCfg);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.model.IModelMgr#removeReportCfg(org.activitymgr.
+	 * core.dto.ReportCfg)
+	 */
+	@Override
+	public void removeReportCfg(long id) {
+		reportCfgDAO.deleteByPK(id);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.activitymgr.core.model.IModelMgr#updateReportCfg(org.activitymgr.
+	 * core.dto.ReportCfg)
+	 */
+	@Override
+	public void updateReportCfg(ReportCfg reportCfg) {
+		reportCfgDAO.update(reportCfg);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.activitymgr.core.model.IModelMgr#getReportCfg(long)
+	 */
+	@Override
+	public ReportCfg getReportCfg(long id) {
+		return reportCfgDAO.selectByPK(id);
 	}
 
 }

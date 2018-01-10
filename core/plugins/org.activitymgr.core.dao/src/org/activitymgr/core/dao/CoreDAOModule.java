@@ -4,12 +4,14 @@ import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Contribution;
 import org.activitymgr.core.dto.Duration;
 import org.activitymgr.core.dto.IDTOFactory;
+import org.activitymgr.core.dto.ReportCfg;
 import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.impl.dao.CollaboratorDAOImpl;
 import org.activitymgr.core.impl.dao.ContributionDAOImpl;
 import org.activitymgr.core.impl.dao.CoreDAOImpl;
 import org.activitymgr.core.impl.dao.DTOFactoryImpl;
 import org.activitymgr.core.impl.dao.DurationDAOImpl;
+import org.activitymgr.core.impl.dao.ReportCfgDAOImpl;
 import org.activitymgr.core.impl.dao.ReportDAOImpl;
 import org.activitymgr.core.impl.dao.TaskDAOImpl;
 import org.activitymgr.core.orm.DAOFactory;
@@ -73,16 +75,24 @@ public class CoreDAOModule implements Module {
 								: dtoClassProvider.getContributionClass());
 			}
 		}).in(Singleton.class);
+		binder.bind(new TypeLiteral<IDAO<ReportCfg>>() {
+		}).toProvider(new Provider<IDAO<ReportCfg>>() {
+			@Override
+			public IDAO<ReportCfg> get() {
+				return (IDAO<ReportCfg>) daoFactory.getDAO(ReportCfg.class);
+			}
+		}).in(Singleton.class);
 		
 		// Bind DAO wrappers
-		binder.bind(ICollaboratorDAO.class)
-	      .to(CollaboratorDAOImpl.class).in(Singleton.class);;
-	    binder.bind(ITaskDAO.class)
-	      .to(TaskDAOImpl.class).in(Singleton.class);;
-	    binder.bind(IDurationDAO.class)
-	      .to(DurationDAOImpl.class).in(Singleton.class);;
-	    binder.bind(IContributionDAO.class)
-	      .to(ContributionDAOImpl.class).in(Singleton.class);;
+		binder.bind(ICollaboratorDAO.class).to(CollaboratorDAOImpl.class)
+				.in(Singleton.class);
+		binder.bind(ITaskDAO.class).to(TaskDAOImpl.class).in(Singleton.class);
+		binder.bind(IDurationDAO.class).to(DurationDAOImpl.class)
+				.in(Singleton.class);
+		binder.bind(IContributionDAO.class).to(ContributionDAOImpl.class)
+				.in(Singleton.class);
+		binder.bind(IReportCfgDAO.class).to(ReportCfgDAOImpl.class)
+				.in(Singleton.class);
 
 		// Bind core DAO & ModelManager
 	    binder.bind(IDTOFactory.class).to(DTOFactoryImpl.class).in(Singleton.class);

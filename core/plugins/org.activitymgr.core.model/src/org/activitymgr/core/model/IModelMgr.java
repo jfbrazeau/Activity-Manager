@@ -40,6 +40,7 @@ import org.activitymgr.core.dao.DAOException;
 import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.Contribution;
 import org.activitymgr.core.dto.Duration;
+import org.activitymgr.core.dto.ReportCfg;
 import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.dto.misc.IntervalContributions;
 import org.activitymgr.core.dto.misc.TaskSearchFilter;
@@ -1042,5 +1043,60 @@ public interface IModelMgr {
 	 * @return the contributions interval.
 	 */
 	Calendar[] getContributionsInterval(Long rootTaskId);
+
+	/**
+	 * Returns the report configurations in the given category for the given
+	 * owner.
+	 * <p>
+	 * The owner identifier can be null. In that case, only common
+	 * configurations are returned.
+	 * </p>
+	 * 
+	 * @param category
+	 *            the category.
+	 * @param ownerId
+	 *            the owner identifier.
+	 * @return the configurations.
+	 * @throws ModelException
+	 *             if a model violation is detected.
+	 */
+	ReportCfg[] getReportCfgs(String category, Long ownerId)
+			throws ModelException;
+
+	/**
+	 * Loads a report configuration.
+	 * 
+	 * @param id
+	 *            the report configuration identifier.
+	 * @return the report configuration.
+	 */
+	ReportCfg getReportCfg(long id);
+
+	/**
+	 * Creates a new report configuration.
+	 * 
+	 * @param reportCfg
+	 *            the report configuration to create.
+	 * @return the new report configuration.
+	 * @throws ModelException
+	 *             if a model violation is detected.
+	 */
+	ReportCfg createReportCfg(ReportCfg reportCfg) throws ModelException;
+
+	/**
+	 * Removes a report configuration.
+	 * 
+	 * @param id
+	 *            the report configuration identifier to remove.
+	 */
+	void removeReportCfg(long id);
+
+	/**
+	 * Updates a report configuration.
+	 * 
+	 * @param reportCfg
+	 *            the report configuration to update.
+	 */
+	void updateReportCfg(ReportCfg reportCfg);
 
 }

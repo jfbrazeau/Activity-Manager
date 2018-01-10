@@ -14,6 +14,7 @@ public class AllTests {
 		TestSuite suite = new TestSuite("Test for org.activitymgr");
 		//$JUnit-BEGIN$
 		suite.addTestSuite(StringHelperTest.class);
+		suite.addTestSuite(ReportConfigurationsTest.class);
 		suite.addTestSuite(DurationTest.class);
 		suite.addTestSuite(CollaboratorsTest.class);
 		suite.addTestSuite(TaskTest.class);
