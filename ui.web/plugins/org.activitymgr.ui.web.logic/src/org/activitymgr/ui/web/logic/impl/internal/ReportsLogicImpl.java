@@ -1,10 +1,13 @@
 package org.activitymgr.ui.web.logic.impl.internal;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,7 +28,6 @@ import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.DateHelper;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.IReportsLogic;
-import org.activitymgr.ui.web.logic.ITaskChooserLogic.ISelectedTaskCallback;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeDownloadButtonLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeStandardButtonLogicImpl;
@@ -36,24 +38,53 @@ import org.activitymgr.ui.web.logic.impl.internal.services.AbstractReportService
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.internal.Streams;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import com.google.inject.Inject;
 
 public class ReportsLogicImpl extends
  AbstractLogicImpl<IReportsLogic.View>
 		implements IReportsLogic {
 
+	private static final String ONLY_KEEP_TASK_WITH_CONTRIBUTIONS = "onlyKeepTaskWithContributions";
+
+	private static final String TASK_TREE_DEPTH = "taskTreeDepth";
+
+	private static final String SELECTED_COLUMNS = "selectedColumns";
+
+	private static final String SELECTED_COLLABORATORS = "selectedCollaborators";
+
+	private static final String COLLABORATORS_SELECTION_MODE = "collaboratorsSelectionMode";
+
+	private static final String TASK_SCOPE_PATH = "taskScopePath";
+
+	private static final String INTERVAL_COUNT = "intervalCount";
+
+	private static final String START = "start";
+
+	private static final String INTERVAL_BOUNDS_MODE = "intervalBoundsMode";
+
+	private static final String INTERVAL_TYPE = "intervalType";
+
 	private static final String SERVICE_LOAD_URI = "/service/load";
 
 	private static final String SERVICE_REPORT_HTML_URI = "/service/report/html";
 
+	private static final SimpleDateFormat YYYYMMDD_SDF = new SimpleDateFormat(
+			"yyyyMMdd");
+
 	private static final String TASK = Task.class.getSimpleName().toLowerCase();
 	
+	protected static final String COLLABORATOR = Collaborator.class
+			.getSimpleName().toLowerCase();
+
 	private static final Collection<String> DTO_ATTRIBUTE_IDS_BLACKLIST = Arrays
 			.asList(new String[] { "collaborator.id", "task.id",
 					"task.fullPath", "task.number", "task.numberAsHex" });
-
-	private static final String COLLABORATOR = Collaborator.class
-			.getSimpleName().toLowerCase();
 
 	static enum ReportIntervalBoundsMode {
 		AUTOMATIC, LOWER_BOUND, BOTH_BOUNDS
@@ -126,6 +157,8 @@ public class ReportsLogicImpl extends
 
 	private List<DTOAttribute> attributes;
 
+	private Map<String, DTOAttribute> attributesMap;
+
 	public ReportsLogicImpl(AbstractLogicImpl<?> parent,
 			final boolean advancedMode) {
 		super(parent);
@@ -182,6 +215,10 @@ public class ReportsLogicImpl extends
 					return o1.getLabel().compareTo(o2.getLabel());
 				}
 			});
+			attributesMap = new HashMap<String, DTOAttribute>();
+			for (DTOAttribute att : attributes) {
+				attributesMap.put(att.getId(), att);
+			}
 			columnsSelectionLogic = new AbstractSafeTwinSelectFieldLogic<DTOAttribute>(
 					this, true, DTO_ATTRIBUTE_INFOS_PROVIDER,
 					attributes.toArray(new DTOAttribute[attributes.size()])) {
@@ -262,16 +299,13 @@ public class ReportsLogicImpl extends
 		taskTreeDepth = 1;
 		getView().setTaskTreeDepth(taskTreeDepth);
 		collaboratorsSelectionLogic.select(new Collaborator[0]);
-		Map<String, DTOAttribute> map = new HashMap<String, DTOAttribute>();
-		for (DTOAttribute att : attributes) {
-			map.put(att.getId(), att);
-		}
 		if (advancedMode) {
-			columnsSelectionLogic.select(map.get("task.path"),
-					map.get("task.name"), map.get("collaborator.login"));
+			columnsSelectionLogic.select(attributesMap.get("task.path"),
+					attributesMap.get("task.name"),
+					attributesMap.get("collaborator.login"));
 		} else {
-			columnsSelectionLogic.select(map.get("task.path"),
-					map.get("task.name"));
+			columnsSelectionLogic.select(attributesMap.get("task.path"),
+					attributesMap.get("task.name"));
 		}
 		// in basic mode, only keep non empty tasks by default
 		onlyKeepTaskWithContributions = !advancedMode;
@@ -329,14 +363,15 @@ public class ReportsLogicImpl extends
 		} catch (ModelException e) {
 			// Simply ignore, and consider that no task is selected
 		}
-		new TaskChooserLogic(this, selectedTask, new ISelectedTaskCallback() {
+		new AbstractTaskChooserLogic(this, selectedTask) {
 			@Override
-			public void taskSelected(long taskId) {
+			public void onOkButtonClicked(long taskId) {
 				Task task = getModelMgr().getTask(taskId);
 				try {
 					String taskCodePath = getModelMgr().getTaskCodePath(task);
 					ReportsLogicImpl.this.taskScopePath = taskCodePath;
-					getView().setTaskScopePath(taskCodePath);
+					ReportsLogicImpl.this.getView().setTaskScopePath(
+							taskCodePath);
 					updateUI();
 				} catch (ModelException e) {
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -346,7 +381,7 @@ public class ReportsLogicImpl extends
 							new String(out.toByteArray()));
 				}
 			}
-		});
+		};
 	}
 
 	@Override
@@ -375,6 +410,11 @@ public class ReportsLogicImpl extends
 	@Override
 	public void onIntervalCountChanged(int newValue) {
 		intervalCount = newValue;
+		computeEndFromIntervalCount();
+		updateUI();
+	}
+
+	private void computeEndFromIntervalCount() {
 		end.setTime(start.getTime());
 		switch (intervalType) {
 		case YEAR:
@@ -390,7 +430,6 @@ public class ReportsLogicImpl extends
 			end.add(Calendar.DATE, intervalCount);
 		}
 		end.add(Calendar.DATE, -1);
-		updateUI();
 	}
 
 	private void onShowPreviewFullscreenButtonClicked() {
@@ -414,29 +453,30 @@ public class ReportsLogicImpl extends
 			ReportParameters reportParameters = prepareReportParameters();
 			appendUrlParam(sw,
 					AbstractReportServiceLogic.INTERVAL_TYPE_PARAMETER,
-					reportParameters.intervalType.toString());
-			if (reportParameters.start != null) {
+					reportParameters.getIntervalType().toString());
+			if (reportParameters.getStart() != null) {
 				appendUrlParam(sw, AbstractReportServiceLogic.START_PARAMETER,
 						new SimpleDateFormat("yyyyMMdd")
-								.format(reportParameters.start.getTime()));
+								.format(reportParameters.getStart().getTime()));
 			}
-			if (reportParameters.intervalCount != null) {
+			if (reportParameters.getIntervalCount() != null) {
 				appendUrlParam(sw,
 					AbstractReportServiceLogic.INTERVAL_COUNT_PARAMETER,
-						reportParameters.intervalCount);
+						reportParameters.getIntervalCount());
 			}
-			if (reportParameters.rootTaskId != null) {
+			if (reportParameters.getRootTaskId() != null) {
 				appendUrlParam(sw,
 						AbstractReportServiceLogic.ROOT_TASK_PARAMETER,
 						taskScopePath);
 			}
 			appendUrlParam(sw,
 					AbstractReportServiceLogic.TASK_DEPTH_PARAMETER,
-					reportParameters.taskDepth);
-			if (reportParameters.contributorIds != null) {
-				Object[] array = new Object[reportParameters.contributorIds.length];
-				for (int i = 0; i < reportParameters.contributorIds.length; i++) {
-					array[i] = reportParameters.contributorIds[i];
+					reportParameters.getTaskDepth());
+			long[] contributorIds = reportParameters.getContributorIds();
+			if (contributorIds != null) {
+				Object[] array = new Object[contributorIds.length];
+				for (int i = 0; i < contributorIds.length; i++) {
+					array[i] = contributorIds[i];
 				}
 				appendUrlParam(sw,
 						AbstractReportServiceLogic.CONTRIBUTOR_IDS_PARAMETERS,
@@ -445,14 +485,14 @@ public class ReportsLogicImpl extends
 			if (advancedMode) {
 				appendUrlParam(sw,
 						AbstractReportServiceLogic.BY_CONTRIBUTOR_PARAMETER,
-						reportParameters.byContributor);
+						reportParameters.isByContributor());
 				appendUrlParam(
 						sw,
 						AbstractReportServiceLogic.CONTRIBUTOR_CENTRIC_MODE_PARAMETER,
-						reportParameters.contributorCentricMode);
+						reportParameters.isContributorCentricMode());
 				appendUrlParam(sw,
 						AbstractReportServiceLogic.COLUMN_IDS_PARAMETER,
-						reportParameters.columnIds);
+						reportParameters.getColumnIds().toArray());
 				appendUrlParam(
 						sw,
 						AbstractReportServiceLogic.ONLY_KEEP_TASKS_WITH_CONTRIBUTIONS_PARAMETER,
@@ -595,6 +635,7 @@ public class ReportsLogicImpl extends
 			intervalCount++;
 			getView().setIntervalCount(intervalCount);
 
+			getView().setTaskScopePath(taskScopePath);
 			// Check if collaborators selection UI must be enables
 			getView().selectCollaboratorsSelectionModeRadioButton(
 					collaboratorsSelectionMode);
@@ -613,7 +654,17 @@ public class ReportsLogicImpl extends
 				}
 			}
 			getView().setRowContentConfigurationEnabled(includeTaskAttrs);
+			getView().setRowContentConfigurationEnabled(includeTaskAttrs);
+			if (!includeTaskAttrs) {
+				taskTreeDepth = 0;
+			}
+			else if (taskTreeDepth == 0) {
+				taskTreeDepth = 1;
+			}
+			getView().setTaskTreeDepth(taskTreeDepth);
 
+			getView().setOnlyKeepTaskWithContributions(
+					onlyKeepTaskWithContributions);
 			buildReport(true);
 			setReportButtonsEnabled(true);
 		} catch (ModelException e) {
@@ -630,63 +681,61 @@ public class ReportsLogicImpl extends
 
 	private Workbook buildReport(boolean dryRun) throws ModelException {
 		ReportParameters reportParameters = prepareReportParameters();
-
-		Workbook report = getModelMgr().buildReport(start, // Start date
-						reportParameters.intervalType, // Interval type
-				reportParameters.intervalCount, // Interval count
-				reportParameters.rootTaskId, // Root task id
-				reportParameters.taskDepth, // Task tree
-													// depth
-				reportParameters.onlyKeepTasksWithContributions, // Only keep
-																	// tasks
-																	// with
-												// contributions
-				reportParameters.byContributor, // Include collaborators
-				reportParameters.contributorCentricMode, // Collaborators
-															// centric mode
-				reportParameters.contributorIds, // Contributor ids
-				reportParameters.columnIds, // Column ids
-				true,
-				dryRun);
+		Workbook report = getModelMgr().buildReport(
+				start, // Start date
+				reportParameters.getIntervalType(), // Interval type
+				reportParameters.getIntervalCount(), // Interval count
+				reportParameters.getRootTaskId(), // Root task id
+				reportParameters.getTaskDepth(), // Task tree
+				// depth
+				reportParameters.isOnlyKeepTasksWithContributions(), // Only
+																		// keep
+																		// tasks
+																		// with
+				// contributions
+				reportParameters.isByContributor(), // Include
+													// collaborators
+				reportParameters.isContributorCentricMode(), // Collaborators
+																// centric
+																// mode
+				reportParameters.getContributorIds(), // Contributor ids
+				reportParameters.getColumnIds().toArray(
+						new String[reportParameters.getColumnIds().size()]), // Column
+																				// ids
+				true, dryRun);
 		return report;
 	}
 
 	private ReportParameters prepareReportParameters() throws ModelException {
 		ReportParameters reportParameters = new ReportParameters();
 		if (intervalBoundsMode != ReportIntervalBoundsMode.AUTOMATIC) {
-			reportParameters.start = ReportsLogicImpl.this.start;
+			reportParameters.setStart(ReportsLogicImpl.this.start);
 		}
-		reportParameters.intervalType = intervalType;
-		reportParameters.intervalCount = intervalBoundsMode != ReportIntervalBoundsMode.AUTOMATIC ? intervalCount
-				: null;
+		reportParameters.setIntervalType(intervalType);
+		reportParameters
+				.setIntervalCount(intervalBoundsMode != ReportIntervalBoundsMode.AUTOMATIC ? intervalCount
+						: null);
 
 		if (taskScopePath != null && taskScopePath.trim().length() > 0) {
-			Task selectedTask = getModelMgr().getTaskByCodePath(taskScopePath);
-			reportParameters.rootTaskId = selectedTask != null ? selectedTask
-					.getId() : null;
+			Task selectedTask = getModelMgr().getTaskByCodePath(
+					taskScopePath.trim());
+			reportParameters.setRootTaskId(selectedTask != null ? selectedTask
+					.getId() : null);
 		}
 
 		List<DTOAttribute> selectedColumns = columnsSelectionLogic.getValue();
-		reportParameters.columnIds = new String[selectedColumns.size()];
 		for (int i = 0; i < selectedColumns.size(); i++) {
-			reportParameters.columnIds[i] = selectedColumns.get(i).getId();
+			reportParameters.getColumnIds().add(selectedColumns.get(i).getId());
 		}
-		reportParameters.contributorCentricMode = selectedColumns.size() > 0
-				&& selectedColumns.get(0).getId()
-				.startsWith(COLLABORATOR);
-		reportParameters.byContributor = containsDTOAttribute(selectedColumns,
-					COLLABORATOR);
-
-		boolean includeTasks = containsDTOAttribute(selectedColumns, TASK);
-		reportParameters.taskDepth = includeTasks ? taskTreeDepth : 0;
+		reportParameters.setTaskDepth(taskTreeDepth);
 
 		switch (collaboratorsSelectionMode) {
 		case ME:
-			reportParameters.contributorIds = new long[] { getContext()
-					.getConnectedCollaborator().getId() };
+			reportParameters.setContributorIds(new long[] { getContext()
+					.getConnectedCollaborator().getId() });
 			break;
 		case ALL_COLLABORATORS:
-			reportParameters.contributorIds = null;
+			reportParameters.setContributorIds(null);
 			break;
 		case SELECT_COLLABORATORS:
 			List<Collaborator> selectedCollaborators = collaboratorsSelectionLogic
@@ -695,27 +744,142 @@ public class ReportsLogicImpl extends
 				throw new ModelException(
 						"At least one collaborator must be selected");
 			if (selectedCollaborators.size() != collaborators.length) {
-				reportParameters.contributorIds = new long[selectedCollaborators
+				long[] contributorIds = new long[selectedCollaborators
 						.size()];
+				reportParameters.setContributorIds(contributorIds);
 				for (int i = 0; i < selectedCollaborators.size(); i++) {
-					reportParameters.contributorIds[i] = selectedCollaborators
+					contributorIds[i] = selectedCollaborators
 							.get(i).getId();
 				}
 			}
 		}
-		reportParameters.onlyKeepTasksWithContributions = onlyKeepTaskWithContributions;
+		reportParameters
+				.setOnlyKeepTasksWithContributions(onlyKeepTaskWithContributions);
 		return reportParameters;
 	}
 
-	private boolean containsDTOAttribute(List<DTOAttribute> attributes,
-			String dtoId) {
-		boolean includeCollaborators = false;
-		for (DTOAttribute att : attributes) {
-			if (att.getId().startsWith(dtoId)) {
-				includeCollaborators = true;
+	public String toJson() {
+		JsonObject json = new JsonObject();
+		json.addProperty(INTERVAL_TYPE, String.valueOf(intervalType));
+		json.addProperty(INTERVAL_BOUNDS_MODE,
+				String.valueOf(intervalBoundsMode));
+		if (intervalBoundsMode != ReportIntervalBoundsMode.AUTOMATIC) {
+			json.addProperty(START, YYYYMMDD_SDF.format(start.getTime()));
+		}
+		if (intervalBoundsMode == ReportIntervalBoundsMode.BOTH_BOUNDS) {
+			json.addProperty(INTERVAL_COUNT, intervalCount);
+		}
+		if (taskScopePath != null && !"".equals(taskScopePath.trim())) {
+			json.addProperty(TASK_SCOPE_PATH, taskScopePath.trim());
+		}
+		if (advancedMode) {
+			json.addProperty(COLLABORATORS_SELECTION_MODE,
+					String.valueOf(collaboratorsSelectionMode));
+			if (collaboratorsSelectionMode == ReportCollaboratorsSelectionMode.SELECT_COLLABORATORS) {
+				JsonArray jsonArray = new JsonArray();
+				json.add(SELECTED_COLLABORATORS, jsonArray);
+				List<Collaborator> selectedCollaborators = collaboratorsSelectionLogic
+						.getValue();
+				for (Collaborator collaborator : selectedCollaborators) {
+					jsonArray.add(new JsonPrimitive(collaborator.getId()));
+				}
+			}
+			JsonArray jsonArray = new JsonArray();
+			json.add(SELECTED_COLUMNS, jsonArray);
+			List<DTOAttribute> selectedColumns = columnsSelectionLogic
+					.getValue();
+			for (DTOAttribute attribute : selectedColumns) {
+				jsonArray.add(new JsonPrimitive(attribute.getId()));
 			}
 		}
-		return includeCollaborators;
+		json.addProperty(TASK_TREE_DEPTH, taskTreeDepth);
+		if (advancedMode) {
+			json.addProperty(ONLY_KEEP_TASK_WITH_CONTRIBUTIONS,
+				onlyKeepTaskWithContributions);
+		}
+		StringWriter sw = new StringWriter();
+		JsonWriter jsonWriter = new JsonWriter(sw);
+		jsonWriter.setIndent("  ");
+		try {
+			Streams.write(json, jsonWriter);
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
+		return sw.toString();
+	}
+
+	public void loadFromJson(String s) {
+		restoreDefaultValues();
+		if (s != null && !"".equals(s.trim())) {
+			JsonReader jsonReader = new JsonReader(new StringReader(s));
+			JsonObject json = (JsonObject) Streams.parse(jsonReader);
+			if (json.has(INTERVAL_TYPE)) {
+				intervalType = ReportIntervalType.valueOf(json.get(
+						INTERVAL_TYPE).getAsString());
+			}
+			if (json.has(INTERVAL_BOUNDS_MODE)) {
+				intervalBoundsMode = ReportIntervalBoundsMode.valueOf(json.get(
+						INTERVAL_BOUNDS_MODE).getAsString());
+			}
+			if (intervalBoundsMode != ReportIntervalBoundsMode.AUTOMATIC
+					&& json.has(START)) {
+				try {
+					start.setTime(YYYYMMDD_SDF.parse(json.get(START)
+							.getAsString()));
+				} catch (ParseException e) {
+					throw new IllegalStateException(e);
+				}
+			}
+			if (intervalBoundsMode == ReportIntervalBoundsMode.BOTH_BOUNDS
+					&& json.has(INTERVAL_COUNT)) {
+				intervalCount = json.get(INTERVAL_COUNT).getAsInt();
+				computeEndFromIntervalCount();
+			}
+			if (json.has(TASK_SCOPE_PATH)) {
+				taskScopePath = json.get(TASK_SCOPE_PATH).getAsString();
+			}
+			if (advancedMode) {
+				if (json.has(COLLABORATORS_SELECTION_MODE)) {
+					collaboratorsSelectionMode = ReportCollaboratorsSelectionMode
+							.valueOf(json.get(COLLABORATORS_SELECTION_MODE)
+									.getAsString());
+				}
+
+				if (collaboratorsSelectionMode == ReportCollaboratorsSelectionMode.SELECT_COLLABORATORS
+						&& json.has(SELECTED_COLLABORATORS)) {
+					JsonArray jsonArray = json.get(SELECTED_COLLABORATORS)
+							.getAsJsonArray();
+					Collaborator[] collaborators = new Collaborator[jsonArray
+							.size()];
+					for (int i = 0; i < jsonArray.size(); i++) {
+						long id = jsonArray.get(i).getAsLong();
+						collaborators[i] = getModelMgr().getCollaborator(id);
+					}
+					collaboratorsSelectionLogic.select(collaborators);
+				}
+				if (json.has(SELECTED_COLUMNS)) {
+					JsonArray jsonArray = json.get(SELECTED_COLUMNS)
+							.getAsJsonArray();
+					DTOAttribute[] columns = new DTOAttribute[jsonArray
+							.size()];
+					for (int i = 0; i < jsonArray.size(); i++) {
+						String id = jsonArray.get(i).getAsString();
+						columns[i] = attributesMap.get(id);
+					}
+					columnsSelectionLogic.select(columns);
+				}
+			}
+			if (json.has(TASK_TREE_DEPTH)) {
+				taskTreeDepth = json.get(TASK_TREE_DEPTH).getAsInt();
+			}
+			if (advancedMode) {
+				if (json.has(ONLY_KEEP_TASK_WITH_CONTRIBUTIONS)) {
+					onlyKeepTaskWithContributions = json.get(
+							ONLY_KEEP_TASK_WITH_CONTRIBUTIONS).getAsBoolean();
+				}
+			}
+			updateUI();
+		}
 	}
 
 }
@@ -742,14 +906,89 @@ class DTOAttribute {
 }
 
 class ReportParameters {
-	Calendar start;
-	ReportIntervalType intervalType;
-	Integer intervalCount;
-	Long rootTaskId;
-	int taskDepth;
-	boolean onlyKeepTasksWithContributions;
-	boolean byContributor;
-	boolean contributorCentricMode;
-	long[] contributorIds;
-	String[] columnIds;
+
+	private Calendar start;
+	private ReportIntervalType intervalType;
+	private Integer intervalCount;
+	private Long rootTaskId;
+	private int taskDepth;
+	private boolean onlyKeepTasksWithContributions;
+	private long[] contributorIds;
+	private List<String> columnIds = new ArrayList<String>();
+
+	public Calendar getStart() {
+		return start;
+	}
+
+	public void setStart(Calendar start) {
+		this.start = start;
+	}
+
+	public ReportIntervalType getIntervalType() {
+		return intervalType;
+	}
+
+	public void setIntervalType(ReportIntervalType intervalType) {
+		this.intervalType = intervalType;
+	}
+
+	public Integer getIntervalCount() {
+		return intervalCount;
+	}
+
+	public void setIntervalCount(Integer intervalCount) {
+		this.intervalCount = intervalCount;
+	}
+
+	public Long getRootTaskId() {
+		return rootTaskId;
+	}
+
+	public void setRootTaskId(Long rootTaskId) {
+		this.rootTaskId = rootTaskId;
+	}
+
+	public int getTaskDepth() {
+		return taskDepth;
+	}
+
+	public void setTaskDepth(int taskDepth) {
+		this.taskDepth = taskDepth;
+	}
+
+	public boolean isOnlyKeepTasksWithContributions() {
+		return onlyKeepTasksWithContributions;
+	}
+
+	public void setOnlyKeepTasksWithContributions(
+			boolean onlyKeepTasksWithContributions) {
+		this.onlyKeepTasksWithContributions = onlyKeepTasksWithContributions;
+	}
+
+	public long[] getContributorIds() {
+		return contributorIds;
+	}
+
+	public void setContributorIds(long[] contributorIds) {
+		this.contributorIds = contributorIds;
+	}
+
+	public List<String> getColumnIds() {
+		return columnIds;
+	}
+
+	boolean isContributorCentricMode() {
+		return columnIds.size() > 0
+				&& columnIds.get(0).startsWith(ReportsLogicImpl.COLLABORATOR);
+	}
+
+	boolean isByContributor() {
+		for (String columnId : columnIds) {
+			if (columnId.startsWith(ReportsLogicImpl.COLLABORATOR)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

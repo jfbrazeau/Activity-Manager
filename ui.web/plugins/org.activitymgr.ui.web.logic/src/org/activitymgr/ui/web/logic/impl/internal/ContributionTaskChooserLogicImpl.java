@@ -50,7 +50,7 @@ public class ContributionTaskChooserLogicImpl extends
 	public ContributionTaskChooserLogicImpl(AbstractLogicImpl<?> parent,
 			Long taskIdToExpand, Collection<Long> selectedTaskIds,
 			Task[] recentTasks) {
-		super(parent, taskIdToExpand, null);
+		super(parent, taskIdToExpand);
 		// Remember already selected task ids
 		this.alreadySelectedTaskIds = selectedTaskIds;
 		

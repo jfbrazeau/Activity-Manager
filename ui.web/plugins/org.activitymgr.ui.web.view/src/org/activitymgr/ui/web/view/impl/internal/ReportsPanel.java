@@ -446,6 +446,13 @@ public class ReportsPanel extends GridLayout implements IReportsLogic.View {
 	}
 
 	@Override
+	public void setOnlyKeepTaskWithContributions(
+			boolean onlyKeepTaskWithContributions) {
+		setFieldValueSilently(onlyKeepTasksWithContribsCheckbox,
+				onlyKeepTaskWithContributions);
+	}
+
+	@Override
 	public void setErrorMessage(String message) {
 		if (message != null && !"".equals(message.trim())) {
 			warningIcon.setVisible(true);

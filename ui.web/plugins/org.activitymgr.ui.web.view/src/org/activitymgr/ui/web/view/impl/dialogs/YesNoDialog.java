@@ -25,7 +25,9 @@ public class YesNoDialog extends AbstractDialog implements Button.ClickListener 
 
         VerticalLayout vl = new VerticalLayout();
         setContent(vl);
-        
+		vl.setSpacing(true);
+		vl.setMargin(true);
+
         if (question != null) {
             vl.addComponent(new Label(question));
         }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde?>
 <!-- generated with https://github.com/mbarbero/fr.obeo.releng.targetplatform -->
-<target name="Activity Manager" sequenceNumber="1487191344">
+<target name="Activity Manager" sequenceNumber="1515873306">
   <locations>
     <location includeMode="slicer" includeAllPlatforms="false" includeSource="false" includeConfigurePhase="false" type="InstallableUnit">
       <unit id="org.eclipse.platform.feature.group" version="0.0.0"/>
@@ -46,6 +46,8 @@
       <unit id="org.apache.log4j.source" version="0.0.0"/>
       <unit id="org.apache.poi" version="0.0.0"/>
       <unit id="org.apache.poi.source" version="0.0.0"/>
+      <unit id="com.google.gson" version="0.0.0"/>
+      <unit id="com.google.gson.source" version="0.0.0"/>
       <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository/"/>
     </location>
   </locations>

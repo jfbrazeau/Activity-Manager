@@ -11,6 +11,9 @@ public interface IRootLogic extends ILogic<IRootLogic.View> {
 		
 		void showConfirm(String message, IGenericCallback<Boolean> callback);
 
+		void simpleInput(String message, String defaultValue,
+				IGenericCallback<String> callback);
+
 		void setContentView(IView<?> contentView);
 
 		String getCookie(String name);

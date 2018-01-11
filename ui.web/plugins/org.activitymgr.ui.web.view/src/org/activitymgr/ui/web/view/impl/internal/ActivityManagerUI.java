@@ -6,6 +6,7 @@ import org.activitymgr.ui.web.logic.ActivityManagerLogic;
 import org.activitymgr.ui.web.logic.IGenericCallback;
 import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.IRootLogic;
+import org.activitymgr.ui.web.view.impl.dialogs.InputDialog;
 import org.activitymgr.ui.web.view.impl.dialogs.YesNoDialog;
 
 import com.google.inject.Inject;
@@ -41,6 +42,15 @@ public class ActivityManagerUI extends UI implements IRootLogic.View {
 	@Override
 	public void registerLogic(IRootLogic logic) {
 		this.logic = logic;
+	}
+
+	@Override
+	public void simpleInput(String message, String defaultValue,
+			IGenericCallback<String> callback) {
+		InputDialog dialog = new InputDialog("Input", message, defaultValue,
+				callback);
+		injector.injectMembers(dialog);
+		getUI().addWindow(dialog);
 	}
 
 	@Override

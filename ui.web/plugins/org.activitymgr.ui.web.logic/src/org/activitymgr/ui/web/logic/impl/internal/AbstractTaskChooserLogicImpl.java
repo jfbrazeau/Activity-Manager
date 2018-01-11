@@ -19,12 +19,9 @@ public abstract class AbstractTaskChooserLogicImpl<VIEW extends ITaskChooserLogi
 	
 	private Long selectedTaskId;
 
-	private ISelectedTaskCallback callback;
-
 	public AbstractTaskChooserLogicImpl(AbstractLogicImpl<?> parent,
-			Long selectedTaskId, ISelectedTaskCallback callback) {
+			Long selectedTaskId) {
 		super(parent);
-		this.callback = callback;
 
 		// Set filter
 		onTaskFilterChanged("");
@@ -55,11 +52,6 @@ public abstract class AbstractTaskChooserLogicImpl<VIEW extends ITaskChooserLogi
 	public void onSelectionChanged(Long taskId) {
 		this.selectedTaskId = taskId;
 		updateUI();
-	}
-
-	@Override
-	public void onOkButtonClicked(long taskId) {
-		callback.taskSelected(taskId);
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package org.activitymgr.ui.web.logic.impl.internal;
 
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ITabFolderLogic;
+import org.activitymgr.ui.web.logic.ITabLogic;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 
 public class TabFolderLogicImpl extends AbstractLogicImpl<ITabFolderLogic.View> implements ITabFolderLogic {
@@ -12,7 +13,7 @@ public class TabFolderLogicImpl extends AbstractLogicImpl<ITabFolderLogic.View> 
 		super(parent);
 	}
 
-	public void addTab(String id, String label, ILogic<?> logic) {
+	public void addTab(String id, String label, ITabLogic<?> logic) {
 		getView().addTab(id, label, logic.getView());
 	}
 

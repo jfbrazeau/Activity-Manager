@@ -14,7 +14,8 @@ Require-Bundle: org.eclipse.osgi,
  org.apache.commons.beanutils;bundle-version="1.8.0",
  org.apache.commons.lang,
  org.apache.poi,
- org.apache.commons.codec
+ org.apache.commons.codec,
+ com.google.gson;bundle-version="2.2.4"
 Export-Package: org.activitymgr.ui.web.logic,
  org.activitymgr.ui.web.logic.impl,
  org.activitymgr.ui.web.logic.impl.event,

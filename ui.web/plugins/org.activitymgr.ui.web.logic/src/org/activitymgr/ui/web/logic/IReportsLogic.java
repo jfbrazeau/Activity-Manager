@@ -55,11 +55,15 @@ public interface IReportsLogic extends ILogic<IReportsLogic.View> {
 
 		void setTaskTreeDepth(int i);
 
+		void setOnlyKeepTaskWithContributions(
+				boolean onlyKeepTaskWithContributions);
+
 		void addReportButton(IButtonLogic.View<?> view);
 
 		void setErrorMessage(String message);
 
 		void setRowContentConfigurationEnabled(boolean includeTaskAttrs);
+
 
 	}
 

@@ -43,6 +43,8 @@ location "http://download.eclipse.org/tools/orbit/downloads/drops/R2014052502125
 	org.apache.log4j.source lazy
 	org.apache.poi lazy
 	org.apache.poi.source lazy
+	com.google.gson lazy
+	com.google.gson.source lazy
 }
 
 /** location "http://jfbrazeau.github.io/Vaadin-OSGi-Container/repository/" {

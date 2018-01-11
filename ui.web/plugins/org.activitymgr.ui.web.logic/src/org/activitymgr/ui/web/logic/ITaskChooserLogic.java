@@ -25,10 +25,4 @@ public interface ITaskChooserLogic<VIEW extends ITaskChooserLogic.View<?>>
 
 	}
 
-	public static interface ISelectedTaskCallback {
-
-		void taskSelected(long taskId);
-
-	}
-
 }
