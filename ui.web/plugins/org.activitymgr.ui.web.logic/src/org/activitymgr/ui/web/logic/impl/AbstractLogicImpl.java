@@ -1,5 +1,9 @@
 package org.activitymgr.ui.web.logic.impl;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILogic;
@@ -33,6 +37,8 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 
 	private VIEW view;
 
+	private boolean viewNotificationsEnabled = false;
+
 	@SuppressWarnings("unchecked")
 	protected AbstractLogicImpl(ILogic<?> parent) {
 		this.parent = parent;
@@ -57,9 +63,45 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 		view = injector.getInstance(viewInterface);
 		
 		// Register the logic into the view
-		ILogic<VIEW> transactionalWrapper = twBuilder.buildTransactionalWrapper(this, iLogicInterface);
-		view.registerLogic(transactionalWrapper);
+		final ILogic<VIEW> transactionalWrapper = twBuilder.buildTransactionalWrapper(this, iLogicInterface);
 		
+		// Allows to disable notification methods (only methods returning void)
+		ILogic<VIEW> disableableWrapper = (ILogic<VIEW>) Proxy
+				.newProxyInstance(iLogicInterface.getClassLoader(),
+						new Class<?>[] { iLogicInterface },
+						new InvocationHandler() {
+							@Override
+							public Object invoke(Object proxy, Method method,
+									Object[] args) throws Throwable {
+								if (method.getReturnType().equals(void.class)
+										&& !viewNotificationsEnabled) {
+									System.out.println("** drop call "
+											+ method.getDeclaringClass()
+													.getSimpleName() + "."
+											+ method.getName());
+									return null;
+								} else {
+									System.out.println("call "
+											+ method.getDeclaringClass()
+													.getSimpleName() + "."
+											+ method.getName());
+									return method.invoke(transactionalWrapper,
+											args);
+								}
+							}
+						});
+		view.registerLogic(disableableWrapper);
+
+		// Enable view notifications
+		setViewNotificationsEnabled(true);
+	}
+
+	protected boolean isViewNotificationsEnabled() {
+		return viewNotificationsEnabled;
+	}
+
+	protected void setViewNotificationsEnabled(boolean enabled) {
+		viewNotificationsEnabled = enabled;
 	}
 
 	public VIEW getView() {

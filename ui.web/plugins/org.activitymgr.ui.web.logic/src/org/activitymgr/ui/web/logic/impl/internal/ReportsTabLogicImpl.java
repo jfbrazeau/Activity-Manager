@@ -48,6 +48,8 @@ public class ReportsTabLogicImpl extends
 
 	private ReportsLogicImpl reportsLogic;
 
+	private boolean dirty;
+
 	public ReportsTabLogicImpl(ITabFolderLogic parent,
 			final boolean advancedMode) {
 		super(parent);
@@ -104,8 +106,10 @@ public class ReportsTabLogicImpl extends
 				ReportCfg cfgToSave = selectedReportCfgs.iterator().next();
 				cfgToSave.setConfiguration(reportsLogic.toJson());
 				getModelMgr().updateReportCfg(cfgToSave);
+				dirty = false;
 				getRoot().getView().showNotification(
 						"Report configuration saved");
+				updateUI();
 			}
 		};
 		getView().addReportConfigurationButton(saveReportButton.getView());
@@ -195,7 +199,21 @@ public class ReportsTabLogicImpl extends
 			throw new IllegalStateException(e);
 		}
 		// Add a report logic
-		reportsLogic = new ReportsLogicImpl(this, advancedMode);
+		reportsLogic = new ReportsLogicImpl(this, advancedMode) {
+			@Override
+			protected void onReportConfigurationChanged(String json) {
+				boolean oldDirty = dirty;
+				if (selectedReportCfgs.size() > 0) {
+					ReportCfg editedCfg = selectedReportCfgs.iterator().next();
+					dirty = !json.equals(editedCfg.getConfiguration());
+				} else {
+					dirty = false;
+				}
+				if (oldDirty != dirty) {
+					updateUI();
+				}
+			}
+		};
 		getView().setReportsView(reportsLogic.getView());
 
 		// Auto select first entry
@@ -225,22 +243,57 @@ public class ReportsTabLogicImpl extends
 		boolean singleSelection = !emptySelection
 				&& selectedReportCfgs.size() == 1;
 		getView().setReportsPanelEnabled(singleSelection);
-		saveReportButton.getView().setEnabled(singleSelection);
+		saveReportButton.getView().setEnabled(dirty);
 		duplicateReportButton.getView().setEnabled(singleSelection);
 		removeReportButton.getView().setEnabled(!emptySelection);
 	}
 
 	@Override
-	public void onSelectionChanged(Collection<Long> values) {
-		selectedReportCfgs.clear();
-		for (Long value : values) {
-			ReportCfg rc = reportCfgsMap.get(value);
-			if (rc != null) {
-				selectedReportCfgs.add(rc);
-				reportsLogic.loadFromJson(rc.getConfiguration());
-			}
+	public void onSelectionChanged(final Collection<Long> values) {
+		final IGenericCallback<Boolean> changeSelectionCallback = buildTransactionalWrapper(
+				new AbstractSafeGenericCallback<Boolean>(this) {
+					@Override
+					protected void unsafeCallback(Boolean okClicked)
+							throws Exception {
+						try {
+							setViewNotificationsEnabled(false);
+							if (okClicked) {
+								selectedReportCfgs.clear();
+								for (Long value : values) {
+									ReportCfg rc = reportCfgsMap.get(value);
+									if (rc != null) {
+										selectedReportCfgs.add(rc);
+									}
+								}
+								if (selectedReportCfgs.size() != 1) {
+									reportsLogic.loadFromJson(null);
+								} else {
+									ReportCfg cfg = selectedReportCfgs
+											.iterator().next();
+									reportsLogic.loadFromJson(cfg
+											.getConfiguration());
+									// Ensure configuration is the same
+									// even after UI initialization
+									cfg.setConfiguration(reportsLogic.toJson());
+								}
+								dirty = false;
+								updateUI();
+							} else {
+								ReportCfg cfg = selectedReportCfgs.iterator()
+										.next();
+								getView().selectReportCfg(cfg.getId());
+							}
+						} finally {
+							setViewNotificationsEnabled(true);
+						}
+					}
+				}, IGenericCallback.class);
+		if (dirty) {
+			getRoot().getView().showConfirm("Current report is not saved, continue ?", changeSelectionCallback);
+		} else {
+			// simulate a click on OK
+			changeSelectionCallback.callback(true);
 		}
-		updateUI();
 	}
 
 	private void sortReportCfgs() {

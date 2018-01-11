@@ -46,8 +46,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.google.inject.Inject;
 
-public class ReportsLogicImpl extends
- AbstractLogicImpl<IReportsLogic.View>
+public class ReportsLogicImpl extends AbstractLogicImpl<IReportsLogic.View>
 		implements IReportsLogic {
 
 	private static final String ONLY_KEEP_TASK_WITH_CONTRIBUTIONS = "onlyKeepTaskWithContributions";
@@ -531,7 +530,9 @@ public class ReportsLogicImpl extends
 		}
 	}
 
-	void updateUI() {
+	private void updateUI() {
+		System.out.println("updateUI");
+		setViewNotificationsEnabled(false);
 		try {
 			getView().setErrorMessage("");
 			// Update interval type & bounds
@@ -667,10 +668,23 @@ public class ReportsLogicImpl extends
 					onlyKeepTaskWithContributions);
 			buildReport(true);
 			setReportButtonsEnabled(true);
+			// Notify
+			onReportConfigurationChanged(toJson());
 		} catch (ModelException e) {
 			setReportButtonsEnabled(false);
 			getView().setErrorMessage(e.getMessage());
+		} finally {
+			setViewNotificationsEnabled(true);
 		}
+	}
+
+	/**
+	 * This method is intended to be subclassed.
+	 * 
+	 * @param json
+	 *            the report configuration json.
+	 */
+	protected void onReportConfigurationChanged(String json) {
 	}
 
 	private void setReportButtonsEnabled(boolean enabled) {
