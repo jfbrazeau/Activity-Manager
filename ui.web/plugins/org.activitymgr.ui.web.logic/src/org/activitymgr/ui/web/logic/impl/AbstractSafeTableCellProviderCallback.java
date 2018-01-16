@@ -4,13 +4,12 @@ import java.util.Collection;
 import java.util.List;
 
 import org.activitymgr.ui.web.logic.Align;
-import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogic.IView;
 import org.activitymgr.ui.web.logic.ITableCellProviderCallback;
 
 public abstract class AbstractSafeTableCellProviderCallback<ITEM_ID_TYPE> extends AbstractSafeCallback implements ITableCellProviderCallback<ITEM_ID_TYPE> {
 	
-	public AbstractSafeTableCellProviderCallback(ILogic<?> source) {
+	public AbstractSafeTableCellProviderCallback(AbstractLogicImpl<?> source) {
 		super(source);
 	}
 

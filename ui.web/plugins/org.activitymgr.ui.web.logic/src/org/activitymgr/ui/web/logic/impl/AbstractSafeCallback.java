@@ -1,23 +1,22 @@
 package org.activitymgr.ui.web.logic.impl;
 
-import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogicContext;
 
 import com.google.inject.Inject;
 
 public abstract class AbstractSafeCallback {
 	
-	private ILogic<?> source;
+	private AbstractLogicImpl<?> source;
 	
 	@Inject
 	private ILogicContext context;
 
-	public AbstractSafeCallback(ILogic<?> source) {
+	public AbstractSafeCallback(AbstractLogicImpl<?> source) {
 		this.source = source;
 		source.injectMembers(this);
 	}
 
-	protected ILogic<?> getSource() {
+	protected AbstractLogicImpl<?> getSource() {
 		return source;
 	}
 

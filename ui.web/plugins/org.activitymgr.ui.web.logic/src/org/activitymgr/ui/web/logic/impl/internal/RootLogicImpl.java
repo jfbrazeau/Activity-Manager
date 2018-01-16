@@ -6,13 +6,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import org.activitymgr.ui.web.logic.IAOPWrappersBuilder;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogicContext;
 import org.activitymgr.ui.web.logic.IRootLogic;
 import org.activitymgr.ui.web.logic.ITabLogic;
-import org.activitymgr.ui.web.logic.ITransactionalWrapperBuilder;
 import org.activitymgr.ui.web.logic.impl.event.ConnectedCollaboratorEvent;
 import org.activitymgr.ui.web.logic.impl.event.EventBusImpl;
 import org.activitymgr.ui.web.logic.impl.event.LogoutEvent;
@@ -38,14 +38,20 @@ public class RootLogicImpl implements IRootLogic {
 				bind(IEventBus.class).to(EventBusImpl.class).in(Singleton.class);
 				bind(ILogicContext.class).to(LogicContextImpl.class).in(Singleton.class);
 				// and Transactional wrapper builder
-				bind(ITransactionalWrapperBuilder.class).to(TransactionalManagerImpl.class);
+				bind(IAOPWrappersBuilder.class)
+						.to(AOPWrappersBuilderImpl.class);
 				bind(IRootLogic.class).toInstance(RootLogicImpl.this);
 			}
 		});
 
+		IAOPWrappersBuilder aop = userInjector
+				.getInstance(IAOPWrappersBuilder.class);
 		// View registration
-		this.view = rootView;
-		view.registerLogic(this);
+		this.view = aop.buildViewWrapperForLogic(rootView,
+				IRootLogic.View.class);
+		view.registerLogic(aop
+				.buildLogicWrapperForView(this,
+				IRootLogic.class));
 
 		// Event listeners registration
 		IEventBus eventBus = userInjector.getInstance(IEventBus.class);

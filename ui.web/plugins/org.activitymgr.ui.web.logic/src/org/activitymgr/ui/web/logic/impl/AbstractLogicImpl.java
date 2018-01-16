@@ -1,22 +1,20 @@
 package org.activitymgr.ui.web.logic.impl;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-
 import org.activitymgr.core.model.IModelMgr;
+import org.activitymgr.ui.web.logic.IAOPWrappersBuilder;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogicContext;
 import org.activitymgr.ui.web.logic.IRootLogic;
-import org.activitymgr.ui.web.logic.ITransactionalWrapperBuilder;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 
 @SuppressWarnings("rawtypes")
-public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements ILogic<VIEW>, ITransactionalWrapperBuilder {
+public abstract class AbstractLogicImpl<VIEW extends ILogic.IView>
+ implements
+		ILogic<VIEW> {
 
 	@Inject
 	private Injector injector;
@@ -25,7 +23,7 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 	private IEventBus eventBus;
 	
 	@Inject
-	private ITransactionalWrapperBuilder twBuilder;
+	private IAOPWrappersBuilder aopWrappersBuilder;
 
 	@Inject
 	private IModelMgr modelMgr;
@@ -37,8 +35,6 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 
 	private VIEW view;
 
-	private boolean viewNotificationsEnabled = false;
-
 	@SuppressWarnings("unchecked")
 	protected AbstractLogicImpl(ILogic<?> parent) {
 		this.parent = parent;
@@ -47,7 +43,7 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 		parent.injectMembers(this);
 		
 		// Create transactional wrapper
-		Class<? extends ILogic<?>> iLogicInterface = getILogicInterfaces(getClass());
+		Class<ILogic<VIEW>> iLogicInterface = getILogicInterfaces(getClass());
 		// Create the view and bind the logic to it
 		Class<VIEW> viewInterface = null;
 		for (Class<?> aClass : iLogicInterface.getDeclaredClasses()) {
@@ -60,48 +56,19 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 			throw new IllegalStateException(iLogicInterface.getSimpleName() + " does not seem to have a nested View interface");
 		}
 		// Create the view
-		view = injector.getInstance(viewInterface);
-		
-		// Register the logic into the view
-		final ILogic<VIEW> transactionalWrapper = twBuilder.buildTransactionalWrapper(this, iLogicInterface);
-		
-		// Allows to disable notification methods (only methods returning void)
-		ILogic<VIEW> disableableWrapper = (ILogic<VIEW>) Proxy
-				.newProxyInstance(iLogicInterface.getClassLoader(),
-						new Class<?>[] { iLogicInterface },
-						new InvocationHandler() {
-							@Override
-							public Object invoke(Object proxy, Method method,
-									Object[] args) throws Throwable {
-								if (method.getReturnType().equals(void.class)
-										&& !viewNotificationsEnabled) {
-									System.out.println("** drop call "
-											+ method.getDeclaringClass()
-													.getSimpleName() + "."
-											+ method.getName());
-									return null;
-								} else {
-									System.out.println("call "
-											+ method.getDeclaringClass()
-													.getSimpleName() + "."
-											+ method.getName());
-									return method.invoke(transactionalWrapper,
-											args);
-								}
-							}
-						});
-		view.registerLogic(disableableWrapper);
+		final VIEW realView = injector.getInstance(viewInterface);
 
-		// Enable view notifications
-		setViewNotificationsEnabled(true);
-	}
+		// Wrap it in order to block UI notifications when updates come from the
+		// logic
+		view = aopWrappersBuilder.buildViewWrapperForLogic(realView,
+				viewInterface);
 
-	protected boolean isViewNotificationsEnabled() {
-		return viewNotificationsEnabled;
-	}
+		// Wrap the logic in an AOP container that adds transaction management
+		final ILogic<VIEW> transactionalWrapper = aopWrappersBuilder
+				.buildLogicWrapperForView(this, iLogicInterface);
 
-	protected void setViewNotificationsEnabled(boolean enabled) {
-		viewNotificationsEnabled = enabled;
+		// Register the wrapped logic
+		view.registerLogic(transactionalWrapper);
 	}
 
 	public VIEW getView() {
@@ -121,7 +88,7 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 	}
 
 	@SuppressWarnings("unchecked")
-	private Class<? extends ILogic<?>> getILogicInterfaces(Class<?> c) {
+	private Class<ILogic<VIEW>> getILogicInterfaces(Class<?> c) {
 		Class<? extends ILogic<?>> result = null;
 		if (c != Object.class) {
 			result = getILogicInterfaces(c.getSuperclass());
@@ -133,7 +100,13 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 				}
 			};
 		}
-		return result;
+		return (Class<ILogic<VIEW>>) result;
+	}
+
+	protected <LOGIC> LOGIC wrapLogicForView(
+			final LOGIC wrapped, final Class<LOGIC> interfaceToWrapp) {
+		return aopWrappersBuilder.buildLogicWrapperForView(wrapped,
+				interfaceToWrapp);
 	}
 
 	public <T> T injectMembers(T instance) {
@@ -151,10 +124,6 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView> implements IL
 
 	protected ILogicContext getContext() {
 		return context;
-	}
-
-	public <T> T buildTransactionalWrapper(final T wrapped, final Class<?> interfaceToWrapp) {
-		return twBuilder.buildTransactionalWrapper(wrapped, interfaceToWrapp);
 	}
 
 	@Override

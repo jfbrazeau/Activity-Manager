@@ -158,6 +158,8 @@ public class ReportsLogicImpl extends AbstractLogicImpl<IReportsLogic.View>
 
 	private Map<String, DTOAttribute> attributesMap;
 
+	private String defaultConfigurationAsJson;
+
 	public ReportsLogicImpl(AbstractLogicImpl<?> parent,
 			final boolean advancedMode) {
 		super(parent);
@@ -236,11 +238,11 @@ public class ReportsLogicImpl extends AbstractLogicImpl<IReportsLogic.View>
 			throw new IllegalStateException(e);
 		}
 		getView().addReportButton(
-				new AbstractSafeStandardButtonLogicImpl(this, "Defaults", null,
+				new AbstractSafeStandardButtonLogicImpl(this, "Reset", null,
 						null) {
 					@Override
 					protected void unsafeOnClick() throws Exception {
-						restoreDefaultValues();
+						loadFromJson(defaultConfigurationAsJson);
 					}
 
 				}.getView());
@@ -531,8 +533,6 @@ public class ReportsLogicImpl extends AbstractLogicImpl<IReportsLogic.View>
 	}
 
 	private void updateUI() {
-		System.out.println("updateUI");
-		setViewNotificationsEnabled(false);
 		try {
 			getView().setErrorMessage("");
 			// Update interval type & bounds
@@ -673,8 +673,6 @@ public class ReportsLogicImpl extends AbstractLogicImpl<IReportsLogic.View>
 		} catch (ModelException e) {
 			setReportButtonsEnabled(false);
 			getView().setErrorMessage(e.getMessage());
-		} finally {
-			setViewNotificationsEnabled(true);
 		}
 	}
 
@@ -822,46 +820,50 @@ public class ReportsLogicImpl extends AbstractLogicImpl<IReportsLogic.View>
 		return sw.toString();
 	}
 
-	public void loadFromJson(String s) {
+	public void loadFromJson(String json) {
+		this.defaultConfigurationAsJson = json;
 		restoreDefaultValues();
-		if (s != null && !"".equals(s.trim())) {
-			JsonReader jsonReader = new JsonReader(new StringReader(s));
-			JsonObject json = (JsonObject) Streams.parse(jsonReader);
-			if (json.has(INTERVAL_TYPE)) {
-				intervalType = ReportIntervalType.valueOf(json.get(
+		if (json != null && !"".equals(json.trim())) {
+			JsonReader jsonReader = new JsonReader(new StringReader(json));
+			JsonObject jsonObject = (JsonObject) Streams.parse(jsonReader);
+			if (jsonObject.has(INTERVAL_TYPE)) {
+				intervalType = ReportIntervalType.valueOf(jsonObject.get(
 						INTERVAL_TYPE).getAsString());
 			}
-			if (json.has(INTERVAL_BOUNDS_MODE)) {
-				intervalBoundsMode = ReportIntervalBoundsMode.valueOf(json.get(
+			if (jsonObject.has(INTERVAL_BOUNDS_MODE)) {
+				intervalBoundsMode = ReportIntervalBoundsMode
+						.valueOf(jsonObject.get(
 						INTERVAL_BOUNDS_MODE).getAsString());
 			}
 			if (intervalBoundsMode != ReportIntervalBoundsMode.AUTOMATIC
-					&& json.has(START)) {
+					&& jsonObject.has(START)) {
 				try {
-					start.setTime(YYYYMMDD_SDF.parse(json.get(START)
+					start.setTime(YYYYMMDD_SDF.parse(jsonObject.get(START)
 							.getAsString()));
 				} catch (ParseException e) {
 					throw new IllegalStateException(e);
 				}
 			}
 			if (intervalBoundsMode == ReportIntervalBoundsMode.BOTH_BOUNDS
-					&& json.has(INTERVAL_COUNT)) {
-				intervalCount = json.get(INTERVAL_COUNT).getAsInt();
+					&& jsonObject.has(INTERVAL_COUNT)) {
+				intervalCount = jsonObject.get(INTERVAL_COUNT).getAsInt();
 				computeEndFromIntervalCount();
 			}
-			if (json.has(TASK_SCOPE_PATH)) {
-				taskScopePath = json.get(TASK_SCOPE_PATH).getAsString();
+			if (jsonObject.has(TASK_SCOPE_PATH)) {
+				taskScopePath = jsonObject.get(TASK_SCOPE_PATH).getAsString();
 			}
 			if (advancedMode) {
-				if (json.has(COLLABORATORS_SELECTION_MODE)) {
+				if (jsonObject.has(COLLABORATORS_SELECTION_MODE)) {
 					collaboratorsSelectionMode = ReportCollaboratorsSelectionMode
-							.valueOf(json.get(COLLABORATORS_SELECTION_MODE)
+							.valueOf(jsonObject.get(
+									COLLABORATORS_SELECTION_MODE)
 									.getAsString());
 				}
 
 				if (collaboratorsSelectionMode == ReportCollaboratorsSelectionMode.SELECT_COLLABORATORS
-						&& json.has(SELECTED_COLLABORATORS)) {
-					JsonArray jsonArray = json.get(SELECTED_COLLABORATORS)
+						&& jsonObject.has(SELECTED_COLLABORATORS)) {
+					JsonArray jsonArray = jsonObject
+							.get(SELECTED_COLLABORATORS)
 							.getAsJsonArray();
 					Collaborator[] collaborators = new Collaborator[jsonArray
 							.size()];
@@ -871,8 +873,8 @@ public class ReportsLogicImpl extends AbstractLogicImpl<IReportsLogic.View>
 					}
 					collaboratorsSelectionLogic.select(collaborators);
 				}
-				if (json.has(SELECTED_COLUMNS)) {
-					JsonArray jsonArray = json.get(SELECTED_COLUMNS)
+				if (jsonObject.has(SELECTED_COLUMNS)) {
+					JsonArray jsonArray = jsonObject.get(SELECTED_COLUMNS)
 							.getAsJsonArray();
 					DTOAttribute[] columns = new DTOAttribute[jsonArray
 							.size()];
@@ -883,12 +885,12 @@ public class ReportsLogicImpl extends AbstractLogicImpl<IReportsLogic.View>
 					columnsSelectionLogic.select(columns);
 				}
 			}
-			if (json.has(TASK_TREE_DEPTH)) {
-				taskTreeDepth = json.get(TASK_TREE_DEPTH).getAsInt();
+			if (jsonObject.has(TASK_TREE_DEPTH)) {
+				taskTreeDepth = jsonObject.get(TASK_TREE_DEPTH).getAsInt();
 			}
 			if (advancedMode) {
-				if (json.has(ONLY_KEEP_TASK_WITH_CONTRIBUTIONS)) {
-					onlyKeepTaskWithContributions = json.get(
+				if (jsonObject.has(ONLY_KEEP_TASK_WITH_CONTRIBUTIONS)) {
+					onlyKeepTaskWithContributions = jsonObject.get(
 							ONLY_KEEP_TASK_WITH_CONTRIBUTIONS).getAsBoolean();
 				}
 			}

@@ -18,7 +18,7 @@ public class CollaboratorsTabLogicImpl extends AbstractTabLogicImpl<ICollaborato
 	public CollaboratorsTabLogicImpl(ITabFolderLogic parent) {
 		super(parent);
 		CollaboratorsListTableCellProvider contentProvider = new CollaboratorsListTableCellProvider(this, true, false);
-		getView().setCollaboratorsProviderCallback(buildTransactionalWrapper(contentProvider, ITableCellProviderCallback.class));
+		getView().setCollaboratorsProviderCallback(wrapLogicForView(contentProvider, ITableCellProviderCallback.class));
 
 		// Add buttons
 		registerButtons(buttonFactories);

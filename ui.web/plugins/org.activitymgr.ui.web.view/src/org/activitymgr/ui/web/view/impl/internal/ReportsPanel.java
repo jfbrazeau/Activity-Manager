@@ -1,7 +1,5 @@
 package org.activitymgr.ui.web.view.impl.internal;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 
 import org.activitymgr.ui.web.logic.IButtonLogic;
@@ -9,13 +7,11 @@ import org.activitymgr.ui.web.logic.IReportsLogic;
 import org.activitymgr.ui.web.logic.ITwinSelectFieldLogic.View;
 import org.activitymgr.ui.web.view.IResourceCache;
 import org.activitymgr.ui.web.view.impl.dialogs.PopupDateFieldWithParser;
-import org.activitymgr.ui.web.view.impl.internal.util.DisableableValueChangeListener;
 
 import com.google.inject.Inject;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -119,25 +115,24 @@ public class ReportsPanel extends GridLayout implements IReportsLogic.View {
 		intervalBoundsPanel.addComponent(new Label(")"));
 
 		// Register listeners
-		intervalUnitGroup
-				.addValueChangeListener(new DisableableValueChangeListener() {
+		intervalUnitGroup.addValueChangeListener(new ValueChangeListener() {
 			@Override
-					public void doValueChange(ValueChangeEvent event) {
+			public void valueChange(ValueChangeEvent event) {
 						logic.onIntervalTypeChanged(event.getProperty()
 								.getValue());
 			}
 		});
 		intervalBoundsModeGroup
-				.addValueChangeListener(new DisableableValueChangeListener() {
+				.addValueChangeListener(new ValueChangeListener() {
 			@Override
-					public void doValueChange(ValueChangeEvent event) {
+					public void valueChange(ValueChangeEvent event) {
 						logic.onIntervalBoundsModeChanged(event.getProperty()
 								.getValue());
 			}
 		});
-		ValueChangeListener dateBoundsChangeListener = new DisableableValueChangeListener() {
+		ValueChangeListener dateBoundsChangeListener = new ValueChangeListener() {
 			@Override
-			public void doValueChange(ValueChangeEvent event) {
+			public void valueChange(ValueChangeEvent event) {
 				logic.onIntervalBoundsChanged(startDateField.getValue(),
 						endDateField.getValue());
 			}
@@ -145,9 +140,9 @@ public class ReportsPanel extends GridLayout implements IReportsLogic.View {
 		startDateField.addValueChangeListener(dateBoundsChangeListener);
 		endDateField.addValueChangeListener(dateBoundsChangeListener);
 		intervalCountTextField
-				.addValueChangeListener(new DisableableValueChangeListener() {
+				.addValueChangeListener(new ValueChangeListener() {
 					@Override
-					public void doValueChange(ValueChangeEvent event) {
+					public void valueChange(ValueChangeEvent event) {
 						try {
 							logic.onIntervalCountChanged(
 									Integer.parseInt(intervalCountTextField
@@ -196,17 +191,17 @@ public class ReportsPanel extends GridLayout implements IReportsLogic.View {
 			}
 		});
 		rootTaskTextField
-				.addValueChangeListener(new DisableableValueChangeListener() {
+.addValueChangeListener(new ValueChangeListener() {
 					@Override
-					public void doValueChange(ValueChangeEvent event) {
+			public void valueChange(ValueChangeEvent event) {
 						logic.onTaskScopePathChanged(
 								(String) event.getProperty().getValue());
 					}
 				});
 		collaboratorsModeUnitGroup
-				.addValueChangeListener(new DisableableValueChangeListener() {
+				.addValueChangeListener(new ValueChangeListener() {
 					@Override
-					public void doValueChange(ValueChangeEvent event) {
+					public void valueChange(ValueChangeEvent event) {
 						logic.onCollaboratorsSelectionModeChanged(
 								event.getProperty().getValue());
 					}
@@ -262,9 +257,9 @@ public class ReportsPanel extends GridLayout implements IReportsLogic.View {
 			}
 		});
 		taskDepthTextField
-				.addValueChangeListener(new DisableableValueChangeListener() {
+.addValueChangeListener(new ValueChangeListener() {
 					@Override
-					public void doValueChange(ValueChangeEvent event) {
+			public void valueChange(ValueChangeEvent event) {
 						try {
 							logic.onTaskTreeDepthChanged(
 									Integer.parseInt(taskDepthTextField
@@ -281,9 +276,9 @@ public class ReportsPanel extends GridLayout implements IReportsLogic.View {
 			}
 		});
 		onlyKeepTasksWithContribsCheckbox
-				.addValueChangeListener(new DisableableValueChangeListener() {
+				.addValueChangeListener(new ValueChangeListener() {
 					@Override
-					public void doValueChange(ValueChangeEvent event) {
+					public void valueChange(ValueChangeEvent event) {
 						logic.onOnlyKeepTaskWithContributionsCheckboxChanged(
 										onlyKeepTasksWithContribsCheckbox
 												.getValue());
@@ -380,7 +375,7 @@ public class ReportsPanel extends GridLayout implements IReportsLogic.View {
 	
 	@Override
 	public void selectIntervalTypeRadioButton(Object id) {
-		setFieldValueSilently(intervalUnitGroup, id);
+		intervalUnitGroup.setValue(id);
 		updateIntervalCountLabel();
 	}
 
@@ -402,7 +397,7 @@ public class ReportsPanel extends GridLayout implements IReportsLogic.View {
 
 	@Override
 	public void selectIntervalBoundsModeButton(Object id) {
-		setFieldValueSilently(intervalBoundsModeGroup, id);
+		intervalBoundsModeGroup.setValue(id);
 	}
 
 	@Override
@@ -424,31 +419,32 @@ public class ReportsPanel extends GridLayout implements IReportsLogic.View {
  
 	@Override
 	public void setIntervalBounds(Date startDate, Date endDate) {
-		setFieldValueSilently(startDateField, startDate);
-		setFieldValueSilently(endDateField, endDate);
+		startDateField.setValue(startDate);
+		endDateField.setValue(endDate);
 	}
 
 	@Override
 	public void setIntervalCount(int intervalCount) {
-		setFieldValueSilently(intervalCountTextField,
+		intervalCountTextField.setValue(
 				String.valueOf(intervalCount));
 		updateIntervalCountLabel();
 	}
 
 	@Override
 	public void setTaskScopePath(String path) {
-		setFieldValueSilently(rootTaskTextField, path);
+		rootTaskTextField.setValue(path);
 	}
 
 	@Override
 	public void setTaskTreeDepth(int i) {
-		setFieldValueSilently(taskDepthTextField, String.valueOf(i));
+		taskDepthTextField.setValue(String.valueOf(i));
 	}
 
 	@Override
 	public void setOnlyKeepTaskWithContributions(
 			boolean onlyKeepTaskWithContributions) {
-		setFieldValueSilently(onlyKeepTasksWithContribsCheckbox,
+		onlyKeepTasksWithContribsCheckbox
+				.setValue(
 				onlyKeepTaskWithContributions);
 	}
 
@@ -479,28 +475,8 @@ public class ReportsPanel extends GridLayout implements IReportsLogic.View {
 
 	@Override
 	public void selectCollaboratorsSelectionModeRadioButton(Object newValue) {
-		setFieldValueSilently(collaboratorsModeUnitGroup, newValue);
+		collaboratorsModeUnitGroup.setValue(newValue);
 	}
 
-	private <T> void setFieldValueSilently(AbstractField<T> field, T newValue) {
-		Collection<?> listeners = field.getListeners(ValueChangeEvent.class);
-		Collection<DisableableValueChangeListener> disabledListeners = new ArrayList<DisableableValueChangeListener>();
-		try {
-			// Disable listeners
-			for (Object listener : listeners) {
-				if (listener instanceof DisableableValueChangeListener) {
-					DisableableValueChangeListener dListener = (DisableableValueChangeListener) listener;
-					dListener.setEnabled(false);
-					disabledListeners.add(dListener);
-				}
-			}
-			field.setValue(newValue);
-		} finally {
-			// Reanable listeners
-			for (DisableableValueChangeListener disabledListener : disabledListeners) {
-				disabledListener.setEnabled(true);
-			}
-		}
-	}
 
 }

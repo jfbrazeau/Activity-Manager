@@ -43,7 +43,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 		} catch (ModelException e) {
 			throw new IllegalStateException("Unexpected error while retrieving contributions", e);
 		}
-		getView().setContributionsProvider(buildTransactionalWrapper(contributionsProvider, ITableCellProviderCallback.class));
+		getView().setContributionsProvider(wrapLogicForView(contributionsProvider, ITableCellProviderCallback.class));
 		
 		// Collaborators provider
 		CollaboratorsListTableCellProvider collaboratorsProvider = new CollaboratorsListTableCellProvider(
@@ -59,7 +59,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 				return 100;
 			}
 		};
-		getView().setCollaboratorsProvider(buildTransactionalWrapper(collaboratorsProvider, ITableCellProviderCallback.class));
+		getView().setCollaboratorsProvider(wrapLogicForView(collaboratorsProvider, ITableCellProviderCallback.class));
 		getView().selectCollaborator(contributionsProvider.getContributor().getId());
 		
 		// Set the date in the view

@@ -59,7 +59,8 @@ class TaskTreeCellProvider extends AbstractSafeTreeTableCellProviderCallback<Lon
 		}
 	});
 
-	public TaskTreeCellProvider(ILogic<?> source, String filter, boolean readOnly) {
+	public TaskTreeCellProvider(AbstractLogicImpl<?> source, String filter,
+			boolean readOnly) {
 		super(source);
 		if (filter != null) {
 			this.filter = filter.trim();

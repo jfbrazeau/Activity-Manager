@@ -1,11 +1,10 @@
 package org.activitymgr.ui.web.logic.impl;
 
 import org.activitymgr.ui.web.logic.IGenericCallback;
-import org.activitymgr.ui.web.logic.ILogic;
 
 public abstract class AbstractSafeGenericCallback<RESULT> extends AbstractSafeCallback implements IGenericCallback<RESULT> {
 
-	public AbstractSafeGenericCallback(ILogic<?> source) {
+	public AbstractSafeGenericCallback(AbstractLogicImpl<?> source) {
 		super(source);
 	}
 

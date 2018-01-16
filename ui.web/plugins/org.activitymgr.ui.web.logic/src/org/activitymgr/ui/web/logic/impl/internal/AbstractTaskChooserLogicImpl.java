@@ -39,7 +39,7 @@ public abstract class AbstractTaskChooserLogicImpl<VIEW extends ITaskChooserLogi
 		}
 		// Register the tree content provider
 		treeContentProvider = new TaskTreeCellProvider(this, filter, true);
-		getView().setTasksTreeProviderCallback(buildTransactionalWrapper(treeContentProvider, ITreeContentProviderCallback.class));
+		getView().setTasksTreeProviderCallback(wrapLogicForView(treeContentProvider, ITreeContentProviderCallback.class));
 		if (!"".equals(filter)) {
 			Task task = getModelMgr().getFirstTaskMatching(filter);
 			if (task != null) {

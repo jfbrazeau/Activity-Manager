@@ -64,7 +64,8 @@ public class ReportsTabLogicImpl extends
 		getView().setLongReportsList(advancedMode);
 
 		// Add report configurations buttons
-		final IGenericCallback<String> inputDialogCallback = buildTransactionalWrapper(
+		@SuppressWarnings("unchecked")
+		final IGenericCallback<String> inputDialogCallback = wrapLogicForView(
 				new AbstractSafeGenericCallback<String>(
 						ReportsTabLogicImpl.this) {
 					protected void unsafeCallback(String result)
@@ -78,12 +79,17 @@ public class ReportsTabLogicImpl extends
 							cfg.setOwnerId(getContext()
 									.getConnectedCollaborator().getId());
 							cfg.setName(result.trim());
+							reportsLogic.loadFromJson(null);
+							cfg.setConfiguration(reportsLogic.toJson());
 							cfg = getModelMgr().createReportCfg(cfg);
 							registerReportCfg(cfg);
 							sortReportCfgs();
 							getView().addReportCfg(cfg.getId(), cfg.getName(),
 									reportCfgs.indexOf(cfg));
+							selectedReportCfgs.clear();
+							selectedReportCfgs.add(cfg);
 							getView().selectReportCfg(cfg.getId());
+							dirty = false;
 						}
 					}
 				}, IGenericCallback.class);
@@ -113,7 +119,8 @@ public class ReportsTabLogicImpl extends
 			}
 		};
 		getView().addReportConfigurationButton(saveReportButton.getView());
-		final IGenericCallback<String> duplicateReportCfgCallback = buildTransactionalWrapper(
+		@SuppressWarnings("unchecked")
+		final IGenericCallback<String> duplicateReportCfgCallback = wrapLogicForView(
 				new AbstractSafeGenericCallback<String>(this) {
 					@Override
 					protected void unsafeCallback(String result)
@@ -151,7 +158,8 @@ public class ReportsTabLogicImpl extends
 			}
 		};
 		getView().addReportConfigurationButton(duplicateReportButton.getView());
-		final IGenericCallback<Boolean> removeReportCfgCallback = buildTransactionalWrapper(
+		@SuppressWarnings("unchecked")
+		final IGenericCallback<Boolean> removeReportCfgCallback = wrapLogicForView(
 				new AbstractSafeGenericCallback<Boolean>(this) {
 					@Override
 					protected void unsafeCallback(Boolean okClicked)
@@ -166,6 +174,7 @@ public class ReportsTabLogicImpl extends
 								reportCfgsMap.remove(cfgRoRemove.getId());
 							}
 							selectedReportCfgs.clear();
+							dirty = false;
 							updateUI();
 						}
 					}
@@ -243,53 +252,51 @@ public class ReportsTabLogicImpl extends
 		boolean singleSelection = !emptySelection
 				&& selectedReportCfgs.size() == 1;
 		getView().setReportsPanelEnabled(singleSelection);
+		newReportButton.getView().setEnabled(!dirty);
 		saveReportButton.getView().setEnabled(dirty);
-		duplicateReportButton.getView().setEnabled(singleSelection);
+		duplicateReportButton.getView().setEnabled(singleSelection && !dirty);
 		removeReportButton.getView().setEnabled(!emptySelection);
 	}
 
 	@Override
 	public void onSelectionChanged(final Collection<Long> values) {
-		final IGenericCallback<Boolean> changeSelectionCallback = buildTransactionalWrapper(
+		@SuppressWarnings("unchecked")
+		final IGenericCallback<Boolean> changeSelectionCallback = wrapLogicForView(
 				new AbstractSafeGenericCallback<Boolean>(this) {
 					@Override
 					protected void unsafeCallback(Boolean okClicked)
 							throws Exception {
-						try {
-							setViewNotificationsEnabled(false);
-							if (okClicked) {
-								selectedReportCfgs.clear();
-								for (Long value : values) {
-									ReportCfg rc = reportCfgsMap.get(value);
-									if (rc != null) {
-										selectedReportCfgs.add(rc);
-									}
+						if (okClicked) {
+							selectedReportCfgs.clear();
+							for (Long value : values) {
+								ReportCfg rc = reportCfgsMap.get(value);
+								if (rc != null) {
+									selectedReportCfgs.add(rc);
 								}
-								if (selectedReportCfgs.size() != 1) {
-									reportsLogic.loadFromJson(null);
-								} else {
-									ReportCfg cfg = selectedReportCfgs
-											.iterator().next();
-									reportsLogic.loadFromJson(cfg
-											.getConfiguration());
-									// Ensure configuration is the same
-									// even after UI initialization
-									cfg.setConfiguration(reportsLogic.toJson());
-								}
-								dirty = false;
-								updateUI();
+							}
+							if (selectedReportCfgs.size() != 1) {
+								reportsLogic.loadFromJson(null);
 							} else {
 								ReportCfg cfg = selectedReportCfgs.iterator()
 										.next();
-								getView().selectReportCfg(cfg.getId());
+								reportsLogic.loadFromJson(cfg
+										.getConfiguration());
+								// Ensure configuration is the same
+								// even after UI initialization
+								cfg.setConfiguration(reportsLogic.toJson());
 							}
-						} finally {
-							setViewNotificationsEnabled(true);
+							dirty = false;
+							updateUI();
+						} else {
+							ReportCfg cfg = selectedReportCfgs.iterator()
+									.next();
+							getView().selectReportCfg(cfg.getId());
 						}
 					}
 				}, IGenericCallback.class);
 		if (dirty) {
-			getRoot().getView().showConfirm("Current report is not saved, continue ?", changeSelectionCallback);
+			ReportCfg cfg = selectedReportCfgs.iterator().next();
+			getRoot().getView().showConfirm("Current report '" + cfg.getName() + "' is not saved, continue ?", changeSelectionCallback);
 		} else {
 			// simulate a click on OK
 			changeSelectionCallback.callback(true);
