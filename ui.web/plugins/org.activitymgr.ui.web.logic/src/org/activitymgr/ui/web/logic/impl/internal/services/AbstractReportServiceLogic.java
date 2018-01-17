@@ -113,10 +113,14 @@ public abstract class AbstractReportServiceLogic extends
 			contributorIds = new long[] { connected.getId() };
 		} else {
 			if (contributorIdsParam != null) {
-				String[] values = contributorIdsParam.split(",");
-				contributorIds = new long[values.length];
-				for (int i = 0; i < values.length; i++) {
-					contributorIds[i] = Long.parseLong(values[i]);
+				if ("*".equals(contributorIdsParam)) {
+					contributorIds = null;
+				} else {
+					String[] values = contributorIdsParam.split(",");
+					contributorIds = new long[values.length];
+					for (int i = 0; i < values.length; i++) {
+						contributorIds[i] = Long.parseLong(values[i]);
+					}
 				}
 			}
 		}
