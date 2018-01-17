@@ -90,6 +90,7 @@ public class ReportsTabLogicImpl extends
 							selectedReportCfgs.add(cfg);
 							getView().selectReportCfg(cfg.getId());
 							dirty = false;
+							updateUI();
 						}
 					}
 				}, IGenericCallback.class);

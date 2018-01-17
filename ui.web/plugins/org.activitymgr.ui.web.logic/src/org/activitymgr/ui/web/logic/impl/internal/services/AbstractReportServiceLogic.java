@@ -10,7 +10,9 @@ import org.activitymgr.core.dto.Task;
 import org.activitymgr.core.dto.report.ReportIntervalType;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
+import org.activitymgr.ui.web.logic.IReportsTabLogic;
 import org.activitymgr.ui.web.logic.impl.AbstractServiceWithAuthenticationLogic;
+import org.activitymgr.ui.web.logic.spi.IFeatureAccessManager;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import com.google.inject.Inject;
@@ -33,10 +35,16 @@ public abstract class AbstractReportServiceLogic extends
 	@Inject
 	private IModelMgr modelMgr;
 
+	@Inject
+	private IFeatureAccessManager featureAccessManager;
+
 	@Override
 	protected final void doService(Collaborator connected, Request parameters,
 			Response response)
 			throws ModelException, IOException {
+		
+		boolean advancedParametersAllowed = featureAccessManager
+				.hasAccessToTab(connected, IReportsTabLogic.ADVANCED_REPORTS_ID);
 
 		Calendar start = null;
 		String startParam = parameters.getParameter(START_PARAMETER);
@@ -77,37 +85,53 @@ public abstract class AbstractReportServiceLogic extends
 			taskDepth = Integer.parseInt(taskDepthParam);
 		}
 
-		boolean onlyKeepTasksWithContributions = !"false".equals(parameters
-				.getParameter(ONLY_KEEP_TASKS_WITH_CONTRIBUTIONS_PARAMETER));
+		boolean onlyKeepTasksWithContributions = false;
+		if (advancedParametersAllowed) {
+			onlyKeepTasksWithContributions = !"false"
+					.equals(parameters
+							.getParameter(ONLY_KEEP_TASKS_WITH_CONTRIBUTIONS_PARAMETER));
+		} else {
+			onlyKeepTasksWithContributions = true;
+		}
 
-		String byContributorParam = parameters
-				.getParameter(BY_CONTRIBUTOR_PARAMETER);
-		boolean byContributor = byContributorParam == null
-				|| "true".equals(byContributorParam);
+		boolean byContributor = false;
+		if (advancedParametersAllowed) {
+			String byContributorParam = parameters
+					.getParameter(BY_CONTRIBUTOR_PARAMETER);
+			byContributor = byContributorParam == null
+					|| "true".equals(byContributorParam);
+		}
 
-		boolean contributorCentricMode = "true".equals(parameters
+		boolean contributorCentricMode = false;
+		if (advancedParametersAllowed) {
+			contributorCentricMode = "true".equals(parameters
 				.getParameter(CONTRIBUTOR_CENTRIC_MODE_PARAMETER));
+		}
 
 		long[] contributorIds = null;
 		String contributorIdsParam = parameters
 				.getParameter(CONTRIBUTOR_IDS_PARAMETERS);
-		if (contributorIdsParam != null) {
-			String[] values = contributorIdsParam.split(",");
-			contributorIds = new long[values.length];
-			for (int i = 0; i < values.length; i++) {
-				contributorIds[i] = Long.parseLong(values[i]);
+		if (!advancedParametersAllowed || contributorIdsParam == null) {
+			contributorIds = new long[] { connected.getId() };
+		} else {
+			if (contributorIdsParam != null) {
+				String[] values = contributorIdsParam.split(",");
+				contributorIds = new long[values.length];
+				for (int i = 0; i < values.length; i++) {
+					contributorIds[i] = Long.parseLong(values[i]);
+				}
 			}
 		}
 
-		String columnIdStr = parameters.getParameter(COLUMN_IDS_PARAMETER);
 		String[] columnIds = null;
-		if (columnIdStr != null) {
-			if (!"".equals(columnIdStr.trim())) {
-				columnIds = parameters.getListParameter(COLUMN_IDS_PARAMETER);
-			}
-		} else {
+		String columnIdStr = parameters.getParameter(COLUMN_IDS_PARAMETER);
+		if (!advancedParametersAllowed || columnIdStr == null
+				|| "".equals(columnIdStr.trim())) {
 			columnIds = new String[] { "task.path", "task.name" };
+		} else {
+			columnIds = parameters.getListParameter(COLUMN_IDS_PARAMETER);
 		}
+
 		String omitTotalsParameter = parameters.getParameter(OMIT_TOTALS_PARAMETER);
 		boolean includeTotals = (omitTotalsParameter == null)
 				|| (!"true".equals(omitTotalsParameter));

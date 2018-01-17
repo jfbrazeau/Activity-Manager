@@ -471,17 +471,18 @@ public class ReportsLogicImpl extends AbstractLogicImpl<IReportsLogic.View>
 			appendUrlParam(sw,
 					AbstractReportServiceLogic.TASK_DEPTH_PARAMETER,
 					reportParameters.getTaskDepth());
-			long[] contributorIds = reportParameters.getContributorIds();
-			if (contributorIds != null) {
-				Object[] array = new Object[contributorIds.length];
-				for (int i = 0; i < contributorIds.length; i++) {
-					array[i] = contributorIds[i];
-				}
-				appendUrlParam(sw,
-						AbstractReportServiceLogic.CONTRIBUTOR_IDS_PARAMETERS,
-						array);
-			}
 			if (advancedMode) {
+				long[] contributorIds = reportParameters.getContributorIds();
+				if (contributorIds != null) {
+					Object[] array = new Object[contributorIds.length];
+					for (int i = 0; i < contributorIds.length; i++) {
+						array[i] = contributorIds[i];
+					}
+					appendUrlParam(
+							sw,
+							AbstractReportServiceLogic.CONTRIBUTOR_IDS_PARAMETERS,
+							array);
+				}
 				appendUrlParam(sw,
 						AbstractReportServiceLogic.BY_CONTRIBUTOR_PARAMETER,
 						reportParameters.isByContributor());
