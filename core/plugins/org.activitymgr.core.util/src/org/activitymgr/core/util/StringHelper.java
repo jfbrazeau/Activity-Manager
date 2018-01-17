@@ -344,4 +344,19 @@ public class StringHelper extends StringUtils {
 		return result;
 	}
 
+	/**
+	 * Replaces all <code>&</code> by <code>%26</code>.
+	 * 
+	 * @param str
+	 *            the string to process.
+	 * @return the replaced string.
+	 */
+	public static String urlEncodeAmpersand(String str) {
+		String result = null;
+		if (str != null) {
+			result = str.replaceAll("&", "%26");
+		}
+		return result;
+	}
+
 }

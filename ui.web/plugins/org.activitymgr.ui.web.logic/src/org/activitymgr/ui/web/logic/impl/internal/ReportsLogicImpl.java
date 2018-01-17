@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -373,7 +371,7 @@ public class ReportsLogicImpl extends AbstractLogicImpl<IReportsLogic.View>
 					ReportsLogicImpl.this.taskScopePath = taskCodePath;
 					ReportsLogicImpl.this.getView().setTaskScopePath(
 							taskCodePath);
-					updateUI();
+					ReportsLogicImpl.this.updateUI();
 				} catch (ModelException e) {
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
 					e.printStackTrace(new PrintWriter(out));
@@ -515,20 +513,16 @@ public class ReportsLogicImpl extends AbstractLogicImpl<IReportsLogic.View>
 
 	private static <O> void appendUrlParam(StringWriter sw, boolean first,
 			String param, O... values) {
-		try {
-			sw.append(first ? "?" : "&");
-			sw.append(param);
-			sw.append("=");
-			boolean firstValue = true;
-			for (Object value : values) {
-				if (!firstValue) {
-					sw.append(",");
-				}
-				sw.append(URLEncoder.encode(String.valueOf(value), "UTF-8"));
-				firstValue = false;
+		sw.append(first ? "?" : "&");
+		sw.append(param);
+		sw.append("=");
+		boolean firstValue = true;
+		for (Object value : values) {
+			if (!firstValue) {
+				sw.append(",");
 			}
-		} catch (UnsupportedEncodingException e) {
-			throw new IllegalStateException(e);
+			sw.append(StringHelper.urlEncodeAmpersand(String.valueOf(value)));
+			firstValue = false;
 		}
 	}
 

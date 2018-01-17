@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Enumeration;
 
+import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.spi.IRESTServiceLogic;
 
 public class LoadingWrapperServiceLogic implements IRESTServiceLogic {
@@ -41,7 +42,8 @@ public class LoadingWrapperServiceLogic implements IRESTServiceLogic {
 				first = false;
 				pw.print(name);
 				pw.print('=');
-				pw.print(request.getParameter(name));
+				pw.print(StringHelper.urlEncodeAmpersand(request
+						.getParameter(name)));
 			}
 		}
 		pw.println("'\">");
