@@ -85,13 +85,11 @@ public abstract class AbstractReportServiceLogic extends
 			taskDepth = Integer.parseInt(taskDepthParam);
 		}
 
-		boolean onlyKeepTasksWithContributions = false;
+		boolean onlyKeepTasksWithContributions = true;
 		if (advancedParametersAllowed) {
 			onlyKeepTasksWithContributions = !"false"
 					.equals(parameters
 							.getParameter(ONLY_KEEP_TASKS_WITH_CONTRIBUTIONS_PARAMETER));
-		} else {
-			onlyKeepTasksWithContributions = true;
 		}
 
 		boolean byContributor = false;
