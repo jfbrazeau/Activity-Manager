@@ -32,6 +32,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 
 	private Long lastSelectedTaskId;
 
+	@SuppressWarnings("unchecked")
 	public ContributionsTabLogicImpl(ITabFolderLogic parent) {
 		super(parent);
 
@@ -72,7 +73,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 		registerButtons(buttonFactories);
 		
 		// Initialization event
-		fireCollabratorOrWeekChangedEvent();
+		updateUI();
 	}
 
 	@Override
@@ -119,25 +120,28 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 	public void onDateChange(Calendar value) {
 		try {
 			contributionsProvider.changeFirstDayOfWeek(value);
-			getView().setDate(contributionsProvider.getFirstDayOfWeek());
-			Calendar cursor = (Calendar) contributionsProvider.getFirstDayOfWeek().clone();
-			SimpleDateFormat sdf = new SimpleDateFormat("dd");
-			Collection<String> propertyIds = contributionsProvider.getPropertyIds();
-			for (String dayPropertyId : IContributionsCellLogicFactory.DAY_COLUMNS_IDENTIFIERS) {
-				if (propertyIds.contains(dayPropertyId)) {
-					getView().setColumnTitle(
-							dayPropertyId,
-							dayPropertyId.charAt(0)
-									+ sdf.format(cursor.getTime()));
-				}
-				cursor.add(Calendar.DATE, 1);
-			}
-
-			getView().reloadContributionTableItems();
-			fireCollabratorOrWeekChangedEvent();
+			updateUI();
 		} catch (ModelException e) {
 			throw new IllegalStateException(e);
 		}
+	}
+
+	private void updateUI() {
+		getView().setDate(contributionsProvider.getFirstDayOfWeek());
+		Calendar cursor = (Calendar) contributionsProvider.getFirstDayOfWeek()
+				.clone();
+		SimpleDateFormat sdf = new SimpleDateFormat("dd");
+		Collection<String> propertyIds = contributionsProvider.getPropertyIds();
+		for (String dayPropertyId : IContributionsCellLogicFactory.DAY_COLUMNS_IDENTIFIERS) {
+			if (propertyIds.contains(dayPropertyId)) {
+				getView().setColumnTitle(dayPropertyId,
+						dayPropertyId.charAt(0) + sdf.format(cursor.getTime()));
+			}
+			cursor.add(Calendar.DATE, 1);
+		}
+
+		getView().reloadContributionTableItems();
+		fireCollabratorOrWeekChangedEvent();
 	}
 
 	private void fireCollabratorOrWeekChangedEvent() {
@@ -147,9 +151,7 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 	private void changeFirstDayOfWeekAndUpdateView(int amountType, int amount) {
 		try {
 			contributionsProvider.changeFirstDayOfWeek(amountType, amount);
-			getView().setDate(contributionsProvider.getFirstDayOfWeek());
-			getView().reloadContributionTableItems();
-			fireCollabratorOrWeekChangedEvent();
+			updateUI();
 		} catch (ModelException e) {
 			throw new IllegalStateException(e);
 		}
