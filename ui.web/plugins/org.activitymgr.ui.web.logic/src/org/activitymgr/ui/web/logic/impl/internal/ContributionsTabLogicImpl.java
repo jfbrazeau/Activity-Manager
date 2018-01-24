@@ -113,7 +113,10 @@ public class ContributionsTabLogicImpl extends AbstractContributionTabLogicImpl 
 	
 	@Override
 	public void onSelectMe() {
-		getView().selectCollaborator(getContext().getConnectedCollaborator().getId());
+		getView().selectCollaborator(
+				getContext().getConnectedCollaborator().getId());
+		onSelectedCollaboratorChanged(getContext().getConnectedCollaborator()
+				.getId());
 	}
 	
 	@Override
