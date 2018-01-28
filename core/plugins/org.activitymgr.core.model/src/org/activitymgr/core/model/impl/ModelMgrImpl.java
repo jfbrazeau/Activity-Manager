@@ -2373,7 +2373,7 @@ public class ModelMgrImpl implements IModelMgr {
 				dateFormat = "MM/yy";
 				break;
 			case WEEK:
-				dateFormat = "ww/YY";
+				dateFormat = "'W'ww/YY";
 				break;
 			case DAY:
 				dateFormat = "dd/MM";
