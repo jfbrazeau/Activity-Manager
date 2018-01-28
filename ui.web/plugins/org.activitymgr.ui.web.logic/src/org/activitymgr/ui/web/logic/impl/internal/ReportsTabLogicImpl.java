@@ -86,11 +86,7 @@ public class ReportsTabLogicImpl extends
 							sortReportCfgs();
 							getView().addReportCfg(cfg.getId(), cfg.getName(),
 									reportCfgs.indexOf(cfg));
-							selectedReportCfgs.clear();
-							selectedReportCfgs.add(cfg);
-							getView().selectReportCfg(cfg.getId());
-							dirty = false;
-							updateUI();
+							selectReportConfig(cfg);
 						}
 					}
 				}, IGenericCallback.class);
@@ -143,7 +139,7 @@ public class ReportsTabLogicImpl extends
 							sortReportCfgs();
 							getView().addReportCfg(cfg.getId(), cfg.getName(),
 									reportCfgs.indexOf(cfg));
-							getView().selectReportCfg(cfg.getId());
+							selectReportConfig(cfg);
 						}
 					}
 				}, IGenericCallback.class);
@@ -234,6 +230,14 @@ public class ReportsTabLogicImpl extends
 		}
 
 		// Update the UI
+		updateUI();
+	}
+
+	private void selectReportConfig(ReportCfg cfg) {
+		selectedReportCfgs.clear();
+		selectedReportCfgs.add(cfg);
+		getView().selectReportCfg(cfg.getId());
+		dirty = false;
 		updateUI();
 	}
 
