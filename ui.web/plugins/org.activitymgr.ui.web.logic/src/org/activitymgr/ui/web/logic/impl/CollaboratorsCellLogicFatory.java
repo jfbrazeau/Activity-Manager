@@ -113,7 +113,7 @@ public class CollaboratorsCellLogicFatory implements ICollaboratorsCellLogicFact
 			return 200;
 		}
 		else {
-			return null;
+			return 70;
 		}
 	}
 
