@@ -14,7 +14,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -63,8 +62,6 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 	/** Default converters */
 	private static final Map<Class<?>, IConverter<?>> DEFAULT_CONVERTERS = new HashMap<Class<?>, IConverter<?>>();
 	
-	private static final Map<Class<?>, Integer> SQL_TYPES = new HashMap<Class<?>, Integer>();
-	
 	static {
 		DEFAULT_CONVERTERS.put(BigDecimal.class, new BigDecimalConverter());
 		DEFAULT_CONVERTERS.put(Boolean.class, new BooleanConverter());
@@ -86,29 +83,6 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 		DEFAULT_CONVERTERS.put(short.class, new ShortConverter());
 		DEFAULT_CONVERTERS.put(String.class, new StringConverter());
 		
-		/*
-		 * Source : https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs
-		 * /guide/jdbc/getstart/mapping.doc.html#1005577
-		 */
-		SQL_TYPES.put(BigDecimal.class, Types.DECIMAL);
-		SQL_TYPES.put(Boolean.class, Types.BOOLEAN);
-		SQL_TYPES.put(boolean.class, Types.BOOLEAN);
-		SQL_TYPES.put(Byte.class, Types.TINYINT);
-		SQL_TYPES.put(byte.class, Types.TINYINT);
-		SQL_TYPES.put(Calendar.class, Types.DATE);
-		SQL_TYPES.put(Character.class, Types.CHAR);
-		SQL_TYPES.put(char.class, Types.CHAR);
-		SQL_TYPES.put(Double.class, Types.DOUBLE);
-		SQL_TYPES.put(double.class, Types.DOUBLE);
-		SQL_TYPES.put(Float.class, Types.REAL);
-		SQL_TYPES.put(float.class,  Types.REAL);
-		SQL_TYPES.put(Integer.class, Types.INTEGER);
-		SQL_TYPES.put(int.class, Types.INTEGER);
-		SQL_TYPES.put(Long.class, Types.BIGINT);
-		SQL_TYPES.put(long.class, Types.BIGINT);
-		SQL_TYPES.put(Short.class, Types.SMALLINT);
-		SQL_TYPES.put(short.class, Types.SMALLINT);
-		SQL_TYPES.put(String.class, Types.VARCHAR);
 	}
 	
 	/** The class */
@@ -836,12 +810,7 @@ public class DAOImpl<TYPE> implements IDAO<TYPE> {
 			sqlLog.debug("    +-> attributeValue='" + attributeValue + "'");
 		// Par d�faut le param�tre est mapp� sur la valeur directe de l'attribut
 		if (attributeValue == null) {
-			Class<?> type = attribute.getType();
-			Integer sqlType = SQL_TYPES.get(type);
-			if (sqlType == null) {
-				throw new IllegalStateException(
-						"Unexpected Java field type with null value : " + type);
-			}
+			int sqlType = converter.getSQLType();
 			pStmt.setNull(parameterIdx, sqlType);
 		} else {
 			converter.bind(pStmt, parameterIdx, attributeValue);

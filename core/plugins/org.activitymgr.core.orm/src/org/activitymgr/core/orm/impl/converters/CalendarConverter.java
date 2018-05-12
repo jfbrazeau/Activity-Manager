@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -24,4 +25,9 @@ public class CalendarConverter implements IConverter<Calendar> {
 		return gregorianCalendar;
 	}
 	
+	@Override
+	public int getSQLType() {
+		return Types.DATE;
+	}
+
 }

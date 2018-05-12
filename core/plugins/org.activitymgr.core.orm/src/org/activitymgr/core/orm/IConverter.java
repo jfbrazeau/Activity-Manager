@@ -8,6 +8,8 @@ public interface IConverter<TYPE> {
 	
 	void bind(PreparedStatement stmt, int index, TYPE value) throws SQLException;
 	
-	TYPE readValue(ResultSet rs, int index) throws SQLException; 
+	TYPE readValue(ResultSet rs, int index) throws SQLException;
+
+	int getSQLType();
 
 }

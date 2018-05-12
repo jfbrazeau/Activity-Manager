@@ -3,6 +3,7 @@ package org.activitymgr.core.orm.impl.converters;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 
 import org.activitymgr.core.orm.IConverter;
 
@@ -18,4 +19,9 @@ public class DoubleConverter implements IConverter<Double> {
 		return rs.getDouble(index);
 	}
 	
+	@Override
+	public int getSQLType() {
+		return Types.DOUBLE;
+	}
+
 }
