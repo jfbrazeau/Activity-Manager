@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.activitymgr.ui.web.feature"
+      id="org.activitymgr.ui.web.featureng"
       label="Activity Manager Web UI Feature"
       version="1.0.0.qualifier">
 
@@ -70,13 +70,6 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
    <plugin
          id="org.activitymgr.ui.web.logic"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.activitymgr.ui.web.view"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -302,6 +295,13 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
    <plugin
          id="org.apache.poi"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.activitymgr.ui.web.viewng"
          download-size="0"
          install-size="0"
          version="0.0.0"

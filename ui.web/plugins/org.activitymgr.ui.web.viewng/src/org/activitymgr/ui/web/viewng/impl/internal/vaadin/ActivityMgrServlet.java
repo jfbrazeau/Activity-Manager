@@ -1,0 +1,158 @@
+package org.activitymgr.ui.web.viewng.impl.internal.vaadin;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.activitymgr.ui.web.logic.spi.IRESTServiceLogic;
+
+import com.google.inject.Inject;
+import com.vaadin.server.VaadinServlet;
+
+@SuppressWarnings("serial")
+final class ActivityMgrServlet extends VaadinServlet {
+
+	@Inject
+	private Set<IRESTServiceLogic> serviceLogics;
+
+	private Map<String, IRESTServiceLogic> serviceLogicsMap = new HashMap<String, IRESTServiceLogic>();
+
+	private ThreadLocal<Long> timestamp = new ThreadLocal<Long>();
+
+	ActivityMgrServlet() {
+		Activator.getDefault().getInjector().injectMembers(this);
+		for (IRESTServiceLogic serviceLogic : serviceLogics) {
+			String path = serviceLogic.getPath().trim();
+			if (!path.startsWith("/")) {
+				path = "/" + path;
+			}
+			serviceLogicsMap.put(path, serviceLogic);
+		}
+	}
+
+	@Override
+	public void service(ServletRequest req, ServletResponse res)
+			throws ServletException, IOException {
+		try {
+			timestamp.set(System.currentTimeMillis());
+			final HttpServletRequest request = (HttpServletRequest) req;
+			System.out.println("service(" + request.getServletPath()
+					+ request.getPathInfo() + ")");
+			final HttpServletResponse response = (HttpServletResponse) res;
+			String uri = request.getRequestURI();
+			if (uri.startsWith("/service")) {
+				String servicePath = uri.substring("/service".length());
+				IRESTServiceLogic serviceLogic = serviceLogicsMap
+						.get(servicePath);
+				if (serviceLogic != null) {
+					serviceLogic.service(new IRESTServiceLogic.Request() {
+						@Override
+						public Enumeration<String> getParameterNames() {
+							return request.getParameterNames();
+						}
+
+						@Override
+						public String getCookie(String name) {
+							Cookie[] cookies = request.getCookies();
+							if (name != null && cookies != null) {
+								for (Cookie cookie : cookies) {
+									if (name.equals(cookie.getName())) {
+										return cookie.getValue();
+									}
+								}
+							}
+							return null;
+						}
+
+						@Override
+						public String getHeader(String name) {
+							return request.getHeader(name);
+						}
+
+						@Override
+						public String getParameter(String name) {
+							return request.getParameter(name);
+						}
+
+						@Override
+						public String[] getListParameter(String name) {
+							String str = request.getParameter(name);
+							String[] result = null;
+							if (str != null) {
+								str = str.trim();
+								if (!"".equals(str)) {
+									result = str.split(",");
+									for (int i = 0; i < result.length; i++) {
+										result[i] = result[i].trim();
+									}
+								}
+							}
+							return result;
+						}
+					}, new IRESTServiceLogic.Response() {
+						private String contentType;
+
+						@Override
+						public void setContentType(String contentType) {
+							this.contentType = contentType;
+							response.setHeader("Content-type", contentType);
+						}
+
+						@Override
+						public void sendError(int sc, String msg)
+								throws IOException {
+							response.sendError(sc, msg);
+						}
+
+						@Override
+						public OutputStream getOutputStream()
+								throws IOException {
+							return response.getOutputStream();
+						}
+
+						@Override
+						public String getContentType() {
+							return contentType;
+						}
+
+						@Override
+						public void addHeader(String name, String value) {
+							response.addHeader(name, value);
+						}
+					});
+				} else {
+					response.sendError(HttpServletResponse.SC_NOT_FOUND);
+				}
+			} else if (!uri.startsWith("/VAADIN/")) {
+				logS(uri + "- in");
+				long now = System.currentTimeMillis();
+				super.service(req, res);
+				logS(uri + "- Time spent : "
+						+ (System.currentTimeMillis() - now));
+			} else {
+				super.service(req, res);
+			}
+		} finally {
+			timestamp.remove();
+		}
+	}
+
+	private void logS(String s) {
+		long start = timestamp.get();
+		String format = "0000000";
+		String time = format
+				+ String.valueOf(System.currentTimeMillis() - start);
+		System.out.println(time.substring(time.length() - format.length())
+				+ "-" + s);
+	}
+}

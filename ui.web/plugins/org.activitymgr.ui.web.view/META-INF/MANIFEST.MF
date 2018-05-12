@@ -29,3 +29,4 @@ Export-Package: com.vaadin.data,
  com.vaadin.ui,
  org.activitymgr.ui.web.view,
  org.activitymgr.ui.web.view.impl.dialogs
+Import-Package: com.vaadin.ui

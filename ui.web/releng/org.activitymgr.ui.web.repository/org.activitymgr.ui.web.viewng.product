@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="Activity Manager UI (Web)" uid="org.activitymgr.ui.web.viewng.product" id="org.activitymgr.ui.web.viewng.product" application="org.activitymgr.ui.web.viewng.application" version="1.0.0.qualifier" useFeatures="true" includeLaunchers="true">
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <programArgs>-console
+      </programArgs>
+      <vmArgs>-Dorg.osgi.service.http.port=8080
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Djava.awt.headless=true
+      </vmArgsMac>
+   </launcherArgs>
+
+   <windowImages/>
+
+   <launcher name="activitymgr-web-server">
+      <solaris/>
+      <win useIco="false">
+         <bmp/>
+      </win>
+   </launcher>
+
+   <vm>
+   </vm>
+
+   <plugins>
+      <plugin id="com.google.guava"/>
+      <plugin id="com.google.inject"/>
+      <plugin id="com.google.inject.assistedinject" fragment="true"/>
+      <plugin id="com.google.inject.multibindings" fragment="true"/>
+      <plugin id="javax.inject"/>
+      <plugin id="javax.servlet"/>
+      <plugin id="javax.xml"/>
+      <plugin id="org.activitymgr.core.dao"/>
+      <plugin id="org.activitymgr.core.dao.h2fragment" fragment="true"/>
+      <plugin id="org.activitymgr.core.dao.hsqldbfragment" fragment="true"/>
+      <plugin id="org.activitymgr.core.dao.mysqlfragment" fragment="true"/>
+      <plugin id="org.activitymgr.core.dto"/>
+      <plugin id="org.activitymgr.core.model"/>
+      <plugin id="org.activitymgr.core.orm"/>
+      <plugin id="org.activitymgr.core.util"/>
+      <plugin id="org.activitymgr.ui.web.logic"/>
+      <plugin id="org.activitymgr.ui.web.view"/>
+      <plugin id="org.apache.commons.dbcp"/>
+      <plugin id="org.apache.commons.pool"/>
+      <plugin id="org.apache.felix.gogo.runtime"/>
+      <plugin id="org.apache.felix.gogo.shell"/>
+      <plugin id="org.apache.log4j"/>
+      <plugin id="org.eclipse.core.contenttype"/>
+      <plugin id="org.eclipse.core.jobs"/>
+      <plugin id="org.eclipse.core.runtime"/>
+      <plugin id="org.eclipse.core.runtime.compatibility.registry" fragment="true"/>
+      <plugin id="org.eclipse.equinox.app"/>
+      <plugin id="org.eclipse.equinox.common"/>
+      <plugin id="org.eclipse.equinox.console"/>
+      <plugin id="org.eclipse.equinox.http.jetty"/>
+      <plugin id="org.eclipse.equinox.http.registry"/>
+      <plugin id="org.eclipse.equinox.http.servlet"/>
+      <plugin id="org.eclipse.equinox.preferences"/>
+      <plugin id="org.eclipse.equinox.registry"/>
+      <plugin id="org.eclipse.jetty.continuation"/>
+      <plugin id="org.eclipse.jetty.http"/>
+      <plugin id="org.eclipse.jetty.io"/>
+      <plugin id="org.eclipse.jetty.security"/>
+      <plugin id="org.eclipse.jetty.server"/>
+      <plugin id="org.eclipse.jetty.servlet"/>
+      <plugin id="org.eclipse.jetty.util"/>
+      <plugin id="org.eclipse.osgi"/>
+      <plugin id="org.eclipse.osgi.compatibility.state" fragment="true"/>
+      <plugin id="org.eclipse.osgi.services"/>
+   </plugins>
+
+   <features>
+      <feature id="org.activitymgr.ui.web.featureng" version="1.0.0.qualifier"/>
+   </features>
+
+   <configurations>
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
+      <plugin id="org.eclipse.equinox.http.jetty" autoStart="true" startLevel="0" />
+   </configurations>
+
+</product>
