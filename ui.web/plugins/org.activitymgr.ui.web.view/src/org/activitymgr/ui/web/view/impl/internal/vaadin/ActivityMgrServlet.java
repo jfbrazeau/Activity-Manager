@@ -15,8 +15,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.activitymgr.ui.web.logic.spi.IRESTServiceLogic;
+import org.jsoup.nodes.Element;
 
 import com.google.inject.Inject;
+import com.vaadin.server.BootstrapFragmentResponse;
+import com.vaadin.server.BootstrapListener;
+import com.vaadin.server.BootstrapPageResponse;
+import com.vaadin.server.SessionInitEvent;
+import com.vaadin.server.SessionInitListener;
 import com.vaadin.server.VaadinServlet;
 
 final class ActivityMgrServlet extends VaadinServlet {
@@ -140,6 +146,38 @@ final class ActivityMgrServlet extends VaadinServlet {
 		else {
 			super.service(req, res);
 		}
+	}
+
+	@Override
+	protected void servletInitialized() throws ServletException {
+		super.servletInitialized();
+		getService().addSessionInitListener(new SessionInitListener() {
+
+			@Override
+			public void sessionInit(SessionInitEvent event) {
+				event.getSession().addBootstrapListener(
+						new BootstrapListener() {
+
+							@Override
+							public void modifyBootstrapFragment(
+									BootstrapFragmentResponse response) {
+								// TODO Auto-generated method stub
+
+							}
+
+							@Override
+							public void modifyBootstrapPage(
+									BootstrapPageResponse response) {
+								Element head = response.getDocument().head();
+								head.prependElement("script")
+										.attr("src",
+												"https://apis.google.com/js/platform.js")
+										.attr("async", "true")
+										.attr("defer", "true");
+							}
+						});
+			}
+		});
 	}
 
 	private void logS(String s) {

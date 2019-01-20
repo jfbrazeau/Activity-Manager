@@ -22,6 +22,8 @@ public class AuthenticationPanel extends GridLayout implements
 	private PasswordField passwordField;
 
 	private TextField userField;
+
+	private GridLayout formPanel;
 	
 	public AuthenticationPanel() {
 		super(1, 1);
@@ -31,7 +33,7 @@ public class AuthenticationPanel extends GridLayout implements
 		setMargin(true);
 
 		// Form panel
-		GridLayout formPanel = new GridLayout(3, 4);
+		formPanel = new GridLayout(3, 5);
 		formPanel.setMargin(true);
 		formPanel.setSpacing(true);
 		addComponent(formPanel);
@@ -66,6 +68,7 @@ public class AuthenticationPanel extends GridLayout implements
 		formPanel.addComponent(new Label(""));
 		rememberMeCheckBox = new CheckBox("Remember me");
 		formPanel.addComponent(rememberMeCheckBox);
+		formPanel.addComponent(new Label(""));
 
 		// Register listeners
 		validateButton.addClickListener(new Button.ClickListener() {
@@ -99,6 +102,23 @@ public class AuthenticationPanel extends GridLayout implements
 	@Override
 	public void registerLogic(IAuthenticationLogic logic) {
 		this.logic = logic;
+	}
+
+	@Override
+	public void setGoogleSignInClientId(String googleSignInClientId) {
+		formPanel.addComponent(new Label(""));
+		SignWithGoogleButton signInWithGoogleButton = new SignWithGoogleButton(
+				googleSignInClientId);
+		formPanel.addComponent(signInWithGoogleButton, 1, 3, 2, 3);
+
+		// Register listeners
+		signInWithGoogleButton.addListener(new SignWithGoogleButton.Listener() {
+			@Override
+			public void onGoogleProfileAuthorized(String idToken) {
+				// Authentication
+				logic.onAuthenticateWithGoogle(idToken);
+			}
+		});
 	}
 
 }

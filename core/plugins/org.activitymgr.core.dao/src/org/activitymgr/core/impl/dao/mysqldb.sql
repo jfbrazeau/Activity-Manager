@@ -8,11 +8,11 @@ drop table if exists COLLABORATOR;
 -- Collaborateurs
 -- ------------------------------------------------------------
 create table COLLABORATOR (
-	CLB_ID         integer( 3) not null auto_increment,
-	CLB_LOGIN      varchar(20) unique not null,
-	CLB_FIRST_NAME varchar(20) not null,
-	CLB_LAST_NAME  varchar(20) not null,
- 	CLB_IS_ACTIVE  integer( 1) not null,
+	CLB_ID         integer(  3) not null auto_increment,
+	CLB_LOGIN      varchar(255) unique not null,
+	CLB_FIRST_NAME varchar( 50) not null,
+	CLB_LAST_NAME  varchar( 50) not null,
+ 	CLB_IS_ACTIVE  integer(  1) not null,
     index CLB_LOGIN_IDX (CLB_LOGIN),
     constraint CLB_PK primary key (CLB_ID) 
 ) engine=innodb;
