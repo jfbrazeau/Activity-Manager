@@ -15,6 +15,14 @@
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>eclipse-repository</packaging>
 
+	<dependencies>
+		<dependency>
+			<groupId>ant-contrib</groupId>
+			<artifactId>ant-contrib</artifactId>
+			<version>1.0b3</version>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -52,6 +60,44 @@
 						<goals>
 							<goal>archive-products</goal>
 						</goals>
+						<configuration>
+							<formats>
+								<linux>tar.gz</linux>
+							</formats>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<extensions>true</extensions>
+				<executions>
+					<execution>
+						<id>patch-product</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<echo
+									message="** Building docker image ${unqualifiedVersion}.${buildQualifier}" />
+								<exec executable="docker" failonerror="true"
+									failifexecutionfails="true">
+									<arg value="build" />
+									<arg value="--build-arg" />
+									<arg value="version=${unqualifiedVersion}.${buildQualifier}" />
+									<arg value="-t" />
+									<arg
+										value="activitymanager/appserver:${unqualifiedVersion}.${buildQualifier}" />
+									<arg value="-t" />
+									<arg value="activitymanager/appserver:latest" />
+									<arg value="." />
+								</exec>
+							</target>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
