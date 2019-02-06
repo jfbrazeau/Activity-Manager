@@ -13,7 +13,7 @@ import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogic.IView;
-import org.activitymgr.ui.web.logic.ILogicContext;
+import org.activitymgr.ui.web.logic.IUILogicContext;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTableCellProviderCallback;
 import org.activitymgr.ui.web.logic.spi.ICollaboratorsCellLogicFactory;
@@ -32,7 +32,7 @@ class CollaboratorsListTableCellProvider extends AbstractSafeTableCellProviderCa
 	private ICollaboratorsCellLogicFactory cellLogicFactory;
 
 	@Inject
-	private ILogicContext context;
+	private IUILogicContext context;
 
 	private boolean showInactiveCollaborators;
 	private List<Long> collaboratorIds = new ArrayList<Long>();

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Enumeration;
 
+import org.activitymgr.ui.web.logic.IUILogicContext;
+
 public interface IRESTServiceLogic {
 
 	interface Request {
@@ -17,6 +19,8 @@ public interface IRESTServiceLogic {
 		String getParameter(String name);
 
 		String[] getListParameter(String name);
+
+		IUILogicContext getAttachedUILogicContext();
 
 	}
 

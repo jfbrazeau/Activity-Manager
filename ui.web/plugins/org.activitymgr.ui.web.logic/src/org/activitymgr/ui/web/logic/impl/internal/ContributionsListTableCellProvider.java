@@ -21,7 +21,7 @@ import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogic.IView;
-import org.activitymgr.ui.web.logic.ILogicContext;
+import org.activitymgr.ui.web.logic.IUILogicContext;
 import org.activitymgr.ui.web.logic.impl.AbstractContributionTabLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTableCellProviderCallback;
@@ -43,7 +43,7 @@ class ContributionsListTableCellProvider extends AbstractSafeTableCellProviderCa
 	private IContributionsCellLogicFactory cellLogicFactory;
 
 	@Inject
-	private ILogicContext context;
+	private IUILogicContext context;
 
 	private Map<Long, TaskContributions> contributionsMap = new HashMap<Long, TaskContributions>();
 	private List<Long> taskIds = new ArrayList<Long>();

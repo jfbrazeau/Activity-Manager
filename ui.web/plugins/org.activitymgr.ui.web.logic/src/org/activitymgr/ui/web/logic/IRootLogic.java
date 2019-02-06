@@ -3,6 +3,8 @@ package org.activitymgr.ui.web.logic;
 
 public interface IRootLogic extends ILogic<IRootLogic.View> {
 	
+	IUILogicContext getContext();
+
 	public interface View extends ILogic.IView<IRootLogic> {
 
 		void showErrorNotification(String message, String details);

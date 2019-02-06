@@ -10,7 +10,7 @@ import org.activitymgr.ui.web.logic.IAOPWrappersBuilder;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.ILogic;
-import org.activitymgr.ui.web.logic.ILogicContext;
+import org.activitymgr.ui.web.logic.IUILogicContext;
 import org.activitymgr.ui.web.logic.IRootLogic;
 import org.activitymgr.ui.web.logic.ITabLogic;
 import org.activitymgr.ui.web.logic.impl.event.ConnectedCollaboratorEvent;
@@ -36,7 +36,7 @@ public class RootLogicImpl implements IRootLogic {
 			@Override
 			protected void configure() {
 				bind(IEventBus.class).to(EventBusImpl.class).in(Singleton.class);
-				bind(ILogicContext.class).to(LogicContextImpl.class).in(Singleton.class);
+				bind(IUILogicContext.class).to(UIContextImpl.class).in(Singleton.class);
 				// and Transactional wrapper builder
 				bind(IAOPWrappersBuilder.class)
 						.to(AOPWrappersBuilderImpl.class);
@@ -117,6 +117,11 @@ public class RootLogicImpl implements IRootLogic {
 	public <T> T injectMembers(T instance) {
 		userInjector.injectMembers(instance);
 		return instance;
+	}
+
+	@Override
+	public IUILogicContext getContext() {
+		return userInjector.getInstance(IUILogicContext.class);
 	}
 
 	@Override

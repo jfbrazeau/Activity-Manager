@@ -1,6 +1,6 @@
 package org.activitymgr.ui.web.logic.impl;
 
-import org.activitymgr.ui.web.logic.ILogicContext;
+import org.activitymgr.ui.web.logic.IUILogicContext;
 
 import com.google.inject.Inject;
 
@@ -9,7 +9,7 @@ public abstract class AbstractSafeCallback {
 	private AbstractLogicImpl<?> source;
 	
 	@Inject
-	private ILogicContext context;
+	private IUILogicContext context;
 
 	public AbstractSafeCallback(AbstractLogicImpl<?> source) {
 		this.source = source;
@@ -20,7 +20,7 @@ public abstract class AbstractSafeCallback {
 		return source;
 	}
 
-	protected ILogicContext getContext() {
+	protected IUILogicContext getContext() {
 		return context;
 	}
 

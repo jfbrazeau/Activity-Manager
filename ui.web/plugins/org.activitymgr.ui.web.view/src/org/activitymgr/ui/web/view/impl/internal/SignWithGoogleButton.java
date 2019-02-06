@@ -28,7 +28,6 @@ public class SignWithGoogleButton extends AbstractJavaScriptComponent {
 				JsonValue jsonValue = arguments.get(0);
 				if (jsonValue instanceof JreJsonString) {
 					String idToken = ((JreJsonString) jsonValue).getString();
-					System.out.println("ID Token : " + idToken);
 					for (Listener listener : listeners) {
 						listener.onGoogleProfileAuthorized(idToken);
 					}

@@ -281,7 +281,7 @@ class DefaultAuthenticatorExtension implements IAuthenticatorExtension {
 class NoneTaskCreationPatternHandler implements ITaskCreationPatternHandler {
 	
 	@Override
-	public List<Task> handle(ILogicContext context, Task newTask)
+	public List<Task> handle(IUILogicContext context, Task newTask)
 			throws ModelException {
 		return Collections.emptyList();
 	}

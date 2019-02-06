@@ -34,7 +34,6 @@ function signInWithGoogle() {
 			var accessToken = response.access_token;
 			var idToken = response.id_token;
 			// You can also now use gapi.client to perform authenticated requests.
-			console.log(response)
 			vaadinComponent.onGoogleProfileAuthorized(idToken);
 		});
 		

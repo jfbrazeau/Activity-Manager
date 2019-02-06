@@ -4,7 +4,7 @@ import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.ui.web.logic.IAOPWrappersBuilder;
 import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.ILogic;
-import org.activitymgr.ui.web.logic.ILogicContext;
+import org.activitymgr.ui.web.logic.IUILogicContext;
 import org.activitymgr.ui.web.logic.IRootLogic;
 
 import com.google.inject.Inject;
@@ -29,7 +29,7 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView>
 	private IModelMgr modelMgr;
 	
 	@Inject
-	private ILogicContext context;
+	private IUILogicContext context;
 	
 	private ILogic<?> parent;
 
@@ -122,7 +122,7 @@ public abstract class AbstractLogicImpl<VIEW extends ILogic.IView>
 		return modelMgr;
 	}
 
-	protected ILogicContext getContext() {
+	protected IUILogicContext getContext() {
 		return context;
 	}
 

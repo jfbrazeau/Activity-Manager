@@ -13,7 +13,7 @@ import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.Align;
 import org.activitymgr.ui.web.logic.ILogic;
-import org.activitymgr.ui.web.logic.ILogicContext;
+import org.activitymgr.ui.web.logic.IUILogicContext;
 import org.activitymgr.ui.web.logic.impl.event.TaskUpdatedEvent;
 import org.activitymgr.ui.web.logic.spi.ITasksCellLogicFactory;
 import org.apache.commons.beanutils.BeanUtilsBean;
@@ -44,7 +44,7 @@ public class TasksCellLogicFatory implements ITasksCellLogicFactory {
 	 * @see org.activitymgr.ui.web.logic.spi.ITasksCellLogicFactory#createCellLogic(org.activitymgr.ui.web.logic.impl.AbstractLogicImpl, org.activitymgr.ui.web.logic.ILogicContext, org.activitymgr.core.dto.Task, java.lang.String, boolean)
 	 */
 	@Override
-	public ILogic<?> createCellLogic(final AbstractLogicImpl<?> parentLogic, final ILogicContext context, final String filter, final TaskSums taskSums, final String propertyId, boolean readOnly) {
+	public ILogic<?> createCellLogic(final AbstractLogicImpl<?> parentLogic, final IUILogicContext context, final String filter, final TaskSums taskSums, final String propertyId, boolean readOnly) {
 		ILogic<?> logic = null;
 		final Task task = taskSums.getTask();
 		if (NAME_PROPERTY_ID.equals(propertyId)) {

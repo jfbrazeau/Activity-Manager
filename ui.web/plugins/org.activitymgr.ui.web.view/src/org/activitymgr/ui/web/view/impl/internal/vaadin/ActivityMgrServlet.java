@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,8 +14,11 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import org.activitymgr.ui.web.logic.IUILogicContext;
 import org.activitymgr.ui.web.logic.spi.IRESTServiceLogic;
+import org.activitymgr.ui.web.view.impl.internal.ActivityManagerUI;
 import org.jsoup.nodes.Element;
 
 import com.google.inject.Inject;
@@ -24,6 +28,8 @@ import com.vaadin.server.BootstrapPageResponse;
 import com.vaadin.server.SessionInitEvent;
 import com.vaadin.server.SessionInitListener;
 import com.vaadin.server.VaadinServlet;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.ui.UI;
 
 final class ActivityMgrServlet extends VaadinServlet {
 	/**
@@ -59,6 +65,28 @@ final class ActivityMgrServlet extends VaadinServlet {
 			String servicePath = uri.substring("/service".length());
 			IRESTServiceLogic serviceLogic = serviceLogicsMap.get(servicePath);
 			if (serviceLogic != null) {
+				IUILogicContext context = null;
+				String uiIdStr = request.getParameter("v-uiId");
+				if (uiIdStr != null) {
+					int uiId = Integer.parseInt(uiIdStr);
+					HttpSession session = request.getSession(false);
+					if (session != null) {
+						VaadinSession vaadinSession = (VaadinSession) session
+								.getAttribute("com.vaadin.server.VaadinSession." + ActivityMgrServlet.class.getName());
+						if (vaadinSession != null) {
+							Iterator<UI> iterator = vaadinSession.getUIs()
+									.iterator();
+							while (iterator.hasNext()) {
+								UI ui = (UI) iterator.next();
+								if (ui.getUIId() == uiId) {
+									context = ((ActivityManagerUI) ui)
+											.getRootLogic().getContext();
+								}
+							}
+						}
+					}
+				}
+				final IUILogicContext theContext = context;
 				serviceLogic.service(new IRESTServiceLogic.Request() {
 					@Override
 					public Enumeration<String> getParameterNames() {
@@ -102,6 +130,11 @@ final class ActivityMgrServlet extends VaadinServlet {
 							}
 						}
 						return result;
+					}
+
+					@Override
+					public IUILogicContext getAttachedUILogicContext() {
+						return theContext;
 					}
 				}, new IRESTServiceLogic.Response() {
 					private String contentType;

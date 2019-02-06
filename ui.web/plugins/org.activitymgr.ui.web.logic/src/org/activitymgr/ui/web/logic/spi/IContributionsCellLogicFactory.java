@@ -9,7 +9,7 @@ import org.activitymgr.core.dto.Collaborator;
 import org.activitymgr.core.dto.misc.TaskContributions;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.ui.web.logic.ILogic;
-import org.activitymgr.ui.web.logic.ILogicContext;
+import org.activitymgr.ui.web.logic.IUILogicContext;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.ContributionsCellLogicFatory;
 
@@ -39,7 +39,7 @@ public interface IContributionsCellLogicFactory extends ICellLogicFactory {
 					WED_COLUMN_ID, THU_COLUMN_ID, FRI_COLUMN_ID, SAT_COLUMN_ID,
 					SUN_COLUMN_ID, TOTAL_COLUMN_ID }));
 
-	ILogic<?> createCellLogic(AbstractLogicImpl<?> parentLogic, ILogicContext context, Collaborator contributor,
+	ILogic<?> createCellLogic(AbstractLogicImpl<?> parentLogic, IUILogicContext context, Collaborator contributor,
 			Calendar firstDayOfWeek, TaskContributions weekContributions,
 			String propertyId);
 

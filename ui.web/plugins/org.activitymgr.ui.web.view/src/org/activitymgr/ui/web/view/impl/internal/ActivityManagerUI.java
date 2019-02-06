@@ -24,7 +24,6 @@ import com.vaadin.ui.Window;
 @SuppressWarnings("serial")
 public class ActivityManagerUI extends UI implements IRootLogic.View {
 
-	@SuppressWarnings("unused")
 	private IRootLogic logic;
 	private Cookie[] cookies;
 
@@ -42,6 +41,10 @@ public class ActivityManagerUI extends UI implements IRootLogic.View {
 	@Override
 	public void registerLogic(IRootLogic logic) {
 		this.logic = logic;
+	}
+
+	public IRootLogic getRootLogic() {
+		return logic;
 	}
 
 	@Override

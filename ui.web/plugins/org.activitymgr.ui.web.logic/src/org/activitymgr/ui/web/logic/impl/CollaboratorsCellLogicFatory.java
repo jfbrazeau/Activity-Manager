@@ -7,7 +7,7 @@ import org.activitymgr.core.model.IModelMgr;
 import org.activitymgr.core.model.ModelException;
 import org.activitymgr.ui.web.logic.Align;
 import org.activitymgr.ui.web.logic.ILogic;
-import org.activitymgr.ui.web.logic.ILogicContext;
+import org.activitymgr.ui.web.logic.IUILogicContext;
 import org.activitymgr.ui.web.logic.spi.ICollaboratorsCellLogicFactory;
 
 import com.google.inject.Inject;
@@ -21,7 +21,7 @@ public class CollaboratorsCellLogicFatory implements ICollaboratorsCellLogicFact
 	 * @see org.activitymgr.ui.web.logic.impl.ICollaboratorsCellLogicFactory#createCellLogic(org.activitymgr.core.dto.Collaborator, java.lang.String, boolean)
 	 */
 	@Override
-	public ILogic<?> createCellLogic(final AbstractLogicImpl<?> parentLogic, final ILogicContext context, final Collaborator collaborator, String propertyId, boolean readonly) {
+	public ILogic<?> createCellLogic(final AbstractLogicImpl<?> parentLogic, final IUILogicContext context, final Collaborator collaborator, String propertyId, boolean readonly) {
 		ILogic<?> logic = null;
 		if (IS_ACTIVE_PROPERTY_NAME_ID.equals(propertyId)) {
 			if (readonly) {

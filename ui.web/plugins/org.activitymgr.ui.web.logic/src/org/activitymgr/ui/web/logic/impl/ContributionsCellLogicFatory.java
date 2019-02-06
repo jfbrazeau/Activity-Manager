@@ -21,7 +21,7 @@ import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.Align;
 import org.activitymgr.ui.web.logic.IFieldLogic;
 import org.activitymgr.ui.web.logic.ILogic;
-import org.activitymgr.ui.web.logic.ILogicContext;
+import org.activitymgr.ui.web.logic.IUILogicContext;
 import org.activitymgr.ui.web.logic.ISelectFieldLogic;
 import org.activitymgr.ui.web.logic.ITextFieldLogic;
 import org.activitymgr.ui.web.logic.impl.event.ContributionChangeEvent;
@@ -58,7 +58,7 @@ public class ContributionsCellLogicFatory implements IContributionsCellLogicFact
 	 * @see org.activitymgr.ui.web.logic.impl.IContributionsCellLogicFactory#createCellLogic(org.activitymgr.core.dto.Collaborator, java.util.Calendar, org.activitymgr.core.dto.misc.TaskContributions, java.lang.String)
 	 */
 	@Override
-	public ILogic<?> createCellLogic(final AbstractLogicImpl<?> parentLogic, final ILogicContext context, final Collaborator contributor, final Calendar firstDayOfWeek, final TaskContributions weekContributions, final String propertyId) {
+	public ILogic<?> createCellLogic(final AbstractLogicImpl<?> parentLogic, final IUILogicContext context, final Collaborator contributor, final Calendar firstDayOfWeek, final TaskContributions weekContributions, final String propertyId) {
 		ILogic<?> logic = null;
 		if (DAY_COLUMNS_IDENTIFIERS.contains(propertyId)) {
 			final int dayOfWeek = DAY_COLUMNS_IDENTIFIERS.indexOf(propertyId);

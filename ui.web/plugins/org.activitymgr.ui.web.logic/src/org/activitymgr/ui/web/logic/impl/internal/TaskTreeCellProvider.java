@@ -14,11 +14,12 @@ import org.activitymgr.core.model.ModelException;
 import org.activitymgr.core.util.StringFormatException;
 import org.activitymgr.core.util.StringHelper;
 import org.activitymgr.ui.web.logic.Align;
+import org.activitymgr.ui.web.logic.IEventBus;
 import org.activitymgr.ui.web.logic.IEventListener;
 import org.activitymgr.ui.web.logic.ILabelLogic;
 import org.activitymgr.ui.web.logic.ILogic;
 import org.activitymgr.ui.web.logic.ILogic.IView;
-import org.activitymgr.ui.web.logic.ILogicContext;
+import org.activitymgr.ui.web.logic.IUILogicContext;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.AbstractSafeTreeTableCellProviderCallback;
 import org.activitymgr.ui.web.logic.impl.event.TaskUpdatedEvent;
@@ -38,7 +39,10 @@ class TaskTreeCellProvider extends AbstractSafeTreeTableCellProviderCallback<Lon
 	private ITasksCellLogicFactory cellLogicFactory;
 
 	@Inject
-	private ILogicContext context;
+	private IUILogicContext context;
+
+	@Inject
+	private IEventBus eventBus;
 
 	private String filter;
 	private Map<Long, Long> parentTaskCache = new HashMap<Long, Long>();
@@ -69,7 +73,7 @@ class TaskTreeCellProvider extends AbstractSafeTreeTableCellProviderCallback<Lon
 			}
 		}
 		this.readOnly = readOnly;
-		context.getEventBus().register(TaskUpdatedEvent.class, this);
+		eventBus.register(TaskUpdatedEvent.class, this);
 	}
 
 	@Override
@@ -210,7 +214,7 @@ class TaskTreeCellProvider extends AbstractSafeTreeTableCellProviderCallback<Lon
 
 	@Override
 	public void dispose() {
-		getContext().getEventBus().unregister(this);
+		eventBus.unregister(this);
 	}
 
 }

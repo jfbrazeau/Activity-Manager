@@ -11,7 +11,7 @@ import org.activitymgr.core.model.ModelException;
 import org.activitymgr.ui.web.logic.IAuthenticationLogic;
 import org.activitymgr.ui.web.logic.IConfiguration;
 import org.activitymgr.ui.web.logic.ILogic;
-import org.activitymgr.ui.web.logic.ILogicContext;
+import org.activitymgr.ui.web.logic.IUILogicContext;
 import org.activitymgr.ui.web.logic.impl.AbstractLogicImpl;
 import org.activitymgr.ui.web.logic.impl.event.ConnectedCollaboratorEvent;
 import org.activitymgr.ui.web.logic.spi.IAuthenticatorExtension;
@@ -152,7 +152,7 @@ public class AuthenticationLogicImpl extends
 	}
 
 	private void authenticationSuccessfull(Collaborator collaborator) {
-		((ILogicContext) getContext()).setConnectedCollaborator(collaborator);
+		((IUILogicContext) getContext()).setConnectedCollaborator(collaborator);
 		getEventBus().fire(new ConnectedCollaboratorEvent(this, collaborator));
 	}
 

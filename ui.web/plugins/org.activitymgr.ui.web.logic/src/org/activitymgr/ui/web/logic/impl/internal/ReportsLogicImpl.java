@@ -447,9 +447,10 @@ public class ReportsLogicImpl extends AbstractLogicImpl<IReportsLogic.View>
 		String url = null;
 		try {
 			StringWriter sw = new StringWriter();
-				sw.append(SERVICE_LOAD_URI);
-				appendUrlParam(sw, true, "service", SERVICE_REPORT_HTML_URI);
+			sw.append(SERVICE_LOAD_URI);
+			appendUrlParam(sw, true, "service", SERVICE_REPORT_HTML_URI);
 			ReportParameters reportParameters = prepareReportParameters();
+			appendUrlParam(sw, "v-uiId", "0");
 			appendUrlParam(sw,
 					AbstractReportServiceLogic.INTERVAL_TYPE_PARAMETER,
 					reportParameters.getIntervalType().toString());
